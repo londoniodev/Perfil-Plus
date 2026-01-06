@@ -18,7 +18,7 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY apps/api/package.json ./
 
 # Install only production dependencies
 # In a proper optimized build we would prune, but for simplicity we rely on the builder output

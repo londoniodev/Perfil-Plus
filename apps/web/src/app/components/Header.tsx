@@ -1,0 +1,199 @@
+"use client";
+
+import Link from "next/link";
+import { useState, useEffect } from "react";
+
+export function Header() {
+    const [isMobile, setIsMobile] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        // Initial check
+        handleResize();
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+    return (
+        <header
+            style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 50,
+                background: "rgba(15, 20, 25, 0.6)",
+                backdropFilter: "blur(16px) saturate(180%)",
+                borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            }}
+        >
+            <div
+                className="container"
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    height: "80px",
+                    position: "relative"
+                }}
+            >
+                <Link href="/">
+                    {/* Desktop Logo */}
+                    <img
+                        src="/menu_logo.png"
+                        alt="Mauro Mera"
+                        style={{
+                            height: "50px",
+                            width: "auto",
+                            objectFit: "contain",
+                            display: isMobile ? "none" : "block"
+                        }}
+                    />
+                    {/* Mobile Icon */}
+                    <img
+                        src="/icon.ico" // Browser often renders .ico in img tags fine, or we can use a converted png if needed. 
+                        // If the user wants specific mobile icon, they mentioned icon.ico.
+                        alt="Mauro Mera"
+                        style={{
+                            height: "40px",
+                            width: "auto",
+                            objectFit: "contain",
+                            display: isMobile ? "block" : "none"
+                        }}
+                    />
+                </Link>
+
+                {/* Desktop Nav */}
+                <nav
+                    style={{
+                        display: isMobile ? "none" : "flex",
+                        alignItems: "center",
+                        gap: "2.5rem"
+                    }}
+                >
+                    <NavLinks />
+                </nav>
+
+                {/* Mobile Toggle */}
+                <div style={{ display: isMobile ? "block" : "none" }}>
+                    <button
+                        onClick={toggleMenu}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            color: "white",
+                            cursor: "pointer",
+                            padding: "0.5rem"
+                        }}
+                    >
+                        {/* Simple Hamburger Icon */}
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            {isMenuOpen ? (
+                                <>
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </>
+                            ) : (
+                                <>
+                                    <line x1="3" y1="12" x2="21" y2="12" />
+                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                    <line x1="3" y1="18" x2="21" y2="18" />
+                                </>
+                            )}
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Mobile Dropdown Menu */}
+                {isMobile && isMenuOpen && (
+                    <div style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        background: "rgba(15, 20, 25, 0.95)",
+                        backdropFilter: "blur(20px)",
+                        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                        padding: "2rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2rem",
+                        alignItems: "center"
+                    }}>
+                        <NavLinks onClick={() => setIsMenuOpen(false)} />
+                    </div>
+                )}
+            </div>
+        </header>
+    );
+}
+
+function NavLinks({ onClick }: { onClick?: () => void }) {
+    return (
+        <>
+            <Link
+                href="/"
+                onClick={onClick}
+                style={{
+                    color: "var(--foreground-muted)",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                    transition: "color 0.2s",
+                }}
+                className="hover:text-white"
+            >
+                Inicio
+            </Link>
+            <Link
+                href="/portafolio"
+                onClick={onClick}
+                style={{
+                    color: "var(--foreground-muted)",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                }}
+                className="hover:text-white"
+            >
+                Portafolio
+            </Link>
+            <Link
+                href="/servicios"
+                onClick={onClick}
+                style={{
+                    color: "var(--foreground-muted)",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                }}
+                className="hover:text-white"
+            >
+                Servicios
+            </Link>
+            <Link
+                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20gustaría%20agendar%20un%20diagnóstico."
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onClick}
+                className="btn btn-primary"
+                style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Agendar
+            </Link>
+        </>
+    );
+}

@@ -114,13 +114,7 @@ export default function Home() {
         }}
       >
         <div
-          className="container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.2fr 1fr",
-            gap: "5rem",
-            alignItems: "center",
-          }}
+          className="container grid-responsive-hero"
         >
           <div className="animate-reveal">
             <h1
@@ -232,13 +226,7 @@ export default function Home() {
       {/* About Section */}
       <section className="section" id="sobre-mi">
         <div
-          className="container"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1.5fr",
-            gap: "5rem",
-            alignItems: "center",
-          }}
+          className="container grid-responsive-profile"
         >
           <div
             className="card"
@@ -287,7 +275,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem" }}>
+          <div className="grid-responsive">
             {[
               {
                 icon: <IconBrain />,
@@ -329,7 +317,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem" }}>
+          <div className="grid-responsive">
             {/* Card 1 - Empresas */}
             <div className="card">
               <div className="icon-box" style={{ marginBottom: "1.5rem" }}>
@@ -430,12 +418,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "2rem",
-            position: "relative"
-          }}>
+          <div className="grid-responsive-4" style={{ position: "relative" }}>
             {/* Connector Line */}
             <div style={{
               position: "absolute",
@@ -474,7 +457,7 @@ export default function Home() {
             <h2 className="section-title">Voces de la experiencia</h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2rem" }}>
+          <div className="grid-responsive">
             {[
               {
                 quote: "El proceso me ayudó a entender patrones que llevaba años repitiendo. Ahora tomo decisiones con más claridad.",

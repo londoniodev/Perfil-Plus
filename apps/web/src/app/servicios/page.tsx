@@ -129,7 +129,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Problemas típicos que resolvemos
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            <div className="grid-responsive-2-small">
                                 {[
                                     '"Tenemos estrategia, pero la cultura no acompaña."',
                                     '"El liderazgo está agotado y la conversación se volvió difícil."',
@@ -180,7 +180,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Beneficios
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            <div className="grid-responsive-2-small">
                                 {[
                                     "Cultura coherente con la estrategia",
                                     "Liderazgo preparado para conversaciones difíciles",
@@ -248,7 +248,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Para quién es
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+                            <div className="grid-responsive-2-small">
                                 {[
                                     { icon: <IconGraduationCap />, text: "Estudiantes de últimos grados" },
                                     { icon: <IconUsers />, text: "Universitarios en duda o cambio" },
@@ -288,7 +288,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Resultados que buscamos
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            <div className="grid-responsive-2-small">
                                 {[
                                     "Decisiones más conscientes",
                                     "Menos riesgo de deserción",
@@ -391,7 +391,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Formato
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+                            <div className="grid-responsive">
                                 {[
                                     { icon: <IconUsers />, text: "Sesiones 1:1" },
                                     { icon: <IconShield />, text: "Presencial u online" },
@@ -410,7 +410,7 @@ export default function ServiciosPage() {
                             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Beneficios
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            <div className="grid-responsive-2-small">
                                 {[
                                     "Claridad emocional y mental",
                                     "Mejor gestión de conflictos",

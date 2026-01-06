@@ -1,14 +1,15 @@
-FROM node:18-alpine As development
+FROM node:18-alpine As builder
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
-
-RUN npm install
-
+# Copy the entire monorepo
 COPY . .
 
-RUN npm run build
+# Install all dependencies
+RUN npm install
+
+# Build the API
+RUN npx turbo run build --filter=@mauromera/api
 
 FROM node:18-alpine as production
 
@@ -19,10 +20,11 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
+# Install only production dependencies
+# In a proper optimized build we would prune, but for simplicity we rely on the builder output
 RUN npm install --only=production
 
-COPY . .
-
-COPY --from=development /usr/src/app/apps/api/dist ./dist
+# Copy built assets
+COPY --from=builder /usr/src/app/apps/api/dist ./dist
 
 CMD ["node", "dist/main"]

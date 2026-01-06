@@ -214,6 +214,18 @@ function Footer() {
           }}
         >
           © {new Date().getFullYear()} Mauro Mera. Todos los derechos reservados.
+          <br />
+          <span style={{ fontSize: "0.8rem", opacity: 0.8, marginTop: "0.5rem", display: "inline-block" }}>
+            Desarrollado y Diseñado por{" "}
+            <a
+              href="https://portafolio.alvarolondoño.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--foreground)", textDecoration: "none", fontWeight: 500 }}
+            >
+              Alvaro Londoño
+            </a>
+          </span>
         </div>
       </div>
     </footer>

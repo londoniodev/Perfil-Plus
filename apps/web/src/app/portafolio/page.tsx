@@ -162,13 +162,37 @@ export default function PortafolioPage() {
             {/* Filtros */}
             <section style={{ padding: "2rem 0", borderBottom: "1px solid var(--border)", background: "rgba(22, 27, 34, 0.5)", backdropFilter: "blur(10px)" }}>
                 <div className="container">
-                    <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <div
+                        className="filter-container"
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "0.75rem",
+                            flexWrap: "wrap"
+                        }}
+                    >
                         {categorias.map((cat, i) => (
                             <button
                                 key={i}
-                                className={i === 0 ? "btn btn-primary" : "btn btn-secondary"}
+                                className={`btn ${i === 0 ? "btn-primary" : "btn-secondary"} btn-filter`}
                                 style={{ padding: "0.5rem 1.25rem", fontSize: "0.875rem", minWidth: "auto" }}
                             >
+                                {/* Add simple icons based on category name for better visual appeal */}
+                                {cat === "Todos" && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                                )}
+                                {cat === "Empresas" && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+                                )}
+                                {cat === "Liderazgo" && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                )}
+                                {cat === "Explora" && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
+                                )}
+                                {cat === "Bienestar" && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z" /></svg>
+                                )}
                                 {cat}
                             </button>
                         ))}

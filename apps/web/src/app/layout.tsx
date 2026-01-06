@@ -66,8 +66,9 @@ function Footer() {
             gap: "4rem",
             marginBottom: "4rem",
           }}
+          className="footer-grid" /* Hook for CSS media query if needed, but inline style adjustment is direct */
         >
-          <div>
+          <div style={{ minWidth: "280px" }}> {/* Ensure Branding stays full width on very small screens or first col */}
             <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.25rem", fontFamily: "var(--font-serif)" }}>
               Mauro Mera
             </h3>
@@ -76,53 +77,58 @@ function Footer() {
             </p>
           </div>
 
-          <div>
-            <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
-              Enlaces
-            </h4>
-            <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <Link href="/" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                Inicio
-              </Link>
-              <Link href="/portafolio" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                Portafolio
-              </Link>
-              <Link href="/servicios" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                Servicios
-              </Link>
-              <Link
-                href="https://wa.me/573183771838?text=Hola%20Mauro,%20vengo%20de%20tu%20web%20y%20quisiera%20más%20información."
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}
-              >
-                Contacto
-              </Link>
-            </nav>
+          {/* Group Links and Legal in a nested grid for mobile compactness */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", minWidth: "280px" }}>
+            <div>
+              <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
+                Enlaces
+              </h4>
+              <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <Link href="/" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+                  Inicio
+                </Link>
+                <Link href="/portafolio" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+                  Portafolio
+                </Link>
+                <Link href="/servicios" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+                  Servicios
+                </Link>
+                <Link
+                  href="https://wa.me/573183771838?text=Hola%20Mauro,%20vengo%20de%20tu%20web%20y%20quisiera%20más%20información."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}
+                >
+                  Contacto
+                </Link>
+              </nav>
+            </div>
+
+            <div>
+              <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
+                Legal
+              </h4>
+              <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <Link href="/privacidad" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+                  Política de privacidad
+                </Link>
+              </nav>
+            </div>
           </div>
 
-          <div>
-            <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
-              Legal
-            </h4>
-            <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <Link href="/privacidad" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                Política de privacidad
-              </Link>
-            </nav>
-            <div
-              style={{
-                marginTop: "2rem",
-                padding: "1.25rem",
-                background: "rgba(255, 255, 255, 0.03)",
-                borderRadius: "0.75rem",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <p style={{ color: "var(--foreground-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>
-                Si estás en una emergencia o riesgo, busca ayuda inmediata en tu línea local de emergencias.
-              </p>
-            </div>
+          {/* Disclaimer takes full width in the grid flow or its own col */}
+          <div
+            style={{
+              padding: "1.25rem",
+              background: "rgba(255, 255, 255, 0.03)",
+              borderRadius: "0.75rem",
+              border: "1px solid var(--border)",
+              height: "fit-content"
+            }}
+          >
+            <p style={{ color: "var(--foreground-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+              Si estás en una emergencia o riesgo, busca ayuda inmediata en tu línea local de emergencias.
+            </p>
           </div>
         </div>
 

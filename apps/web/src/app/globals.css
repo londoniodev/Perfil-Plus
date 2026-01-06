@@ -348,13 +348,13 @@ h6 {
     gap: 3rem !important;
   }
 
-  /* Make buttons stack on mobile */
-  div[style*="display: flex"][style*="gap: 1rem"] {
+  /* Make buttons stack on mobile, EXCLUDING filter buttons which should flow */
+  div[style*="display: flex"][style*="gap: 1rem"]:not(.filter-container) {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .btn {
+  .btn:not(.btn-filter) {
     width: 100%;
     justify-content: center;
   }
@@ -364,10 +364,6 @@ h6 {
     width: 100% !important;
     height: 400px !important;
   }
-
-  /* Reset order for "Sobre mi" section so image is first or text is first depending on preference. 
-     Usually text first on mobile is better, or image. Let's stack them naturally. 
-  */
 }
 
 /* Responsive Grid Utilities */

@@ -72,7 +72,7 @@ function Header() {
       >
         <Link href="/">
           <img
-            src="/logo.png"
+            src="/menu_logo.png"
             alt="Mauro Mera"
             style={{
               height: "50px",

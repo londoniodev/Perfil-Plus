@@ -70,18 +70,16 @@ function Header() {
           height: "80px", // Slightly taller for elegance
         }}
       >
-        <Link
-          href="/"
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: 700,
-            color: "var(--foreground)",
-            textDecoration: "none",
-            letterSpacing: "-0.02em",
-            fontFamily: "var(--font-serif)", // Use serif for logo
-          }}
-        >
-          Mauro Mera
+        <Link href="/">
+          <img
+            src="/logo.png"
+            alt="Mauro Mera"
+            style={{
+              height: "50px",
+              width: "auto",
+              objectFit: "contain"
+            }}
+          />
         </Link>
 
         <nav style={{ display: "flex", alignItems: "center", gap: "2.5rem" }}>
@@ -139,7 +137,7 @@ function Header() {
           </Link>
         </nav>
       </div>
-    </header>
+    </header >
   );
 }
 

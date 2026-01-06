@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 // Inline SVG icons for clean, professional look
 const IconBrain = () => (
@@ -588,5 +588,3 @@ export default function Home() {
     </>
   );
 }
-/ /   B u i l d :   2 0 2 6 0 1 0 6 1 4 3 5 5 7  
- 

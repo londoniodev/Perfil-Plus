@@ -123,7 +123,9 @@ function Header() {
             Servicios
           </Link>
           <Link
-            href="#agendar"
+            href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20gustaría%20agendar%20un%20diagnóstico."
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn btn-primary"
             style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
           >
@@ -182,7 +184,12 @@ function Footer() {
               <Link href="/servicios" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
                 Servicios
               </Link>
-              <Link href="#agendar" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+              <Link
+                href="https://wa.me/573183771838?text=Hola%20Mauro,%20vengo%20de%20tu%20web%20y%20quisiera%20más%20información."
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}
+              >
                 Contacto
               </Link>
             </nav>

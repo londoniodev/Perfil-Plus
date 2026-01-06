@@ -147,7 +147,12 @@ export default function PortafolioPage() {
                     >
                         Trabajo con foco en transformación aplicable: claridad, conversación y acción sostenida.
                     </p>
-                    <Link href="#agendar" className="btn btn-primary">
+                    <Link
+                        href="https://wa.me/573183771838?text=Hola%20Mauro,%20quiero%20un%20diagnóstico%20basado%20en%20tu%20portafolio."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-primary"
+                    >
                         <IconCalendar />
                         Quiero un diagnóstico
                     </Link>
@@ -259,7 +264,9 @@ export default function PortafolioPage() {
                                 </div>
 
                                 <Link
-                                    href="#agendar"
+                                    href={`https://wa.me/573183771838?text=Hola%20Mauro,%20vi%20el%20caso%20"${caso.titulo}"%20y%20me%20gustaría%20algo%20similar.`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="btn btn-secondary"
                                     style={{
                                         width: "100%",
@@ -300,7 +307,9 @@ export default function PortafolioPage() {
                         Cada caso es único. Agenda una reunión de diagnóstico y diseñamos algo a tu medida.
                     </p>
                     <Link
-                        href="mailto:contacto@mauromera.com"
+                        href="https://wa.me/573183771838?text=Hola%20Mauro,%20quiero%20agendar%20un%20diagnóstico."
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="btn btn-primary"
                         style={{ padding: "1.25rem 2.5rem" }}
                     >

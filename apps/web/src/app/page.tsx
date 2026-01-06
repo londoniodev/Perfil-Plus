@@ -143,7 +143,12 @@ export default function Home() {
             </p>
 
             <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem" }}>
-              <Link href="#agendar" className="btn btn-primary">
+              <Link
+                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20agendar%20una%20sesión."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+              >
                 <IconCalendar />
                 Agendar
               </Link>
@@ -344,7 +349,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="#agendar" className="btn btn-secondary" style={{ width: "100%" }}>
+              <Link href="/servicios#empresas" className="btn btn-secondary" style={{ width: "100%" }}>
                 Ver detalles
               </Link>
             </div>
@@ -371,7 +376,13 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="#agendar" className="btn btn-accent" style={{ width: "100%" }}>
+              <Link
+                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20el%20programa%20Explora."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-accent"
+                style={{ width: "100%" }}
+              >
                 Iniciar Explora
               </Link>
             </div>
@@ -395,7 +406,13 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="#agendar" className="btn btn-secondary" style={{ width: "100%" }}>
+              <Link
+                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20iniciar%20psicoterapia."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+                style={{ width: "100%" }}
+              >
                 Agendar sesión
               </Link>
             </div>
@@ -538,7 +555,9 @@ export default function Home() {
             Si estás en un punto de decisión, busquemos la mejor ruta juntos.
           </p>
           <Link
-            href="mailto:contacto@mauromera.com"
+            href="https://wa.me/573183771838?text=Hola%20Mauro,%20quisiera%20agendar%20un%20diagnóstico."
+            target="_blank"
+            rel="noopener noreferrer"
             className="btn btn-primary"
             style={{
               fontSize: "1.125rem",

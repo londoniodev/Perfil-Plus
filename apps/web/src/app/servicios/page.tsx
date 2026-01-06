@@ -211,7 +211,12 @@ export default function ServiciosPage() {
                             <p style={{ opacity: 0.8, marginBottom: "2rem", color: "var(--foreground-muted)" }}>
                                 Reunión de diagnóstico (sin costo) → Propuesta a la medida → Kick-off
                             </p>
-                            <Link href="#agendar" className="btn btn-primary">
+                            <Link
+                                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20consultoría%20para%20empresas."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-primary"
+                            >
                                 <IconCalendar />
                                 Agenda reunión de diagnóstico
                             </Link>
@@ -300,11 +305,23 @@ export default function ServiciosPage() {
 
                         {/* CTAs */}
                         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
-                            <Link href="#agendar" className="btn btn-accent" style={{ minWidth: "240px" }}>
+                            <Link
+                                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20el%20programa%20Explora."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-accent"
+                                style={{ minWidth: "240px" }}
+                            >
                                 <IconCalendar />
                                 Agendar Explora (Familias)
                             </Link>
-                            <Link href="#agendar" className="btn btn-secondary" style={{ minWidth: "240px" }}>
+                            <Link
+                                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20llevar%20Explora%20a%20mi%20institución."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-secondary"
+                                style={{ minWidth: "240px" }}
+                            >
                                 Programa institucional
                                 <IconArrowRight />
                             </Link>
@@ -410,7 +427,12 @@ export default function ServiciosPage() {
 
                         {/* CTA */}
                         <div style={{ textAlign: "center" }}>
-                            <Link href="#agendar" className="btn btn-primary">
+                            <Link
+                                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20iniciar%20psicoterapia."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-primary"
+                            >
                                 <IconCalendar />
                                 Agendar primera sesión
                             </Link>
@@ -447,7 +469,9 @@ export default function ServiciosPage() {
                         Agenda y te recomiendo la mejor opción según tu momento.
                     </p>
                     <Link
-                        href="mailto:contacto@mauromera.com"
+                        href="https://wa.me/573183771838?text=Hola%20Mauro,%20no%20sé%20por%20dónde%20empezar,%20hablemos."
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="btn btn-primary"
                         style={{ padding: "1.25rem 2.5rem" }}
                     >

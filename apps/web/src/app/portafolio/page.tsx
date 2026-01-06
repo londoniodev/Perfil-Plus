@@ -128,33 +128,21 @@ export default function PortafolioPage() {
         <>
             {/* Hero */}
             <section
-                className="grid-pattern"
+                className="section"
                 style={{
                     paddingTop: "140px",
                     paddingBottom: "80px",
-                    background: "linear-gradient(135deg, var(--background) 0%, var(--gradient-end) 100%)",
                     textAlign: "center",
                 }}
             >
-                <div className="container">
-                    <h1
-                        style={{
-                            fontSize: "3rem",
-                            fontWeight: 700,
-                            marginBottom: "1rem",
-                            letterSpacing: "-0.03em",
-                        }}
-                    >
-                        Portafolio: casos, experiencias y aprendizajes
+                <div className="container animate-reveal">
+                    <h1 className="section-title">
+                        Portafolio: casos, experiencias & aprendizajes
                     </h1>
                     <p
+                        className="section-subtitle"
                         style={{
-                            fontSize: "1.125rem",
-                            color: "var(--foreground-muted)",
-                            marginBottom: "2.5rem",
-                            maxWidth: "700px",
-                            margin: "0 auto 2.5rem",
-                            lineHeight: 1.7,
+                            margin: "0 auto 3rem",
                         }}
                     >
                         Trabajo con foco en transformación aplicable: claridad, conversación y acción sostenida.
@@ -167,14 +155,14 @@ export default function PortafolioPage() {
             </section>
 
             {/* Filtros */}
-            <section style={{ padding: "2rem 0", borderBottom: "1px solid var(--border)", background: "var(--background-secondary)" }}>
+            <section style={{ padding: "2rem 0", borderBottom: "1px solid var(--border)", background: "rgba(22, 27, 34, 0.5)", backdropFilter: "blur(10px)" }}>
                 <div className="container">
                     <div style={{ display: "flex", justifyContent: "center", gap: "0.75rem", flexWrap: "wrap" }}>
                         {categorias.map((cat, i) => (
                             <button
                                 key={i}
-                                className={i === 0 ? "btn btn-primary" : "btn btn-ghost"}
-                                style={{ padding: "0.5rem 1.25rem", fontSize: "0.875rem" }}
+                                className={i === 0 ? "btn btn-primary" : "btn btn-secondary"}
+                                style={{ padding: "0.5rem 1.25rem", fontSize: "0.875rem", minWidth: "auto" }}
                             >
                                 {cat}
                             </button>
@@ -190,74 +178,81 @@ export default function PortafolioPage() {
                         style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
-                            gap: "1.5rem",
+                            gap: "2rem",
                         }}
                     >
-                        {casos.map((caso) => (
-                            <article key={caso.id} className="card">
+                        {casos.map((caso, index) => (
+                            <article
+                                key={caso.id}
+                                className="card animate-reveal"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
                                 <div
                                     style={{
                                         display: "inline-flex",
                                         alignItems: "center",
                                         gap: "0.5rem",
-                                        background: `${caso.color}20`,
+                                        background: `${caso.color}15`,
                                         color: caso.color,
                                         padding: "0.375rem 0.875rem",
-                                        borderRadius: "9999px",
+                                        borderRadius: "99px",
                                         fontSize: "0.75rem",
-                                        fontWeight: 600,
-                                        marginBottom: "1rem",
+                                        fontWeight: 700,
+                                        marginBottom: "1.5rem",
+                                        border: `1px solid ${caso.color}30`,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.05em",
                                     }}
                                 >
                                     <IconTrendingUp />
                                     {caso.categoria}
                                 </div>
 
-                                <h3 style={{ fontSize: "1.125rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+                                <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem", lineHeight: 1.2 }}>
                                     {caso.titulo}
                                 </h3>
-                                <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", fontSize: "0.9rem" }}>
+                                <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", fontSize: "1rem" }}>
                                     {caso.cliente}
                                 </p>
 
-                                <div style={{ marginBottom: "1rem" }}>
-                                    <h4 style={{ fontWeight: 600, marginBottom: "0.5rem", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                                <div style={{ marginBottom: "1.5rem" }}>
+                                    <h4 style={{ fontWeight: 700, marginBottom: "0.5rem", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                         Contexto
                                     </h4>
-                                    <p style={{ color: "var(--foreground-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                                    <p style={{ color: "var(--foreground-muted)", fontSize: "0.95rem", lineHeight: 1.6 }}>
                                         {caso.contexto}
                                     </p>
                                 </div>
 
-                                <div style={{ marginBottom: "1rem" }}>
-                                    <h4 style={{ fontWeight: 600, marginBottom: "0.5rem", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                                <div style={{ marginBottom: "1.5rem" }}>
+                                    <h4 style={{ fontWeight: 700, marginBottom: "0.5rem", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                         Reto
                                     </h4>
-                                    <p style={{ color: "var(--foreground-muted)", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                                    <p style={{ color: "var(--foreground-muted)", fontSize: "0.95rem", lineHeight: 1.6 }}>
                                         {caso.reto}
                                     </p>
                                 </div>
 
-                                <div style={{ marginBottom: "1.5rem" }}>
-                                    <h4 style={{ fontWeight: 600, marginBottom: "0.75rem", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                                <div style={{ marginBottom: "2rem" }}>
+                                    <h4 style={{ fontWeight: 700, marginBottom: "0.75rem", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                         Resultados
                                     </h4>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                                         {caso.resultados.map((resultado, i) => (
                                             <div
                                                 key={i}
                                                 style={{
                                                     display: "flex",
                                                     alignItems: "center",
-                                                    gap: "0.5rem",
-                                                    padding: "0.5rem 0.75rem",
-                                                    background: "var(--background)",
-                                                    borderRadius: "0.5rem",
+                                                    gap: "0.75rem",
+                                                    padding: "0.75rem 1rem",
+                                                    background: "rgba(255,255,255,0.03)",
+                                                    borderRadius: "0.75rem",
                                                     border: "1px solid var(--border)",
                                                 }}
                                             >
                                                 <span style={{ color: caso.color }}><IconTrendingUp /></span>
-                                                <span style={{ color: "var(--foreground)", fontSize: "0.9rem" }}>{resultado}</span>
+                                                <span style={{ color: "var(--foreground)", fontSize: "0.9rem", fontWeight: 500 }}>{resultado}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -265,15 +260,10 @@ export default function PortafolioPage() {
 
                                 <Link
                                     href="#agendar"
+                                    className="btn btn-secondary"
                                     style={{
-                                        display: "flex",
-                                        alignItems: "center",
+                                        width: "100%",
                                         justifyContent: "center",
-                                        gap: "0.5rem",
-                                        color: caso.color,
-                                        textDecoration: "none",
-                                        fontSize: "0.9rem",
-                                        fontWeight: 600,
                                     }}
                                 >
                                     Quiero algo así
@@ -289,25 +279,33 @@ export default function PortafolioPage() {
             <section
                 id="agendar"
                 style={{
-                    padding: "6rem 0",
-                    background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
+                    padding: "8rem 0",
+                    position: "relative",
+                    overflow: "hidden",
                     textAlign: "center",
                 }}
             >
-                <div className="container">
-                    <h2 style={{ fontSize: "2.5rem", fontWeight: 700, marginBottom: "1rem", color: "white" }}>
+                <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "radial-gradient(circle at center, rgba(58, 98, 184, 0.2), transparent 70%)",
+                    zIndex: -1
+                }} />
+
+                <div className="container" style={{ position: "relative", zIndex: 1 }}>
+                    <h2 className="section-title">
                         ¿Te gustaría llevar esto a tu contexto?
                     </h2>
-                    <p style={{ fontSize: "1.125rem", opacity: 0.9, marginBottom: "2rem", maxWidth: "600px", margin: "0 auto 2rem", color: "white" }}>
+                    <p className="section-subtitle" style={{ margin: "0 auto 2rem" }}>
                         Cada caso es único. Agenda una reunión de diagnóstico y diseñamos algo a tu medida.
                     </p>
                     <Link
                         href="mailto:contacto@mauromera.com"
-                        className="btn"
-                        style={{ background: "white", color: "var(--primary-dark)", fontSize: "1rem", padding: "1rem 2rem" }}
+                        className="btn btn-primary"
+                        style={{ padding: "1.25rem 2.5rem" }}
                     >
                         <IconCalendar />
-                        Agendar diagnóstico
+                        Agendar Diagnóstico
                     </Link>
                 </div>
             </section>

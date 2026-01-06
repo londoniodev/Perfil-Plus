@@ -75,33 +75,21 @@ export default function ServiciosPage() {
         <>
             {/* Hero */}
             <section
-                className="grid-pattern"
+                className="section"
                 style={{
                     paddingTop: "140px",
                     paddingBottom: "80px",
-                    background: "linear-gradient(135deg, var(--background) 0%, var(--gradient-end) 100%)",
                     textAlign: "center",
                 }}
             >
-                <div className="container">
-                    <h1
-                        style={{
-                            fontSize: "3rem",
-                            fontWeight: 700,
-                            marginBottom: "1rem",
-                            letterSpacing: "-0.03em",
-                        }}
-                    >
+                <div className="container animate-reveal">
+                    <h1 className="section-title">
                         Trabaja conmigo
                     </h1>
                     <p
+                        className="section-subtitle"
                         style={{
-                            fontSize: "1.125rem",
-                            color: "var(--foreground-muted)",
-                            marginBottom: "2.5rem",
-                            maxWidth: "600px",
-                            margin: "0 auto 2.5rem",
-                            lineHeight: 1.7,
+                            margin: "0 auto 3rem",
                         }}
                     >
                         Elige la ruta que mejor encaje con tu momento: organización, vocación o mundo interno.
@@ -128,17 +116,17 @@ export default function ServiciosPage() {
             <section id="empresas" className="section">
                 <div className="container">
                     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                        <div className="icon-box" style={{ marginBottom: "1.5rem" }}>
+                        <div className="icon-box">
                             <IconBuilding />
                         </div>
-                        <h2 className="section-title">Consultoría organizacional y programas de desarrollo</h2>
+                        <h2 className="section-title" style={{ fontSize: "2.5rem" }}>Consultoría organizacional & desarrollo</h2>
                         <p className="section-subtitle" style={{ marginBottom: "3rem" }}>
                             Cultura clara. Liderazgo humano. Equipos que conversan mejor y sostienen resultados.
                         </p>
 
                         {/* Problemas típicos */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Problemas típicos que resolvemos
                             </h3>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
@@ -152,7 +140,7 @@ export default function ServiciosPage() {
                                         key={i}
                                         style={{
                                             padding: "1rem",
-                                            background: "var(--background)",
+                                            background: "rgba(255,255,255,0.03)",
                                             borderRadius: "0.75rem",
                                             border: "1px solid var(--border)",
                                             fontStyle: "italic",
@@ -167,11 +155,11 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* Qué incluye */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Qué incluye
                             </h3>
-                            <ul>
+                            <ul style={{ display: "grid", gap: "0.75rem" }}>
                                 {[
                                     "Diagnóstico (cultura, liderazgo, clima, conversaciones)",
                                     "Diseño de programa a la medida",
@@ -179,7 +167,7 @@ export default function ServiciosPage() {
                                     "Acompañamiento 1:1 a líderes clave",
                                     "Seguimiento, medición y entregables",
                                 ].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)", marginBottom: "0.75rem" }}>
+                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)" }}>
                                         <span style={{ color: "var(--primary)" }}><IconCheck /></span>
                                         {item}
                                     </li>
@@ -188,8 +176,8 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* Beneficios */}
-                        <div className="card" style={{ marginBottom: "2rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "3rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Beneficios
                             </h3>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
@@ -210,23 +198,24 @@ export default function ServiciosPage() {
                         {/* CTA */}
                         <div
                             style={{
-                                background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
-                                padding: "2.5rem",
-                                borderRadius: "1rem",
+                                background: "linear-gradient(135deg, var(--card-bg) 0%, var(--background-secondary) 100%)",
+                                padding: "3rem",
+                                borderRadius: "1.5rem",
+                                border: "1px solid var(--border)",
                                 textAlign: "center",
                             }}
                         >
-                            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.75rem", color: "white" }}>
+                            <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--foreground)" }}>
                                 ¿Cómo empezamos?
                             </h3>
-                            <p style={{ opacity: 0.9, marginBottom: "1.5rem", color: "white" }}>
+                            <p style={{ opacity: 0.8, marginBottom: "2rem", color: "var(--foreground-muted)" }}>
                                 Reunión de diagnóstico (sin costo) → Propuesta a la medida → Kick-off
                             </p>
-                            <Link href="#agendar" className="btn" style={{ background: "white", color: "var(--primary-dark)" }}>
+                            <Link href="#agendar" className="btn btn-primary">
                                 <IconCalendar />
                                 Agenda reunión de diagnóstico
                             </Link>
-                            <p style={{ fontSize: "0.85rem", opacity: 0.8, marginTop: "1rem", color: "white" }}>
+                            <p style={{ fontSize: "0.85rem", opacity: 0.6, marginTop: "1.5rem", color: "var(--foreground-muted)" }}>
                                 En 30–45 min entendemos tu contexto y te digo la ruta más útil.
                             </p>
                         </div>
@@ -235,26 +224,26 @@ export default function ServiciosPage() {
             </section>
 
             {/* Sección 2 — Explora */}
-            <section id="explora" className="section section-alt">
+            <section id="explora" className="section">
                 <div className="container">
                     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                        <div className="badge" style={{ marginBottom: "1rem" }}>
+                        <div className="badge" style={{ marginBottom: "1.5rem" }}>
                             Destacado
                         </div>
-                        <div className="icon-box icon-box-accent" style={{ marginBottom: "1.5rem" }}>
+                        <div className="icon-box icon-box-accent">
                             <IconCompass />
                         </div>
-                        <h2 className="section-title">Explora: orientación vocacional con acompañamiento humano e IA</h2>
+                        <h2 className="section-title" style={{ fontSize: "2.5rem" }}>Explora: orientación vocacional</h2>
                         <p className="section-subtitle" style={{ marginBottom: "3rem" }}>
                             Menos ansiedad. Más claridad. Decisiones de estudio y carrera con información que se entiende y se usa.
                         </p>
 
                         {/* Para quién */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card card-featured" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Para quién es
                             </h3>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
                                 {[
                                     { icon: <IconGraduationCap />, text: "Estudiantes de últimos grados" },
                                     { icon: <IconUsers />, text: "Universitarios en duda o cambio" },
@@ -263,25 +252,25 @@ export default function ServiciosPage() {
                                 ].map((item, i) => (
                                     <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                                         <span style={{ color: "var(--accent)" }}>{item.icon}</span>
-                                        <span style={{ color: "var(--foreground-muted)" }}>{item.text}</span>
+                                        <span style={{ color: "var(--foreground)", fontWeight: 500 }}>{item.text}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
                         {/* Qué incluye */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Qué incluye Explora
                             </h3>
-                            <ul>
+                            <ul style={{ display: "grid", gap: "0.75rem" }}>
                                 {[
                                     "Evaluaciones vocacionales y perfil personal",
                                     "Sesiones 1:1 con el joven (y familia si se requiere)",
                                     "App con IA para organizar y explicar resultados",
                                     "Informe final con recomendaciones prácticas",
                                 ].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)", marginBottom: "0.75rem" }}>
+                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)" }}>
                                         <span style={{ color: "var(--accent)" }}><IconCheck /></span>
                                         {item}
                                     </li>
@@ -290,8 +279,8 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* Resultados */}
-                        <div className="card" style={{ marginBottom: "2rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "3rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Resultados que buscamos
                             </h3>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
@@ -310,36 +299,38 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* CTAs */}
-                        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                            <Link href="#agendar" className="btn btn-accent" style={{ flex: 1 }}>
+                        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
+                            <Link href="#agendar" className="btn btn-accent" style={{ minWidth: "240px" }}>
                                 <IconCalendar />
                                 Agendar Explora (Familias)
                             </Link>
-                            <Link href="#agendar" className="btn btn-secondary" style={{ flex: 1 }}>
+                            <Link href="#agendar" className="btn btn-secondary" style={{ minWidth: "240px" }}>
                                 Programa institucional
                                 <IconArrowRight />
                             </Link>
                         </div>
 
                         {/* FAQ */}
-                        <div style={{ marginTop: "3rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div style={{ marginTop: "4rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1.5rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Preguntas frecuentes
                             </h3>
-                            {[
-                                { q: "¿Cuánto dura el proceso?", a: "Depende del caso; usualmente 4-6 sesiones + informe." },
-                                { q: "¿La IA reemplaza al acompañamiento?", a: "No: traduce y organiza, el proceso es guiado y humano." },
-                                { q: "¿Es solo para elegir carrera?", a: "También sirve para reorientación y cambios." },
-                            ].map((faq, i) => (
-                                <div
-                                    key={i}
-                                    className="card"
-                                    style={{ marginBottom: "1rem" }}
-                                >
-                                    <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>{faq.q}</p>
-                                    <p style={{ color: "var(--foreground-muted)" }}>{faq.a}</p>
-                                </div>
-                            ))}
+                            <div style={{ display: "grid", gap: "1rem" }}>
+                                {[
+                                    { q: "¿Cuánto dura el proceso?", a: "Depende del caso; usualmente 4-6 sesiones + informe." },
+                                    { q: "¿La IA reemplaza al acompañamiento?", a: "No: traduce y organiza, el proceso es guiado y humano." },
+                                    { q: "¿Es solo para elegir carrera?", a: "También sirve para reorientación y cambios." },
+                                ].map((faq, i) => (
+                                    <div
+                                        key={i}
+                                        className="card"
+                                        style={{ padding: "1.5rem" }}
+                                    >
+                                        <p style={{ fontWeight: 600, marginBottom: "0.5rem", color: "var(--foreground)" }}>{faq.q}</p>
+                                        <p style={{ color: "var(--foreground-muted)" }}>{faq.a}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -349,20 +340,20 @@ export default function ServiciosPage() {
             <section id="terapia" className="section">
                 <div className="container">
                     <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                        <div className="icon-box icon-box-success" style={{ marginBottom: "1.5rem" }}>
+                        <div className="icon-box icon-box-success">
                             <IconHeart />
                         </div>
-                        <h2 className="section-title">Psicoterapia y coaching personal para una vida con más sentido</h2>
+                        <h2 className="section-title" style={{ fontSize: "2.5rem" }}>Psicoterapia y coaching</h2>
                         <p className="section-subtitle" style={{ marginBottom: "3rem" }}>
-                            Un espacio seguro para entenderte, sanar, ordenar y decidir.
+                            Un espacio seguro para entenderte, sanar, ordenar y decidir. Vida con más sentido.
                         </p>
 
                         {/* Lo que trabajamos */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Lo que trabajamos
                             </h3>
-                            <ul>
+                            <ul style={{ display: "grid", gap: "0.75rem" }}>
                                 {[
                                     "Ansiedad, estrés, duelo, crisis",
                                     "Vínculos: pareja, familia, afectividad",
@@ -370,7 +361,7 @@ export default function ServiciosPage() {
                                     "Decisiones importantes y transiciones",
                                     "Éxito externo vs bienestar interno",
                                 ].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)", marginBottom: "0.75rem" }}>
+                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--foreground-muted)" }}>
                                         <span style={{ color: "var(--success)" }}><IconCheck /></span>
                                         {item}
                                     </li>
@@ -379,8 +370,8 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* Formato */}
-                        <div className="card" style={{ marginBottom: "1.5rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "2rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Formato
                             </h3>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
@@ -398,8 +389,8 @@ export default function ServiciosPage() {
                         </div>
 
                         {/* Beneficios */}
-                        <div className="card" style={{ marginBottom: "2rem" }}>
-                            <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
+                        <div className="card" style={{ marginBottom: "3rem" }}>
+                            <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--foreground-muted)" }}>
                                 Beneficios
                             </h3>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
@@ -435,25 +426,33 @@ export default function ServiciosPage() {
             <section
                 id="agendar"
                 style={{
-                    padding: "6rem 0",
-                    background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
+                    padding: "8rem 0",
+                    position: "relative",
+                    overflow: "hidden",
                     textAlign: "center",
                 }}
             >
-                <div className="container">
-                    <h2 style={{ fontSize: "2.5rem", fontWeight: 700, marginBottom: "1rem", color: "white" }}>
+                <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "radial-gradient(circle at center, rgba(91,141,239,0.15), transparent 70%)",
+                    zIndex: -1
+                }} />
+
+                <div className="container" style={{ position: "relative", zIndex: 1 }}>
+                    <h2 className="section-title">
                         ¿No estás seguro cuál ruta necesitas?
                     </h2>
-                    <p style={{ fontSize: "1.125rem", opacity: 0.9, marginBottom: "2rem", maxWidth: "600px", margin: "0 auto 2rem", color: "white" }}>
+                    <p className="section-subtitle" style={{ margin: "0 auto 2rem" }}>
                         Agenda y te recomiendo la mejor opción según tu momento.
                     </p>
                     <Link
                         href="mailto:contacto@mauromera.com"
-                        className="btn"
-                        style={{ background: "white", color: "var(--primary-dark)", fontSize: "1rem", padding: "1rem 2rem" }}
+                        className="btn btn-primary"
+                        style={{ padding: "1.25rem 2.5rem" }}
                     >
                         <IconCalendar />
-                        Agendar
+                        Agendar Diagnóstico
                     </Link>
                 </div>
             </section>

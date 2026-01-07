@@ -42,8 +42,8 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Instalar SOLO dependencias de producción
-RUN npm ci --omit=dev --workspace=@mauromera/api
+# Instalar SOLO dependencias de producción (workspaces instala todo en root node_modules)
+RUN npm ci --omit=dev
 
 # ==============================================================================
 # STAGE 4: Runner - Imagen de producción mínima
@@ -57,9 +57,8 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copiar solo las dependencias de producción
+# Copiar dependencias de producción (npm workspaces las pone en root node_modules)
 COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=prod-deps /app/apps/api/node_modules ./apps/api/node_modules
 
 # Copiar el código compilado
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist

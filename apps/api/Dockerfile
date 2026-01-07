@@ -43,14 +43,8 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Copiar el schema de Prisma para generar el client
-COPY apps/api/prisma ./apps/api/prisma
-
 # Instalar SOLO dependencias de producción (workspaces instala todo en root node_modules)
 RUN npm ci --omit=dev
-
-# Generar Prisma Client en producción también
-RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 
 # ==============================================================================
 # STAGE 4: Runner - Imagen de producción mínima
@@ -64,8 +58,12 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copiar dependencias de producción (npm workspaces las pone en root node_modules)
+# Copiar dependencias de producción
 COPY --from=prod-deps /app/node_modules ./node_modules
+
+# Copiar el Prisma Client generado desde el builder (está en node_modules)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Copiar el código compilado
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist

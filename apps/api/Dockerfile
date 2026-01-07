@@ -27,6 +27,9 @@ COPY . .
 
 ENV NODE_ENV=production
 
+# Generar Prisma Client ANTES del build
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+
 # Build con turbo
 RUN npx turbo run build --filter=@mauromera/api
 
@@ -40,8 +43,14 @@ COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
+# Copiar el schema de Prisma para generar el client
+COPY apps/api/prisma ./apps/api/prisma
+
 # Instalar SOLO dependencias de producción (workspaces instala todo en root node_modules)
 RUN npm ci --omit=dev
+
+# Generar Prisma Client en producción también
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 
 # ==============================================================================
 # STAGE 4: Runner - Imagen de producción mínima
@@ -62,14 +71,17 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./apps/api/
 
+# Copiar el schema de Prisma (necesario para migraciones en runtime si las usas)
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./apps/api/prisma
+
 USER nestjs
 
-EXPOSE 3000
+EXPOSE 3001
 
-ENV PORT=3000
+ENV PORT=3001
 
-# Healthcheck
+# Healthcheck - usando el puerto correcto 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
 
 CMD ["node", "apps/api/dist/main"]

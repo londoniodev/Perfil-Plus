@@ -1,11 +1,8 @@
 # ==============================================================================
 # STAGE 1: Dependencies - Instalar dependencias con cache optimizado
 # ==============================================================================
-FROM node:20-alpine AS deps
+FROM node:20-alpine3.18 AS deps
 WORKDIR /app
-
-# Instalar OpenSSL 1.1 para compatibilidad con Prisma
-RUN apk add --no-cache openssl1.1-compat
 
 # Copiar solo archivos de configuración de dependencias primero
 COPY package.json package-lock.json ./
@@ -19,11 +16,8 @@ RUN npm ci
 # ==============================================================================
 # STAGE 2: Builder - Compilar la aplicación
 # ==============================================================================
-FROM node:20-alpine AS builder
+FROM node:20-alpine3.18 AS builder
 WORKDIR /app
-
-# Instalar OpenSSL 1.1 para compatibilidad con Prisma
-RUN apk add --no-cache openssl1.1-compat
 
 # Copiar dependencias instaladas (npm workspaces las pone todas en root node_modules)
 COPY --from=deps /app/node_modules ./node_modules
@@ -42,7 +36,7 @@ RUN npx turbo run build --filter=@mauromera/api
 # ==============================================================================
 # STAGE 3: Production Dependencies - Solo dependencias de producción
 # ==============================================================================
-FROM node:20-alpine AS prod-deps
+FROM node:20-alpine3.18 AS prod-deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -55,13 +49,10 @@ RUN npm ci --omit=dev
 # ==============================================================================
 # STAGE 4: Runner - Imagen de producción mínima
 # ==============================================================================
-FROM node:20-alpine AS runner
+FROM node:20-alpine3.18 AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-
-# Instalar OpenSSL 1.1 para compatibilidad con Prisma en runtime
-RUN apk add --no-cache openssl1.1-compat
 
 # Crear usuario no-root por seguridad
 RUN addgroup --system --gid 1001 nodejs && \

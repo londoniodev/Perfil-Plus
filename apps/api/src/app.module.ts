@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth';
 import { UsersModule } from './modules/users';
 import { StorageModule } from './modules/storage';
 import { BlogModule } from './modules/blog';
+import { LmsModule } from './modules/lms';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -56,6 +57,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     UsersModule,
     StorageModule,
     BlogModule,
+    LmsModule,
   ],
   controllers: [AppController],
   providers: [

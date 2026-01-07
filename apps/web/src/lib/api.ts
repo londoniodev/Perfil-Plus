@@ -44,3 +44,24 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTags(): Promise<Tag[]> {
     return fetchAPI<Tag[]>('/blog/tags');
 }
+
+// ============ LMS ============
+import { Theme, Course, Lesson } from './lms-types';
+
+export async function getThemes(): Promise<Theme[]> {
+    return fetchAPI<Theme[]>('/lms/themes');
+}
+
+export async function getThemeBySlug(slug: string): Promise<Theme> {
+    return fetchAPI<Theme>(`/lms/themes/${slug}`);
+}
+
+export async function getCourseBySlug(slug: string): Promise<Course> {
+    return fetchAPI<Course>(`/lms/courses/${slug}`);
+}
+
+export async function getLessonBySlug(courseSlug: string, lessonSlug: string, token?: string): Promise<Lesson> {
+    const headers: any = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers });
+}

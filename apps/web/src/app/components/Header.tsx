@@ -166,6 +166,19 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
                 Portafolio
             </Link>
             <Link
+                href="/cursos"
+                onClick={onClick}
+                style={{
+                    color: "var(--foreground-muted)",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                }}
+                className="hover:text-white"
+            >
+                Cursos
+            </Link>
+            <Link
                 href="/blog"
                 onClick={onClick}
                 style={{

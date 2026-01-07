@@ -5,7 +5,7 @@ const areas = [
     {
         name: "Cultura Organizacional",
         description: "Alineación de valores, comportamientos y resultados de negocio.",
-        image: "/areas_impacto/cultura_organizacional.png",
+        image: "/areas_impacto/cultura_organizacional.avif",
         href: "/servicios#empresas",
         gradient: "linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, rgba(58, 98, 184, 0.1) 100%)",
         accentColor: "rgba(91, 141, 239, 0.8)",
@@ -13,7 +13,7 @@ const areas = [
     {
         name: "Liderazgo Consciente",
         description: "Desarrollo de líderes que inspiran y transforman equipos.",
-        image: "/areas_impacto/liderazgo_consciente.png",
+        image: "/areas_impacto/liderazgo_consciente.avif",
         href: "/servicios#empresas",
         gradient: "linear-gradient(135deg, rgba(232, 168, 56, 0.15) 0%, rgba(200, 140, 40, 0.1) 100%)",
         accentColor: "rgba(232, 168, 56, 0.8)",
@@ -21,7 +21,7 @@ const areas = [
     {
         name: "Orientación Vocacional",
         description: "Claridad para decisiones de carrera sin ansiedad.",
-        image: "/areas_impacto/orientacion_vocacional.png",
+        image: "/areas_impacto/orientacion_vocacional.avif",
         href: "/servicios#explora",
         gradient: "linear-gradient(135deg, rgba(56, 189, 189, 0.15) 0%, rgba(40, 150, 150, 0.1) 100%)",
         accentColor: "rgba(56, 189, 189, 0.8)",
@@ -29,7 +29,7 @@ const areas = [
     {
         name: "Psicoterapia Clínica",
         description: "Espacio seguro para sanar y ordenar el mundo interno.",
-        image: "/areas_impacto/psicoterapia_clinica.png",
+        image: "/areas_impacto/psicoterapia_clinica.avif",
         href: "/servicios#psicoterapia",
         gradient: "linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(56, 142, 60, 0.1) 100%)",
         accentColor: "rgba(76, 175, 80, 0.8)",
@@ -37,7 +37,7 @@ const areas = [
     {
         name: "Talleres Experienciales",
         description: "Aprendizaje que se vive, no solo se entiende.",
-        image: "/areas_impacto/talleres_experienciales.png",
+        image: "/areas_impacto/talleres_experienciales.avif",
         href: "/servicios#empresas",
         gradient: "linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(123, 31, 162, 0.1) 100%)",
         accentColor: "rgba(156, 39, 176, 0.8)",
@@ -110,7 +110,6 @@ export function AreasImpactoSection() {
                                     alt={item.name}
                                     fill
                                     style={{ objectFit: "cover" }}
-                                    unoptimized
                                 />
                             </div>
 

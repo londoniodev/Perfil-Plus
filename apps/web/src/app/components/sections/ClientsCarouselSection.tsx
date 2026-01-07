@@ -76,7 +76,6 @@ export function ClientsCarouselSection() {
                                 alt={logo.alt}
                                 width={200}
                                 height={80}
-                                unoptimized
                                 className="carousel-logo"
                                 style={{
                                     objectFit: "contain",

@@ -5,7 +5,7 @@ const steps = [
         num: "01",
         title: "Diagnóstico",
         description: "Entendemos el contexto, los desafíos y las oportunidades reales antes de actuar.",
-        image: "/proceso/diagnostico.png",
+        image: "/proceso/diagnostico.avif",
         accentColor: "rgba(91, 141, 239, 0.8)",
         gradient: "linear-gradient(135deg, rgba(91, 141, 239, 0.2) 0%, rgba(58, 98, 184, 0.1) 100%)",
     },
@@ -13,7 +13,7 @@ const steps = [
         num: "02",
         title: "Diseño",
         description: "Creamos una ruta clara con metodología, tiempos y objetivos medibles.",
-        image: "/proceso/diseno.png",
+        image: "/proceso/diseno.avif",
         accentColor: "rgba(232, 168, 56, 0.8)",
         gradient: "linear-gradient(135deg, rgba(232, 168, 56, 0.2) 0%, rgba(200, 140, 40, 0.1) 100%)",
     },
@@ -21,7 +21,7 @@ const steps = [
         num: "03",
         title: "Acción",
         description: "Ejecutamos el plan en la realidad con acompañamiento continuo.",
-        image: "/proceso/accion.png",
+        image: "/proceso/accion.avif",
         accentColor: "rgba(255, 193, 7, 0.8)",
         gradient: "linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(200, 150, 5, 0.1) 100%)",
     },
@@ -29,7 +29,7 @@ const steps = [
         num: "04",
         title: "Medición",
         description: "Evaluamos resultados, ajustamos y consolidamos los aprendizajes.",
-        image: "/proceso/medicion.png",
+        image: "/proceso/medicion.avif",
         accentColor: "rgba(76, 175, 80, 0.8)",
         gradient: "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(56, 142, 60, 0.1) 100%)",
     },
@@ -84,7 +84,6 @@ export function MetodoSection() {
                                     alt={step.title}
                                     fill
                                     style={{ objectFit: "cover" }}
-                                    unoptimized
                                 />
                             </div>
 

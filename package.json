@@ -9,7 +9,9 @@
   },
   "devDependencies": {
     "prettier": "^3.0.0",
-    "turbo": "latest"
+    "turbo": "latest",
+    "prisma": "5.22.0",
+    "@prisma/client": "5.22.0"
   },
   "workspaces": [
     "apps/*",

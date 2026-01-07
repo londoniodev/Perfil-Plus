@@ -27,9 +27,9 @@ COPY . .
 
 ENV NODE_ENV=production
 
-# Verificar versión de prisma instalada y generar client usando binario local
-RUN ./node_modules/.bin/prisma --version && \
-    ./node_modules/.bin/prisma generate --schema=apps/api/prisma/schema.prisma
+# Verificar versión de prisma y generar client usando npm exec (respeta workspaces)
+RUN npm exec -- prisma --version && \
+    npm exec -- prisma generate --schema=apps/api/prisma/schema.prisma
 
 # Build con turbo
 RUN npx turbo run build --filter=@mauromera/api

@@ -319,17 +319,19 @@ h6 {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
 
-  /* Typography scaling for mobile */
+  /* Typography scaling for mobile - NO HYPHENS to avoid ugly breaks */
   .section-title {
     font-size: 1.75rem;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
+    word-wrap: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+    text-align: center;
   }
 
   .section-subtitle {
     font-size: 1rem;
-    padding: 0 0.5rem;
+    padding: 0;
+    text-align: center;
   }
 
   .container {
@@ -342,21 +344,6 @@ h6 {
     padding: 3rem 0;
   }
 
-  /* Ensure all text wraps properly */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p,
-  span,
-  a {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
-
   /* Force grids to single column */
   div[style*="grid-template-columns: repeat(3, 1fr)"],
   div[style*="grid-template-columns: repeat(2, 1fr)"],
@@ -367,24 +354,46 @@ h6 {
     gap: 2rem !important;
   }
 
-  /* Adjust Hero layouts - override 15% padding on mobile */
+  /* Hero section mobile adjustments */
   section[style*="min-height: 100vh"] {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    text-align: center;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-top: 100px !important;
+    min-height: auto !important;
+    padding-bottom: 2rem !important;
   }
 
   section[style*="min-height: 100vh"] .grid-responsive-hero {
     gap: 2rem !important;
   }
 
-  /* Make buttons stack on mobile, EXCLUDING filter buttons which should flow */
-  div[style*="display: flex"][style*="gap: 1rem"]:not(.filter-container) {
+  /* Hero title specific - smaller on mobile */
+  section[style*="min-height: 100vh"] h1 {
+    font-size: 2rem !important;
+    text-align: center;
+    hyphens: none !important;
+  }
+
+  /* Hero buttons - keep them inline/row on mobile */
+  section[style*="min-height: 100vh"] div[style*="display: flex"][style*="gap: 1rem"] {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+
+  section[style*="min-height: 100vh"] .btn {
+    width: auto !important;
+    flex: 0 1 auto;
+  }
+
+  /* Other buttons still stack */
+  .section div[style*="display: flex"][style*="gap: 1rem"]:not(.filter-container) {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .btn:not(.btn-filter) {
+  .section .btn:not(.btn-filter) {
     width: 100%;
     justify-content: center;
   }
@@ -395,7 +404,8 @@ h6 {
   }
 
   .card[style*="width: 400px"],
-  .card[style*="width: 380px"] {
+  .card[style*="width: 380px"],
+  .card[style*="maxWidth: 400px"] {
     width: 100% !important;
     max-width: 100% !important;
   }

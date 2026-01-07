@@ -649,3 +649,18 @@ h6 {
 .area-card:hover .area-card-bg {
   opacity: 0.5 !important;
 }
+
+/* ===== Proceso Cards ===== */
+.proceso-card {
+  cursor: default;
+}
+
+.proceso-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.proceso-card:hover .proceso-card-bg {
+  opacity: 0.4 !important;
+}

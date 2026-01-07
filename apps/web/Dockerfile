@@ -29,6 +29,9 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 
+# Cache bust - cambiar este valor fuerza rebuild del código
+ARG CACHEBUST=1
+
 # Copiar el código fuente
 COPY . .
 

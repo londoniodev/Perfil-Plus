@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Original client logos (use optimized WebP versions instead)
+/public/clients_logo/

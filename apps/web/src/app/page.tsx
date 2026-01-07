@@ -1,5 +1,6 @@
 ﻿import {
   HeroSection,
+  ClientsCarouselSection,
   AreasImpactoSection,
   AboutSection,
   PropuestaSection,
@@ -13,6 +14,7 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <ClientsCarouselSection />
       <AreasImpactoSection />
       <AboutSection />
       <PropuestaSection />

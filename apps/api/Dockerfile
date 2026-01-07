@@ -4,6 +4,9 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+# Instalar OpenSSL 1.1 para compatibilidad con Prisma
+RUN apk add --no-cache openssl1.1-compat
+
 # Copiar solo archivos de configuración de dependencias primero
 COPY package.json package-lock.json ./
 COPY turbo.json ./
@@ -19,6 +22,9 @@ RUN npm ci
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Instalar OpenSSL 1.1 para compatibilidad con Prisma
+RUN apk add --no-cache openssl1.1-compat
+
 # Copiar dependencias instaladas (npm workspaces las pone todas en root node_modules)
 COPY --from=deps /app/node_modules ./node_modules
 
@@ -27,9 +33,8 @@ COPY . .
 
 ENV NODE_ENV=production
 
-# Verificar versión de prisma y generar client usando npm exec (respeta workspaces)
-RUN npm exec -- prisma --version && \
-    npm exec -- prisma generate --schema=apps/api/prisma/schema.prisma
+# Generar Prisma Client
+RUN npm exec -- prisma generate --schema=apps/api/prisma/schema.prisma
 
 # Build con turbo
 RUN npx turbo run build --filter=@mauromera/api
@@ -54,6 +59,9 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# Instalar OpenSSL 1.1 para compatibilidad con Prisma en runtime
+RUN apk add --no-cache openssl1.1-compat
 
 # Crear usuario no-root por seguridad
 RUN addgroup --system --gid 1001 nodejs && \

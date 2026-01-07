@@ -73,18 +73,20 @@ function Footer() {
             gap: "4rem",
             marginBottom: "4rem",
           }}
-          className="footer-grid" /* Hook for CSS media query if needed, but inline style adjustment is direct */
+          className="footer-grid"
         >
-          <div style={{ minWidth: "280px" }}> {/* Ensure Branding stays full width on very small screens or first col */}
-            <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.25rem", fontFamily: "var(--font-serif)" }}>
-              Mauro Mera
-            </h3>
+          <div style={{ minWidth: "280px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+              <img src="/logo.svg" alt="Mauro Mera Logo" style={{ width: "32px", height: "32px" }} />
+              <h3 style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "var(--font-serif)", margin: 0 }}>
+                Mauro Mera
+              </h3>
+            </div>
             <p style={{ color: "var(--foreground-muted)", fontSize: "1rem", lineHeight: 1.7, maxWidth: "300px" }}>
               Transformar el mundo empieza por cuidar el mundo interno.
             </p>
           </div>
 
-          {/* Group Links and Legal in a nested grid for mobile compactness */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", minWidth: "280px" }}>
             <div>
               <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
@@ -121,21 +123,6 @@ function Footer() {
                 </Link>
               </nav>
             </div>
-          </div>
-
-          {/* Disclaimer takes full width in the grid flow or its own col */}
-          <div
-            style={{
-              padding: "1.25rem",
-              background: "rgba(255, 255, 255, 0.03)",
-              borderRadius: "0.75rem",
-              border: "1px solid var(--border)",
-              height: "fit-content"
-            }}
-          >
-            <p style={{ color: "var(--foreground-muted)", fontSize: "0.85rem", lineHeight: 1.6 }}>
-              Si estás en una emergencia o riesgo, busca ayuda inmediata en tu línea local de emergencias.
-            </p>
           </div>
         </div>
 

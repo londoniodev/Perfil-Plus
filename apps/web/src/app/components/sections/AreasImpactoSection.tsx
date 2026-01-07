@@ -72,9 +72,9 @@ export function AreasImpactoSection() {
                 <div
                     style={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
                         gap: "1.5rem",
-                        maxWidth: "1200px",
+                        maxWidth: "1400px",
                         margin: "0 auto",
                     }}
                 >
@@ -163,6 +163,6 @@ export function AreasImpactoSection() {
                     ))}
                 </div>
             </div>
-        </section>
+        </section >
     );
 }

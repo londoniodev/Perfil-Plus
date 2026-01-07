@@ -646,8 +646,23 @@ h6 {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-.area-card:hover .area-card-bg {
-  opacity: 0.5 !important;
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.floating-icon {
+  animation: float 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(91, 141, 239, 0.6)) drop-shadow(0 0 30px rgba(91, 141, 239, 0.4));
 }
 
 /* ===== Proceso Cards ===== */

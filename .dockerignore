@@ -29,7 +29,9 @@ coverage
 **/*.test.ts
 
 # Environment files (handled separately)
+.env
 .env*.local
+.env.example
 
 # OS files
 .DS_Store
@@ -41,3 +43,6 @@ Thumbs.db
 
 # Misc
 *.tsbuildinfo
+
+# Prisma (keep schema but ignore local migrations backups)
+**/prisma/migrations/*.sql.backup

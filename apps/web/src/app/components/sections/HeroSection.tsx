@@ -91,6 +91,24 @@ export function HeroSection() {
                             display: "block",
                         }}
                     />
+
+                    {/* Floating Icons */}
+                    {/* Psychology - Top Left */}
+                    <div style={{ position: "absolute", top: "20%", left: "-5%", zIndex: 3, width: "80px", height: "80px", animationDelay: "0s" }} className="floating-icon">
+                        <Image src="/hero_icons/psychology.avif" alt="Psicología" width={80} height={80} style={{ objectFit: "contain" }} />
+                    </div>
+                    {/* Mentorship - Top Right */}
+                    <div style={{ position: "absolute", top: "15%", right: "10%", zIndex: 3, width: "70px", height: "70px", animationDelay: "2s" }} className="floating-icon">
+                        <Image src="/hero_icons/mentorship.avif" alt="Mentoría" width={70} height={70} style={{ objectFit: "contain" }} />
+                    </div>
+                    {/* Leadership - Bottom Left */}
+                    <div style={{ position: "absolute", bottom: "30%", left: "0%", zIndex: 3, width: "75px", height: "75px", animationDelay: "4s" }} className="floating-icon">
+                        <Image src="/hero_icons/leadership.avif" alt="Liderazgo" width={75} height={75} style={{ objectFit: "contain" }} />
+                    </div>
+                    {/* Technology - Bottom Right */}
+                    <div style={{ position: "absolute", bottom: "40%", right: "0%", zIndex: 3, width: "85px", height: "85px", animationDelay: "1s" }} className="floating-icon">
+                        <Image src="/hero_icons/technology.avif" alt="Tecnología" width={85} height={85} style={{ objectFit: "contain" }} />
+                    </div>
                 </div>
             </div>
         </section>

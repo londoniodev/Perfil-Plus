@@ -13,6 +13,7 @@ import { StorageModule } from './modules/storage';
 import { BlogModule } from './modules/blog';
 import { LmsModule } from './modules/lms';
 import { PaymentsModule } from './modules/payments';
+import { EbooksModule } from './modules/ebooks';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -60,6 +61,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     BlogModule,
     LmsModule,
     PaymentsModule,
+    EbooksModule,
   ],
   controllers: [AppController],
   providers: [

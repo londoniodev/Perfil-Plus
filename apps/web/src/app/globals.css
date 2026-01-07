@@ -511,7 +511,7 @@ h6 {
 .carousel-track {
   display: flex;
   gap: 4rem;
-  animation: scroll-left 35s linear infinite;
+  animation: scroll-left 45s linear infinite;
   width: max-content;
 }
 
@@ -528,13 +528,13 @@ h6 {
 }
 
 .carousel-logo {
-  filter: brightness(0.8);
+  filter: brightness(0.8) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
   opacity: 0.7;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .carousel-logo:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.2) drop-shadow(0 8px 20px rgba(91, 141, 239, 0.3));
   opacity: 1;
   transform: scale(1.15);
 }
@@ -633,4 +633,19 @@ h6 {
   .hero-image {
     max-height: 400px;
   }
+}
+
+/* ===== Area Cards ===== */
+.area-card {
+  cursor: pointer;
+}
+
+.area-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.area-card:hover .area-card-bg {
+  opacity: 0.5 !important;
 }

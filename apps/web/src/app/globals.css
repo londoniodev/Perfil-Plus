@@ -367,9 +367,14 @@ h6 {
     gap: 2rem !important;
   }
 
-  /* Adjust Hero layouts */
-  section[style*="min-height: 90vh"] .container {
+  /* Adjust Hero layouts - override 15% padding on mobile */
+  section[style*="min-height: 100vh"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
     text-align: center;
+  }
+
+  section[style*="min-height: 100vh"] .grid-responsive-hero {
     gap: 2rem !important;
   }
 

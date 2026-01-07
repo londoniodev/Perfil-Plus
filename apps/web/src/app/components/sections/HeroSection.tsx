@@ -4,20 +4,25 @@ import { IconCalendar, IconArrowRight } from "../icons";
 export function HeroSection() {
     return (
         <section
-            className="section"
             style={{
-                minHeight: "90vh",
+                minHeight: "100vh",
                 display: "flex",
                 alignItems: "center",
-                paddingTop: "120px",
+                paddingTop: "80px", // Account for fixed header
+                paddingLeft: "15%",
+                paddingRight: "15%",
+                boxSizing: "border-box",
             }}
         >
-            <div className="container grid-responsive-hero">
+            <div
+                className="grid-responsive-hero"
+                style={{ width: "100%" }}
+            >
                 <div className="animate-reveal">
                     <h1
                         className="section-title"
                         style={{
-                            fontSize: "4rem",
+                            fontSize: "clamp(2.5rem, 5vw, 4rem)",
                             marginBottom: "1.5rem",
                         }}
                     >
@@ -65,8 +70,9 @@ export function HeroSection() {
                     <div
                         className="card glow-hover"
                         style={{
-                            width: "400px",
-                            height: "500px",
+                            width: "100%",
+                            maxWidth: "400px",
+                            aspectRatio: "4/5",
                             padding: "0",
                             display: "flex",
                             alignItems: "center",

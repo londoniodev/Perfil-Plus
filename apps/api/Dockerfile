@@ -27,8 +27,9 @@ COPY . .
 
 ENV NODE_ENV=production
 
-# Generar Prisma Client ANTES del build
-RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+# Verificar versión de prisma instalada y generar client usando binario local
+RUN ./node_modules/.bin/prisma --version && \
+    ./node_modules/.bin/prisma generate --schema=apps/api/prisma/schema.prisma
 
 # Build con turbo
 RUN npx turbo run build --filter=@mauromera/api

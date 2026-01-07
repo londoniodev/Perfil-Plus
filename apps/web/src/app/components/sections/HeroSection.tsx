@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { IconCalendar, IconArrowRight } from "../icons";
 
 export function HeroSection() {
@@ -7,16 +8,21 @@ export function HeroSection() {
             style={{
                 minHeight: "100vh",
                 display: "flex",
-                alignItems: "center",
-                paddingTop: "80px", // Account for fixed header
+                alignItems: "stretch",
+                paddingTop: "80px",
                 paddingLeft: "15%",
-                paddingRight: "15%",
+                paddingRight: "0",
+                paddingBottom: "0",
                 boxSizing: "border-box",
+                overflow: "hidden",
             }}
         >
             <div
                 className="grid-responsive-hero"
-                style={{ width: "100%" }}
+                style={{
+                    width: "100%",
+                    alignItems: "center", // Text centered vertically
+                }}
             >
                 <div className="animate-reveal">
                     <h1
@@ -38,7 +44,7 @@ export function HeroSection() {
                         resultados sostenibles, con procesos profundos y aplicables a la vida real.
                     </p>
 
-                    <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem" }}>
+                    <div style={{ display: "flex", gap: "1rem" }}>
                         <Link
                             href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20agendar%20una%20sesión."
                             target="_blank"
@@ -53,38 +59,38 @@ export function HeroSection() {
                             <IconArrowRight />
                         </Link>
                     </div>
-
-                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", fontFamily: "var(--font-mono)" }}>
-                        +10 años acompañando procesos de cambio.
-                    </p>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
-                    <div style={{
-                        position: "absolute",
-                        inset: "-20px",
-                        background: "radial-gradient(circle, rgba(91,141,239,0.2) 0%, transparent 70%)",
-                        filter: "blur(40px)",
-                        zIndex: -1
-                    }} />
-                    <div
-                        className="card glow-hover"
+                <div
+                    className="hero-image-container"
+                    style={{
+                        alignSelf: "end",
+                        marginBottom: "0",
+                        paddingRight: "10%",
+                    }}
+                >
+                    {/* Animated aura layers */}
+                    <div className="hero-aura hero-aura-1" />
+                    <div className="hero-aura hero-aura-2" />
+                    <div className="hero-aura hero-aura-3" />
+
+                    {/* Main image - 15% larger */}
+                    <Image
+                        src="/mauro_hero.png"
+                        alt="Mauro Mera - Psicólogo y Coach"
+                        width={575}
+                        height={805}
+                        priority
+                        className="hero-image"
                         style={{
-                            width: "100%",
-                            maxWidth: "400px",
-                            aspectRatio: "4/5",
-                            padding: "0",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "var(--foreground-muted)",
-                            fontSize: "1rem",
-                            overflow: "hidden"
+                            objectFit: "contain",
+                            objectPosition: "bottom",
+                            position: "relative",
+                            zIndex: 2,
+                            maxHeight: "calc(100vh - 80px)",
+                            display: "block",
                         }}
-                    >
-                        <div className="grid-pattern" style={{ width: "100%", height: "100%", opacity: 0.5 }}></div>
-                        <span style={{ position: "absolute" }}>Foto de Mauro</span>
-                    </div>
+                    />
                 </div>
             </div>
         </section>

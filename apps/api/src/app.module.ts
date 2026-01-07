@@ -10,6 +10,7 @@ import { PrismaModule } from './prisma';
 import { AuthModule } from './modules/auth';
 import { UsersModule } from './modules/users';
 import { StorageModule } from './modules/storage';
+import { BlogModule } from './modules/blog';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -54,6 +55,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     AuthModule,
     UsersModule,
     StorageModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [

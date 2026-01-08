@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../admin.module.css";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,12 +37,15 @@ export default function AdminLoginPage() {
       localStorage.setItem("refreshToken", data.refreshToken);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Verificar que sea admin
-      if (data.user.role !== "ADMIN") {
-        throw new Error("No tienes permisos de administrador");
+      // Redireccionar
+      const redirect = searchParams.get("redirect");
+      if (redirect) {
+        router.push(redirect);
+      } else if (data.user.role === "ADMIN") {
+        router.push("/admin/blog");
+      } else {
+        router.push("/cursos");
       }
-
-      router.push("/admin/blog");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -52,8 +56,8 @@ export default function AdminLoginPage() {
   return (
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
-        <h1>Admin</h1>
-        <p>Inicia sesión para administrar el contenido</p>
+        <h1>Iniciar Sesión</h1>
+        <p>Bienvenido de nuevo</p>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>

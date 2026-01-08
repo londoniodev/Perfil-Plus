@@ -205,20 +205,16 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
                 Servicios
             </Link>
             <Link
-                href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20gustaría%20agendar%20un%20diagnóstico."
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/admin/login"
                 onClick={onClick}
                 className="btn btn-primary"
                 style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
             >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                 </svg>
-                Agendar
+                Iniciar sesión
             </Link>
         </>
     );

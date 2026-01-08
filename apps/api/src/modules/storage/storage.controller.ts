@@ -82,7 +82,7 @@ export class StorageController {
         )
         file: Express.Multer.File,
     ) {
-        return this.storageService.uploadFile(file, 'ebooks');
+        return this.storageService.uploadFile(file, 'ebooks', true);
     }
 
     @Delete(':key')

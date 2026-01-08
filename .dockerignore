@@ -6,6 +6,8 @@ node_modules
 .next
 **/dist
 **/.turbo
+build/
+out/
 
 # Version control
 .git
@@ -28,10 +30,10 @@ coverage
 **/*.spec.ts
 **/*.test.ts
 
-# Environment files (handled separately)
+# Environment files (handled explicitly or via secrets)
 .env
-.env*.local
-.env.example
+.env*
+!.env.example
 
 # OS files
 .DS_Store
@@ -43,6 +45,11 @@ Thumbs.db
 
 # Misc
 *.tsbuildinfo
+*.pem
 
-# Prisma (keep schema but ignore local migrations backups)
+# Prisma
 **/prisma/migrations/*.sql.backup
+
+# Docker local data
+postgres_data/
+minio_data/

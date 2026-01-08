@@ -10,7 +10,7 @@ export class CreateEbookDto {
     @IsUrl()
     coverImage: string;
 
-    @IsUrl()
+    @IsString()
     fileUrl: string;
 
     @IsNumber()
@@ -36,7 +36,7 @@ export class UpdateEbookDto {
     coverImage?: string;
 
     @IsOptional()
-    @IsUrl()
+    @IsString()
     fileUrl?: string;
 
     @IsOptional()

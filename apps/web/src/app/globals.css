@@ -703,6 +703,8 @@ h6 {
 .hero-buttons {
   display: flex;
   gap: 1rem;
+  margin-top: 3rem;
+  /* Added margin for better visual separation */
 }
 
 .hero-image-container {

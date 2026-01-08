@@ -1,25 +1,13 @@
 import Link from "next/link";
 import { IconArrowRight } from "../icons";
 
+import ProfileCarousel from "../ProfileCarousel";
+
 export function AboutSection() {
     return (
         <section className="section" id="sobre-mi">
             <div className="container grid-responsive-profile">
-                <div
-                    className="card"
-                    style={{
-                        width: "100%",
-                        aspectRatio: "1",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "var(--foreground-muted)",
-                        position: "relative"
-                    }}
-                >
-                    <div className="grid-pattern" style={{ position: "absolute", inset: 0, opacity: 0.3 }}></div>
-                    Foto de Mauro
-                </div>
+                <ProfileCarousel />
 
                 <div>
                     <h2 className="section-title">Soy Mauro Mera</h2>

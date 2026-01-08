@@ -727,9 +727,9 @@ h6 {
 
 /* Floating Icons Positioning */
 .floating-icon {
-    position: absolute;
-    z-index: 3;
-    animation: float 6s ease-in-out infinite;
+  position: absolute;
+  z-index: 3;
+  animation: float 6s ease-in-out infinite;
 }
 
 .icon-psychology {
@@ -766,29 +766,110 @@ h6 {
 
 /* Large Screens (Desktops) */
 @media (min-width: 1440px) {
-    .hero-section {
-        padding-left: 10%;
-        padding-right: 5%;
-    }
+  .hero-section {
+    padding-left: 10%;
+    padding-right: 5%;
+  }
 }
 
 /* Laptop Adjustments */
 @media (min-width: 1024px) and (max-width: 1439px) {
-    .grid-responsive-hero {
-        grid-template-columns: 1fr 1fr; /* Balance columns */
-        gap: 2rem;
-    }
-    
-    .hero-title {
-        font-size: 2.75rem; /* Fix font size preventing overflow */
-    }
-    
-    .hero-section {
-        padding-left: 3rem;
-        padding-right: 3rem;
-    }
-    
-    .hero-image {
-        max-height: 80vh; /* Reduce image height slightly to fit */
-    }
+  .grid-responsive-hero {
+    grid-template-columns: 1fr 1fr;
+    /* Balance columns */
+    gap: 2rem;
+  }
+
+  .hero-title {
+    font-size: 2.75rem;
+    /* Fix font size preventing overflow */
+  }
+
+  .hero-section {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+
+
+  .hero-image {
+    max-height: 80vh;
+    /* Reduce image height slightly to fit */
+  }
+}
+
+/* ===== Profile Carousel ===== */
+.profile-carousel-container {
+  width: 100%;
+  height: 500px;
+  /* Adjust height as needed */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.profile-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(91, 141, 239, 0.3) 0%, transparent 70%);
+  filter: blur(40px);
+  z-index: 0;
+  animation: aura-pulse 4s ease-in-out infinite;
+}
+
+.profile-image-wrapper {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  transition: all 0.5s ease-in-out;
+}
+
+.profile-image-img {
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(0 0 20px rgba(91, 141, 239, 0.4));
+}
+
+.profile-image-wrapper.inactive {
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  /* The hidden/outgoing images stay back */
+}
+
+.profile-image-wrapper.active {
+  z-index: 10;
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  /* Animation to simulate coming from behind */
+  animation: char-select-enter 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes char-select-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(50px);
+    z-index: 5;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    z-index: 10;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-carousel-container {
+    height: 400px;
+  }
 }

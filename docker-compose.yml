@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-mauroweb}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./docker_data/postgres:/var/lib/postgresql/data
     networks:
       - mauro-network
     healthcheck:
@@ -28,7 +28,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     volumes:
-      - minio_data:/data
+      - ./docker_data/minio:/data
     networks:
       - mauro-network
     ports:
@@ -116,6 +116,3 @@ networks:
   mauro-network:
     driver: bridge
 
-volumes:
-  postgres_data:
-  minio_data:

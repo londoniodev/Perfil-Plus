@@ -4,47 +4,20 @@ import { IconCalendar, IconArrowRight } from "../icons";
 
 export function HeroSection() {
     return (
-        <section
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "stretch",
-                paddingTop: "80px",
-                paddingLeft: "15%",
-                paddingRight: "0",
-                paddingBottom: "0",
-                boxSizing: "border-box",
-                overflow: "hidden",
-            }}
-        >
-            <div
-                className="grid-responsive-hero"
-                style={{
-                    width: "100%",
-                    alignItems: "center", // Text centered vertically
-                }}
-            >
+        <section className="hero-section">
+            <div className="grid-responsive-hero">
                 <div className="animate-reveal">
-                    <h1
-                        className="section-title"
-                        style={{
-                            fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                            marginBottom: "1.5rem",
-                        }}
-                    >
+                    <h1 className="section-title hero-title">
                         Psicología, experiencias y tecnología para transformar <br />
                         <span className="gradient-text">decisiones y cultura.</span>
                     </h1>
 
-                    <p
-                        className="section-subtitle"
-                        style={{ marginBottom: "3rem" }}
-                    >
+                    <p className="section-subtitle mb-8">
                         Acompaño a personas, equipos y organizaciones a construir claridad interna y
                         resultados sostenibles, con procesos profundos y aplicables a la vida real.
                     </p>
 
-                    <div style={{ display: "flex", gap: "1rem" }}>
+                    <div className="hero-buttons">
                         <Link
                             href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20agendar%20una%20sesión."
                             target="_blank"
@@ -61,14 +34,7 @@ export function HeroSection() {
                     </div>
                 </div>
 
-                <div
-                    className="hero-image-container"
-                    style={{
-                        alignSelf: "end",
-                        marginBottom: "0",
-                        paddingRight: "10%",
-                    }}
-                >
+                <div className="hero-image-container">
                     {/* Animated aura layers */}
                     <div className="hero-aura hero-aura-1" />
                     <div className="hero-aura hero-aura-2" />
@@ -82,31 +48,23 @@ export function HeroSection() {
                         height={805}
                         priority
                         className="hero-image"
-                        style={{
-                            objectFit: "contain",
-                            objectPosition: "bottom",
-                            position: "relative",
-                            zIndex: 2,
-                            maxHeight: "calc(100vh - 80px)",
-                            display: "block",
-                        }}
                     />
 
                     {/* Floating Icons */}
                     {/* Psychology - Top Left */}
-                    <div style={{ position: "absolute", top: "20%", left: "-5%", zIndex: 3, width: "80px", height: "80px", animationDelay: "0s" }} className="floating-icon">
+                    <div className="floating-icon icon-psychology">
                         <Image src="/hero_icons/psychology.avif" alt="Psicología" width={80} height={80} style={{ objectFit: "contain" }} />
                     </div>
                     {/* Mentorship - Top Right */}
-                    <div style={{ position: "absolute", top: "15%", right: "10%", zIndex: 3, width: "70px", height: "70px", animationDelay: "2s" }} className="floating-icon">
+                    <div className="floating-icon icon-mentorship">
                         <Image src="/hero_icons/mentorship.avif" alt="Mentoría" width={70} height={70} style={{ objectFit: "contain" }} />
                     </div>
                     {/* Leadership - Bottom Left */}
-                    <div style={{ position: "absolute", bottom: "30%", left: "0%", zIndex: 3, width: "75px", height: "75px", animationDelay: "4s" }} className="floating-icon">
+                    <div className="floating-icon icon-leadership">
                         <Image src="/hero_icons/leadership.avif" alt="Liderazgo" width={75} height={75} style={{ objectFit: "contain" }} />
                     </div>
                     {/* Technology - Bottom Right */}
-                    <div style={{ position: "absolute", bottom: "40%", right: "0%", zIndex: 3, width: "85px", height: "85px", animationDelay: "1s" }} className="floating-icon">
+                    <div className="floating-icon icon-technology">
                         <Image src="/hero_icons/technology.avif" alt="Tecnología" width={85} height={85} style={{ objectFit: "contain" }} />
                     </div>
                 </div>

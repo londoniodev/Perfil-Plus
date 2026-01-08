@@ -679,3 +679,116 @@ h6 {
 .proceso-card:hover .proceso-card-bg {
   opacity: 0.4 !important;
 }
+
+/* ===== Hero Section Refactor ===== */
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  padding-top: 80px;
+  padding-left: 5%;
+  padding-right: 5%;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-title {
+  /* Adjusted clamp for better fit on laptops */
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.hero-image-container {
+  align-self: end;
+  margin-bottom: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  align-items: flex-end;
+}
+
+.hero-image {
+  object-fit: contain;
+  object-position: bottom;
+  position: relative;
+  z-index: 2;
+  max-height: calc(100vh - 80px);
+  display: block;
+  width: auto;
+}
+
+/* Floating Icons Positioning */
+.floating-icon {
+    position: absolute;
+    z-index: 3;
+    animation: float 6s ease-in-out infinite;
+}
+
+.icon-psychology {
+  top: 20%;
+  left: -5%;
+  width: 80px;
+  height: 80px;
+  animation-delay: 0s;
+}
+
+.icon-mentorship {
+  top: 15%;
+  right: 10%;
+  width: 70px;
+  height: 70px;
+  animation-delay: 2s;
+}
+
+.icon-leadership {
+  bottom: 30%;
+  left: 0%;
+  width: 75px;
+  height: 75px;
+  animation-delay: 4s;
+}
+
+.icon-technology {
+  bottom: 40%;
+  right: 0%;
+  width: 85px;
+  height: 85px;
+  animation-delay: 1s;
+}
+
+/* Large Screens (Desktops) */
+@media (min-width: 1440px) {
+    .hero-section {
+        padding-left: 10%;
+        padding-right: 5%;
+    }
+}
+
+/* Laptop Adjustments */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .grid-responsive-hero {
+        grid-template-columns: 1fr 1fr; /* Balance columns */
+        gap: 2rem;
+    }
+    
+    .hero-title {
+        font-size: 2.75rem; /* Fix font size preventing overflow */
+    }
+    
+    .hero-section {
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+    
+    .hero-image {
+        max-height: 80vh; /* Reduce image height slightly to fit */
+    }
+}

@@ -73,28 +73,9 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 # Copiar el Prisma Client generado desde el builder (copia dereferenciada)
 COPY --from=builder /app/prisma-generated ./node_modules/@prisma/client
 
-# Copiar Prisma CLI y engines desde deps (necesario para db push en runtime)
-COPY --from=deps /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
-
 # Copiar el código compilado
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./apps/api/
-
-# Copiar el schema de Prisma (necesario para migraciones en runtime)
-COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./apps/api/prisma
-
-# Crear script de inicio que ejecuta migraciones y luego arranca la app
-RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'set -e' >> /app/start.sh && \
-    echo 'echo "🔄 Syncing database schema..."' >> /app/start.sh && \
-    echo './node_modules/.bin/prisma db push --schema=apps/api/prisma/schema.prisma --accept-data-loss --skip-generate' >> /app/start.sh && \
-    echo 'echo "✅ Schema sync completed"' >> /app/start.sh && \
-    echo 'echo "🚀 Starting server..."' >> /app/start.sh && \
-    echo 'exec node apps/api/dist/main' >> /app/start.sh && \
-    chmod +x /app/start.sh && \
-    chown nestjs:nodejs /app/start.sh
 
 USER nestjs
 
@@ -102,8 +83,8 @@ EXPOSE 3001
 
 ENV PORT=3001
 
-# Healthcheck - usando el puerto correcto 3001
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
 
-CMD ["/app/start.sh"]
+CMD ["node", "apps/api/dist/main"]

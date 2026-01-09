@@ -118,7 +118,7 @@ function Footer() {
                 Legal
               </h4>
               <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <Link href="/privacidad" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
+                <Link href="/politica-de-privacidad" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
                   Política de privacidad
                 </Link>
               </nav>

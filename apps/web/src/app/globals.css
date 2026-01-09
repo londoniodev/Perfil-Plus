@@ -800,15 +800,18 @@ h6 {
 }
 
 /* ===== Profile Carousel ===== */
+/* ===== Profile Carousel ===== */
 .profile-carousel-container {
   width: 100%;
-  height: 500px;
-  /* Adjust height as needed */
+  height: 700px;
+  /* Increased height significantly */
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  overflow: hidden;
+  /* Removed overflow:hidden to allow aura bleed */
+  margin-top: -100px;
+  /* Pull up to overlap slightly with previous section spacing if needed, or better vertical rhythm */
 }
 
 .profile-aura {

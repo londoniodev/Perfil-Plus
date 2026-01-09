@@ -37,6 +37,7 @@ export function Header() {
             <div
                 className="container"
                 style={{
+                    maxWidth: "1600px", // Más ancho para evitar que se amontone
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -203,6 +204,14 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
                 className="hover:text-white"
             >
                 Servicios
+            </Link>
+            <Link
+                href="/registro"
+                onClick={onClick}
+                className="btn btn-secondary"
+                style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
+            >
+                Registrarse
             </Link>
             <Link
                 href="/admin/login"

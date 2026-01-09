@@ -25,9 +25,9 @@ async function bootstrap() {
   console.log('🔧 CORS configured for:', frontendUrl);
 
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000'],
+    origin: true, // Allow all origins temporarily for debugging
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,
   });
 

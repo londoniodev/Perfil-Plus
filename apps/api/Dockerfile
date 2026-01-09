@@ -73,6 +73,11 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 # Copiar el Prisma Client generado desde el builder (copia dereferenciada)
 COPY --from=builder /app/prisma-generated ./node_modules/@prisma/client
 
+# Copiar Prisma CLI y engines desde deps (necesario para db push en runtime)
+COPY --from=deps /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
+COPY --from=deps /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
+
 # Copiar el código compilado
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./apps/api/
@@ -98,7 +103,7 @@ EXPOSE 3001
 ENV PORT=3001
 
 # Healthcheck - usando el puerto correcto 3001
-HEALTHCHECK --interval=30s --timeout=3s --start-period=45s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
 
 CMD ["/app/start.sh"]

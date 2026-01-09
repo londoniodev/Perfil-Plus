@@ -32,8 +32,6 @@ RUN npx turbo run build --filter=@mauromera/api
 FROM node:20-alpine3.18 AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
@@ -49,11 +47,14 @@ COPY packages/shared/package.json ./packages/shared/
 # Copy prisma schema for generation
 COPY apps/api/prisma ./apps/api/prisma
 
-# Install ALL dependencies (needed for Prisma Client to work correctly with pnpm)
+# Install ALL dependencies (without NODE_ENV=production to include devDeps like prisma)
 RUN pnpm install --frozen-lockfile
 
 # Generate Prisma Client in runner
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+# Now set production mode
+ENV NODE_ENV=production
 
 # Copy built app
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist

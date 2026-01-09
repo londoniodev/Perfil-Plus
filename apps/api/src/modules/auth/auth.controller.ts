@@ -36,7 +36,8 @@ export class AuthController {
         const result = await this.authService.register(dto);
 
         // Establecer cookies
-        this.setAuthCookies(res, result.accessToken, result.refreshToken, req.hostname);
+        const hostname = req.get('host') || req.hostname;
+        this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
 
         // Retornar usuario sin tokens en el body
         return {
@@ -56,7 +57,8 @@ export class AuthController {
         const result = await this.authService.login(dto);
 
         // Establecer cookies
-        this.setAuthCookies(res, result.accessToken, result.refreshToken, req.hostname);
+        const hostname = req.get('host') || req.hostname;
+        this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
 
         // Retornar usuario sin tokens en el body
         return {
@@ -82,7 +84,9 @@ export class AuthController {
         const tokens = await this.authService.refreshToken(refreshToken);
 
         // Establecer nuevas cookies
-        this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, req.hostname);
+        // Establecer nuevas cookies
+        const hostname = req.get('host') || req.hostname;
+        this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, hostname);
 
         return { message: 'Tokens refreshed successfully' };
     }
@@ -99,7 +103,9 @@ export class AuthController {
         await this.authService.logout(userId, refreshToken);
 
         // Limpiar cookies
-        this.clearAuthCookies(res, req.hostname);
+        // Limpiar cookies
+        const hostname = req.get('host') || req.hostname;
+        this.clearAuthCookies(res, hostname);
 
         return { message: 'Sesión cerrada correctamente' };
     }

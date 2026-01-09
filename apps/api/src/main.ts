@@ -9,6 +9,11 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  // Confiar en el proxy inverso (Nginx/Traefik/etc)
+  // Esto asegura que req.hostname y req.ip sean correctos
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
+
   const configService = app.get(ConfigService);
 
   // Global validation pipe

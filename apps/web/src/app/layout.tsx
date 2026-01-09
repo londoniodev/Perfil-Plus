@@ -77,7 +77,7 @@ function Footer() {
         >
           <div style={{ minWidth: "280px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
-              <img src="/logo.svg" alt="Mauro Mera Logo" style={{ width: "32px", height: "32px" }} />
+              <img src="/menu_logo.png" alt="Mauro Mera Logo" style={{ width: "32px", height: "32px" }} />
               <h3 style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "var(--font-serif)", margin: 0 }}>
                 Mauro Mera
               </h3>

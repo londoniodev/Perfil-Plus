@@ -38,11 +38,13 @@ export default function RegisterPage() {
             // Mostrar mensaje de verificación
             setSuccess(true);
 
-            // Guardar tokens para que el usuario pueda navegar
+            // Pantalla de éxito con instrucción de verificación
+            // (Los tokens ya no se guardan en localStorage, se manejan vía cookies si el backend los enviara,
+            // pero el flujo de registro ahora pide verificación primero)
             if (data.accessToken) {
-                localStorage.setItem("token", data.accessToken);
-                localStorage.setItem("refreshToken", data.refreshToken);
-                localStorage.setItem("user", JSON.stringify(data.user));
+                // Si el backend logueara automáticamente (no es el caso actual con email verify), 
+                // las cookies ya estarían puestas.
+                // localStorage.setItem("user", JSON.stringify(data.user)); 
             }
 
         } catch (err: any) {

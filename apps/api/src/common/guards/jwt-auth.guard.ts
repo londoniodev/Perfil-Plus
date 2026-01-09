@@ -70,6 +70,12 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     private extractTokenFromHeader(request: Request): string | undefined {
+        // 1. Intentar leer de cookie
+        if (request.cookies && request.cookies.accessToken) {
+            return request.cookies.accessToken;
+        }
+
+        // 2. Intentar leer de header Authorization
         const [type, token] = request.headers.authorization?.split(' ') ?? [];
         return type === 'Bearer' ? token : undefined;
     }

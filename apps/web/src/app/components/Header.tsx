@@ -6,17 +6,33 @@ import { useState, useEffect } from "react";
 export function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
         };
 
+        const checkLogin = () => {
+            const user = localStorage.getItem("user");
+            setIsLoggedIn(!!user);
+        };
+
         // Initial check
         handleResize();
+        checkLogin();
+
+        // Listen for storage events (login/logout in other tabs)
+        window.addEventListener("storage", checkLogin);
+        // Custom event for same-tab updates
+        window.addEventListener("user-login", checkLogin);
 
         window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            window.removeEventListener("storage", checkLogin);
+            window.removeEventListener("user-login", checkLogin);
+        };
     }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -79,7 +95,7 @@ export function Header() {
                         gap: "2.5rem"
                     }}
                 >
-                    <NavLinks />
+                    <NavLinks isLoggedIn={isLoggedIn} />
                 </nav>
 
                 {/* Mobile Toggle */}
@@ -128,7 +144,7 @@ export function Header() {
                         gap: "2rem",
                         alignItems: "center"
                     }}>
-                        <NavLinks onClick={() => setIsMenuOpen(false)} />
+                        <NavLinks isLoggedIn={isLoggedIn} onClick={() => setIsMenuOpen(false)} />
                     </div>
                 )}
             </div>
@@ -136,7 +152,7 @@ export function Header() {
     );
 }
 
-function NavLinks({ onClick }: { onClick?: () => void }) {
+function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: boolean }) {
     return (
         <>
             <Link
@@ -205,26 +221,48 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
             >
                 Servicios
             </Link>
-            <Link
-                href="/registro"
-                onClick={onClick}
-                className="btn btn-secondary"
-                style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
-            >
-                Registrarse
-            </Link>
-            <Link
-                href="/admin/login"
-                onClick={onClick}
-                className="btn btn-primary"
-                style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
-            >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-                Iniciar sesión
-            </Link>
+
+            {isLoggedIn ? (
+                /* Botón de Mi Panel si está logueado */
+                <Link
+                    href="/perfil"
+                    onClick={onClick}
+                    className="btn btn-primary"
+                    style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Mi Panel
+                </Link>
+            ) : (
+                /* Botones de Login y Registro si NO está logueado */
+                <>
+                    <Link
+                        href="/registro"
+                        onClick={onClick}
+                        className="btn btn-secondary"
+                        style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
+                    >
+                        Registrarse
+                    </Link>
+                    <Link
+                        href="/admin/login"
+                        onClick={onClick}
+                        className="btn btn-primary"
+                        style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Iniciar sesión
+                    </Link>
+                </>
+            )}
         </>
     );
 }

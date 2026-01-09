@@ -31,10 +31,11 @@ function LoginForm() {
         throw new Error(data.message || "Credenciales inválidas");
       }
 
-      // Guardar token
-      localStorage.setItem("token", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      // Los tokens ahora se guardan en Cookies HTTP-only automáticamente
+      // Solo guardamos datos del usuario para mostrar en la UI
       localStorage.setItem("user", JSON.stringify(data.user));
+      // Disparar evento para actualizar el Header
+      window.dispatchEvent(new Event("user-login"));
 
       // Redireccionar
       const redirect = searchParams.get("redirect");
@@ -43,7 +44,7 @@ function LoginForm() {
       } else if (data.user.role === "ADMIN") {
         router.push("/admin/blog");
       } else {
-        router.push("/cursos");
+        router.push("/perfil");
       }
     } catch (err: any) {
       setError(err.message);

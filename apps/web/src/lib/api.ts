@@ -4,6 +4,7 @@ import { API_BASE as API_BASE_URL } from './config';
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
+        credentials: 'include', // Importante para enviar cookies
         headers: {
             'Content-Type': 'application/json',
             ...options?.headers,

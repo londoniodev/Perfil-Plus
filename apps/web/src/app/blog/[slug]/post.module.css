@@ -185,6 +185,95 @@
     margin-bottom: 2rem;
 }
 
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--foreground-muted);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+    color: var(--foreground-muted);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--primary);
+}
+
+.breadcrumb span:last-child {
+    color: var(--foreground);
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Reading Time */
+.readingTime {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Attachments */
+.attachments {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background: var(--background-secondary);
+    border-radius: 12px;
+}
+
+.attachments h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.attachments ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.attachments li a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--background);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--foreground);
+    transition: background 0.2s;
+}
+
+.attachments li a:hover {
+    background: var(--border);
+}
+
+.attachmentIcon {
+    font-size: 1.25rem;
+}
+
+.attachmentName {
+    flex: 1;
+    font-weight: 500;
+}
+
+.attachmentSize {
+    color: var(--foreground-muted);
+    font-size: 0.875rem;
+}
+
 @media (max-width: 768px) {
     .postHero {
         padding: 6rem 0 3rem;
@@ -196,5 +285,13 @@
 
     .excerpt {
         font-size: 1.1rem;
+    }
+
+    .breadcrumb {
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb span:last-child {
+        max-width: 150px;
     }
 }

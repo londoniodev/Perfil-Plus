@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean, IsArray, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsArray, MaxLength, MinLength, IsInt, Min } from 'class-validator';
 
 export class CreatePostDto {
     @IsString()
@@ -33,4 +33,21 @@ export class CreatePostDto {
     @IsArray()
     @IsString({ each: true })
     tagIds?: string[];
+
+    // SEO fields
+    @IsOptional()
+    @IsString()
+    @MaxLength(70)
+    metaTitle?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(160)
+    metaDescription?: string;
+
+    // Calculated field (optional, will be auto-calculated)
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    readingTime?: number;
 }

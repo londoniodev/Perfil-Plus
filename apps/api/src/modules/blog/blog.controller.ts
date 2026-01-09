@@ -11,7 +11,7 @@ import {
     DefaultValuePipe,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
-import { CreatePostDto, UpdatePostDto, CreateCategoryDto, CreateTagDto } from './dto';
+import { CreatePostDto, UpdatePostDto, CreateCategoryDto, CreateTagDto, CreateAttachmentDto } from './dto';
 import { Public, CurrentUser, Roles } from '../../common/decorators';
 
 // ==================== PUBLIC BLOG CONTROLLER ====================
@@ -87,6 +87,25 @@ export class AdminBlogController {
     @Delete('posts/:id')
     async deletePost(@Param('id') id: string) {
         return this.blogService.deletePost(id);
+    }
+
+    // Attachments
+    @Get('posts/:postId/attachments')
+    async getAttachments(@Param('postId') postId: string) {
+        return this.blogService.findAttachmentsByPostId(postId);
+    }
+
+    @Post('posts/:postId/attachments')
+    async addAttachment(
+        @Param('postId') postId: string,
+        @Body() dto: CreateAttachmentDto,
+    ) {
+        return this.blogService.addAttachment(postId, dto);
+    }
+
+    @Delete('attachments/:id')
+    async removeAttachment(@Param('id') id: string) {
+        return this.blogService.removeAttachment(id);
     }
 
     // Categories

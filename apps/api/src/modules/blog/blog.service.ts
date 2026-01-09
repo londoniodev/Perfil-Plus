@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreatePostDto, UpdatePostDto, CreateCategoryDto, CreateTagDto } from './dto';
+import { CreatePostDto, UpdatePostDto, CreateCategoryDto, CreateTagDto, CreateAttachmentDto } from './dto';
 
 @Injectable()
 export class BlogService {
@@ -10,6 +10,7 @@ export class BlogService {
 
     async createPost(dto: CreatePostDto) {
         const slug = this.generateSlug(dto.title);
+        const readingTime = dto.readingTime || this.calculateReadingTime(dto.content);
 
         // Crear el post primero
         const post = await this.prisma.post.create({
@@ -21,8 +22,11 @@ export class BlogService {
                 coverImage: dto.coverImage,
                 published: dto.published,
                 isPremium: dto.isPremium,
-                authorName: 'Mauricio Mera', // Autor fijo según el schema
+                authorName: 'Mauricio Mera',
                 publishedAt: dto.published ? new Date() : null,
+                metaTitle: dto.metaTitle,
+                metaDescription: dto.metaDescription,
+                readingTime,
             },
         });
 
@@ -62,7 +66,10 @@ export class BlogService {
             updateData.slug = this.generateSlug(dto.title);
         }
         if (dto.excerpt !== undefined) updateData.excerpt = dto.excerpt;
-        if (dto.content !== undefined) updateData.content = dto.content;
+        if (dto.content !== undefined) {
+            updateData.content = dto.content;
+            updateData.readingTime = this.calculateReadingTime(dto.content);
+        }
         if (dto.coverImage !== undefined) updateData.coverImage = dto.coverImage;
         if (dto.published !== undefined) {
             updateData.published = dto.published;
@@ -71,6 +78,8 @@ export class BlogService {
             }
         }
         if (dto.isPremium !== undefined) updateData.isPremium = dto.isPremium;
+        if (dto.metaTitle !== undefined) updateData.metaTitle = dto.metaTitle;
+        if (dto.metaDescription !== undefined) updateData.metaDescription = dto.metaDescription;
 
         // Actualizar el post
         await this.prisma.post.update({
@@ -80,10 +89,7 @@ export class BlogService {
 
         // Actualizar categoría si se proporciona
         if (dto.categoryId !== undefined) {
-            // Eliminar categorías existentes
             await this.prisma.categoriesOnPosts.deleteMany({ where: { postId: id } });
-
-            // Agregar nueva categoría si existe
             if (dto.categoryId) {
                 await this.prisma.categoriesOnPosts.create({
                     data: { postId: id, categoryId: dto.categoryId },
@@ -93,10 +99,7 @@ export class BlogService {
 
         // Actualizar tags si se proporcionan
         if (dto.tagIds !== undefined) {
-            // Eliminar tags existentes
             await this.prisma.tagsOnPosts.deleteMany({ where: { postId: id } });
-
-            // Agregar nuevos tags
             if (dto.tagIds.length) {
                 await this.prisma.tagsOnPosts.createMany({
                     data: dto.tagIds.map((tagId) => ({ postId: id, tagId })),
@@ -134,12 +137,12 @@ export class BlogService {
                 include: {
                     categories: { include: { category: true } },
                     tags: { include: { tag: true } },
+                    attachments: true,
                 },
             }),
             this.prisma.post.count({ where }),
         ]);
 
-        // Transformar respuesta para aplanar categorías y tags
         const transformedPosts = posts.map((post) => ({
             ...post,
             categories: post.categories.map((c) => c.category),
@@ -157,7 +160,6 @@ export class BlogService {
         };
     }
 
-    // Posts públicos (para visitantes)
     async findPublicPosts(page = 1, limit = 10, categorySlug?: string) {
         const skip = (page - 1) * limit;
 
@@ -185,6 +187,7 @@ export class BlogService {
                     isPremium: true,
                     authorName: true,
                     createdAt: true,
+                    readingTime: true,
                     categories: { include: { category: true } },
                     tags: { include: { tag: true } },
                 },
@@ -192,7 +195,6 @@ export class BlogService {
             this.prisma.post.count({ where }),
         ]);
 
-        // Transformar respuesta
         const transformedPosts = posts.map((post) => ({
             ...post,
             categories: post.categories.map((c) => c.category),
@@ -216,6 +218,7 @@ export class BlogService {
             include: {
                 categories: { include: { category: true } },
                 tags: { include: { tag: true } },
+                attachments: true,
             },
         });
 
@@ -227,7 +230,6 @@ export class BlogService {
             throw new NotFoundException('Post no encontrado');
         }
 
-        // Transformar respuesta
         const transformedPost = {
             ...post,
             categories: post.categories.map((c) => c.category),
@@ -240,6 +242,7 @@ export class BlogService {
                 ...transformedPost,
                 content: post.content.substring(0, 500) + '...',
                 isContentLimited: true,
+                attachments: [], // No mostrar adjuntos premium
             };
         }
 
@@ -252,6 +255,7 @@ export class BlogService {
             include: {
                 categories: { include: { category: true } },
                 tags: { include: { tag: true } },
+                attachments: true,
             },
         });
 
@@ -264,6 +268,46 @@ export class BlogService {
             categories: post.categories.map((c) => c.category),
             tags: post.tags.map((t) => t.tag),
         };
+    }
+
+    // ==================== ATTACHMENTS ====================
+
+    async addAttachment(postId: string, dto: CreateAttachmentDto) {
+        const post = await this.prisma.post.findUnique({ where: { id: postId } });
+        if (!post) {
+            throw new NotFoundException('Post no encontrado');
+        }
+
+        return this.prisma.postAttachment.create({
+            data: {
+                postId,
+                name: dto.name,
+                fileUrl: dto.fileUrl,
+                fileType: dto.fileType,
+                fileSize: dto.fileSize,
+                isPublic: dto.isPublic ?? !post.isPremium,
+            },
+        });
+    }
+
+    async removeAttachment(attachmentId: string) {
+        const attachment = await this.prisma.postAttachment.findUnique({
+            where: { id: attachmentId },
+        });
+
+        if (!attachment) {
+            throw new NotFoundException('Adjunto no encontrado');
+        }
+
+        await this.prisma.postAttachment.delete({ where: { id: attachmentId } });
+        return { message: 'Adjunto eliminado correctamente', fileUrl: attachment.fileUrl };
+    }
+
+    async findAttachmentsByPostId(postId: string) {
+        return this.prisma.postAttachment.findMany({
+            where: { postId },
+            orderBy: { createdAt: 'asc' },
+        });
     }
 
     // ==================== CATEGORIES ====================
@@ -333,11 +377,23 @@ export class BlogService {
         return title
             .toLowerCase()
             .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // Remover acentos
-            .replace(/[^a-z0-9\s-]/g, '') // Solo letras, números, espacios y guiones
-            .replace(/\s+/g, '-') // Espacios a guiones
-            .replace(/-+/g, '-') // Múltiples guiones a uno
-            .replace(/^-|-$/g, '') // Remover guiones al inicio y final
-            + '-' + Date.now().toString(36); // Añadir timestamp para unicidad
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            + '-' + Date.now().toString(36);
+    }
+
+    private calculateReadingTime(content: string): number {
+        // Promedio de palabras por minuto de lectura
+        const wordsPerMinute = 200;
+
+        // Eliminar HTML tags y contar palabras
+        const text = content.replace(/<[^>]*>/g, '');
+        const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+
+        // Calcular minutos (mínimo 1 minuto)
+        return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
     }
 }

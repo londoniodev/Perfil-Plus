@@ -76,7 +76,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./apps/api/prisma
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
     echo 'echo "🔄 Syncing database schema..."' >> /app/start.sh && \
-    echo './node_modules/.bin/prisma db push --schema=apps/api/prisma/schema.prisma --accept-data-loss' >> /app/start.sh && \
+    echo './node_modules/.bin/prisma db push --schema=apps/api/prisma/schema.prisma --accept-data-loss --skip-generate' >> /app/start.sh && \
     echo 'echo "✅ Schema sync completed"' >> /app/start.sh && \
     echo 'echo "🚀 Starting server..."' >> /app/start.sh && \
     echo 'exec node apps/api/dist/main' >> /app/start.sh && \

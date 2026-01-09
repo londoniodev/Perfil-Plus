@@ -5,7 +5,9 @@ FROM node:20-alpine3.18 AS deps
 WORKDIR /app
 
 # Copiar solo archivos de configuración de dependencias primero
+# Copiar solo archivos de configuración de dependencias primero
 COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY turbo.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
@@ -18,6 +20,7 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 # ==============================================================================
 FROM node:20-alpine3.18 AS builder
 WORKDIR /app
+RUN npm install -g pnpm
 
 # Copiar dependencias instaladas (npm workspaces las pone todas en root node_modules)
 COPY --from=deps /app/node_modules ./node_modules
@@ -40,6 +43,7 @@ FROM node:20-alpine3.18 AS prod-deps
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 

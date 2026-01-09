@@ -8,6 +8,7 @@ WORKDIR /app
 # Copiar solo archivos de configuración de dependencias primero
 # Esto permite cachear la instalación de dependencias
 COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 COPY turbo.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/ui/package.json ./packages/ui/
@@ -21,6 +22,7 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 # ==============================================================================
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat
+RUN npm install -g pnpm
 WORKDIR /app
 
 # Copiar dependencias instaladas desde la etapa anterior

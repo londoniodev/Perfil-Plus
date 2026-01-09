@@ -6,12 +6,13 @@ import { RegisterDto, LoginDto } from './dto';
 import { Public, CurrentUser } from '../../common/decorators';
 
 // Cookie configuration
-const COOKIE_OPTIONS = (isProduction: boolean) => ({
+// Cookie configuration helpers
+const getCookieOptions = (isProduction: boolean, domain?: string) => ({
     httpOnly: true,
-    secure: isProduction, // Solo HTTPS en producción
-    sameSite: isProduction ? 'lax' as const : 'lax' as const, // 'lax' permite redirecciones
+    secure: isProduction, // HTTPS required for Secure
+    sameSite: isProduction ? 'lax' as const : 'lax' as const,
     path: '/',
-    domain: isProduction ? '.mauromera.com' : undefined, // Importante para compartir entre api. y www.
+    domain: domain, // Dynamic domain
 });
 
 @Controller('auth')
@@ -30,11 +31,12 @@ export class AuthController {
     async register(
         @Body() dto: RegisterDto,
         @Res({ passthrough: true }) res: Response,
+        @Req() req: Request,
     ) {
         const result = await this.authService.register(dto);
 
         // Establecer cookies
-        this.setAuthCookies(res, result.accessToken, result.refreshToken);
+        this.setAuthCookies(res, result.accessToken, result.refreshToken, req.hostname);
 
         // Retornar usuario sin tokens en el body
         return {
@@ -49,11 +51,12 @@ export class AuthController {
     async login(
         @Body() dto: LoginDto,
         @Res({ passthrough: true }) res: Response,
+        @Req() req: Request,
     ) {
         const result = await this.authService.login(dto);
 
         // Establecer cookies
-        this.setAuthCookies(res, result.accessToken, result.refreshToken);
+        this.setAuthCookies(res, result.accessToken, result.refreshToken, req.hostname);
 
         // Retornar usuario sin tokens en el body
         return {
@@ -79,7 +82,7 @@ export class AuthController {
         const tokens = await this.authService.refreshToken(refreshToken);
 
         // Establecer nuevas cookies
-        this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
+        this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, req.hostname);
 
         return { message: 'Tokens refreshed successfully' };
     }
@@ -96,7 +99,7 @@ export class AuthController {
         await this.authService.logout(userId, refreshToken);
 
         // Limpiar cookies
-        this.clearAuthCookies(res);
+        this.clearAuthCookies(res, req.hostname);
 
         return { message: 'Sesión cerrada correctamente' };
     }
@@ -123,32 +126,35 @@ export class AuthController {
 
     // ============ Cookie Helpers ============
 
-    private setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+    private setAuthCookies(res: Response, accessToken: string, refreshToken: string, hostname?: string) {
         const isProd = this.isProduction();
+        // Determinar dominio: si el hostname incluye mauromera.com, usamos .mauromera.com (subdominios)
+        const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
 
         // Access token cookie (15 minutos)
         res.cookie('accessToken', accessToken, {
-            ...COOKIE_OPTIONS(isProd),
+            ...getCookieOptions(isProd, domain),
             maxAge: 15 * 60 * 1000, // 15 minutos
         });
 
         // Refresh token cookie (7 días)
         res.cookie('refreshToken', refreshToken, {
-            ...COOKIE_OPTIONS(isProd),
+            ...getCookieOptions(isProd, domain),
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
         });
     }
 
-    private clearAuthCookies(res: Response) {
+    private clearAuthCookies(res: Response, hostname?: string) {
         const isProd = this.isProduction();
+        const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
 
         res.cookie('accessToken', '', {
-            ...COOKIE_OPTIONS(isProd),
+            ...getCookieOptions(isProd, domain),
             maxAge: 0,
         });
 
         res.cookie('refreshToken', '', {
-            ...COOKIE_OPTIONS(isProd),
+            ...getCookieOptions(isProd, domain),
             maxAge: 0,
         });
     }

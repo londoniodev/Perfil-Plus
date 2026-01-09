@@ -26,7 +26,7 @@ function LoginForm() {
         window.dispatchEvent(new Event("user-login"));
       }
       // Redirigir al usuario para limpiar los parámetros de la URL
-      router.replace("/admin/login");
+      router.replace("/login");
       return;
     }
 

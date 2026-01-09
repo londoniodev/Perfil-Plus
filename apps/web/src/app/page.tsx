@@ -1,4 +1,4 @@
-﻿import {
+import {
   HeroSection,
   ClientsCarouselSection,
   AreasImpactoSection,

@@ -114,7 +114,7 @@ export default function RegisterPage() {
 
                     <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
                         <Link
-                            href="/admin/login"
+                            href="/login"
                             className="btn btn-primary"
                             style={{ padding: "0.75rem 1.5rem" }}
                         >
@@ -216,7 +216,7 @@ export default function RegisterPage() {
 
                 <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.9rem", color: "var(--foreground-muted)" }}>
                     ¿Ya tienes una cuenta?{" "}
-                    <Link href="/admin/login" style={{ color: "var(--primary-light)", textDecoration: "none", fontWeight: 500 }}>
+                    <Link href="/login" style={{ color: "var(--primary-light)", textDecoration: "none", fontWeight: 500 }}>
                         Inicia sesión aquí
                     </Link>
                 </div>

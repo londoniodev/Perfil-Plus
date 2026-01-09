@@ -46,7 +46,7 @@ export default function SuscripcionPage() {
 
     const handleSubscribe = async () => {
         if (!token) {
-            window.location.href = "/admin/login?redirect=/suscripcion";
+            window.location.href = "/login?redirect=/suscripcion";
             return;
         }
 

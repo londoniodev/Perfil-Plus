@@ -34,7 +34,7 @@ export default function MisEbooksPage() {
                 setPurchases(data);
             } else if (res.status === 401 || res.status === 403) {
                 // No autenticado
-                window.location.href = "/admin/login?redirect=/ebooks/mis-compras";
+                window.location.href = "/login?redirect=/ebooks/mis-compras";
             }
         } catch {
             // Ignore for now

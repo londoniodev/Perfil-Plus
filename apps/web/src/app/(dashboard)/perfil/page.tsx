@@ -41,7 +41,7 @@ export default function PerfilPage() {
             .catch(() => {
                 // Si falla, limpiar y redirigir
                 localStorage.removeItem("user");
-                router.push("/admin/login");
+                router.push("/login");
             })
             .finally(() => setLoading(false));
     }, [router]);
@@ -57,7 +57,7 @@ export default function PerfilPage() {
         }
         localStorage.removeItem("user");
         window.dispatchEvent(new Event("user-login"));
-        router.push("/admin/login");
+        router.push("/login");
     };
 
     if (loading && !user) {

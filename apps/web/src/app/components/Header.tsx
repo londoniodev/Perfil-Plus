@@ -250,7 +250,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                         Registrarse
                     </Link>
                     <Link
-                        href="/admin/login"
+                        href="/login"
                         onClick={onClick}
                         className="btn btn-primary"
                         style={{ padding: "0.7rem 1.4rem", fontSize: "0.9rem" }}

@@ -12,7 +12,7 @@ export function Sidebar() {
     const { isCollapsed, toggleSidebar } = useDashboard();
     const { isAdmin, logout } = useAuth();
 
-    // Menu items for all users
+    // Menu items for regular users (consumers)
     const userMenuItems = [
         { name: "Mi Panel", href: "/perfil", icon: <HomeIcon /> },
         { name: "Mis Cursos", href: "/cursos", icon: <BookIcon /> },
@@ -20,18 +20,22 @@ export function Sidebar() {
         { name: "Suscripción", href: "/suscripcion", icon: <CreditCardIcon /> },
     ];
 
-    // Additional menu items for admins
+    // Menu items for admins (managers) - completely replaces user menu
     const adminMenuItems = [
+        { name: "Dashboard", href: "/perfil", icon: <HomeIcon /> },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: <EditIcon /> },
         { name: "Gestionar Blog", href: "/admin/blog", icon: <BlogIcon /> },
         { name: "Usuarios", href: "/admin/usuarios", icon: <UsersIcon /> },
     ];
 
+    // Select menu based on role
+    const menuItems = isAdmin ? adminMenuItems : userMenuItems;
+
     const isActive = (path: string) => pathname?.startsWith(path);
 
     const handleLogout = async () => {
         await logout();
-        router.push("/admin/login");
+        router.push("/login");
     };
 
     return (
@@ -81,11 +85,31 @@ export function Sidebar() {
                 </button>
             </div>
 
+            {/* Role Badge (when not collapsed) */}
+            {!isCollapsed && isAdmin && (
+                <div style={{
+                    padding: "0.75rem 1.5rem",
+                    borderBottom: "1px solid var(--border)"
+                }}>
+                    <span style={{
+                        background: "rgba(232, 168, 56, 0.15)",
+                        color: "var(--accent)",
+                        padding: "0.25rem 0.75rem",
+                        borderRadius: "999px",
+                        fontSize: "0.7rem",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05rem"
+                    }}>
+                        Administrador
+                    </span>
+                </div>
+            )}
+
             {/* Navigation */}
             <nav style={{ flex: 1, padding: "1.5rem 0.75rem", overflowY: "auto" }}>
-                {/* User Menu */}
                 <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    {userMenuItems.map((item) => (
+                    {menuItems.map((item) => (
                         <li key={item.href}>
                             <Link
                                 href={item.href}
@@ -96,8 +120,8 @@ export function Sidebar() {
                                     padding: "0.75rem",
                                     borderRadius: "0.5rem",
                                     textDecoration: "none",
-                                    color: isActive(item.href) ? "var(--primary)" : "var(--foreground-muted)",
-                                    background: isActive(item.href) ? "rgba(99, 102, 241, 0.1)" : "transparent",
+                                    color: isActive(item.href) ? (isAdmin ? "var(--accent)" : "var(--primary)") : "var(--foreground-muted)",
+                                    background: isActive(item.href) ? (isAdmin ? "rgba(232, 168, 56, 0.1)" : "rgba(99, 102, 241, 0.1)") : "transparent",
                                     justifyContent: isCollapsed ? "center" : "flex-start",
                                     transition: "all 0.2s"
                                 }}
@@ -109,51 +133,6 @@ export function Sidebar() {
                         </li>
                     ))}
                 </ul>
-
-                {/* Admin Menu - Only shown for admins */}
-                {isAdmin && (
-                    <>
-                        {!isCollapsed && (
-                            <div style={{
-                                margin: "1.5rem 0 0.75rem",
-                                padding: "0 0.75rem",
-                                fontSize: "0.7rem",
-                                fontWeight: 600,
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05rem",
-                                color: "var(--foreground-muted)"
-                            }}>
-                                Administración
-                            </div>
-                        )}
-                        {isCollapsed && <hr style={{ margin: "1rem 0", border: "none", borderTop: "1px solid var(--border)" }} />}
-                        <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                            {adminMenuItems.map((item) => (
-                                <li key={item.href}>
-                                    <Link
-                                        href={item.href}
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "0.75rem",
-                                            padding: "0.75rem",
-                                            borderRadius: "0.5rem",
-                                            textDecoration: "none",
-                                            color: isActive(item.href) ? "var(--accent)" : "var(--foreground-muted)",
-                                            background: isActive(item.href) ? "rgba(232, 168, 56, 0.1)" : "transparent",
-                                            justifyContent: isCollapsed ? "center" : "flex-start",
-                                            transition: "all 0.2s"
-                                        }}
-                                        title={isCollapsed ? item.name : ""}
-                                    >
-                                        <span style={{ display: "flex", alignItems: "center", color: "var(--accent)" }}>{item.icon}</span>
-                                        {!isCollapsed && <span style={{ fontWeight: 500 }}>{item.name}</span>}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
             </nav>
 
             {/* Footer / Logout */}

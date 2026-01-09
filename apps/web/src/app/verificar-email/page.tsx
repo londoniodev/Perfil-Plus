@@ -129,7 +129,7 @@ function VerifyEmailContent() {
                         Ya puedes acceder a todo el contenido de la plataforma.
                     </p>
                     <Link
-                        href="/admin/login"
+                        href="/login"
                         className="btn btn-primary"
                         style={{ padding: "1rem 2rem" }}
                     >
@@ -178,7 +178,7 @@ function VerifyEmailContent() {
                         Crear cuenta nueva
                     </Link>
                     <Link
-                        href="/admin/login"
+                        href="/login"
                         style={{
                             padding: "0.75rem 1.5rem",
                             border: "1px solid var(--border)",

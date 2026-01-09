@@ -14,17 +14,28 @@ export function BottomNav() {
 
     const isActive = (path: string) => pathname?.startsWith(path);
 
-    // Main nav items (max 4 for bottom nav)
-    const navItems = [
+    // User navigation items
+    const userNavItems = [
         { name: "Inicio", href: "/perfil", icon: <HomeIcon /> },
         { name: "Cursos", href: "/cursos", icon: <BookIcon /> },
         { name: "Ebooks", href: "/ebooks/mis-compras", icon: <LibraryIcon /> },
         { name: "Más", href: "#", icon: <MenuIcon />, action: () => setIsMenuOpen(!isMenuOpen) },
     ];
 
+    // Admin navigation items
+    const adminNavItems = [
+        { name: "Inicio", href: "/perfil", icon: <HomeIcon /> },
+        { name: "Cursos", href: "/admin/cursos", icon: <EditIcon /> },
+        { name: "Blog", href: "/admin/blog", icon: <BlogIcon /> },
+        { name: "Más", href: "#", icon: <MenuIcon />, action: () => setIsMenuOpen(!isMenuOpen) },
+    ];
+
+    // Select nav based on role
+    const navItems = isAdmin ? adminNavItems : userNavItems;
+
     const handleLogout = async () => {
         await logout();
-        router.push("/admin/login");
+        router.push("/login");
         setIsMenuOpen(false);
     };
 
@@ -61,80 +72,41 @@ export function BottomNav() {
                         }}
                         onClick={e => e.stopPropagation()}
                     >
-                        {/* Subscription Link */}
-                        <Link
-                            href="/suscripcion"
-                            onClick={() => setIsMenuOpen(false)}
-                            style={{
-                                padding: "1rem",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "1rem",
-                                textDecoration: "none",
-                                color: "var(--foreground)",
-                                borderBottom: "1px solid var(--border)"
-                            }}
-                        >
-                            <CreditCardIcon /> Suscripción
-                        </Link>
-
-                        {/* Admin Links - Only for admins */}
-                        {isAdmin && (
-                            <>
-                                <div style={{
-                                    padding: "0.5rem 1rem",
-                                    fontSize: "0.7rem",
-                                    fontWeight: 600,
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.05rem",
-                                    color: "var(--accent)"
-                                }}>
-                                    Administración
-                                </div>
-                                <Link
-                                    href="/admin/cursos"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    style={{
-                                        padding: "1rem",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "1rem",
-                                        textDecoration: "none",
-                                        color: "var(--foreground)",
-                                    }}
-                                >
-                                    <EditIcon /> Gestionar Cursos
-                                </Link>
-                                <Link
-                                    href="/admin/blog"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    style={{
-                                        padding: "1rem",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "1rem",
-                                        textDecoration: "none",
-                                        color: "var(--foreground)",
-                                    }}
-                                >
-                                    <BlogIcon /> Gestionar Blog
-                                </Link>
-                                <Link
-                                    href="/admin/usuarios"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    style={{
-                                        padding: "1rem",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "1rem",
-                                        textDecoration: "none",
-                                        color: "var(--foreground)",
-                                        borderBottom: "1px solid var(--border)"
-                                    }}
-                                >
-                                    <UsersIcon /> Usuarios
-                                </Link>
-                            </>
+                        {/* Role-specific additional items */}
+                        {isAdmin ? (
+                            // Admin extra item
+                            <Link
+                                href="/admin/usuarios"
+                                onClick={() => setIsMenuOpen(false)}
+                                style={{
+                                    padding: "1rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "1rem",
+                                    textDecoration: "none",
+                                    color: "var(--foreground)",
+                                    borderBottom: "1px solid var(--border)"
+                                }}
+                            >
+                                <UsersIcon /> Usuarios
+                            </Link>
+                        ) : (
+                            // User extra item
+                            <Link
+                                href="/suscripcion"
+                                onClick={() => setIsMenuOpen(false)}
+                                style={{
+                                    padding: "1rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "1rem",
+                                    textDecoration: "none",
+                                    color: "var(--foreground)",
+                                    borderBottom: "1px solid var(--border)"
+                                }}
+                            >
+                                <CreditCardIcon /> Suscripción
+                            </Link>
                         )}
 
                         {/* Logout Button */}
@@ -190,7 +162,7 @@ export function BottomNav() {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: "4px",
-                                color: isMenuOpen ? "var(--primary)" : "var(--foreground-muted)",
+                                color: isMenuOpen ? (isAdmin ? "var(--accent)" : "var(--primary)") : "var(--foreground-muted)",
                                 fontSize: "0.7rem",
                                 cursor: "pointer",
                                 width: "100%"
@@ -210,7 +182,7 @@ export function BottomNav() {
                                 justifyContent: "center",
                                 gap: "4px",
                                 textDecoration: "none",
-                                color: isActive(item.href) ? "var(--primary)" : "var(--foreground-muted)",
+                                color: isActive(item.href) ? (isAdmin ? "var(--accent)" : "var(--primary)") : "var(--foreground-muted)",
                                 fontSize: "0.7rem",
                                 width: "100%"
                             }}
@@ -247,10 +219,10 @@ function LogOutIcon() {
 
 // Admin Icons
 function EditIcon() {
-    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
+    return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 }
 function BlogIcon() {
-    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
+    return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
 }
 function UsersIcon() {
     return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;

@@ -183,7 +183,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 Portafolio
             </Link>
             <Link
-                href="/cursos"
+                href="/formacion"
                 onClick={onClick}
                 style={{
                     color: "var(--foreground-muted)",
@@ -207,6 +207,19 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 className="hover:text-white"
             >
                 Blog
+            </Link>
+            <Link
+                href="/ebooks"
+                onClick={onClick}
+                style={{
+                    color: "var(--foreground-muted)",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 500,
+                }}
+                className="hover:text-white"
+            >
+                E-books
             </Link>
             <Link
                 href="/servicios"

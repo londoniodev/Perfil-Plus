@@ -3,8 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../admin.module.css";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API_BASE } from "@/lib/config";
 
 function LoginForm() {
   const router = useRouter();

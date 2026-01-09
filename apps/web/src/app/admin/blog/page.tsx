@@ -26,7 +26,7 @@ interface PaginatedResponse {
     };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API_BASE } from "@/lib/config";
 
 export default function AdminBlogPage() {
     const router = useRouter();

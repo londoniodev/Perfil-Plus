@@ -22,12 +22,18 @@ async function bootstrap() {
 
   // CORS configuration
   const frontendUrl = configService.get('FRONTEND_URL', 'http://localhost:3000');
-  console.log('🔧 CORS configured for:', frontendUrl);
+  const allowedOrigins = [
+    frontendUrl,
+    'http://localhost:3000',
+    'https://mauromera.com',
+    'https://www.mauromera.com',
+  ];
+  console.log('🔧 CORS configured for:', allowedOrigins);
 
   app.enableCors({
-    origin: true, // Allow all origins temporarily for debugging
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });
 

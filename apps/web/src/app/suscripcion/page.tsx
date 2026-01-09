@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./suscripcion.module.css";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API_BASE } from "@/lib/config";
 
 interface SubscriptionStatus {
     hasSubscription: boolean;

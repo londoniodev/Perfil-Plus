@@ -27,7 +27,7 @@ interface Post {
     tags: { id: string; name: string }[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+import { API_BASE } from "@/lib/config";
 
 export default function EditarPostPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);

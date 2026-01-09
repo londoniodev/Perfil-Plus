@@ -49,9 +49,9 @@ COPY packages/shared/package.json ./packages/shared/
 # Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
 
-# Copy Prisma Client from builder (dereferenced)
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client* ./node_modules/.pnpm/
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy Prisma schema and generate client
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 
 # Copy built app
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist

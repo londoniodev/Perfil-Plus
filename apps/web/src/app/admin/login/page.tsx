@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../admin.module.css";
 import { API_BASE } from "@/lib/config";
@@ -12,6 +12,14 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Redirigir si ya está logueado (verificación rápida de cliente)
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      router.push("/perfil");
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

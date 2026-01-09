@@ -9,8 +9,9 @@ import { Public, CurrentUser } from '../../common/decorators';
 const COOKIE_OPTIONS = (isProduction: boolean) => ({
     httpOnly: true,
     secure: isProduction, // Solo HTTPS en producción
-    sameSite: isProduction ? 'strict' as const : 'lax' as const,
+    sameSite: isProduction ? 'lax' as const : 'lax' as const, // 'lax' permite redirecciones
     path: '/',
+    domain: isProduction ? '.mauromera.com' : undefined, // Importante para compartir entre api. y www.
 });
 
 @Controller('auth')

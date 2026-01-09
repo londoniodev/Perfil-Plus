@@ -56,11 +56,20 @@ export class AuthController {
     ) {
         const result = await this.authService.login(dto);
 
-        // Establecer cookies
+        // Retornar usuario sin tokens en el body
         const hostname = req.get('host') || req.hostname;
+        const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
+
+        console.log('🔍 Login Debug:', {
+            hostHeader: req.get('host'),
+            hostname: req.hostname,
+            calculatedDomain: domain,
+            isProduction: this.isProduction()
+        });
+
+        // Establecer cookies
         this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
 
-        // Retornar usuario sin tokens en el body
         return {
             user: result.user,
         };
@@ -84,7 +93,6 @@ export class AuthController {
         const tokens = await this.authService.refreshToken(refreshToken);
 
         // Establecer nuevas cookies
-        // Establecer nuevas cookies
         const hostname = req.get('host') || req.hostname;
         this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, hostname);
 
@@ -102,7 +110,6 @@ export class AuthController {
 
         await this.authService.logout(userId, refreshToken);
 
-        // Limpiar cookies
         // Limpiar cookies
         const hostname = req.get('host') || req.hostname;
         this.clearAuthCookies(res, hostname);

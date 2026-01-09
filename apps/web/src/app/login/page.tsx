@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import styles from "../admin.module.css";
+import styles from "../auth.module.css";
 import { API_BASE } from "@/lib/config";
 
 function LoginForm() {
@@ -65,7 +65,7 @@ function LoginForm() {
       if (redirect) {
         router.push(redirect);
       } else if (data.user.role === "ADMIN") {
-        router.push("/admin/blog");
+        router.push("/perfil");
       } else {
         router.push("/perfil");
       }

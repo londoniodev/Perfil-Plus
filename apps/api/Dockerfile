@@ -75,9 +75,9 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./apps/api/prisma
 # Crear script de inicio que ejecuta migraciones y luego arranca la app
 RUN echo '#!/bin/sh' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
-    echo 'echo "🔄 Running database migrations..."' >> /app/start.sh && \
-    echo './node_modules/.bin/prisma migrate deploy --schema=apps/api/prisma/schema.prisma' >> /app/start.sh && \
-    echo 'echo "✅ Migrations completed"' >> /app/start.sh && \
+    echo 'echo "🔄 Syncing database schema..."' >> /app/start.sh && \
+    echo './node_modules/.bin/prisma db push --schema=apps/api/prisma/schema.prisma --accept-data-loss' >> /app/start.sh && \
+    echo 'echo "✅ Schema sync completed"' >> /app/start.sh && \
     echo 'echo "🚀 Starting server..."' >> /app/start.sh && \
     echo 'exec node apps/api/dist/main' >> /app/start.sh && \
     chmod +x /app/start.sh && \

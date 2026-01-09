@@ -26,10 +26,6 @@ RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 # Build the app
 RUN npx turbo run build --filter=@mauromera/api
 
-# Prepare Prisma Client for production (dereference pnpm symlinks)
-RUN mkdir -p /app/prisma-client && \
-    cp -rL node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/* /app/prisma-client/
-
 # ==============================================================================
 # STAGE 2: Runner - Production image
 # ==============================================================================
@@ -42,7 +38,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Install pnpm for production install
+# Install pnpm
 RUN npm install -g pnpm
 
 # Copy package files
@@ -50,11 +46,14 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+# Copy prisma schema for generation
+COPY apps/api/prisma ./apps/api/prisma
 
-# Copy the generated Prisma Client (dereferenced from builder)
-COPY --from=builder /app/prisma-client ./node_modules/@prisma/client
+# Install ALL dependencies (needed for Prisma Client to work correctly with pnpm)
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma Client in runner
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 
 # Copy built app
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist

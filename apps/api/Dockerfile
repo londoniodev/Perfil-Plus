@@ -5,13 +5,13 @@ FROM node:20-alpine3.18 AS deps
 WORKDIR /app
 
 # Copiar solo archivos de configuración de dependencias primero
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY turbo.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Instalar todas las dependencias (incluyendo devDeps para el build)
-RUN npm ci
+# Instalar todas las dependencias
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 # ==============================================================================
 # STAGE 2: Builder - Compilar la aplicación
@@ -39,12 +39,12 @@ RUN npx turbo run build --filter=@mauromera/api
 FROM node:20-alpine3.18 AS prod-deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Instalar SOLO dependencias de producción (workspaces instala todo en root node_modules)
-RUN npm ci --omit=dev
+# Instalar SOLO dependencias de producción
+RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
 
 # ==============================================================================
 # STAGE 4: Runner - Imagen de producción mínima

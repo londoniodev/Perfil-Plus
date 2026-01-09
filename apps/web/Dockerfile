@@ -7,14 +7,14 @@ WORKDIR /app
 
 # Copiar solo archivos de configuración de dependencias primero
 # Esto permite cachear la instalación de dependencias
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY turbo.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/shared/package.json ./packages/shared/
 
-# Instalar dependencias con npm ci (más rápido y determinístico)
-RUN npm ci
+# Instalar dependencias con pnpm
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 # ==============================================================================
 # STAGE 2: Builder - Compilar la aplicación

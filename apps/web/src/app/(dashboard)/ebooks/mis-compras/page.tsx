@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "../ebooks.module.css";
+import styles from "../../../ebooks/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 
 interface Purchase {
@@ -20,27 +20,24 @@ export default function MisEbooksPage() {
     const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
     useEffect(() => {
-        if (!token) {
-            window.location.href = "/admin/login?redirect=/ebooks/mis-compras";
-            return;
-        }
         fetchPurchases();
-    }, [token]);
+    }, []);
 
     const fetchPurchases = async () => {
         try {
             const res = await fetch(`${API_BASE}/ebooks/my-purchases`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include', // Usar cookies HttpOnly
             });
             if (res.ok) {
                 const data = await res.json();
                 setPurchases(data);
+            } else if (res.status === 401 || res.status === 403) {
+                // No autenticado
+                window.location.href = "/admin/login?redirect=/ebooks/mis-compras";
             }
         } catch {
-            // Ignore
+            // Ignore for now
         } finally {
             setLoading(false);
         }
@@ -49,7 +46,7 @@ export default function MisEbooksPage() {
     const handleDownload = async (ebookId: string) => {
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebookId}/download`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include'
             });
 
             if (!res.ok) throw new Error("Error al obtener enlace");

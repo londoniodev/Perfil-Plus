@@ -15,11 +15,25 @@ function LoginForm() {
 
   // Redirigir si ya está logueado (verificación rápida de cliente)
   useEffect(() => {
+    const errorParam = searchParams.get("error");
     const user = localStorage.getItem("user");
+
+    // Si hay un error de sesión (ej: cookie expirada o faltante), limpiamos localStorage
+    if (errorParam === 'session_missing') {
+      if (user) {
+        localStorage.removeItem("user");
+        // Disparar evento para que el Navbar se actualice (mostrar Login/Registro)
+        window.dispatchEvent(new Event("user-login"));
+      }
+      // Redirigir al usuario para limpiar los parámetros de la URL
+      router.replace("/admin/login");
+      return;
+    }
+
     if (user) {
       router.push("/perfil");
     }
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

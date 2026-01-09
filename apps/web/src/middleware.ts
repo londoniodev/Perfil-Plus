@@ -12,6 +12,8 @@ export function middleware(request: NextRequest) {
     if (isProtected && !token) {
         const url = new URL('/admin/login', request.url);
         url.searchParams.set('redirect', pathname);
+        // Indicar que la redirección es por falta de sesión
+        url.searchParams.set('error', 'session_missing');
         return NextResponse.redirect(url);
     }
 

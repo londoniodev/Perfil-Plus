@@ -28,11 +28,12 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relaciones
-  subscription  Subscription?
-  purchases     Purchase[]
-  progress      UserProgress[]
-  evaluations   EvaluationResult[]
-  refreshTokens RefreshToken[]
+  subscription            Subscription?
+  purchases               Purchase[]
+  progress                UserProgress[]
+  evaluations             EvaluationResult[]
+  refreshTokens           RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
 }
 
 model RefreshToken {
@@ -45,6 +46,19 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique  // Hash del token
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 // ============ SUSCRIPCIONES ============

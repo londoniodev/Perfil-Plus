@@ -1,8 +1,10 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
 import { randomUUID } from 'crypto';
 
@@ -12,6 +14,7 @@ export class AuthService {
         private prisma: PrismaService,
         private jwtService: JwtService,
         private configService: ConfigService,
+        private emailService: EmailService,
     ) { }
 
     async register(dto: RegisterDto) {
@@ -33,22 +36,28 @@ export class AuthService {
                 email: dto.email.toLowerCase(),
                 password: hashedPassword,
                 name: dto.name,
+                emailVerified: false,
             },
             select: {
                 id: true,
                 email: true,
                 name: true,
                 role: true,
+                emailVerified: true,
                 createdAt: true,
             },
         });
 
-        // Generar tokens
+        // Generar y enviar email de verificación
+        await this.sendVerificationEmail(user.id, user.email, user.name);
+
+        // Generar tokens (el usuario puede loguearse pero no está verificado)
         const tokens = await this.generateTokens(user.id, user.email);
 
         return {
             user,
             ...tokens,
+            message: 'Registro exitoso. Revisa tu email para verificar tu cuenta.',
         };
     }
 
@@ -62,6 +71,7 @@ export class AuthService {
                 name: true,
                 role: true,
                 password: true,
+                emailVerified: true,
                 subscription: {
                     select: {
                         status: true,
@@ -97,6 +107,107 @@ export class AuthService {
             },
             ...tokens,
         };
+    }
+
+    async verifyEmail(token: string) {
+        // Hash del token para buscar en DB
+        const tokenHash = this.hashToken(token);
+
+        // Buscar token
+        const verificationToken = await this.prisma.emailVerificationToken.findUnique({
+            where: { token: tokenHash },
+            include: { user: true },
+        });
+
+        if (!verificationToken) {
+            throw new BadRequestException('Token de verificación inválido');
+        }
+
+        // Verificar expiración
+        if (new Date() > verificationToken.expiresAt) {
+            // Eliminar token expirado
+            await this.prisma.emailVerificationToken.delete({
+                where: { id: verificationToken.id },
+            });
+            throw new BadRequestException('El token ha expirado. Solicita uno nuevo.');
+        }
+
+        // Marcar email como verificado
+        await this.prisma.user.update({
+            where: { id: verificationToken.userId },
+            data: { emailVerified: true },
+        });
+
+        // Eliminar token usado
+        await this.prisma.emailVerificationToken.delete({
+            where: { id: verificationToken.id },
+        });
+
+        return {
+            message: '¡Email verificado correctamente!',
+            email: verificationToken.user.email,
+        };
+    }
+
+    async resendVerificationEmail(email: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+        });
+
+        if (!user) {
+            // No revelar si el email existe o no (seguridad)
+            return { message: 'Si el email está registrado, recibirás un correo de verificación.' };
+        }
+
+        if (user.emailVerified) {
+            throw new BadRequestException('Este email ya está verificado');
+        }
+
+        // Rate limiting: máximo 3 tokens en la última hora
+        const recentTokens = await this.prisma.emailVerificationToken.count({
+            where: {
+                userId: user.id,
+                createdAt: { gte: new Date(Date.now() - 3600000) }, // última hora
+            },
+        });
+
+        if (recentTokens >= 3) {
+            throw new BadRequestException('Has solicitado demasiados emails. Intenta de nuevo en 1 hora.');
+        }
+
+        // Eliminar tokens anteriores de este usuario
+        await this.prisma.emailVerificationToken.deleteMany({
+            where: { userId: user.id },
+        });
+
+        // Enviar nuevo email
+        await this.sendVerificationEmail(user.id, user.email, user.name);
+
+        return { message: 'Si el email está registrado, recibirás un correo de verificación.' };
+    }
+
+    private async sendVerificationEmail(userId: string, email: string, name: string) {
+        // Generar token aleatorio (64 caracteres hex)
+        const rawToken = randomBytes(32).toString('hex');
+
+        // Guardar hash del token en la base de datos
+        const tokenHash = this.hashToken(rawToken);
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+        await this.prisma.emailVerificationToken.create({
+            data: {
+                token: tokenHash,
+                userId,
+                expiresAt,
+            },
+        });
+
+        // Enviar email con el token raw (no el hash)
+        await this.emailService.sendVerificationEmail(email, name, rawToken);
+    }
+
+    private hashToken(token: string): string {
+        return createHash('sha256').update(token).digest('hex');
     }
 
     async refreshToken(refreshToken: string) {
@@ -154,6 +265,7 @@ export class AuthService {
                 name: true,
                 role: true,
                 avatar: true,
+                emailVerified: true,
                 createdAt: true,
                 subscription: {
                     select: {

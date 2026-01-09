@@ -15,6 +15,7 @@ import { LmsModule } from './modules/lms';
 import { PaymentsModule } from './modules/payments';
 import { EbooksModule } from './modules/ebooks';
 import { LeadsModule } from './modules/leads';
+import { EmailModule } from './modules/email/email.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -51,6 +52,13 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
 
         // Frontend URL (for CORS)
         FRONTEND_URL: Joi.string().default('http://localhost:3000'),
+
+        // SMTP Email
+        SMTP_HOST: Joi.string().optional(),
+        SMTP_PORT: Joi.number().default(465),
+        SMTP_USER: Joi.string().optional(),
+        SMTP_PASS: Joi.string().optional(),
+        SMTP_FROM: Joi.string().optional(),
       }),
     }),
 
@@ -64,6 +72,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     PaymentsModule,
     EbooksModule,
     LeadsModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

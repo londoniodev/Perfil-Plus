@@ -69,8 +69,17 @@ COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/clie
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./apps/api/
 
-# Copiar el schema de Prisma (necesario para migraciones en runtime si las usas)
+# Copiar el schema de Prisma (necesario para migraciones en runtime)
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./apps/api/prisma
+
+# Crear script de inicio que ejecuta migraciones y luego arranca la app
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "🔄 Running database migrations..."' >> /app/start.sh && \
+    echo 'npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma' >> /app/start.sh && \
+    echo 'echo "✅ Migrations completed"' >> /app/start.sh && \
+    echo 'echo "🚀 Starting server..."' >> /app/start.sh && \
+    echo 'exec node apps/api/dist/main' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 USER nestjs
 
@@ -79,7 +88,7 @@ EXPOSE 3001
 ENV PORT=3001
 
 # Healthcheck - usando el puerto correcto 3001
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
 
-CMD ["node", "apps/api/dist/main"]
+CMD ["/app/start.sh"]

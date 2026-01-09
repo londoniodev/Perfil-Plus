@@ -41,6 +41,9 @@ RUN npx turbo run build --filter=@mauromera/api
 # Prepare Prisma Client for copying (dereference symlinks for pnpm)
 RUN cp -rL node_modules/@prisma/client /app/prisma-generated
 
+# Dereference all node_modules symlinks for production
+RUN mkdir -p /app/prod-node-modules && cp -rL node_modules/* /app/prod-node-modules/
+
 # ==============================================================================
 # STAGE 3: Production Dependencies - Solo dependencias de producción
 # ==============================================================================
@@ -67,8 +70,8 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Copiar dependencias de producción
-COPY --from=prod-deps /app/node_modules ./node_modules
+# Copiar dependencias de producción (dereferenciadas desde builder)
+COPY --from=builder /app/prod-node-modules ./node_modules
 
 # Copiar el Prisma Client generado desde el builder (copia dereferenciada)
 COPY --from=builder /app/prisma-generated ./node_modules/@prisma/client

@@ -26,6 +26,7 @@ export default function RegisterPage() {
             const res = await fetch(`${API_BASE}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include", // Permitir cookies
                 body: JSON.stringify(formData),
             });
 

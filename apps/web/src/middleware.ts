@@ -5,6 +5,12 @@ export function middleware(request: NextRequest) {
     const token = request.cookies.get('accessToken');
     const { pathname } = request.nextUrl;
 
+    console.log(`🛡️ Middleware Debug (${pathname}):`, {
+        cookieNames: request.cookies.getAll().map(c => c.name),
+        hasAccessToken: !!token,
+        url: request.url
+    });
+
     // 1. Proteger rutas privadas (/perfil, /cursos)
     const protectedPaths = ['/perfil', '/cursos'];
     const isProtected = protectedPaths.some(path => pathname.startsWith(path));

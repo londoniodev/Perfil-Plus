@@ -24,6 +24,8 @@ RUN npm install -g pnpm
 
 # Copiar dependencias instaladas (npm workspaces las pone todas en root node_modules)
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 
 # Copiar el código fuente
 COPY . .

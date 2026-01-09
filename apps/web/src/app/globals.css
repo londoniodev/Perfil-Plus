@@ -878,3 +878,6 @@ h6 {
     height: 400px;
   }
 }
+/* Dashboard Responsive */
+@media (max-width: 768px) { .sidebar-desktop { display: none !important; } .bottom-nav-mobile { display: flex !important; } .dashboard-main { margin-left: 0 !important; padding-bottom: 70px; } }
+@media (min-width: 769px) { .bottom-nav-mobile { display: none !important; } }

@@ -3,6 +3,7 @@
 import { Sidebar } from "../components/dashboard/Sidebar";
 import { BottomNav } from "../components/dashboard/BottomNav";
 import { DashboardProvider, useDashboard } from "@/context/DashboardContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
     const { isCollapsed } = useDashboard();
@@ -40,10 +41,12 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <DashboardProvider>
-            <DashboardContent>
-                {children}
-            </DashboardContent>
-        </DashboardProvider>
+        <AuthProvider>
+            <DashboardProvider>
+                <DashboardContent>
+                    {children}
+                </DashboardContent>
+            </DashboardProvider>
+        </AuthProvider>
     );
 }

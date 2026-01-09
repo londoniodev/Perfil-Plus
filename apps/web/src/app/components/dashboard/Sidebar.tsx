@@ -2,35 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { API_BASE } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { useDashboard } from "@/context/DashboardContext";
+import { useAuth } from "@/context/AuthContext";
 
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { isCollapsed, toggleSidebar } = useDashboard();
+    const { isAdmin, logout } = useAuth();
 
-    const menuItems = [
+    // Menu items for all users
+    const userMenuItems = [
         { name: "Mi Panel", href: "/perfil", icon: <HomeIcon /> },
         { name: "Mis Cursos", href: "/cursos", icon: <BookIcon /> },
         { name: "Ebooks", href: "/ebooks/mis-compras", icon: <LibraryIcon /> },
         { name: "Suscripción", href: "/suscripcion", icon: <CreditCardIcon /> },
     ];
 
-    const isActive = (path: string) => pathname === path;
+    // Additional menu items for admins
+    const adminMenuItems = [
+        { name: "Gestionar Cursos", href: "/admin/cursos", icon: <EditIcon /> },
+        { name: "Gestionar Blog", href: "/admin/blog", icon: <BlogIcon /> },
+        { name: "Usuarios", href: "/admin/usuarios", icon: <UsersIcon /> },
+    ];
+
+    const isActive = (path: string) => pathname?.startsWith(path);
 
     const handleLogout = async () => {
-        try {
-            await fetch(`${API_BASE}/auth/logout`, {
-                method: "POST",
-                credentials: 'include'
-            });
-        } catch (error) {
-            console.error(error);
-        }
-        localStorage.removeItem("user");
-        window.dispatchEvent(new Event("user-login"));
+        await logout();
         router.push("/admin/login");
     };
 
@@ -82,9 +82,10 @@ export function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav style={{ flex: 1, padding: "1.5rem 0.75rem" }}>
+            <nav style={{ flex: 1, padding: "1.5rem 0.75rem", overflowY: "auto" }}>
+                {/* User Menu */}
                 <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    {menuItems.map((item) => (
+                    {userMenuItems.map((item) => (
                         <li key={item.href}>
                             <Link
                                 href={item.href}
@@ -108,6 +109,51 @@ export function Sidebar() {
                         </li>
                     ))}
                 </ul>
+
+                {/* Admin Menu - Only shown for admins */}
+                {isAdmin && (
+                    <>
+                        {!isCollapsed && (
+                            <div style={{
+                                margin: "1.5rem 0 0.75rem",
+                                padding: "0 0.75rem",
+                                fontSize: "0.7rem",
+                                fontWeight: 600,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05rem",
+                                color: "var(--foreground-muted)"
+                            }}>
+                                Administración
+                            </div>
+                        )}
+                        {isCollapsed && <hr style={{ margin: "1rem 0", border: "none", borderTop: "1px solid var(--border)" }} />}
+                        <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                            {adminMenuItems.map((item) => (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "0.75rem",
+                                            padding: "0.75rem",
+                                            borderRadius: "0.5rem",
+                                            textDecoration: "none",
+                                            color: isActive(item.href) ? "var(--accent)" : "var(--foreground-muted)",
+                                            background: isActive(item.href) ? "rgba(232, 168, 56, 0.1)" : "transparent",
+                                            justifyContent: isCollapsed ? "center" : "flex-start",
+                                            transition: "all 0.2s"
+                                        }}
+                                        title={isCollapsed ? item.name : ""}
+                                    >
+                                        <span style={{ display: "flex", alignItems: "center", color: "var(--accent)" }}>{item.icon}</span>
+                                        {!isCollapsed && <span style={{ fontWeight: 500 }}>{item.name}</span>}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
             </nav>
 
             {/* Footer / Logout */}
@@ -135,7 +181,7 @@ export function Sidebar() {
                 </button>
             </div>
 
-            {/* Toggle Button for Collapsed State (if hidden in header) */}
+            {/* Toggle Button for Collapsed State */}
             {isCollapsed && (
                 <button
                     onClick={toggleSidebar}
@@ -163,7 +209,7 @@ export function Sidebar() {
     );
 }
 
-// Icons (unchanged)
+// Icons
 function HomeIcon() {
     return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
 }
@@ -184,4 +230,15 @@ function ChevronLeftIcon() {
 }
 function ChevronRightIcon() {
     return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+}
+
+// Admin Icons
+function EditIcon() {
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
+}
+function BlogIcon() {
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
+}
+function UsersIcon() {
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
 }

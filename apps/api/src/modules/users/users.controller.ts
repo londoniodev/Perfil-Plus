@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Body, Query, Param, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto';
 import { CurrentUser, Roles } from '../../common/decorators';
@@ -33,5 +33,23 @@ export class AdminUsersController {
         @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     ) {
         return this.usersService.findAll(page, limit);
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        return this.usersService.findById(id);
+    }
+
+    @Patch(':id/role')
+    async updateRole(
+        @Param('id') id: string,
+        @Body('role') role: Role,
+    ) {
+        return this.usersService.updateRole(id, role);
+    }
+
+    @Delete(':id')
+    async remove(@Param('id') id: string) {
+        return this.usersService.remove(id);
     }
 }

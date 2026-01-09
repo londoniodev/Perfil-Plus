@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateUserDto } from './dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -101,6 +102,7 @@ export class UsersService {
                     email: true,
                     name: true,
                     role: true,
+                    emailVerified: true,
                     createdAt: true,
                     subscription: {
                         select: {
@@ -121,5 +123,28 @@ export class UsersService {
                 totalPages: Math.ceil(total / limit),
             },
         };
+    }
+
+    // Admin: Cambiar rol de usuario
+    async updateRole(userId: string, role: Role) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: { role },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+            },
+        });
+        return user;
+    }
+
+    // Admin: Eliminar usuario
+    async remove(userId: string) {
+        await this.prisma.user.delete({
+            where: { id: userId },
+        });
+        return { message: 'Usuario eliminado correctamente' };
     }
 }

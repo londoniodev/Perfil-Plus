@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -185,7 +185,7 @@ export class AuthService {
         });
 
         // Crear refresh token
-        const refreshTokenValue = uuidv4();
+        const refreshTokenValue = randomUUID();
         const refreshTokenExpiresIn = this.configService.get('JWT_REFRESH_EXPIRES_IN_DAYS', 7);
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + refreshTokenExpiresIn);

@@ -7,7 +7,7 @@ import {
     GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface UploadResult {
     key: string;
@@ -50,7 +50,7 @@ export class StorageService {
     ): Promise<UploadResult> {
         const bucket = isPrivate ? this.privateBucket : this.publicBucket;
         const extension = file.originalname.split('.').pop()?.toLowerCase();
-        const key = `${folder}/${uuidv4()}.${extension}`;
+        const key = `${folder}/${randomUUID()}.${extension}`;
 
         try {
             await this.s3Client.send(
@@ -86,7 +86,7 @@ export class StorageService {
     ): Promise<UploadResult> {
         const bucket = isPrivate ? this.privateBucket : this.publicBucket;
         const extension = filename.split('.').pop()?.toLowerCase();
-        const key = `${folder}/${uuidv4()}.${extension}`;
+        const key = `${folder}/${randomUUID()}.${extension}`;
 
         try {
             await this.s3Client.send(

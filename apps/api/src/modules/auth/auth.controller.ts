@@ -10,7 +10,7 @@ import { Public, CurrentUser } from '../../common/decorators';
 const getCookieOptions = (isProduction: boolean, domain?: string) => ({
     httpOnly: true,
     secure: isProduction, // HTTPS required for Secure
-    sameSite: isProduction ? 'lax' as const : 'lax' as const,
+    sameSite: isProduction ? 'none' as const : 'lax' as const, // 'none' para máxima compatibilidad cross-domain
     path: '/',
     domain: domain, // Dynamic domain
 });
@@ -64,7 +64,8 @@ export class AuthController {
             hostHeader: req.get('host'),
             hostname: req.hostname,
             calculatedDomain: domain,
-            isProduction: this.isProduction()
+            isProduction: this.isProduction(),
+            timestamp: new Date().toISOString(),
         });
 
         // Establecer cookies

@@ -292,13 +292,14 @@ export class AuthService {
     private async generateTokens(userId: string, email: string) {
         const accessTokenPayload = { sub: userId, email };
 
+        // Generar tokens (Default 7 días si no hay variable de entorno)
         const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
-            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
+            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
         });
 
         // Crear refresh token
         const refreshTokenValue = randomUUID();
-        const refreshTokenExpiresIn = this.configService.get('JWT_REFRESH_EXPIRES_IN_DAYS', 7);
+        const refreshTokenExpiresIn = this.configService.get('JWT_REFRESH_EXPIRES_IN_DAYS', 30);
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + refreshTokenExpiresIn);
 
@@ -314,7 +315,7 @@ export class AuthService {
         return {
             accessToken,
             refreshToken: refreshTokenValue,
-            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '15m'),
+            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
         };
     }
 }

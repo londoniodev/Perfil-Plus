@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { API_BASE } from "@/lib/config";
 import { useRouter } from "next/navigation";
+import { useDashboard } from "@/context/DashboardContext";
 
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const { isCollapsed, toggleSidebar } = useDashboard();
 
     const menuItems = [
         { name: "Mi Panel", href: "/perfil", icon: <HomeIcon /> },
@@ -68,7 +68,7 @@ export function Sidebar() {
                 )}
 
                 <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    onClick={toggleSidebar}
                     style={{
                         background: "none",
                         border: "none",
@@ -138,7 +138,7 @@ export function Sidebar() {
             {/* Toggle Button for Collapsed State (if hidden in header) */}
             {isCollapsed && (
                 <button
-                    onClick={() => setIsCollapsed(false)}
+                    onClick={toggleSidebar}
                     style={{
                         position: "absolute",
                         top: "25px",
@@ -163,7 +163,7 @@ export function Sidebar() {
     );
 }
 
-// Icons
+// Icons (unchanged)
 function HomeIcon() {
     return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
 }

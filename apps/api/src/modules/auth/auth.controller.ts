@@ -145,16 +145,16 @@ export class AuthController {
         // Determinar dominio: si el hostname incluye mauromera.com, usamos .mauromera.com (subdominios)
         const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
 
-        // Access token cookie (15 minutos)
+        // Access token cookie (7 días)
         res.cookie('accessToken', accessToken, {
             ...getCookieOptions(isProd, domain),
-            maxAge: 15 * 60 * 1000, // 15 minutos
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
         });
 
-        // Refresh token cookie (7 días)
+        // Refresh token cookie (30 días)
         res.cookie('refreshToken', refreshToken, {
             ...getCookieOptions(isProd, domain),
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
         });
     }
 

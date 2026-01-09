@@ -35,8 +35,7 @@ export function BottomNav() {
 
     const handleLogout = async () => {
         await logout();
-        router.push("/login");
-        setIsMenuOpen(false);
+        window.location.href = "/login";
     };
 
     return (

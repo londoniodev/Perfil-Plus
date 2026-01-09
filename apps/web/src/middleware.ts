@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
     });
 
     // 1. Proteger rutas privadas
-    const protectedPaths = ['/perfil', '/cursos', '/suscripcion', '/admin/cursos', '/admin/blog', '/admin/usuarios'];
+    const protectedPaths = ['/perfil', '/cursos', '/suscripcion', '/ebooks/mis-compras', '/admin/cursos', '/admin/blog', '/admin/usuarios'];
     const isProtected = protectedPaths.some(path => pathname.startsWith(path));
 
     if (isProtected && !token) {
@@ -39,6 +39,7 @@ export const config = {
         '/perfil/:path*',
         '/cursos/:path*',
         '/suscripcion/:path*',
+        '/ebooks/mis-compras',
         '/admin/cursos/:path*',
         '/admin/blog/:path*',
         '/admin/usuarios/:path*',

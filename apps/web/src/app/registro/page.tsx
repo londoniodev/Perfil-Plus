@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../admin/admin.module.css"; // Reuse login styles for consistency
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NODE_ENV === 'production'
+    ? "https://api.mauromera.com/api"
+    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api");
 
 export default function RegisterPage() {
     const router = useRouter();

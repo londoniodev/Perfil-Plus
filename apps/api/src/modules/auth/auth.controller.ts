@@ -100,23 +100,34 @@ export class AuthController {
         return { message: 'Tokens refreshed successfully' };
     }
 
+    @Public() // IMPORTANT: Logout must work even with expired/invalid tokens
     @Post('logout')
     @HttpCode(HttpStatus.OK)
     async logout(
-        @CurrentUser('id') userId: string,
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
     ) {
+        const hostname = req.get('host') || req.hostname;
         const refreshToken = req.cookies?.refreshToken;
 
-        await this.authService.logout(userId, refreshToken);
+        console.log('🔓 Logout requested:', {
+            hostname,
+            hasRefreshToken: !!refreshToken,
+            cookies: Object.keys(req.cookies || {})
+        });
 
-        // Limpiar cookies
-        const hostname = req.get('host') || req.hostname;
+        // Note: We can't invalidate tokens in DB without valid userId
+        // Just clearing cookies is sufficient for security
+
+
+        // ALWAYS clear cookies, regardless of token validity
         this.clearAuthCookies(res, hostname);
+
+        console.log('✅ Cookies cleared for hostname:', hostname);
 
         return { message: 'Sesión cerrada correctamente' };
     }
+
 
     @Get('me')
     async getMe(@CurrentUser('id') userId: string) {

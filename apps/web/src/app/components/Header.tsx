@@ -2,42 +2,36 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // Use AuthContext for reliable auth state
+    const { isAuthenticated, loading } = useAuth();
 
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
         };
 
-        const checkLogin = () => {
-            const user = localStorage.getItem("user");
-            setIsLoggedIn(!!user);
-        };
-
         // Initial check
         handleResize();
-        checkLogin();
-
-        // Listen for storage events (login/logout in other tabs)
-        window.addEventListener("storage", checkLogin);
-        // Custom event for same-tab updates
-        window.addEventListener("user-login", checkLogin);
 
         window.addEventListener("resize", handleResize);
         return () => {
             window.removeEventListener("resize", handleResize);
-            window.removeEventListener("storage", checkLogin);
-            window.removeEventListener("user-login", checkLogin);
         };
     }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+    // Don't show auth buttons while loading to prevent flicker
+    const showAuthButtons = !loading;
+
     return (
+
         <header
             style={{
                 position: "fixed",
@@ -95,7 +89,7 @@ export function Header() {
                         gap: "2.5rem"
                     }}
                 >
-                    <NavLinks isLoggedIn={isLoggedIn} />
+                    <NavLinks isLoggedIn={isAuthenticated} />
                 </nav>
 
                 {/* Mobile Toggle */}
@@ -144,7 +138,7 @@ export function Header() {
                         gap: "2rem",
                         alignItems: "center"
                     }}>
-                        <NavLinks isLoggedIn={isLoggedIn} onClick={() => setIsMenuOpen(false)} />
+                        <NavLinks isLoggedIn={isAuthenticated} onClick={() => setIsMenuOpen(false)} />
                     </div>
                 )}
             </div>

@@ -18,11 +18,21 @@ interface AuthContextType {
     user: User | null;
     loading: boolean;
     isAdmin: boolean;
+    isAuthenticated: boolean;
     refreshUser: () => Promise<void>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper function to clear ALL auth data from localStorage
+function clearAllAuthData() {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    // Dispatch event to notify other components
+    window.dispatchEvent(new Event("user-login"));
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -35,8 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (!res.ok) {
+                // API returned error (401, etc) - clear everything
                 setUser(null);
-                localStorage.removeItem("user");
+                clearAllAuthData();
                 return;
             }
 
@@ -46,29 +57,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error("Error fetching user:", error);
             setUser(null);
-            localStorage.removeItem("user");
+            clearAllAuthData();
         }
     }, []);
 
     const logout = useCallback(async () => {
-        // Always clear local state first
+        // Clear state immediately
         setUser(null);
-        localStorage.removeItem("user");
+
+        // Clear ALL localStorage auth data
+        clearAllAuthData();
 
         try {
+            // Call backend to clear cookies and invalidate tokens
             await fetch(`${API_BASE}/auth/logout`, {
                 method: "POST",
                 credentials: 'include',
             });
         } catch (error) {
-            console.error("Logout error:", error);
+            console.error("Logout API error:", error);
+            // Continue with redirect even if API fails
         }
 
-        // Dispatch event for other components
-        window.dispatchEvent(new Event("user-login"));
-
-        // Force redirect to login page
-        window.location.href = "/login";
+        // Force full page reload to clear any cached state
+        window.location.href = "/";
     }, []);
 
     useEffect(() => {
@@ -78,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 setUser(JSON.parse(storedUser));
             } catch {
-                localStorage.removeItem("user");
+                clearAllAuthData();
             }
         }
 
@@ -87,9 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [refreshUser]);
 
     const isAdmin = user?.role === "ADMIN";
+    const isAuthenticated = !!user;
 
     return (
-        <AuthContext.Provider value={{ user, loading, isAdmin, refreshUser, logout }}>
+        <AuthContext.Provider value={{ user, loading, isAdmin, isAuthenticated, refreshUser, logout }}>
             {children}
         </AuthContext.Provider>
     );

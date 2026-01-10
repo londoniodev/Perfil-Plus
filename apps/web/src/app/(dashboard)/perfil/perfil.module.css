@@ -43,106 +43,97 @@
     color: #ff4444;
 }
 
-.mainGrid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
-}
-
-.infoCard,
-.coursesCard {
+/* Info Card */
+.card {
     background: var(--card-background);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 2rem;
+    margin-bottom: 2rem;
 }
 
-/* Info Card */
-.infoCard {
+.infoRow {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
 }
 
-.avatar {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 1.5rem;
+.infoRow:last-child {
+    border-bottom: none;
 }
 
-.infoCard h2 {
-    margin-bottom: 0.5rem;
+.label {
+    font-weight: 500;
+    color: var(--foreground-muted);
+}
+
+.value {
+    font-weight: 600;
     color: var(--foreground);
 }
 
-.infoCard p {
-    color: var(--muted-foreground);
+.verified {
+    color: #00ff80;
+}
+
+.notVerified {
+    color: #ff4444;
+}
+
+.active {
+    color: #00ff80;
+}
+
+.inactive {
+    color: #ffaa00;
+}
+
+/* CTA Card */
+.ctaCard {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.ctaCard h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+}
+
+.ctaCard p {
+    color: var(--foreground-muted);
     margin-bottom: 1.5rem;
 }
 
-.badge {
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.verified {
-    background: rgba(0, 255, 128, 0.1);
-    color: #00ff80;
-    border: 1px solid rgba(0, 255, 128, 0.2);
-}
-
-.pending {
-    background: rgba(255, 170, 0, 0.1);
-    color: #ffaa00;
-    border: 1px solid rgba(255, 170, 0, 0.2);
-}
-
-/* Courses Card */
-.coursesCard h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.coursesCard p {
-    color: var(--muted-foreground);
-    margin-bottom: 2rem;
-}
-
-.actionButtons {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.alertBox {
-    background: rgba(255, 50, 50, 0.05);
-    border: 1px solid rgba(255, 50, 50, 0.1);
-    padding: 1rem;
+.ctaButton {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    text-decoration: none;
     border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.link {
-    color: var(--primary);
-    text-decoration: underline;
-    font-weight: 500;
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 @media (max-width: 768px) {
-    .mainGrid {
-        grid-template-columns: 1fr;
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2rem;
     }
 }

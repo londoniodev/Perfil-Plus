@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsBoolean, IsInt, Min, IsUrl } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 // ==================== THEME DTOs ====================
 export class CreateThemeDto {
@@ -22,28 +23,7 @@ export class CreateThemeDto {
     published?: boolean;
 }
 
-export class UpdateThemeDto {
-    @IsOptional()
-    @IsString()
-    title?: string;
-
-    @IsOptional()
-    @IsString()
-    description?: string;
-
-    @IsOptional()
-    @IsUrl()
-    coverImage?: string;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    order?: number;
-
-    @IsOptional()
-    @IsBoolean()
-    published?: boolean;
-}
+export class UpdateThemeDto extends PartialType(CreateThemeDto) { }
 
 // ==================== COURSE DTOs ====================
 export class CreateCourseDto {
@@ -74,32 +54,7 @@ export class CreateCourseDto {
     published?: boolean;
 }
 
-export class UpdateCourseDto {
-    @IsOptional()
-    @IsString()
-    title?: string;
-
-    @IsOptional()
-    @IsString()
-    description?: string;
-
-    @IsOptional()
-    @IsUrl()
-    coverImage?: string;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    order?: number;
-
-    @IsOptional()
-    @IsBoolean()
-    isFree?: boolean;
-
-    @IsOptional()
-    @IsBoolean()
-    published?: boolean;
-}
+export class UpdateCourseDto extends PartialType(CreateCourseDto) { }
 
 // ==================== LESSON DTOs ====================
 export class CreateLessonDto {
@@ -131,32 +86,21 @@ export class CreateLessonDto {
     published?: boolean;
 }
 
-export class UpdateLessonDto {
-    @IsOptional()
+export class UpdateLessonDto extends PartialType(CreateLessonDto) { }
+
+export class CreateLessonAttachmentDto {
     @IsString()
-    title?: string;
+    name: string;
 
-    @IsOptional()
     @IsString()
-    content?: string;
+    fileUrl: string;
 
-    @IsOptional()
-    @IsUrl()
-    videoUrl?: string;
+    @IsString()
+    fileType: string;
 
-    @IsOptional()
     @IsInt()
     @Min(0)
-    duration?: number;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    order?: number;
-
-    @IsOptional()
-    @IsBoolean()
-    published?: boolean;
+    fileSize: number;
 }
 
 // ==================== PROGRESS DTOs ====================

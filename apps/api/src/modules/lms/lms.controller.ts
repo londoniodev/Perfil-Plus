@@ -17,6 +17,7 @@ import {
     UpdateProgressDto,
     CreateEvaluationDto, UpdateEvaluationDto,
     CreateQuestionDto,
+    CreateLessonAttachmentDto,
 } from './dto';
 import { Public, CurrentUser, Roles } from '../../common/decorators';
 
@@ -155,6 +156,11 @@ export class AdminLmsController {
     }
 
     // Lessons
+    @Get('lessons/:id')
+    async getLesson(@Param('id') id: string) {
+        return this.lmsService.findLessonById(id);
+    }
+
     @Post('lessons')
     async createLesson(@Body() dto: CreateLessonDto) {
         return this.lmsService.createLesson(dto);
@@ -168,6 +174,19 @@ export class AdminLmsController {
     @Delete('lessons/:id')
     async deleteLesson(@Param('id') id: string) {
         return this.lmsService.deleteLesson(id);
+    }
+
+    @Post('lessons/:id/attachments')
+    async addLessonAttachment(
+        @Param('id') lessonId: string,
+        @Body() dto: CreateLessonAttachmentDto,
+    ) {
+        return this.lmsService.addLessonAttachment(lessonId, dto);
+    }
+
+    @Delete('attachments/:id')
+    async removeLessonAttachment(@Param('id') id: string) {
+        return this.lmsService.removeLessonAttachment(id);
     }
 
     // Evaluations

@@ -13,6 +13,10 @@ export class CreateQuestionDto {
     @IsString()
     question: string;
 
+    @IsOptional()
+    @IsString()
+    image?: string;
+
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => QuestionOptionDto)

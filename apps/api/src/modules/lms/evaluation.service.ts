@@ -27,6 +27,7 @@ export class EvaluationService {
                     ? {
                         create: questions.map((q, index) => ({
                             question: q.question,
+                            image: q.image,
                             options: q.options as any,
                             correctId: q.correctId,
                             order: q.order ?? index,
@@ -92,6 +93,7 @@ export class EvaluationService {
             data: {
                 evaluationId,
                 question: dto.question,
+                image: dto.image,
                 options: dto.options as any,
                 correctId: dto.correctId,
                 order: dto.order ?? (maxOrder._max.order ?? 0) + 1,

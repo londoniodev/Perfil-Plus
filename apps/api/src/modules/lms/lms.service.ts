@@ -4,6 +4,7 @@ import {
     CreateThemeDto, UpdateThemeDto,
     CreateCourseDto, UpdateCourseDto,
     CreateLessonDto, UpdateLessonDto,
+    CreateLessonAttachmentDto,
     UpdateProgressDto,
 } from './dto';
 
@@ -225,53 +226,52 @@ export class LmsService {
     }
 
     async findLessonBySlug(courseSlug: string, lessonSlug: string, userId?: string, hasSubscription = false) {
-        const course = await this.prisma.course.findUnique({
-            where: { slug: courseSlug },
-            select: { id: true, isFree: true, published: true },
-        });
-
-        if (!course || !course.published) {
-            throw new NotFoundException('Curso no encontrado');
-        }
-
-        // Verificar acceso premium
-        if (!course.isFree && !hasSubscription) {
-            throw new ForbiddenException('Necesitas una suscripción activa para acceder a este contenido');
-        }
-
+        // En lugar de buscar el curso primero, buscamos la lección directamente con el curso incluido
+        // Esto optimiza la consulta y evita problemas si el lessonSlug es único
         const lesson = await this.prisma.lesson.findFirst({
-            where: { courseId: course.id, slug: lessonSlug },
+            where: {
+                slug: lessonSlug,
+                course: { slug: courseSlug },
+            },
             include: {
                 course: {
                     select: {
                         id: true,
                         title: true,
                         slug: true,
+                        isFree: true,
                         theme: { select: { id: true, title: true, slug: true } },
                     },
                 },
+                attachments: true, // Incluimos los adjuntos
             },
         });
 
-        if (!lesson || !lesson.published) {
+        if (!lesson) {
             throw new NotFoundException('Lección no encontrada');
         }
 
-        // Obtener lecciones anterior/siguiente
+        // Verificar acceso
+        // Si el curso no es gratuito y el usuario no tiene suscripción activa
+        if (!lesson.course.isFree && !hasSubscription) {
+            throw new ForbiddenException('Necesitas una suscripción activa para acceder a este contenido');
+        }
+
+        // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
         const [prev, next] = await Promise.all([
             this.prisma.lesson.findFirst({
-                where: { courseId: course.id, order: { lt: lesson.order }, published: true },
+                where: { courseId: lesson.course.id, order: { lt: lesson.order }, published: true },
                 orderBy: { order: 'desc' },
                 select: { slug: true, title: true },
             }),
             this.prisma.lesson.findFirst({
-                where: { courseId: course.id, order: { gt: lesson.order }, published: true },
+                where: { courseId: lesson.course.id, order: { gt: lesson.order }, published: true },
                 orderBy: { order: 'asc' },
                 select: { slug: true, title: true },
             }),
         ]);
 
-        // Obtener progreso del usuario
+        // Obtener progreso del usuario si existe
         let userProgress: { completed: boolean; watchedTime: number } | null = null;
         if (userId) {
             const progress = await this.prisma.userProgress.findUnique({
@@ -287,6 +287,52 @@ export class LmsService {
             navigation: { prev, next },
             userProgress: userProgress || { completed: false, watchedTime: 0 },
         };
+    }
+
+    // ============ ATTACHMENTS ============
+
+    async addLessonAttachment(lessonId: string, dto: CreateLessonAttachmentDto) {
+        const lesson = await this.prisma.lesson.findUnique({
+            where: { id: lessonId },
+        });
+
+        if (!lesson) {
+            throw new NotFoundException('Lección no encontrada');
+        }
+
+        return this.prisma.lessonAttachment.create({
+            data: {
+                lessonId,
+                ...dto,
+            },
+        });
+    }
+
+    async removeLessonAttachment(attachmentId: string) {
+        // Verificar si existe
+        const attachment = await this.prisma.lessonAttachment.findUnique({
+            where: { id: attachmentId },
+        });
+
+        if (!attachment) {
+            throw new NotFoundException('Adjunto no encontrado');
+        }
+
+        return this.prisma.lessonAttachment.delete({
+            where: { id: attachmentId },
+        });
+    }
+
+    async findLessonById(id: string) {
+        const lesson = await this.prisma.lesson.findUnique({
+            where: { id },
+            include: {
+                attachments: true,
+            }
+        });
+
+        if (!lesson) throw new NotFoundException('Lección no encontrada');
+        return lesson;
     }
 
     // ==================== PROGRESS ====================
@@ -369,12 +415,12 @@ export class LmsService {
     private generateSlug(title: string): string {
         return title
             .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '')
-            + '-' + Date.now().toString(36);
+            .normalize('NFD') // Normalizar caracteres como tildes
+            .replace(/[\u0300-\u036f]/g, '') // Eliminar diacríticos
+            .replace(/[^a-z0-9\s-]/g, '') // Eliminar caracteres especiales
+            .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+            .replace(/-+/g, '-') // Reemplazar múltiples guiones con uno solo
+            .replace(/^-|-$/g, '') // Eliminar guiones al inicio o final
+            + '-' + Date.now().toString(36).substring(4); // Añadir sufijo único corto
     }
 }

@@ -51,6 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const logout = useCallback(async () => {
+        // Always clear local state first
+        setUser(null);
+        localStorage.removeItem("user");
+
         try {
             await fetch(`${API_BASE}/auth/logout`, {
                 method: "POST",
@@ -59,9 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error("Logout error:", error);
         }
-        setUser(null);
-        localStorage.removeItem("user");
+
+        // Dispatch event for other components
         window.dispatchEvent(new Event("user-login"));
+
+        // Force redirect to login page
+        window.location.href = "/login";
     }, []);
 
     useEffect(() => {

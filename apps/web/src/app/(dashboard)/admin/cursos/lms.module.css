@@ -280,6 +280,17 @@
     border-color: var(--accent);
 }
 
+.titleInput {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 1rem;
+    border: 2px solid var(--border);
+}
+
+.titleInput:focus {
+    border-color: var(--accent);
+}
+
 .formTextarea {
     min-height: 120px;
     resize: vertical;

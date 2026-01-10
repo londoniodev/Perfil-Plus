@@ -108,10 +108,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 }
 
-export function useAuth() {
+// Default values for SSR/static generation when AuthProvider is not available
+const defaultAuthContext: AuthContextType = {
+    user: null,
+    loading: true,
+    isAdmin: false,
+    isAuthenticated: false,
+    refreshUser: async () => { },
+    logout: async () => { },
+};
+
+export function useAuth(): AuthContextType {
     const context = useContext(AuthContext);
+    // Return default values during SSR/static generation instead of throwing
     if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
+        return defaultAuthContext;
     }
     return context;
 }

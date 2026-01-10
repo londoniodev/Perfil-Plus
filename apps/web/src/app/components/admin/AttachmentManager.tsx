@@ -64,14 +64,26 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
+        // Formatos permitidos
+        const allowedFormats = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'mp4', 'webm'];
+        const maxSizeMB = 10;
+
         setError(null);
         setUploading(true);
 
         try {
             for (const file of Array.from(files)) {
+                const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+                // Validar formato
+                if (!fileExtension || !allowedFormats.includes(fileExtension)) {
+                    throw new Error(`"${file.name}": Formato no permitido. Solo se aceptan: ${allowedFormats.join(', ').toUpperCase()}`);
+                }
+
                 // Validate file size (max 10MB)
-                if (file.size > 10 * 1024 * 1024) {
-                    throw new Error(`${file.name}: El archivo no debe superar 10MB`);
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                    throw new Error(`"${file.name}": El archivo pesa ${fileSizeMB}MB. El tamaño máximo es ${maxSizeMB}MB`);
                 }
 
                 // Determine bucket based on premium status
@@ -89,7 +101,27 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
                 });
 
                 if (!uploadRes.ok) {
-                    throw new Error(`Error al subir ${file.name}`);
+                    // Intentar parsear el error del backend
+                    let errorMessage = `Error al subir "${file.name}"`;
+                    try {
+                        const errorData = await uploadRes.json();
+                        if (errorData.message) {
+                            if (errorData.message.includes('MaxFileSizeValidator') || errorData.message.includes('size')) {
+                                errorMessage = `"${file.name}": El archivo excede el tamaño máximo (${maxSizeMB}MB)`;
+                            } else if (errorData.message.includes('FileTypeValidator') || errorData.message.includes('type')) {
+                                errorMessage = `"${file.name}": Formato no permitido`;
+                            } else if (typeof errorData.message === 'string') {
+                                errorMessage = errorData.message;
+                            }
+                        }
+                    } catch {
+                        if (uploadRes.status === 413) {
+                            errorMessage = `"${file.name}": El archivo excede el tamaño máximo (${maxSizeMB}MB)`;
+                        } else if (uploadRes.status === 401 || uploadRes.status === 403) {
+                            errorMessage = 'No tienes permisos para subir archivos';
+                        }
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 const uploadData = await uploadRes.json();
@@ -109,7 +141,7 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
                 });
 
                 if (!attachRes.ok) {
-                    throw new Error(`Error al registrar ${file.name}`);
+                    throw new Error(`Error al registrar "${file.name}" en el post`);
                 }
             }
 

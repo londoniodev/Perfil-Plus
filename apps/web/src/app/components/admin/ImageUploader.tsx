@@ -25,15 +25,22 @@ export default function ImageUploader({
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Formatos permitidos
+        const allowedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
         // Validate file type
-        if (!file.type.startsWith('image/')) {
-            setError('Solo se permiten imágenes');
+        if (!allowedFormats.includes(file.type) && !allowedExtensions.includes(fileExtension || '')) {
+            setError(`Formato no permitido. Solo se aceptan: ${allowedExtensions.join(', ').toUpperCase()}`);
             return;
         }
 
         // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            setError('La imagen no debe superar 5MB');
+        const maxSizeMB = 5;
+        if (file.size > maxSizeMB * 1024 * 1024) {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+            setError(`El archivo pesa ${fileSizeMB}MB. El tamaño máximo permitido es ${maxSizeMB}MB`);
             return;
         }
 
@@ -52,7 +59,33 @@ export default function ImageUploader({
             });
 
             if (!res.ok) {
-                throw new Error('Error al subir imagen');
+                // Intentar parsear el error del backend
+                let errorMessage = 'Error al subir imagen';
+                try {
+                    const errorData = await res.json();
+                    if (errorData.message) {
+                        // Parsear mensajes específicos del backend
+                        if (errorData.message.includes('MaxFileSizeValidator') || errorData.message.includes('size')) {
+                            errorMessage = `El archivo excede el tamaño máximo permitido (${maxSizeMB}MB)`;
+                        } else if (errorData.message.includes('FileTypeValidator') || errorData.message.includes('type')) {
+                            errorMessage = `Formato no permitido. Solo se aceptan: ${allowedExtensions.join(', ').toUpperCase()}`;
+                        } else if (Array.isArray(errorData.message)) {
+                            errorMessage = errorData.message[0];
+                        } else {
+                            errorMessage = errorData.message;
+                        }
+                    }
+                } catch {
+                    // Si no se puede parsear, usar mensaje genérico basado en status
+                    if (res.status === 413) {
+                        errorMessage = `El archivo excede el tamaño máximo permitido (${maxSizeMB}MB)`;
+                    } else if (res.status === 400) {
+                        errorMessage = 'Archivo inválido. Verifica el formato y tamaño';
+                    } else if (res.status === 401 || res.status === 403) {
+                        errorMessage = 'No tienes permisos para subir archivos';
+                    }
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await res.json();

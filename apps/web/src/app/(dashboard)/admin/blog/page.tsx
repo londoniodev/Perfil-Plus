@@ -3,8 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.mauromera.com/api";
+import { API_BASE } from "@/lib/config";
 
 interface Post {
     id: string;

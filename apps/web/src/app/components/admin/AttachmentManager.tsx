@@ -18,7 +18,7 @@ interface AttachmentManagerProps {
     isPremium: boolean;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.mauromera.com/api";
+import { API_BASE } from "@/lib/config";
 
 function formatFileSize(bytes: number): string {
     if (bytes < 1024) return bytes + ' B';

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import BlogEditor from "@/app/components/admin/BlogEditor";
 import ImageUploader from "@/app/components/admin/ImageUploader";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.mauromera.com/api";
+import { API_BASE } from "@/lib/config";
 
 interface Category {
     id: string;

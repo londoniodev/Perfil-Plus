@@ -9,7 +9,7 @@ interface ImageUploaderProps {
     folder?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.mauromera.com/api";
+import { API_BASE } from "@/lib/config";
 
 export default function ImageUploader({
     value,

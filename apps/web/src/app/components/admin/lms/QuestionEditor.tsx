@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ImageUploader from "../ImageUploader";
-import styles from "../../lms.module.css";
+import styles from "@/app/(dashboard)/admin/cursos/lms.module.css";
 
 interface Option {
     id: string;

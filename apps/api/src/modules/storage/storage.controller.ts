@@ -26,14 +26,20 @@ export class StorageController {
         @UploadedFile(
             new ParseFilePipe({
                 validators: [
-                    new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif|webp|avif|pdf|mp4|webm)$/i }),
+                    new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
                 ],
+                fileIsRequired: true,
             }),
         )
         file: Express.Multer.File,
         @Query('folder') folder?: string,
     ) {
+        console.log('Upload File Request Received:', {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            folder
+        });
         return this.storageService.uploadFile(file, folder || 'uploads');
     }
 
@@ -43,13 +49,24 @@ export class StorageController {
         @UploadedFile(
             new ParseFilePipe({
                 validators: [
-                    new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
-                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|gif|webp|avif)$/i }),
+                    new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // Aumentado a 10MB temporalmente
                 ],
+                fileIsRequired: true,
             }),
         )
         file: Express.Multer.File,
     ) {
+        console.log('Upload Image Request Received:', {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size
+        });
+
+        // Validación manual de tipo si es necesario
+        if (!file.mimetype.match(/(jpg|jpeg|png|gif|webp|avif)$/i)) {
+            console.warn('Invalid mimetype detected:', file.mimetype);
+        }
+
         return this.storageService.uploadFile(file, 'images');
     }
 

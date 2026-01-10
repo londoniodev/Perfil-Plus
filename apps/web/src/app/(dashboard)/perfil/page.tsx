@@ -50,13 +50,13 @@ export default function PerfilPage() {
                     </div>
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Suscripción:</span>
-                        <span className={`${styles.value} ${user.hasActiveSubscription ? styles.active : styles.inactive}`}>
-                            {user.hasActiveSubscription ? "Activa ✓" : "Inactiva"}
+                        <span className={`${styles.value} ${user.role === 'ADMIN' || user.hasActiveSubscription ? styles.active : styles.inactive}`}>
+                            {user.role === 'ADMIN' ? "Acceso Total (Admin) ✓" : (user.hasActiveSubscription ? "Activa ✓" : "Inactiva")}
                         </span>
                     </div>
                 </div>
 
-                {!user.hasActiveSubscription && (
+                {!user.hasActiveSubscription && user.role !== "ADMIN" && (
                     <div className={styles.ctaCard}>
                         <h2>¡Desbloquea contenido premium!</h2>
                         <p>Accede a todos nuestros cursos, ebooks y recursos exclusivos.</p>

@@ -39,7 +39,7 @@ export class LmsController {
     @Get('themes/:slug')
     @Public()
     async getTheme(@Param('slug') slug: string, @CurrentUser() user?: any) {
-        const hasSubscription = user?.hasActiveSubscription || false;
+        const hasSubscription = user?.hasActiveSubscription || user?.role === 'ADMIN' || false;
         return this.lmsService.findThemeBySlug(slug, hasSubscription);
     }
 
@@ -58,7 +58,7 @@ export class LmsController {
         @Param('lessonSlug') lessonSlug: string,
         @CurrentUser() user: any,
     ) {
-        const hasSubscription = user?.hasActiveSubscription || false;
+        const hasSubscription = user?.hasActiveSubscription || user?.role === 'ADMIN' || false;
         return this.lmsService.findLessonBySlug(courseSlug, lessonSlug, user.id, hasSubscription);
     }
 

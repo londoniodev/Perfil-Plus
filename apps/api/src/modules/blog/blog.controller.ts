@@ -35,7 +35,7 @@ export class BlogController {
         @Param('slug') slug: string,
         @CurrentUser() user?: any,
     ) {
-        const hasSubscription = user?.hasActiveSubscription || false;
+        const hasSubscription = user?.hasActiveSubscription || user?.role === 'ADMIN' || false;
         return this.blogService.findPostBySlug(slug, hasSubscription);
     }
 

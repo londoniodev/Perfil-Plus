@@ -32,6 +32,15 @@ export class StorageService {
 
         this.publicUrl = this.configService.get('S3_PUBLIC_URL', this.endpoint);
 
+        console.log('StorageService Initialized:', {
+            endpoint: this.endpoint,
+            publicBucket: this.publicBucket,
+            privateBucket: this.privateBucket,
+            publicUrl: this.publicUrl,
+            hasAccessKey: !!this.configService.get('S3_ACCESS_KEY'),
+            hasSecretKey: !!this.configService.get('S3_SECRET_KEY')
+        });
+
         this.s3Client = new S3Client({
             endpoint: this.endpoint,
             region: this.configService.get('S3_REGION', 'us-east-1'),
@@ -73,7 +82,8 @@ export class StorageService {
                 bucket,
             };
         } catch (error) {
-            throw new BadRequestException('Error al subir el archivo');
+            console.error('S3 Upload Error:', error);
+            throw new BadRequestException('Error al subir el archivo: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
     }
 
@@ -108,7 +118,8 @@ export class StorageService {
                 bucket,
             };
         } catch (error) {
-            throw new BadRequestException('Error al subir el archivo');
+            console.error('S3 Upload Buffer Error:', error);
+            throw new BadRequestException('Error al subir el archivo: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
     }
 

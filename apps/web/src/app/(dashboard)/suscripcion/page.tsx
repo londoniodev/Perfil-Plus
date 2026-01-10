@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import styles from "./suscripcion.module.css";
 import { API_BASE } from "@/lib/config";
+import ActiveSubscriptionCard from "@/app/components/subscription/ActiveSubscriptionCard";
+import PricingCard from "@/app/components/subscription/PricingCard";
+
+// ============================================================================
+// TIPOS
+// ============================================================================
 
 interface SubscriptionStatus {
     hasSubscription: boolean;
@@ -11,6 +16,10 @@ interface SubscriptionStatus {
     startDate: string | null;
     endDate: string | null;
 }
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
 
 export default function SuscripcionPage() {
     const [loading, setLoading] = useState(true);
@@ -78,8 +87,9 @@ export default function SuscripcionPage() {
             } else if (data.sandboxInitPoint) {
                 window.location.href = data.sandboxInitPoint;
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Error desconocido";
+            setError(message);
         } finally {
             setProcessing(false);
         }
@@ -99,11 +109,13 @@ export default function SuscripcionPage() {
             }
 
             fetchSubscriptionStatus();
-        } catch (err: any) {
-            alert(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Error desconocido";
+            alert(message);
         }
     };
 
+    // Estado de carga
     if (loading) {
         return (
             <div className={styles.subscriptionPage}>
@@ -114,8 +126,11 @@ export default function SuscripcionPage() {
         );
     }
 
+    const isActive = subscriptionStatus?.status === "ACTIVE";
+
     return (
         <div className={styles.subscriptionPage}>
+            {/* Hero */}
             <section className={styles.subscriptionHero}>
                 <div className="container">
                     <h1>Suscripción Premium</h1>
@@ -126,88 +141,20 @@ export default function SuscripcionPage() {
                 </div>
             </section>
 
+            {/* Contenido principal */}
             <section className={styles.pricingSection}>
                 <div className="container">
-                    {subscriptionStatus?.status === "ACTIVE" ? (
-                        <div className={styles.activeStatus}>
-                            <div className={styles.activeIcon}>✨</div>
-                            <h3>¡Eres miembro Premium!</h3>
-                            <p>
-                                Tu suscripción está activa hasta el{" "}
-                                {subscriptionStatus.endDate
-                                    ? new Date(subscriptionStatus.endDate).toLocaleDateString("es-CO", {
-                                        day: "numeric",
-                                        month: "long",
-                                        year: "numeric",
-                                    })
-                                    : "próximo mes"}
-                            </p>
-                            <Link href="/cursos" className="btn btn-primary">
-                                Ir a los cursos
-                            </Link>
-                            <div style={{ marginTop: "1.5rem" }}>
-                                <button onClick={handleCancel} className={styles.cancelBtn}>
-                                    Cancelar suscripción
-                                </button>
-                            </div>
-                        </div>
+                    {isActive ? (
+                        <ActiveSubscriptionCard
+                            endDate={subscriptionStatus?.endDate ?? null}
+                            onCancel={handleCancel}
+                        />
                     ) : (
-                        <div className={styles.pricingCard}>
-                            <div className={styles.cardHeader}>
-                                <h2>Plan Mensual</h2>
-                                <div className={styles.price}>
-                                    <span className={styles.currency}>$</span>
-                                    <span className={styles.amount}>49.900</span>
-                                    <span className={styles.period}>/mes</span>
-                                </div>
-                            </div>
-                            <div className={styles.cardBody}>
-                                <ul className={styles.features}>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Acceso a todos los cursos premium
-                                    </li>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Lecciones en video HD
-                                    </li>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Evaluaciones y certificaciones
-                                    </li>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Contenido exclusivo del blog
-                                    </li>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Material de apoyo descargable
-                                    </li>
-                                    <li>
-                                        <span className={styles.checkIcon}>✓</span>
-                                        Soporte prioritario
-                                    </li>
-                                </ul>
-
-                                {error && (
-                                    <div style={{ color: "#ef4444", marginBottom: "1rem", textAlign: "center" }}>
-                                        {error}
-                                    </div>
-                                )}
-
-                                <button
-                                    onClick={handleSubscribe}
-                                    className={styles.subscribeBtn}
-                                    disabled={processing}
-                                >
-                                    {processing ? "Procesando..." : "Suscribirme ahora"}
-                                </button>
-
-                                <p style={{ fontSize: "0.85rem", color: "var(--foreground-muted)", textAlign: "center", marginTop: "1rem" }}>
-                                    Pago seguro con Mercado Pago. Puedes cancelar cuando quieras.
-                                </p>
-                            </div>
-                        </div>
+                        <PricingCard
+                            onSubscribe={handleSubscribe}
+                            processing={processing}
+                            error={error}
+                        />
                     )}
                 </div>
             </section>

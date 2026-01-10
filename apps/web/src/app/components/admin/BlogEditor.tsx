@@ -62,7 +62,7 @@ export default function BlogEditor({ value, onChange, placeholder = "Escribe tu 
     }, [execCommand]);
 
     return (
-        <div style={{ border: "1px solid var(--border)", borderRadius: "0.5rem", overflow: "hidden" }}>
+        <div style={{ border: "1px solid var(--border)", borderRadius: "0.5rem", overflow: "hidden", maxWidth: "100%" }}>
             {/* Toolbar */}
             <div style={{
                 display: "flex",
@@ -172,7 +172,11 @@ export default function BlogEditor({ value, onChange, placeholder = "Escribe tu 
                     background: "var(--card-bg)",
                     color: "var(--foreground)",
                     lineHeight: 1.7,
-                    fontSize: "1rem"
+                    fontSize: "1rem",
+                    wordBreak: "break-all",
+                    overflowWrap: "anywhere",
+                    whiteSpace: "pre-wrap",
+                    overflowX: "hidden"
                 }}
             />
 

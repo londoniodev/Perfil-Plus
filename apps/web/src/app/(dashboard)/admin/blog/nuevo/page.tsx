@@ -230,42 +230,127 @@ export default function NewPostPage() {
                     </div>
 
                     {/* Settings Row */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr auto",
+                        gap: "1.5rem",
+                        padding: "1rem",
+                        background: "var(--card-bg)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "0.5rem"
+                    }}>
                         {/* Category */}
                         <div>
                             <label style={labelStyle}>Categoría</label>
-                            <select
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
-                                style={inputStyle}
-                            >
-                                <option value="">Sin categoría</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
+                            <div style={{ display: "flex", gap: "0.5rem" }}>
+                                <select
+                                    value={categoryId}
+                                    onChange={(e) => setCategoryId(e.target.value)}
+                                    style={{ ...inputStyle, flex: 1 }}
+                                >
+                                    <option value="">Sin categoría</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const name = prompt("Nombre de la nueva categoría:");
+                                        if (name && name.trim()) {
+                                            fetch(`${API_BASE}/admin/blog/categories`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                credentials: "include",
+                                                body: JSON.stringify({ name: name.trim() })
+                                            })
+                                                .then(res => res.json())
+                                                .then(newCat => {
+                                                    setCategories(prev => [...prev, newCat]);
+                                                    setCategoryId(newCat.id);
+                                                })
+                                                .catch(() => alert("Error al crear categoría"));
+                                        }
+                                    }}
+                                    style={{
+                                        padding: "0.75rem",
+                                        background: "var(--accent)",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "0.5rem",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center"
+                                    }}
+                                    title="Crear nueva categoría"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Toggles */}
-                        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-                            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-                                <input
-                                    type="checkbox"
-                                    checked={isPremium}
-                                    onChange={(e) => setIsPremium(e.target.checked)}
-                                    style={{ width: "18px", height: "18px" }}
-                                />
-                                <span style={{ color: "var(--foreground)" }}>Premium</span>
-                            </label>
-                            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
-                                <input
-                                    type="checkbox"
-                                    checked={published}
-                                    onChange={(e) => setPublished(e.target.checked)}
-                                    style={{ width: "18px", height: "18px" }}
-                                />
-                                <span style={{ color: "var(--foreground)" }}>Publicar</span>
-                            </label>
+                        <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end", paddingBottom: "0.25rem" }}>
+                            {/* Premium Toggle */}
+                            <button
+                                type="button"
+                                onClick={() => setIsPremium(!isPremium)}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                    padding: "0.5rem 1rem",
+                                    background: isPremium ? "rgba(139, 92, 246, 0.15)" : "transparent",
+                                    border: isPremium ? "1px solid #8b5cf6" : "1px solid var(--border)",
+                                    borderRadius: "0.5rem",
+                                    cursor: "pointer",
+                                    color: isPremium ? "#8b5cf6" : "var(--foreground-muted)",
+                                    transition: "all 0.2s"
+                                }}
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill={isPremium ? "#8b5cf6" : "none"} stroke="currentColor" strokeWidth="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                </svg>
+                                <span style={{ fontWeight: 500 }}>Premium</span>
+                            </button>
+
+                            {/* Publicar Toggle */}
+                            <button
+                                type="button"
+                                onClick={() => setPublished(!published)}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "0.5rem",
+                                    padding: "0.5rem 1rem",
+                                    background: published ? "rgba(34, 197, 94, 0.15)" : "transparent",
+                                    border: published ? "1px solid #22c55e" : "1px solid var(--border)",
+                                    borderRadius: "0.5rem",
+                                    cursor: "pointer",
+                                    color: published ? "#22c55e" : "var(--foreground-muted)",
+                                    transition: "all 0.2s"
+                                }}
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    {published ? (
+                                        <>
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                            <circle cx="12" cy="12" r="3" fill="#22c55e" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                            <line x1="1" y1="1" x2="23" y2="23" />
+                                        </>
+                                    )}
+                                </svg>
+                                <span style={{ fontWeight: 500 }}>{published ? "Publicado" : "Borrador"}</span>
+                            </button>
                         </div>
                     </div>
 

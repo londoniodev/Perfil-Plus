@@ -198,7 +198,7 @@ export default function ImageUploader({
                                 fontSize: "0.75rem",
                                 marginTop: "0.25rem"
                             }}>
-                                PNG, JPG, WEBP (max. 5MB)
+                                JPG, JPEG, PNG, GIF, WEBP, AVIF (max. 5MB)
                             </p>
                         </>
                     )}

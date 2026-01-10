@@ -36,8 +36,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm, openssl for Prisma, and su-exec for user switching
+RUN npm install -g pnpm && apk add --no-cache openssl su-exec
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -57,13 +57,14 @@ RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
 ENV NODE_ENV=production
 
 # Copy built app
-COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Copy startup script
-COPY --chown=nestjs:nodejs apps/api/start.sh ./start.sh
-RUN chmod +x ./start.sh
+# Copy entrypoint script (runs as root to execute migrations)
+COPY apps/api/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-USER nestjs
+# Give nestjs user ownership of the app directory
+RUN chown -R nestjs:nodejs /app
 
 EXPOSE 3001
 ENV PORT=3001
@@ -72,4 +73,6 @@ ENV PORT=3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
 
-CMD ["./start.sh"]
+# Entrypoint runs migrations as root, then switches to nestjs user
+ENTRYPOINT ["/entrypoint.sh"]
+

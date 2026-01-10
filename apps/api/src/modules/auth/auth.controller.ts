@@ -160,16 +160,33 @@ export class AuthController {
 
     private clearAuthCookies(res: Response, hostname?: string) {
         const isProd = this.isProduction();
-        const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
 
-        res.cookie('accessToken', '', {
-            ...getCookieOptions(isProd, domain),
-            maxAge: 0,
-        });
+        // Clear cookies with the domain they were set on
+        const clearOptions = {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? 'none' as const : 'lax' as const,
+            path: '/',
+        };
 
-        res.cookie('refreshToken', '', {
-            ...getCookieOptions(isProd, domain),
-            maxAge: 0,
-        });
+        // Clear with .mauromera.com domain (production)
+        if (hostname && hostname.includes('mauromera.com')) {
+            res.clearCookie('accessToken', { ...clearOptions, domain: '.mauromera.com' });
+            res.clearCookie('refreshToken', { ...clearOptions, domain: '.mauromera.com' });
+        }
+
+        // Also clear without domain (for localhost/development and as fallback)
+        res.clearCookie('accessToken', clearOptions);
+        res.clearCookie('refreshToken', clearOptions);
+
+        // Extra: set expired cookies as final fallback
+        res.cookie('accessToken', '', { ...clearOptions, maxAge: 0 });
+        res.cookie('refreshToken', '', { ...clearOptions, maxAge: 0 });
+
+        if (hostname && hostname.includes('mauromera.com')) {
+            res.cookie('accessToken', '', { ...clearOptions, domain: '.mauromera.com', maxAge: 0 });
+            res.cookie('refreshToken', '', { ...clearOptions, domain: '.mauromera.com', maxAge: 0 });
+        }
     }
+
 }

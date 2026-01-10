@@ -63,9 +63,6 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY apps/api/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Give nestjs user ownership of the app directory
-RUN chown -R nestjs:nodejs /app
-
 EXPOSE 3001
 ENV PORT=3001
 

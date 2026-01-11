@@ -186,9 +186,26 @@ export default function LessonPage({
                 <div className={`container ${styles.contentWrapper}`}>
                     {lesson.videoUrl && (
                         <div className={styles.videoContainer}>
-                            <video controls src={lesson.videoUrl}>
-                                Tu navegador no soporta el elemento de video.
-                            </video>
+                            {getYouTubeEmbedUrl(lesson.videoUrl) ? (
+                                <iframe
+                                    src={getYouTubeEmbedUrl(lesson.videoUrl) || ""}
+                                    title={lesson.title}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    style={{
+                                        border: "none",
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "100%",
+                                        height: "100%",
+                                    }}
+                                />
+                            ) : (
+                                <video controls src={lesson.videoUrl}>
+                                    Tu navegador no soporta el elemento de video.
+                                </video>
+                            )}
                         </div>
                     )}
 
@@ -231,6 +248,17 @@ export default function LessonPage({
             </section>
         </div>
     );
+}
+
+function getYouTubeEmbedUrl(url: string): string | null {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+
+    if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    return null;
 }
 
 function formatContent(content: string): string {

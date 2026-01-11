@@ -40,9 +40,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const refreshUser = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/auth/me`, {
+            let res = await fetch(`${API_BASE}/auth/me`, {
                 credentials: 'include',
             });
+
+            // Si el token de acceso expiró (401), intentar refrescar
+            if (res.status === 401) {
+                try {
+                    const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+                        method: "POST",
+                        credentials: 'include'
+                    });
+
+                    if (refreshRes.ok) {
+                        // Refresco exitoso, reintentar petición original
+                        res = await fetch(`${API_BASE}/auth/me`, {
+                            credentials: 'include',
+                        });
+                    }
+                } catch (refreshError) {
+                    console.error("Error refreshing token:", refreshError);
+                    // Si falla el refresco, procederá al logout abajo
+                }
+            }
 
             if (!res.ok) {
                 // API returned error (401, etc) - clear everything

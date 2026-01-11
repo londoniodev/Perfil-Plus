@@ -28,27 +28,6 @@ export default function EditarLeccionPage() {
     // Fetch lesson data
     const fetchLesson = async () => {
         try {
-            // Usamos findLessonById que expuse en el servicio (via AdminController: getLesson no está expuesto por ID en admin controller? Revisar)
-            // Revisando controller: Si, hay un Get 'lessons/:id' que no está en el controller. 
-            // Espera, AdminLmsController no tiene Get 'lessons/:id'. Tiene create, update, delete.
-            // Necesito agregar Get 'lessons/:id' al controller o usar la ruta publica y filtrar.
-            // O mejor, agregar el endpoint al controller, que lo olvidé. 
-            // VOY A ASUMIR que lo agrego ahora mismo antes de terminar.
-
-            // Para evitar errores ahora, usaré la ruta pública si es posible, pero requiere slug.
-            // Mejor agrego el endpoint faltante con replace_file_content rápido después.
-            // Asumiré que existe: GET /admin/lms/lessons/:id
-
-            // UPDATE: Reviso mi memoria del controller. 
-            // @Get('courses/:id') existe.
-            // @Get('evaluations/:id') existe.
-            // @Get('themes/:id') existe.
-            // @Post('lessons') existe.
-            // NO VI @Get('lessons/:id') en el controller.
-
-            // Workaround temporal: Obtener curso y filtrar lección, o arreglar el controller.
-            // Arreglaré el controller.
-
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${params.lessonId}`, {
                 credentials: "include",
             });
@@ -122,8 +101,6 @@ export default function EditarLeccionPage() {
 
             <h1 className={styles.pageTitle}>Editar Lección</h1>
 
-            <h1 className={styles.pageTitle}>Editar Lección</h1>
-
             <div className={styles.formCard}>
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.formGroup}>
@@ -133,7 +110,7 @@ export default function EditarLeccionPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             required
-                            className={`${styles.input} ${styles.titleInput}`}
+                            className={`${styles.formInput} ${styles.titleInput}`}
                             placeholder="Escribe un título claro para la lección"
                         />
                     </div>
@@ -146,37 +123,31 @@ export default function EditarLeccionPage() {
                             </svg>
                             Video de la lección
                         </label>
-                        <div style={{ marginBottom: "1rem" }}>
-                            <div style={{ display: "flex", gap: "1rem", marginBottom: "0.5rem" }}>
-                                <button
-                                    type="button"
-                                    onClick={() => { setVideoType("upload"); setVideoUrl(""); }}
-                                    style={{
-                                        padding: "0.5rem 1rem",
-                                        borderRadius: "0.25rem",
-                                        background: videoType === "upload" ? "var(--primary)" : "var(--background)",
-                                        color: videoType === "upload" ? "white" : "var(--foreground)",
-                                        border: "1px solid var(--border)",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    Subir Video
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setVideoType("youtube"); setVideoUrl(""); }}
-                                    style={{
-                                        padding: "0.5rem 1rem",
-                                        borderRadius: "0.25rem",
-                                        background: videoType === "youtube" ? "var(--primary)" : "var(--background)",
-                                        color: videoType === "youtube" ? "white" : "var(--foreground)",
-                                        border: "1px solid var(--border)",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    YouTube
-                                </button>
-                            </div>
+
+                        <div className={styles.selectionGrid}>
+                            <button
+                                type="button"
+                                onClick={() => { setVideoType("upload"); setVideoUrl(""); }}
+                                className={`${styles.selectionCard} ${videoType === "upload" ? styles.active : ""}`}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <span style={{ fontWeight: 600 }}>Subir Video</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setVideoType("youtube"); setVideoUrl(""); }}
+                                className={`${styles.selectionCard} ${videoType === "youtube" ? styles.active : ""}`}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+                                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
+                                </svg>
+                                <span style={{ fontWeight: 600 }}>YouTube</span>
+                            </button>
                         </div>
 
                         {videoType === "upload" ? (
@@ -191,12 +162,12 @@ export default function EditarLeccionPage() {
                                 placeholder="https://www.youtube.com/watch?v=..."
                                 value={videoUrl}
                                 onChange={(e) => setVideoUrl(e.target.value)}
-                                className={styles.input}
+                                className={styles.formInput}
                             />
                         )}
                     </div>
 
-                    <div className={styles.row}>
+                    <div className={styles.formRow}>
                         <div className={styles.formGroup}>
                             <label className={styles.formLabel} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -263,23 +234,7 @@ export default function EditarLeccionPage() {
                         <button
                             type="button"
                             onClick={() => setPublished(!published)}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.75rem",
-                                padding: "0.75rem 1.5rem",
-                                borderRadius: "0.5rem",
-                                border: "1px solid",
-                                borderColor: published ? "#22c55e" : "var(--border)",
-                                background: published ? "rgba(34, 197, 94, 0.1)" : "var(--background)",
-                                color: published ? "#22c55e" : "var(--foreground-muted)",
-                                cursor: "pointer",
-                                transition: "all 0.2s",
-                                width: "100%",
-                                justifyContent: "center",
-                                fontSize: "1rem",
-                                fontWeight: 500
-                            }}
+                            className={`${styles.statusToggle} ${published ? styles.published : ""}`}
                         >
                             {published ? (
                                 <>
@@ -302,11 +257,10 @@ export default function EditarLeccionPage() {
                         </button>
                     </div>
 
-                    <div className={styles.formActions} style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
+                    <div className={styles.formActions}>
                         <Link
                             href={`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`}
                             className={styles.cancelBtn}
-                            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
                         >
                             Cancelar
                         </Link>
@@ -314,7 +268,6 @@ export default function EditarLeccionPage() {
                             type="submit"
                             className={styles.submitBtn}
                             disabled={saving}
-                            style={{ background: "var(--accent)", fontSize: "1.1rem", padding: "1rem" }}
                         >
                             {saving ? "Guardando..." : "Guardar Cambios"}
                         </button>

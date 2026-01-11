@@ -25,7 +25,7 @@ export function PropuestaSection() {
                 <div style={{ textAlign: "center", marginBottom: "5rem" }}>
                     <h2 className="section-title">Lo humano y lo medible</h2>
                     <p className="section-subtitle" style={{ margin: "0 auto" }}>
-                        Decisiones conscientes, cultura saludable y cuidado del mundo interno.
+                        Decisiones conscientes, cultura plena, desarrollo del talento, autoconocimiento y salud mental.
                     </p>
                 </div>
 

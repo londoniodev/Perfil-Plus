@@ -19,13 +19,10 @@ export function HeroSection() {
 
                     <div className="hero-buttons">
                         <Link
-                            href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20agendar%20una%20sesión."
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="#quien-soy"
                             className="btn btn-primary"
                         >
-                            <IconCalendar />
-                            Agendar
+                            Conoce más
                         </Link>
                         <Link href="#servicios" className="btn btn-secondary">
                             Ver servicios

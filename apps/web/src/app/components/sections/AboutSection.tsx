@@ -5,7 +5,7 @@ import ProfileCarousel from "../ProfileCarousel";
 
 export function AboutSection() {
     return (
-        <section className="section" id="sobre-mi">
+        <section className="section" id="quien-soy">
             <div className="container grid-responsive-profile">
                 <ProfileCarousel />
 

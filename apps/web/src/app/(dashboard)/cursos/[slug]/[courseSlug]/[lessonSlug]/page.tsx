@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styles from "./lesson.module.css";
+import { API_BASE } from "@/lib/config";
+import { useAuth } from "@/context/AuthContext";
 
 interface LessonData {
     id: string;
@@ -23,13 +25,12 @@ interface LessonData {
     userProgress: { completed: boolean; watchedTime: number };
 }
 
-import { API_BASE } from "@/lib/config";
-
 export default function LessonPage({
     params,
 }: {
     params: Promise<{ slug: string; courseSlug: string; lessonSlug: string }>;
 }) {
+    const { isAuthenticated, loading: authLoading, user } = useAuth();
     const [lesson, setLesson] = useState<LessonData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -40,14 +41,13 @@ export default function LessonPage({
         params.then(setParamsData);
     }, [params]);
 
-    useEffect(() => {
+    const fetchLesson = useCallback(async () => {
         if (!paramsData) return;
-        fetchLesson();
-    }, [paramsData]);
 
-    const fetchLesson = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
+        // Wait for auth to initialize
+        if (authLoading) return;
+
+        if (!isAuthenticated) {
             setError("needsAuth");
             setLoading(false);
             return;
@@ -55,8 +55,10 @@ export default function LessonPage({
 
         try {
             const res = await fetch(
-                `${API_BASE}/lms/courses/${paramsData!.courseSlug}/lessons/${paramsData!.lessonSlug}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
+                {
+                    credentials: "include" // Use cookies
+                }
             );
 
             if (res.status === 403) {
@@ -71,23 +73,27 @@ export default function LessonPage({
             setLesson(data);
             setCompleted(data.userProgress?.completed || false);
         } catch (err) {
+            console.error("Error fetching lesson:", err);
             setError("notFound");
         } finally {
             setLoading(false);
         }
-    };
+    }, [paramsData, authLoading, isAuthenticated]);
+
+    useEffect(() => {
+        fetchLesson();
+    }, [fetchLesson]);
 
     const markAsComplete = async () => {
         if (!lesson) return;
-        const token = localStorage.getItem("token");
 
         try {
             await fetch(`${API_BASE}/lms/progress/${lesson.id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
+                credentials: "include", // Use cookies
                 body: JSON.stringify({ completed: true }),
             });
             setCompleted(true);
@@ -96,7 +102,7 @@ export default function LessonPage({
         }
     };
 
-    if (loading) {
+    if (loading || authLoading) {
         return (
             <div className={styles.lessonPage}>
                 <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
@@ -106,7 +112,7 @@ export default function LessonPage({
         );
     }
 
-    if (error === "needsAuth") {
+    if (error === "needsAuth" || !isAuthenticated) {
         return (
             <div className={styles.lessonPage}>
                 <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
@@ -140,7 +146,7 @@ export default function LessonPage({
         );
     }
 
-    if (error || !lesson) {
+    if (error === "notFound" || !lesson) {
         return (
             <div className={styles.lessonPage}>
                 <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>

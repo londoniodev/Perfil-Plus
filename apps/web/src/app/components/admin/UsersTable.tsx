@@ -24,6 +24,7 @@ interface UsersTableProps {
     actionLoading: string | null;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;
+    onManageSubscription: (userId: string, action: "assign" | "cancel") => void;
 }
 
 // ============================================================================
@@ -35,6 +36,7 @@ export default function UsersTable({
     actionLoading,
     onRoleChange,
     onDelete,
+    onManageSubscription,
 }: UsersTableProps) {
     return (
         <div style={{
@@ -67,6 +69,7 @@ export default function UsersTable({
                                 isLoading={actionLoading === user.id}
                                 onRoleChange={onRoleChange}
                                 onDelete={onDelete}
+                                onManageSubscription={onManageSubscription}
                             />
                         ))}
                     </tbody>
@@ -85,9 +88,10 @@ interface UserRowProps {
     isLoading: boolean;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;
+    onManageSubscription: (userId: string, action: "assign" | "cancel") => void;
 }
 
-function UserRow({ user, isLoading, onRoleChange, onDelete }: UserRowProps) {
+function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription }: UserRowProps) {
     const subscriptionStatus = user.subscription?.status || "Sin suscripción";
     const isActiveSubscription = subscriptionStatus === "ACTIVE";
 
@@ -143,22 +147,48 @@ function UserRow({ user, isLoading, onRoleChange, onDelete }: UserRowProps) {
 
             {/* Acciones */}
             <td style={tdStyle}>
-                <button
-                    onClick={() => onDelete(user.id)}
-                    disabled={isLoading}
-                    style={{
-                        background: "rgba(239, 68, 68, 0.1)",
-                        color: "#ef4444",
-                        border: "none",
-                        padding: "0.35rem 0.75rem",
-                        borderRadius: "0.5rem",
-                        fontSize: "0.8rem",
-                        cursor: isLoading ? "wait" : "pointer",
-                        opacity: isLoading ? 0.5 : 1,
-                    }}
-                >
-                    {isLoading ? "..." : "Eliminar"}
-                </button>
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                    {!isActiveSubscription ? (
+                        <button
+                            onClick={() => onManageSubscription(user.id, "assign")}
+                            disabled={isLoading}
+                            style={{
+                                ...actionButtonStyle,
+                                background: "rgba(34, 197, 94, 0.1)",
+                                color: "#22c55e",
+                            }}
+                            title="Asignar Suscripción"
+                        >
+                            {isLoading ? "..." : "Suscribir"}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => onManageSubscription(user.id, "cancel")}
+                            disabled={isLoading}
+                            style={{
+                                ...actionButtonStyle,
+                                background: "rgba(234, 179, 8, 0.1)",
+                                color: "#eab308",
+                            }}
+                            title="Cancelar Suscripción"
+                        >
+                            {isLoading ? "..." : "Cancelar"}
+                        </button>
+                    )}
+
+                    <button
+                        onClick={() => onDelete(user.id)}
+                        disabled={isLoading}
+                        style={{
+                            ...actionButtonStyle,
+                            background: "rgba(239, 68, 68, 0.1)",
+                            color: "#ef4444",
+                        }}
+                        title="Eliminar Usuario"
+                    >
+                        {isLoading ? "..." : "Eliminar"}
+                    </button>
+                </div>
             </td>
         </tr>
     );
@@ -216,4 +246,14 @@ const thStyle: React.CSSProperties = {
 const tdStyle: React.CSSProperties = {
     padding: "1rem",
     verticalAlign: "middle",
+};
+
+const actionButtonStyle: React.CSSProperties = {
+    border: "none",
+    padding: "0.35rem 0.75rem",
+    borderRadius: "0.5rem",
+    fontSize: "0.8rem",
+    cursor: "pointer",
+    fontWeight: 500,
+    transition: "all 0.2s",
 };

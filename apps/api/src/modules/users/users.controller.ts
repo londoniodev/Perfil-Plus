@@ -1,5 +1,6 @@
-import { Controller, Get, Patch, Delete, Body, Query, Param, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Post, Body, Query, Param, ParseIntPipe, DefaultValuePipe, Inject, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { PaymentsService } from '../payments/payments.service';
 import { UpdateUserDto } from './dto';
 import { CurrentUser, Roles } from '../../common/decorators';
 import { Role } from '@prisma/client';
@@ -25,7 +26,11 @@ export class UsersController {
 @Controller('admin/users')
 @Roles(Role.ADMIN)
 export class AdminUsersController {
-    constructor(private readonly usersService: UsersService) { }
+    constructor(
+        private readonly usersService: UsersService,
+        @Inject(forwardRef(() => PaymentsService))
+        private readonly paymentsService: PaymentsService,
+    ) { }
 
     @Get()
     async findAll(
@@ -46,6 +51,19 @@ export class AdminUsersController {
         @Body('role') role: Role,
     ) {
         return this.usersService.updateRole(id, role);
+    }
+
+    @Post(':id/subscription')
+    async assignSubscription(
+        @Param('id') id: string,
+        @Body('months') months?: number,
+    ) {
+        return this.paymentsService.assignManualSubscription(id, months);
+    }
+
+    @Delete(':id/subscription')
+    async cancelSubscription(@Param('id') id: string) {
+        return this.paymentsService.cancelSubscription(id);
     }
 
     @Delete(':id')

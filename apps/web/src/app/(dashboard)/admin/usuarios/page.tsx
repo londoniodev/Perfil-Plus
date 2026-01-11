@@ -100,6 +100,47 @@ export default function AdminUsuariosPage() {
         }
     };
 
+    const handleManageSubscription = async (userId: string, action: "assign" | "cancel") => {
+        const confirmMessage = action === "assign"
+            ? "¿Asignar suscripción premium a este usuario por 1 mes?"
+            : "¿Cancelar la suscripción de este usuario?";
+
+        if (!confirm(confirmMessage)) return;
+
+        setActionLoading(userId);
+        try {
+            const method = action === "assign" ? "POST" : "DELETE";
+            const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+
+            if (res.ok) {
+                // Actualizar estado local
+                setUsers(users.map((u) => {
+                    if (u.id === userId) {
+                        return {
+                            ...u,
+                            subscription: {
+                                ...u.subscription,
+                                status: action === "assign" ? "ACTIVE" : "CANCELLED"
+                            }
+                        };
+                    }
+                    return u;
+                }));
+            } else {
+                alert("Error al actualizar la suscripción");
+            }
+        } catch (error) {
+            console.error("Error updating subscription:", error);
+            alert("Error de conexión");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     // Estados de carga
     if (authLoading || loading) {
         return <div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>;
@@ -139,6 +180,7 @@ export default function AdminUsuariosPage() {
                 actionLoading={actionLoading}
                 onRoleChange={handleRoleChange}
                 onDelete={handleDelete}
+                onManageSubscription={handleManageSubscription}
             />
 
             {/* Paginación */}

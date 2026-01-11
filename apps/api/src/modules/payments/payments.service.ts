@@ -287,6 +287,33 @@ export class PaymentsService {
         this.logger.log(`Subscription activated for user ${userId}`);
     }
 
+    // Admin: Assign manual subscription
+    async assignManualSubscription(userId: string, months = 1) {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + months);
+
+        await this.prisma.subscription.upsert({
+            where: { userId },
+            create: {
+                userId,
+                status: 'ACTIVE',
+                mpSubscriptionId: 'MANUAL_ASSIGNMENT',
+                startDate,
+                endDate,
+            },
+            update: {
+                status: 'ACTIVE',
+                mpSubscriptionId: 'MANUAL_ASSIGNMENT',
+                startDate,
+                endDate,
+            },
+        });
+
+        this.logger.log(`Manual subscription assigned to user ${userId} for ${months} months`);
+        return { message: 'Suscripción asignada correctamente' };
+    }
+
     private async completeEbookPurchase(userId: string, ebookId: string, mpPaymentId: string, amount: number) {
         await this.prisma.purchase.upsert({
             where: { userId_ebookId: { userId, ebookId } },

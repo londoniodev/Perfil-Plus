@@ -17,8 +17,22 @@ import {
 // ============================================================================
 
 export const metadata: Metadata = {
-    title: "E-books | Mauro Mera",
-    description: "Descubre nuestra colección de e-books sobre psicología, liderazgo y desarrollo personal.",
+    title: "E-books | Recursos de Psicología y Liderazgo",
+    description: "Descubre nuestra colección de e-books sobre psicología, liderazgo, cultura organizacional y desarrollo personal. Herramientas prácticas aplicables desde hoy.",
+    keywords: ["ebooks psicología", "libros liderazgo", "desarrollo personal", "recursos digitales"],
+    openGraph: {
+        title: "E-books | Recursos de Psicología y Liderazgo",
+        description: "Colección de e-books sobre psicología, liderazgo y desarrollo personal.",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "E-books | Mauro Mera",
+        description: "Recursos prácticos de psicología aplicada y liderazgo.",
+    },
+    alternates: {
+        canonical: "/ebooks",
+    },
 };
 
 interface Ebook {

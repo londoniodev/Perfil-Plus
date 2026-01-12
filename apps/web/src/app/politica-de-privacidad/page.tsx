@@ -1,3 +1,17 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Política de Privacidad",
+    description: "Política de privacidad de Mauro Mera. Información sobre cómo recopilamos, usamos y protegemos tus datos personales.",
+    robots: {
+        index: true,
+        follow: false,
+    },
+    alternates: {
+        canonical: "/politica-de-privacidad",
+    },
+};
+
 export default function PrivacyPolicyPage() {
     return (
         <main style={{ padding: "8rem 0" }}>

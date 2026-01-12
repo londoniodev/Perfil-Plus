@@ -1,0 +1,175 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import styles from "../ebooks.module.css";
+import { API_BASE } from "@/lib/config";
+
+interface Ebook {
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    coverImage: string;
+    price: number;
+    createdAt: string;
+}
+
+interface EbookDetailClientProps {
+    ebook: Ebook;
+}
+
+export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
+    const [hasPurchased, setHasPurchased] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const [downloading, setDownloading] = useState(false);
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    useEffect(() => {
+        if (token) {
+            checkPurchase();
+        }
+    }, [token]);
+
+    const checkPurchase = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/check-purchase`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setHasPurchased(data.hasPurchased);
+            }
+        } catch {
+            // Ignore
+        }
+    };
+
+    const handlePurchase = async () => {
+        if (!token) {
+            window.location.href = `/login?redirect=/ebooks/${ebook.slug}`;
+            return;
+        }
+
+        setProcessing(true);
+
+        try {
+            const res = await fetch(`${API_BASE}/payments/ebook/checkout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    ebookId: ebook.id,
+                    frontUrl: window.location.origin,
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Error al procesar");
+            }
+
+            const data = await res.json();
+
+            if (data.initPoint) {
+                window.location.href = data.initPoint;
+            } else if (data.sandboxInitPoint) {
+                window.location.href = data.sandboxInitPoint;
+            }
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleDownload = async () => {
+        setDownloading(true);
+
+        try {
+            const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/download`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) throw new Error("Error al obtener enlace");
+
+            const data = await res.json();
+            window.open(data.downloadUrl, "_blank");
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    return (
+        <div className={styles.ebooksPage}>
+            <section className={styles.ebookDetail}>
+                <div className="container">
+                    <div className={styles.detailGrid}>
+                        <div className={styles.coverWrapper}>
+                            <img src={ebook.coverImage} alt={ebook.title} />
+                        </div>
+
+                        <div className={styles.ebookInfo}>
+                            <Link href="/ebooks" style={{ color: "var(--primary)", textDecoration: "none", marginBottom: "1rem", display: "inline-block" }}>
+                                ← Volver a e-books
+                            </Link>
+
+                            <h1>{ebook.title}</h1>
+
+                            <div className={styles.ebookMeta}>
+                                <span>📖 E-book digital (PDF)</span>
+                                <span>✨ Descarga inmediata</span>
+                            </div>
+
+                            <div className={styles.description}>
+                                {ebook.description.split("\n").map((p, i) => (
+                                    <p key={i} style={{ marginBottom: "1rem" }}>{p}</p>
+                                ))}
+                            </div>
+
+                            <div className={styles.purchaseCard}>
+                                <div className={styles.price}>
+                                    ${Number(ebook.price).toLocaleString("es-CO")} COP
+                                </div>
+
+                                {hasPurchased ? (
+                                    <>
+                                        <div className={styles.ownedBadge}>
+                                            ✓ Ya tienes este e-book
+                                        </div>
+                                        <button
+                                            onClick={handleDownload}
+                                            className={`${styles.purchaseBtn} ${styles.downloadBtn}`}
+                                            disabled={downloading}
+                                            style={{ marginTop: "1rem" }}
+                                        >
+                                            {downloading ? "Preparando..." : "📥 Descargar ahora"}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={handlePurchase}
+                                            className={styles.purchaseBtn}
+                                            disabled={processing}
+                                        >
+                                            {processing ? "Procesando..." : "Comprar ahora"}
+                                        </button>
+                                        <p className={styles.guarantee}>
+                                            🔒 Pago seguro con Mercado Pago
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+}

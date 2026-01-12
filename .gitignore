@@ -53,3 +53,6 @@ Thumbs.db
 # Docker volumes (if mapped locally)
 postgres_data/
 minio_data/
+
+# Agent rules
+.agent/rules/powershell.md

@@ -3,10 +3,27 @@ import { getPosts, getCategories } from "@/lib/api";
 import { Post, Category } from "@/lib/types";
 import { Metadata } from "next";
 import styles from "./blog.module.css";
+import { BreadcrumbSchema, CollectionPageSchema } from "../components/seo/JsonLd";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
 export const metadata: Metadata = {
-  title: "Blog | Mauro Mera",
-  description: "Artículos sobre psicología, liderazgo, cultura organizacional y desarrollo personal.",
+  title: "Blog | Artículos de Psicología y Liderazgo",
+  description: "Artículos sobre psicología, liderazgo, cultura organizacional y desarrollo personal. Reflexiones, herramientas y estrategias para transformar tu vida.",
+  keywords: ["blog psicología", "artículos liderazgo", "desarrollo personal", "cultura organizacional"],
+  openGraph: {
+    title: "Blog | Artículos de Psicología y Liderazgo",
+    description: "Reflexiones, herramientas y estrategias para transformar tu vida personal y profesional.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | Mauro Mera",
+    description: "Artículos sobre psicología, liderazgo y desarrollo personal.",
+  },
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 interface BlogPageProps {
@@ -37,84 +54,101 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   }
 
   return (
-    <div className={styles.blogPage}>
-      <section className={styles.blogHero}>
-        <div className="container">
-          <h1>Blog</h1>
-          <p>
-            Reflexiones, herramientas y estrategias para transformar
-            tu vida personal y profesional.
-          </p>
-        </div>
-      </section>
+    <>
+      {/* Structured Data para SEO */}
+      <BreadcrumbSchema items={[
+        { name: "Inicio", url: SITE_URL },
+        { name: "Blog", url: `${SITE_URL}/blog` },
+      ]} />
+      <CollectionPageSchema
+        name="Blog - Mauro Mera"
+        description="Artículos sobre psicología, liderazgo, cultura organizacional y desarrollo personal."
+        url={`${SITE_URL}/blog`}
+        itemListElement={posts.slice(0, 10).map(post => ({
+          name: post.title,
+          url: `${SITE_URL}/blog/${post.slug}`,
+        }))}
+      />
 
-      <section className={styles.blogContent}>
-        <div className="container">
-          {/* Filtros de categoría */}
-          <div className={styles.blogFilters}>
-            <Link
-              href="/blog"
-              className={`${styles.filterBtn} ${!category ? styles.active : ""}`}
-            >
-              Todos
-            </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/blog?category=${cat.slug}`}
-                className={`${styles.filterBtn} ${category === cat.slug ? styles.active : ""}`}
-              >
-                {cat.name}
-              </Link>
-            ))}
+      <div className={styles.blogPage}>
+        <section className={styles.blogHero}>
+          <div className="container">
+            <h1>Blog</h1>
+            <p>
+              Reflexiones, herramientas y estrategias para transformar
+              tu vida personal y profesional.
+            </p>
           </div>
+        </section>
 
-          {error ? (
-            <div className={styles.blogError}>
-              <p>No se pudieron cargar los artículos. Inténtalo más tarde.</p>
+        <section className={styles.blogContent}>
+          <div className="container">
+            {/* Filtros de categoría */}
+            <div className={styles.blogFilters}>
+              <Link
+                href="/blog"
+                className={`${styles.filterBtn} ${!category ? styles.active : ""}`}
+              >
+                Todos
+              </Link>
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/blog?category=${cat.slug}`}
+                  className={`${styles.filterBtn} ${category === cat.slug ? styles.active : ""}`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
             </div>
-          ) : posts.length === 0 ? (
-            <div className={styles.blogEmpty}>
-              <p>No hay artículos disponibles en este momento.</p>
-            </div>
-          ) : (
-            <>
-              {/* Grid de posts */}
-              <div className={styles.blogGrid}>
-                {posts.map((post) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
+
+            {error ? (
+              <div className={styles.blogError}>
+                <p>No se pudieron cargar los artículos. Inténtalo más tarde.</p>
               </div>
-
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className={styles.blogPagination}>
-                  {page > 1 && (
-                    <Link
-                      href={`/blog?page=${page - 1}${category ? `&category=${category}` : ""}`}
-                      className={styles.paginationBtn}
-                    >
-                      ← Anterior
-                    </Link>
-                  )}
-                  <span className={styles.paginationInfo}>
-                    Página {page} de {totalPages}
-                  </span>
-                  {page < totalPages && (
-                    <Link
-                      href={`/blog?page=${page + 1}${category ? `&category=${category}` : ""}`}
-                      className={styles.paginationBtn}
-                    >
-                      Siguiente →
-                    </Link>
-                  )}
+            ) : posts.length === 0 ? (
+              <div className={styles.blogEmpty}>
+                <p>No hay artículos disponibles en este momento.</p>
+              </div>
+            ) : (
+              <>
+                {/* Grid de posts */}
+                <div className={styles.blogGrid}>
+                  {posts.map((post) => (
+                    <BlogCard key={post.id} post={post} />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-    </div>
+
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className={styles.blogPagination}>
+                    {page > 1 && (
+                      <Link
+                        href={`/blog?page=${page - 1}${category ? `&category=${category}` : ""}`}
+                        className={styles.paginationBtn}
+                      >
+                        ← Anterior
+                      </Link>
+                    )}
+                    <span className={styles.paginationInfo}>
+                      Página {page} de {totalPages}
+                    </span>
+                    {page < totalPages && (
+                      <Link
+                        href={`/blog?page=${page + 1}${category ? `&category=${category}` : ""}`}
+                        className={styles.paginationBtn}
+                      >
+                        Siguiente →
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+      </div>
+    </>
   );
 }
 

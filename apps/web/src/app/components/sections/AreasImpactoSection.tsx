@@ -19,7 +19,7 @@ const areas = [
         accentColor: "rgba(232, 168, 56, 0.8)",
     },
     {
-        name: "Orientación Vocacional",
+        name: "Orientación Vocacional y Profesional",
         description: "Claridad para decisiones de carrera sin ansiedad.",
         image: "/areas_impacto/orientacion_vocacional.avif",
         href: "/servicios#explora",

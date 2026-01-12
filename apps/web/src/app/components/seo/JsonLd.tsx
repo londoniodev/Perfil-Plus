@@ -46,8 +46,13 @@ export function OrganizationSchema() {
         url: SITE_URL,
         logo: `${SITE_URL}/menu_logo.png`,
         image: `${SITE_URL}/mauro_hero.png`,
+        telephone: '+573183771838',
+        priceRange: '$$',
         address: {
             '@type': 'PostalAddress',
+            streetAddress: 'Calle 18a #55-105',
+            addressLocality: 'Cañaverales',
+            postalCode: '760063',
             addressCountry: 'CO',
         },
         contactPoint: {

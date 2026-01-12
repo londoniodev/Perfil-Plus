@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { IconTarget, IconBrain, IconBulb } from "../components/icons";
 
 export default function FormacionContent() {
     const cursos = [
@@ -9,102 +10,74 @@ export default function FormacionContent() {
             description: "Desarrolla las habilidades necesarias para liderar equipos de alto rendimiento y generar impacto positivo en tu organización.",
             level: "Intermedio",
             duration: "8 semanas",
-            icon: "🎯"
+            icon: <IconTarget />,
         },
         {
             title: "Psicología Organizacional",
             description: "Comprende el comportamiento humano en el contexto laboral y mejora el clima organizacional de tu empresa.",
             level: "Básico",
             duration: "6 semanas",
-            icon: "🧠"
+            icon: <IconBrain />,
         },
         {
             title: "Inteligencia Emocional",
             description: "Aprende a gestionar tus emociones y las de tu equipo para mejorar la comunicación y productividad.",
             level: "Básico",
             duration: "4 semanas",
-            icon: "💡"
+            icon: <IconBulb />,
         }
     ];
 
     return (
-        <div style={{ paddingTop: "100px", minHeight: "100vh" }}>
+        <div style={{ minHeight: "100vh" }}>
             {/* Hero Section */}
-            <section style={{ padding: "4rem 0", textAlign: "center" }}>
+            <section className="courses-hero">
                 <div className="container">
-                    <span className="badge" style={{ marginBottom: "1.5rem" }}>Formación Profesional</span>
-                    <h1 className="section-title" style={{ maxWidth: "800px", margin: "0 auto 1.5rem" }}>
+                    <span className="hero-badge animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        Formación Profesional
+                    </span>
+                    <h1 className="animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
                         Cursos que transforman carreras
                     </h1>
-                    <p className="section-subtitle" style={{ maxWidth: "600px", margin: "0 auto 2rem" }}>
+                    <p className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                         Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones
                         con enfoque en psicología aplicada y desarrollo personal.
                     </p>
-                    <Link href="/login?redirect=/cursos" className="btn btn-primary">
-                        Comenzar Ahora
-                    </Link>
+                    <div className="animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
+                        <Link href="/login?redirect=/cursos" className="btn btn-primary" style={{ padding: "0.8rem 2rem", fontSize: "1rem" }}>
+                            Comenzar Ahora
+                        </Link>
+                    </div>
                 </div>
             </section>
 
             {/* Courses Grid */}
-            <section className="section" style={{ background: "var(--background-secondary)" }}>
+            <section className="courses-content">
                 <div className="container">
-                    <h2 style={{
-                        fontSize: "1.5rem",
-                        fontWeight: 600,
-                        marginBottom: "2rem",
-                        color: "var(--foreground)"
-                    }}>
-                        Próximos Cursos
-                    </h2>
-                    <div className="grid-responsive">
+                    <div className="courses-grid animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
                         {cursos.map((curso, index) => (
-                            <div key={index} className="card" style={{ padding: "2rem" }}>
-                                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>{curso.icon}</div>
-                                <h3 style={{
-                                    fontSize: "1.25rem",
-                                    fontWeight: 600,
-                                    marginBottom: "0.75rem",
-                                    color: "var(--foreground)"
-                                }}>
+                            <div key={index} className="course-card">
+                                <div className="course-icon-wrapper">
+                                    {curso.icon}
+                                </div>
+                                <h3 className="course-title">
                                     {curso.title}
                                 </h3>
-                                <p style={{
-                                    color: "var(--foreground-muted)",
-                                    marginBottom: "1.5rem",
-                                    lineHeight: "1.6"
-                                }}>
+                                <p className="course-desc">
                                     {curso.description}
                                 </p>
-                                <div style={{
-                                    display: "flex",
-                                    gap: "1rem",
-                                    flexWrap: "wrap",
-                                    marginBottom: "1.5rem"
-                                }}>
-                                    <span style={{
-                                        background: "rgba(91, 141, 239, 0.1)",
-                                        color: "var(--primary-light)",
-                                        padding: "0.25rem 0.75rem",
-                                        borderRadius: "999px",
-                                        fontSize: "0.8rem"
-                                    }}>
+                                <div className="course-tags">
+                                    <span className="course-tag tag-level">
                                         {curso.level}
                                     </span>
-                                    <span style={{
-                                        background: "rgba(255, 255, 255, 0.05)",
-                                        color: "var(--foreground-muted)",
-                                        padding: "0.25rem 0.75rem",
-                                        borderRadius: "999px",
-                                        fontSize: "0.8rem"
-                                    }}>
+                                    <span className="course-tag tag-duration">
                                         {curso.duration}
                                     </span>
                                 </div>
                                 <Link
                                     href="/login?redirect=/cursos"
                                     className="btn btn-secondary"
-                                    style={{ width: "100%", justifyContent: "center" }}
+                                    style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
                                 >
                                     Ver Detalles
                                 </Link>
@@ -115,25 +88,13 @@ export default function FormacionContent() {
             </section>
 
             {/* CTA Section */}
-            <section className="section" style={{ textAlign: "center" }}>
+            <section className="courses-cta">
                 <div className="container">
-                    <h2 style={{
-                        fontSize: "2rem",
-                        fontWeight: 700,
-                        marginBottom: "1rem",
-                        color: "var(--foreground)"
-                    }}>
-                        ¿Listo para dar el siguiente paso?
-                    </h2>
-                    <p style={{
-                        color: "var(--foreground-muted)",
-                        marginBottom: "2rem",
-                        maxWidth: "500px",
-                        margin: "0 auto 2rem"
-                    }}>
+                    <h2>¿Listo para dar el siguiente paso?</h2>
+                    <p>
                         Únete a cientos de profesionales que ya han transformado su carrera con nuestros programas.
                     </p>
-                    <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                    <div className="cta-buttons">
                         <Link href="/login?redirect=/cursos" className="btn btn-primary">
                             Inscribirme Ahora
                         </Link>

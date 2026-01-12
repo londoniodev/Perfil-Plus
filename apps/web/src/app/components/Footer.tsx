@@ -1,91 +1,44 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
     return (
-        <footer
-            style={{
-                background: "var(--background-secondary)",
-                borderTop: "1px solid var(--border)",
-                padding: "5rem 0 3rem",
-            }}
-        >
+        <footer className="site-footer">
             <div className="container">
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                        gap: "4rem",
-                        marginBottom: "4rem",
-                    }}
-                    className="footer-grid"
-                >
-                    <div style={{ minWidth: "280px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
-                            <img src="/menu_logo.png" alt="Mauro Mera Logo" style={{ width: "auto", height: "32px", objectFit: "contain" }} />
-                        </div>
-                        <p style={{ color: "var(--foreground-muted)", fontSize: "1rem", lineHeight: 1.7, maxWidth: "300px" }}>
+                <div className="footer-container">
+                    {/* Logo y tagline */}
+                    <div className="footer-brand">
+                        <Image
+                            src="/menu_logo.png"
+                            alt="Mauro Mera Logo"
+                            width={120}
+                            height={32}
+                            className="footer-logo"
+                        />
+                        <span className="footer-tagline">
                             Transformar el mundo empieza por cuidar el mundo interno.
-                        </p>
+                        </span>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", minWidth: "280px" }}>
-                        <div>
-                            <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
-                                Enlaces
-                            </h4>
-                            <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                                <Link href="/" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                                    Inicio
-                                </Link>
-                                <Link href="/portafolio" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                                    Portafolio
-                                </Link>
-                                <Link href="/servicios" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                                    Servicios
-                                </Link>
-                                <Link
-                                    href="https://wa.me/573183771838?text=Hola%20Mauro,%20vengo%20de%20tu%20web%20y%20quisiera%20más%20información."
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}
-                                >
-                                    Contacto
-                                </Link>
-                            </nav>
-                        </div>
-
-                        <div>
-                            <h4 style={{ fontWeight: 600, marginBottom: "1.25rem", fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)" }}>
-                                Legal
-                            </h4>
-                            <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                                <Link href="/politica-de-privacidad" style={{ color: "var(--foreground-muted)", textDecoration: "none", fontSize: "1rem" }}>
-                                    Política de privacidad
-                                </Link>
-                            </nav>
-                        </div>
-                    </div>
+                    {/* Enlaces */}
+                    <nav className="footer-nav">
+                        <Link href="/" className="footer-link">Inicio</Link>
+                        <Link href="/portafolio" className="footer-link">Portafolio</Link>
+                        <Link href="/servicios" className="footer-link">Servicios</Link>
+                        <Link href="/blog" className="footer-link">Blog</Link>
+                        <Link href="https://wa.me/573183771838" target="_blank" rel="noopener noreferrer" className="footer-link">Contacto</Link>
+                        <Link href="/politica-de-privacidad" className="footer-link">Privacidad</Link>
+                    </nav>
                 </div>
 
-                <div
-                    style={{
-                        borderTop: "1px solid var(--border)",
-                        paddingTop: "2.5rem",
-                        textAlign: "center",
-                        color: "var(--secondary)",
-                        fontSize: "0.9rem",
-                    }}
-                >
-                    © {new Date().getFullYear()} Mauro Mera. Todos los derechos reservados.
-                    <br />
-                    <span style={{ fontSize: "0.85rem", opacity: 0.7, marginTop: "0.75rem", display: "inline-block" }}>
-                        Desarrollado y Diseñado por{" "}
-                        <a
-                            href="https://portafolio.alvarolondoño.dev"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "var(--foreground)", textDecoration: "none", fontWeight: 500, borderBottom: "1px solid var(--border)", paddingBottom: "1px" }}
-                        >
+                {/* Copyright */}
+                <div className="footer-bottom">
+                    <span className="footer-copyright">
+                        © {new Date().getFullYear()} Mauro Mera. Todos los derechos reservados.
+                    </span>
+                    <span className="footer-credits">
+                        Desarrollado por{" "}
+                        <a href="https://portafolio.alvarolondoño.dev" target="_blank" rel="noopener noreferrer">
                             Alvaro Londoño
                         </a>
                     </span>

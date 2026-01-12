@@ -33,7 +33,7 @@ const Card = ({ children, className = "" }: { children: React.ReactNode; classNa
 );
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }) => (
-    <div style={{ marginBottom: "4rem", textAlign: "center" }}>
+    <div style={{ marginBottom: "2rem", textAlign: "center" }}>
         <h2 className="section-title" style={{ marginBottom: "1rem" }}>{title}</h2>
         <p className="section-subtitle" style={{
             maxWidth: "700px",
@@ -416,7 +416,7 @@ export function ServicesSelector() {
                 <div style={{
                     display: "flex",
                     justifyContent: "center",
-                    marginBottom: "3rem"
+                    marginBottom: "1.5rem"
                 }}>
                     <div style={{
                         display: "flex",

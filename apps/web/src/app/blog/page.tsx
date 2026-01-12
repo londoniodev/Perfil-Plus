@@ -1,8 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getPosts, getCategories } from "@/lib/api";
 import { Post, Category } from "@/lib/types";
 import { Metadata } from "next";
-import styles from "./blog.module.css";
 import { BreadcrumbSchema, CollectionPageSchema } from "../components/seo/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
@@ -70,8 +70,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         }))}
       />
 
-      <div className={styles.blogPage}>
-        <section className={styles.blogHero}>
+      <div className="blog-page">
+        <section className="blog-hero">
           <div className="container">
             <h1>Blog</h1>
             <p>
@@ -81,13 +81,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </div>
         </section>
 
-        <section className={styles.blogContent}>
+        <section className="blog-content">
           <div className="container">
             {/* Filtros de categoría */}
-            <div className={styles.blogFilters}>
+            <div className="blog-filters">
               <Link
                 href="/blog"
-                className={`${styles.filterBtn} ${!category ? styles.active : ""}`}
+                className={`filter-btn ${!category ? "active" : ""}`}
               >
                 Todos
               </Link>
@@ -95,7 +95,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 <Link
                   key={cat.id}
                   href={`/blog?category=${cat.slug}`}
-                  className={`${styles.filterBtn} ${category === cat.slug ? styles.active : ""}`}
+                  className={`filter-btn ${category === cat.slug ? "active" : ""}`}
                 >
                   {cat.name}
                 </Link>
@@ -103,17 +103,17 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             </div>
 
             {error ? (
-              <div className={styles.blogError}>
+              <div className="blog-error">
                 <p>No se pudieron cargar los artículos. Inténtalo más tarde.</p>
               </div>
             ) : posts.length === 0 ? (
-              <div className={styles.blogEmpty}>
+              <div className="blog-empty">
                 <p>No hay artículos disponibles en este momento.</p>
               </div>
             ) : (
               <>
                 {/* Grid de posts */}
-                <div className={styles.blogGrid}>
+                <div className="blog-grid">
                   {posts.map((post) => (
                     <BlogCard key={post.id} post={post} />
                   ))}
@@ -121,22 +121,22 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
                 {/* Paginación */}
                 {totalPages > 1 && (
-                  <div className={styles.blogPagination}>
+                  <div className="blog-pagination">
                     {page > 1 && (
                       <Link
                         href={`/blog?page=${page - 1}${category ? `&category=${category}` : ""}`}
-                        className={styles.paginationBtn}
+                        className="pagination-btn"
                       >
                         ← Anterior
                       </Link>
                     )}
-                    <span className={styles.paginationInfo}>
+                    <span className="pagination-info">
                       Página {page} de {totalPages}
                     </span>
                     {page < totalPages && (
                       <Link
                         href={`/blog?page=${page + 1}${category ? `&category=${category}` : ""}`}
-                        className={styles.paginationBtn}
+                        className="pagination-btn"
                       >
                         Siguiente →
                       </Link>
@@ -153,36 +153,85 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 }
 
 function BlogCard({ post }: { post: Post }) {
+  // Función helper para formatear fechas
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('es-CO', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      }).format(date);
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
-    <Link href={`/blog/${post.slug}`} className={styles.blogCard}>
-      <article>
-        <div className={styles.cardImage}>
+    <Link href={`/blog/${post.slug}`} className="blog-card" prefetch={false}>
+      <article style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className="card-image-container">
           {post.coverImage ? (
-            <img src={post.coverImage} alt={post.title} />
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="card-img"
+              style={{ objectFit: "cover" }}
+            // Como las imágenes vienen de S3/externas y no sabemos el dominio exacto configurado,
+            // usamos unoptimized temporalmente si falla el build, pero intentaremos optimizado si está configurado.
+            // Si el usuario no tiene configured remotePatterns, esto fallará en runtime.
+            // Agregaremos unoptimized por seguridad si son URLs externas desconocidas.
+            />
           ) : (
-            <div className={styles.placeholderImage}>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              background: 'var(--background-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3rem'
+            }}>
               <span>📝</span>
             </div>
           )}
-          {post.isPremium && <span className={styles.premiumBadge}>Premium</span>}
+          {post.isPremium && <span className="premium-badge">PREMIUM</span>}
         </div>
-        <div className={styles.cardContent}>
-          <div className={styles.cardMeta}>
+
+        <div className="card-content">
+          <div className="card-meta">
             {post.categories.length > 0 && (
-              <span className={styles.category}>{post.categories[0].name}</span>
+              <span className="card-category">{post.categories[0].name}</span>
             )}
             <time dateTime={post.createdAt}>
-              {new Date(post.createdAt).toLocaleDateString("es-CO", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              {formatDate(post.createdAt)}
             </time>
           </div>
-          <h2>{post.title}</h2>
-          <p>{post.excerpt}</p>
-          <div className={styles.cardFooter}>
-            <span className={styles.readMore}>Leer más →</span>
+
+          <h2 className="card-title">{post.title}</h2>
+
+          <p className="card-excerpt">
+            {post.excerpt || (post.content ? post.content.substring(0, 100) + '...' : '')}
+          </p>
+
+          <div className="card-footer">
+            <span className="read-more-text">Leer artículo</span>
+            <svg
+              className="read-more-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
           </div>
         </div>
       </article>

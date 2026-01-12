@@ -136,3 +136,19 @@ export const IconShield = () => (
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
 );
+
+export const IconTarget = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="6" />
+        <circle cx="12" cy="12" r="2" />
+    </svg>
+);
+
+export const IconBulb = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-4 0-3.3-2.7-6-6-6S6 4.7 6 8c0 1.6.5 3 1.5 4 .8.8 1.3 1.5 1.5 2.5" />
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+    </svg>
+);

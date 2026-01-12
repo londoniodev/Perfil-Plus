@@ -26,6 +26,9 @@
 @import "./carousel.css";
 @import "./hero.css";
 @import "./header.css";
+@import "./footer.css";
+@import "./blog.css";
+@import "./courses.css";
 
 /* 8. Responsive (must be last for proper cascade) */
 @import "./responsive.css";

@@ -71,10 +71,12 @@ export function PropuestaSection() {
                                     src={item.image}
                                     alt=""
                                     fill
-                                    unoptimized
+                                    sizes="(max-width: 768px) 100vw, 400px"
+                                    loading="lazy"
+                                    quality={75}
                                     style={{
                                         objectFit: "cover",
-                                        mixBlendMode: "screen", // Blends nicely with dark bg
+                                        mixBlendMode: "screen",
                                     }}
                                 />
                                 {/* Gradient Overlay for better text readability */}

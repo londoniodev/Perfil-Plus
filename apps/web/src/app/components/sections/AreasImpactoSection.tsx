@@ -106,7 +106,10 @@ export function AreasImpactoSection() {
                                     src={item.image}
                                     alt={item.name}
                                     fill
-                                    unoptimized
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 280px"
+                                    priority={i < 2}
+                                    loading={i < 2 ? "eager" : "lazy"}
+                                    quality={75}
                                     style={{
                                         objectFit: "cover",
                                         transition: "transform 0.5s ease, opacity 0.4s ease",

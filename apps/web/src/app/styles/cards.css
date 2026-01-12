@@ -21,6 +21,11 @@
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
+.card:hover .card-bg-animation {
+    transform: scale(1.1);
+    opacity: 0.4 !important;
+}
+
 .card::after {
     content: "";
     position: absolute;

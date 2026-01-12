@@ -155,7 +155,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "20px",
+                    fontSize: "1rem",
                     fontWeight: 400,
                     fontFamily: "var(--font-serif)",
                     transition: "color 0.2s",
@@ -170,7 +170,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "20px",
+                    fontSize: "1rem",
                     fontWeight: 400,
                     fontFamily: "var(--font-serif)",
                 }}
@@ -184,7 +184,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "20px",
+                    fontSize: "1rem",
                     fontWeight: 400,
                     fontFamily: "var(--font-serif)",
                 }}
@@ -198,7 +198,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "20px",
+                    fontSize: "1rem",
                     fontWeight: 400,
                     fontFamily: "var(--font-serif)",
                 }}
@@ -212,7 +212,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "20px",
+                    fontSize: "1rem",
                     fontWeight: 400,
                     fontFamily: "var(--font-serif)",
                 }}
@@ -226,7 +226,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                 style={{
                     color: "var(--foreground-muted)",
                     textDecoration: "none",
-                    fontSize: "1.1rem",
+                    fontSize: "1rem",
                     fontWeight: 500,
                     fontFamily: "var(--font-serif)",
                 }}
@@ -241,7 +241,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                     href="/perfil"
                     onClick={onClick}
                     className="btn btn-primary"
-                    style={{ padding: "0.5rem 1.2rem", fontSize: "1rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
+                    style={{ padding: "0.5rem 1.2rem", fontSize: "0.9rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                 >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
                         <rect x="3" y="3" width="7" height="7" />
@@ -258,7 +258,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                         href="/registro"
                         onClick={onClick}
                         className="btn btn-secondary"
-                        style={{ padding: "0.5rem 1.2rem", fontSize: "1rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
+                        style={{ padding: "0.5rem 1.2rem", fontSize: "0.9rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                     >
                         Registrarse
                     </Link>
@@ -266,7 +266,7 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                         href="/login"
                         onClick={onClick}
                         className="btn btn-primary"
-                        style={{ padding: "0.5rem 1.2rem", fontSize: "1rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
+                        style={{ padding: "0.5rem 1.2rem", fontSize: "0.9rem", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                     >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

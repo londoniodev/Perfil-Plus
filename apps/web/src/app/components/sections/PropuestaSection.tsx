@@ -8,8 +8,8 @@ const pillars = [
     },
     {
         icon: <IconSparkles />,
-        title: "Diseño de experiencias",
-        desc: "Talleres y procesos que se viven, no solo se entienden.",
+        title: "Experiencias educativas para las organizaciones",
+        desc: "Talleres y programas vivenciales para el desarrollo de habilidades y competencias.",
     },
     {
         icon: <IconCpu />,

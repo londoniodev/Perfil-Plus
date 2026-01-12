@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Genos, Nunito } from "next/font/google";
+import { Geist_Mono, Abhaya_Libre } from "next/font/google";
 import "./styles/index.css";
 import { NavigationWrapper } from "./components/NavigationWrapper";
 import { Footer } from "./components/Footer";
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+const abhayaLibre = Abhaya_Libre({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const genos = Genos({
-  variable: "--font-serif",
   subsets: ["latin"],
 });
 
@@ -45,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${nunito.variable} ${geistMono.variable} ${genos.variable} antialiased`}>
+      <body className={`${abhayaLibre.variable} ${geistMono.variable} antialiased`}>
         <NavigationWrapper footer={<Footer />}>
           {children}
         </NavigationWrapper>

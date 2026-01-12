@@ -128,7 +128,7 @@ export function ServiciosSection() {
                         </div>
                         <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
                             <h3 className="card-title">
-                                Orientación vocacional y Profesional con TecnologIA
+                                Orientación Vocacional y Profesional
                             </h3>
                             <p className="card-text" style={{ marginBottom: "1.5rem" }}>
                                 Claridad, seguimiento y lenguaje simple para decisiones complejas.

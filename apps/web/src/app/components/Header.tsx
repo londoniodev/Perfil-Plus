@@ -241,7 +241,6 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                     href="/perfil"
                     onClick={onClick}
                     className="btn btn-primary"
-                    className="btn btn-primary"
                     style={{ padding: "0.7rem 1.4rem", fontSize: "22px", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                 >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "0.5rem" }}>
@@ -259,7 +258,6 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                         href="/registro"
                         onClick={onClick}
                         className="btn btn-secondary"
-                        className="btn btn-secondary"
                         style={{ padding: "0.7rem 1.4rem", fontSize: "22px", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                     >
                         Registrarse
@@ -267,7 +265,6 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
                     <Link
                         href="/login"
                         onClick={onClick}
-                        className="btn btn-primary"
                         className="btn btn-primary"
                         style={{ padding: "0.7rem 1.4rem", fontSize: "22px", fontFamily: "var(--font-serif)", fontWeight: 600 }}
                     >

@@ -44,11 +44,20 @@ const securityHeaders = [
   {
     key: 'Content-Security-Policy',
     value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim()
+  },
+  {
+    key: 'Cross-Origin-Opener-Policy',
+    value: 'same-origin-allow-popups' // Permite popups (MercadoPago)
+  },
+  {
+    key: 'Cross-Origin-Resource-Policy',
+    value: 'same-site' // Permite recursos del mismo sitio
   }
 ];
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false, // Oculta X-Powered-By: Next.js
   images: {
     formats: ["image/avif", "image/webp"],
   },

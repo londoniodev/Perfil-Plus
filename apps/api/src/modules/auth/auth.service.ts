@@ -62,6 +62,9 @@ export class AuthService {
     }
 
     async login(dto: LoginDto) {
+        const MAX_FAILED_ATTEMPTS = 5;
+        const LOCKOUT_DURATION_MINUTES = 15;
+
         // Buscar usuario
         const user = await this.prisma.user.findUnique({
             where: { email: dto.email.toLowerCase() },
@@ -72,6 +75,8 @@ export class AuthService {
                 role: true,
                 password: true,
                 emailVerified: true,
+                failedLoginAttempts: true,
+                lockedUntil: true,
                 subscription: {
                     select: {
                         status: true,
@@ -85,22 +90,72 @@ export class AuthService {
             throw new UnauthorizedException('Credenciales inválidas');
         }
 
+        // Verificar si la cuenta está bloqueada
+        if (user.lockedUntil && new Date() < user.lockedUntil) {
+            const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+            throw new UnauthorizedException(
+                `Cuenta bloqueada temporalmente. Intenta de nuevo en ${minutesLeft} minutos.`
+            );
+        }
+
+        // Si el bloqueo ya expiró, resetear el contador
+        if (user.lockedUntil && new Date() >= user.lockedUntil) {
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: 0, lockedUntil: null },
+            });
+        }
+
         // Verificar contraseña
         const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Credenciales inválidas');
+            // Incrementar contador de intentos fallidos
+            const newFailedAttempts = (user.failedLoginAttempts || 0) + 1;
+
+            const updateData: { failedLoginAttempts: number; lockedUntil?: Date } = {
+                failedLoginAttempts: newFailedAttempts,
+            };
+
+            // Si alcanzó el límite, bloquear cuenta
+            if (newFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+                updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+            }
+
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: updateData,
+            });
+
+            const attemptsLeft = MAX_FAILED_ATTEMPTS - newFailedAttempts;
+            if (attemptsLeft > 0) {
+                throw new UnauthorizedException(
+                    `Credenciales inválidas. ${attemptsLeft} intento(s) restante(s).`
+                );
+            } else {
+                throw new UnauthorizedException(
+                    `Cuenta bloqueada por ${LOCKOUT_DURATION_MINUTES} minutos debido a múltiples intentos fallidos.`
+                );
+            }
+        }
+
+        // Login exitoso: resetear contador de intentos fallidos
+        if (user.failedLoginAttempts > 0 || user.lockedUntil) {
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { failedLoginAttempts: 0, lockedUntil: null },
+            });
         }
 
         // Generar tokens
         const tokens = await this.generateTokens(user.id, user.email);
 
-        // Remover password de la respuesta
-        const { password: _, ...userWithoutPassword } = user;
+        // Remover campos sensibles de la respuesta
+        const { password: _, failedLoginAttempts: __, lockedUntil: ___, ...userWithoutSensitive } = user;
 
         return {
             user: {
-                ...userWithoutPassword,
+                ...userWithoutSensitive,
                 hasActiveSubscription:
                     user.subscription?.status === 'ACTIVE' &&
                     (!user.subscription?.endDate || new Date(user.subscription.endDate) > new Date()),

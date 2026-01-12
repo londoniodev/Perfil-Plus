@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import styles from "../../auth.module.css";
 
 const resetPasswordSchema = z
     .object({
@@ -83,17 +84,17 @@ function ResetPasswordFormContent() {
 
     if (!token) {
         return (
-            <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                    <Lock className="h-6 w-6 text-red-600" />
+            <div className={styles.loginCard} style={{ textAlign: "center" }}>
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
+                    <Lock className="h-6 w-6 text-red-500" />
                 </div>
-                <h3 className="text-lg font-medium text-neutral-900">Enlace inválido</h3>
-                <p className="mt-2 text-sm text-neutral-500 mb-6">
+                <h3 className="text-lg font-medium text-white">Enlace inválido</h3>
+                <p className="mt-2 text-sm text-gray-400 mb-6">
                     El enlace de recuperación es inválido o ha expirado. Por favor solicita uno nuevo.
                 </p>
                 <Link
                     href="/auth/forgot-password"
-                    className="text-primary-600 hover:text-primary-500 font-medium"
+                    className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
                 >
                     Solicitar nuevo enlace
                 </Link>
@@ -102,21 +103,19 @@ function ResetPasswordFormContent() {
     }
 
     return (
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className={styles.loginCard}>
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
-                        Nueva contraseña
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
+                <div className={styles.formGroup}>
+                    <label htmlFor="password">Nueva contraseña</label>
+                    <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                            <Lock className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
                         <input
                             {...register('password')}
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            className="block w-full pl-10 pr-10 sm:text-sm border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500 py-2"
+                            className="pl-10 pr-10"
                             placeholder="••••••••"
                         />
                         <button
@@ -125,36 +124,31 @@ function ResetPasswordFormContent() {
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             {showPassword ? (
-                                <EyeOff className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                                <EyeOff className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             ) : (
-                                <Eye className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                                <Eye className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             )}
                         </button>
                     </div>
                     {errors.password && (
-                        <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
+                        <p className={styles.loginError}>{errors.password.message}</p>
                     )}
-                    <p className="mt-2 text-xs text-neutral-500">
+                    <p className="mt-2 text-xs text-gray-400">
                         Mínimo 8 caracteres, mayúscula, minúscula y número.
                     </p>
                 </div>
 
-                <div>
-                    <label
-                        htmlFor="confirmPassword"
-                        className="block text-sm font-medium text-neutral-700"
-                    >
-                        Confirmar contraseña
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
+                <div className={styles.formGroup}>
+                    <label htmlFor="confirmPassword">Confirmar contraseña</label>
+                    <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                            <Lock className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
                         <input
                             {...register('confirmPassword')}
                             id="confirmPassword"
                             type={showConfirmPassword ? 'text' : 'password'}
-                            className="block w-full pl-10 pr-10 sm:text-sm border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500 py-2"
+                            className="pl-10 pr-10"
                             placeholder="••••••••"
                         />
                         <button
@@ -163,14 +157,14 @@ function ResetPasswordFormContent() {
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                             {showConfirmPassword ? (
-                                <EyeOff className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                                <EyeOff className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             ) : (
-                                <Eye className="h-5 w-5 text-neutral-400" aria-hidden="true" />
+                                <Eye className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             )}
                         </button>
                     </div>
                     {errors.confirmPassword && (
-                        <p className="mt-2 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                        <p className={styles.loginError}>{errors.confirmPassword.message}</p>
                     )}
                 </div>
 
@@ -178,10 +172,10 @@ function ResetPasswordFormContent() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="btn btn-primary w-full"
                     >
                         {isLoading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                         ) : (
                             'Actualizar contraseña'
                         )}
@@ -189,25 +183,14 @@ function ResetPasswordFormContent() {
                 </div>
             </form>
 
-            <div className="mt-6">
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-neutral-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-neutral-500">O</span>
-                    </div>
-                </div>
-
-                <div className="mt-6 flex justify-center text-sm">
-                    <Link
-                        href="/login"
-                        className="font-medium text-primary-600 hover:text-primary-500 flex items-center gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Volver al inicio de sesión
-                    </Link>
-                </div>
+            <div className="mt-8 text-center">
+                <Link
+                    href="/login"
+                    className="text-primary-400 hover:text-primary-300 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al inicio de sesión
+                </Link>
             </div>
         </div>
     );
@@ -215,23 +198,23 @@ function ResetPasswordFormContent() {
 
 export default function ResetPasswordPage() {
     return (
-        <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <Link href="/" className="flex justify-center mb-6">
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-500">
-                        Mauro Mera
-                    </span>
-                </Link>
-                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-neutral-900">
-                    Restablecer contraseña
-                </h2>
-                <p className="mt-2 text-center text-sm text-neutral-600">
-                    Ingresa tu nueva contraseña para acceder a tu cuenta.
-                </p>
-            </div>
+        <div className={styles.loginPage}>
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <Link href="/" className="inline-block mb-6">
+                        <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+                            Mauro Mera
+                        </span>
+                    </Link>
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                        Restablecer contraseña
+                    </h2>
+                    <p className="text-sm text-gray-400">
+                        Ingresa tu nueva contraseña para acceder a tu cuenta.
+                    </p>
+                </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <Suspense fallback={<div className="text-center p-4">Cargando...</div>}>
+                <Suspense fallback={<div className="text-center p-4 text-white">Cargando...</div>}>
                     <ResetPasswordFormContent />
                 </Suspense>
             </div>

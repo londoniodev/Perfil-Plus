@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import styles from "../../auth.module.css";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),
@@ -51,93 +52,76 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <Link href="/" className="flex justify-center mb-6">
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-500">
-                        Mauro Mera
-                    </span>
-                </Link>
-                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-neutral-900">
-                    Recuperar contraseña
-                </h2>
-                <p className="mt-2 text-center text-sm text-neutral-600">
-                    Ingresa tu email y te enviaremos las instrucciones <br /> para restablecer tu contraseña.
-                </p>
-            </div>
+        <div className={styles.loginPage}>
+            <div className={styles.loginCard}>
+                <div className="text-center mb-8">
+                    <Link href="/" className="inline-block mb-6">
+                        <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+                            Mauro Mera
+                        </span>
+                    </Link>
+                    <h1 className="text-2xl font-bold text-white mb-2">Recuperar contraseña</h1>
+                    <p className="text-gray-400 text-sm">
+                        Ingresa tu email y te enviaremos las instrucciones <br /> para restablecer tu contraseña.
+                    </p>
+                </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    {!isSubmitted ? (
-                        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
-                                    Email
-                                </label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-neutral-400" aria-hidden="true" />
-                                    </div>
-                                    <input
-                                        {...register('email')}
-                                        id="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        className="block w-full pl-10 sm:text-sm border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500 py-2"
-                                        placeholder="tu@email.com"
-                                    />
+                {!isSubmitted ? (
+                    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                        <div className={styles.formGroup}>
+                            <label htmlFor="email">Email</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Mail className="h-5 w-5 text-gray-500" aria-hidden="true" />
                                 </div>
-                                {errors.email && (
-                                    <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
-                                )}
+                                <input
+                                    {...register('email')}
+                                    id="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    className="pl-10"
+                                    placeholder="tu@email.com"
+                                />
                             </div>
-
-                            <div>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        'Enviar instrucciones'
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                                <Mail className="h-6 w-6 text-green-600" />
-                            </div>
-                            <h3 className="text-lg font-medium text-neutral-900">¡Correo enviado!</h3>
-                            <p className="mt-2 text-sm text-neutral-500">
-                                Hemos enviado las instrucciones a tu correo electrónico. Por favor revisa tu bandeja de entrada (y spam).
-                            </p>
-                        </div>
-                    )}
-
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-neutral-300" />
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-neutral-500">O</span>
-                            </div>
+                            {errors.email && (
+                                <p className={styles.loginError}>{errors.email.message}</p>
+                            )}
                         </div>
 
-                        <div className="mt-6 flex justify-center text-sm">
-                            <Link
-                                href="/login"
-                                className="font-medium text-primary-600 hover:text-primary-500 flex items-center gap-2"
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="btn btn-primary w-full"
                             >
-                                <ArrowLeft className="w-4 h-4" />
-                                Volver al inicio de sesión
-                            </Link>
+                                {isLoading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                                ) : (
+                                    'Enviar instrucciones'
+                                )}
+                            </button>
                         </div>
+                    </form>
+                ) : (
+                    <div className={styles.successMessage}>
+                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100/10 mb-4">
+                            <Mail className="h-6 w-6 text-green-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-white">¡Correo enviado!</h3>
+                        <p className="mt-2 text-sm text-gray-300">
+                            Hemos enviado las instrucciones a tu correo electrónico. Por favor revisa tu bandeja de entrada (y spam).
+                        </p>
                     </div>
+                )}
+
+                <div className="mt-8 text-center">
+                    <Link
+                        href="/login"
+                        className="text-primary-400 hover:text-primary-300 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Volver al inicio de sesión
+                    </Link>
                 </div>
             </div>
         </div>

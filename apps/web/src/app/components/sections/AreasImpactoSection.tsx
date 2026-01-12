@@ -4,7 +4,7 @@ import Image from "next/image";
 const areas = [
     {
         name: "Cultura Organizacional",
-        description: "Alineación de valores, comportamientos y resultados de negocio.",
+        description: "Estrategia y valores, transformación cultural, experiencia del empleado y planes de acción.",
         image: "/areas_impacto/cultura_organizacional.avif",
         href: "/servicios#empresas",
         gradient: "linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, rgba(58, 98, 184, 0.1) 100%)",

@@ -79,63 +79,81 @@ export function AreasImpactoSection() {
                             key={i}
                             href={item.href}
                             style={{
-                                display: "block",
+                                display: "flex",
+                                flexDirection: "column",
                                 position: "relative",
                                 borderRadius: "1.25rem",
                                 overflow: "hidden",
-                                background: item.gradient,
                                 border: "1px solid var(--border)",
                                 transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                                 textDecoration: "none",
-                                aspectRatio: "1",
+                                background: "var(--card-bg)",
                             }}
                             className="area-card"
                         >
-                            {/* Background Image */}
+                            {/* Image Container - 9:16 aspect ratio */}
                             <div
                                 style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    opacity: 0.3,
-                                    transition: "opacity 0.4s ease",
+                                    position: "relative",
+                                    aspectRatio: "9 / 16",
+                                    width: "100%",
+                                    overflow: "hidden",
                                 }}
-                                className="area-card-bg"
                             >
+                                {/* Background Image */}
                                 <Image
                                     src={item.image}
                                     alt={item.name}
                                     fill
-                                    style={{ objectFit: "cover" }}
+                                    style={{
+                                        objectFit: "cover",
+                                        transition: "transform 0.5s ease, opacity 0.4s ease",
+                                    }}
+                                    className="area-card-img"
+                                />
+
+                                {/* Vignette overlay - bottom fade */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        background: `
+                                            radial-gradient(ellipse at center, transparent 40%, rgba(15, 20, 25, 0.3) 100%),
+                                            linear-gradient(to top, rgba(15, 20, 25, 1) 0%, rgba(15, 20, 25, 0.8) 15%, transparent 40%)
+                                        `,
+                                        pointerEvents: "none",
+                                    }}
                                 />
                             </div>
 
-                            {/* Content overlay */}
+                            {/* Content Container - Solid background */}
                             <div
                                 style={{
                                     position: "relative",
+                                    marginTop: "-3rem",
                                     zIndex: 2,
-                                    height: "100%",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "flex-end",
-                                    padding: "1.5rem",
-                                    background: "linear-gradient(to top, rgba(13, 17, 23, 0.9) 0%, transparent 60%)",
+                                    padding: "1.25rem",
+                                    background: "rgba(15, 20, 25, 0.95)",
+                                    backdropFilter: "blur(10px)",
+                                    borderTop: `2px solid ${item.accentColor}`,
                                 }}
                             >
-                                {/* Accent bar */}
-                                <div
+                                <h3
+                                    className="card-title"
                                     style={{
-                                        width: "40px",
-                                        height: "3px",
-                                        background: item.accentColor,
-                                        borderRadius: "2px",
-                                        marginBottom: "0.75rem",
+                                        fontSize: "1.1rem",
+                                        marginBottom: "0.5rem",
                                     }}
-                                />
-                                <h3 className="card-title">
+                                >
                                     {item.name}
                                 </h3>
-                                <p className="card-text">
+                                <p
+                                    className="card-text"
+                                    style={{
+                                        fontSize: "0.85rem",
+                                        lineHeight: "1.5",
+                                    }}
+                                >
                                     {item.description}
                                 </p>
                             </div>

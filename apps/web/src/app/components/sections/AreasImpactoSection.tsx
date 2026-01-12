@@ -72,6 +72,7 @@ export function AreasImpactoSection() {
                         gap: "1.5rem",
                         maxWidth: "1400px",
                         margin: "0 auto",
+                        alignItems: "start",
                     }}
                 >
                     {areas.map((item, i) => (
@@ -111,6 +112,17 @@ export function AreasImpactoSection() {
                                         transition: "transform 0.5s ease, opacity 0.4s ease",
                                     }}
                                     className="area-card-img"
+                                />
+
+                                {/* Blue tint overlay to homogenize tones */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        background: "rgba(15, 30, 60, 0.35)",
+                                        mixBlendMode: "multiply",
+                                        pointerEvents: "none",
+                                    }}
                                 />
 
                                 {/* Vignette overlay - bottom fade */}

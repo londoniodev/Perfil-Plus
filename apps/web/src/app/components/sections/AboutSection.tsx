@@ -14,12 +14,21 @@ export function AboutSection() {
                     <p
                         className="section-subtitle"
                         style={{
-                            marginBottom: "2.5rem",
+                            marginBottom: "1.5rem",
                         }}
                     >
                         Psicólogo, consultor organizacional y coach. Integro psicología, pedagogía
                         experiencial y herramientas digitales (incluida IA) para diseñar experiencias de
                         transformación profundas, claras y accionables.
+                    </p>
+                    <p
+                        className="section-subtitle"
+                        style={{
+                            marginBottom: "2.5rem",
+                        }}
+                    >
+                        Acompaño a personas, equipos y organizaciones a construir claridad interna y
+                        resultados sostenibles, con procesos profundos y aplicables a la vida real.
                     </p>
                     <Link href="#metodo" className="btn btn-ghost">
                         Conocer mi enfoque

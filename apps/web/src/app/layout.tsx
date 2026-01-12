@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Genos, Nunito } from "next/font/google";
-import "./globals.css";
+import "./styles/index.css";
 import { NavigationWrapper } from "./components/NavigationWrapper";
 import { Footer } from "./components/Footer";
 

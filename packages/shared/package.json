@@ -11,6 +11,8 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^2.5.5",
         "zod": "^4.3.5"
     }
 }

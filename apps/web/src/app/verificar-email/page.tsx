@@ -83,8 +83,8 @@ function VerifyEmailContent() {
                     <div style={{ ...iconStyle, background: "rgba(99, 102, 241, 0.1)" }}>
                         ⏳
                     </div>
-                    <h1 style={{ marginBottom: "1rem" }}>Verificando tu email...</h1>
-                    <p style={{ color: "var(--foreground-muted)" }}>
+                    <h1 className="card-title" style={{ marginBottom: "1rem" }}>Verificando tu email...</h1>
+                    <p className="card-text">
                         Por favor espera un momento.
                     </p>
                 </div>
@@ -99,8 +99,8 @@ function VerifyEmailContent() {
                     <div style={{ ...iconStyle, background: "rgba(239, 68, 68, 0.1)" }}>
                         ❓
                     </div>
-                    <h1 style={{ marginBottom: "1rem" }}>Token no encontrado</h1>
-                    <p style={{ color: "var(--foreground-muted)", marginBottom: "2rem" }}>
+                    <h1 className="card-title" style={{ marginBottom: "1rem" }}>Token no encontrado</h1>
+                    <p className="card-text" style={{ marginBottom: "2rem" }}>
                         El enlace de verificación no es válido. Asegúrate de copiar el enlace completo del email.
                     </p>
                     <Link href="/registro" className="btn btn-primary">
@@ -121,10 +121,10 @@ function VerifyEmailContent() {
                     }}>
                         ✓
                     </div>
-                    <h1 style={{ marginBottom: "1rem", color: "#22c55e" }}>
+                    <h1 className="card-title" style={{ marginBottom: "1rem", color: "#22c55e" }}>
                         ¡Email verificado!
                     </h1>
-                    <p style={{ color: "var(--foreground-muted)", marginBottom: "2rem" }}>
+                    <p className="card-text" style={{ marginBottom: "2rem" }}>
                         Tu cuenta ha sido verificada correctamente.
                         Ya puedes acceder a todo el contenido de la plataforma.
                     </p>
@@ -147,10 +147,10 @@ function VerifyEmailContent() {
                     <div style={{ ...iconStyle, background: "rgba(251, 146, 60, 0.1)" }}>
                         ⏰
                     </div>
-                    <h1 style={{ marginBottom: "1rem", color: "#f97316" }}>
+                    <h1 className="card-title" style={{ marginBottom: "1rem", color: "#f97316" }}>
                         Enlace expirado
                     </h1>
-                    <p style={{ color: "var(--foreground-muted)", marginBottom: "2rem" }}>
+                    <p className="card-text" style={{ marginBottom: "2rem" }}>
                         El enlace de verificación ha expirado.
                         Los enlaces son válidos por 24 horas.
                     </p>
@@ -167,10 +167,10 @@ function VerifyEmailContent() {
                 <div style={{ ...iconStyle, background: "rgba(239, 68, 68, 0.1)" }}>
                     ✕
                 </div>
-                <h1 style={{ marginBottom: "1rem", color: "#ef4444" }}>
+                <h1 className="card-title" style={{ marginBottom: "1rem", color: "#ef4444" }}>
                     Error de verificación
                 </h1>
-                <p style={{ color: "var(--foreground-muted)", marginBottom: "2rem" }}>
+                <p className="card-text" style={{ marginBottom: "2rem" }}>
                     {message}
                 </p>
                 <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -245,7 +245,7 @@ function ResendVerificationForm() {
 
     return (
         <form onSubmit={handleResend}>
-            <p style={{ color: "var(--foreground-muted)", marginBottom: "1rem", fontSize: "0.9rem" }}>
+            <p className="card-text" style={{ marginBottom: "1rem" }}>
                 Ingresa tu email para recibir un nuevo enlace:
             </p>
             <input

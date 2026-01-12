@@ -81,12 +81,10 @@ export default function RegisterPage() {
                         ✉️
                     </div>
 
-                    <h1 style={{ marginBottom: "0.5rem" }}>¡Revisa tu email!</h1>
+                    <h1 className="card-title" style={{ marginBottom: "0.5rem" }}>¡Revisa tu email!</h1>
 
-                    <p style={{
-                        color: "var(--foreground-muted)",
+                    <p className="card-text" style={{
                         marginBottom: "1.5rem",
-                        lineHeight: "1.6"
                     }}>
                         Te hemos enviado un correo de verificación a{" "}
                         <strong style={{ color: "var(--foreground)" }}>{formData.email}</strong>
@@ -149,8 +147,8 @@ export default function RegisterPage() {
             background: "var(--background)"
         }}>
             <div className={styles.loginCard} style={{ maxWidth: "450px", width: "100%" }}>
-                <h1 style={{ textAlign: "center", marginBottom: "0.5rem" }}>Crear Cuenta</h1>
-                <p style={{ textAlign: "center", color: "var(--foreground-muted)", marginBottom: "2rem" }}>
+                <h1 className="card-title" style={{ textAlign: "center", marginBottom: "0.5rem", fontSize: "2rem" }}>Crear Cuenta</h1>
+                <p className="card-text" style={{ textAlign: "center", marginBottom: "2rem" }}>
                     Únete a nuestra comunidad para acceder a contenido exclusivo.
                 </p>
 

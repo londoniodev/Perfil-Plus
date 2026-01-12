@@ -78,8 +78,8 @@ function LoginForm() {
 
   return (
     <div className={styles.loginCard}>
-      <h1>Iniciar Sesión</h1>
-      <p>Bienvenido de nuevo</p>
+      <h1 className="card-title" style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Iniciar Sesión</h1>
+      <p className="card-text">Bienvenido de nuevo</p>
 
       <form onSubmit={handleSubmit}>
         <div className={styles.formGroup}>

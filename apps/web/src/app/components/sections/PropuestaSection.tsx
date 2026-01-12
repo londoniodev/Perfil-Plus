@@ -35,10 +35,10 @@ export function PropuestaSection() {
                             <div className="icon-box" style={{ margin: "0 auto 1.5rem" }}>
                                 {item.icon}
                             </div>
-                            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1rem" }}>
+                            <h3 className="card-title">
                                 {item.title}
                             </h3>
-                            <p style={{ color: "var(--foreground-muted)" }}>{item.desc}</p>
+                            <p className="card-text">{item.desc}</p>
                         </div>
                     ))}
                 </div>

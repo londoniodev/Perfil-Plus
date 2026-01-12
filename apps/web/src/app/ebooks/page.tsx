@@ -176,12 +176,7 @@ function BenefitsSection({ benefits }: { benefits: Benefit[] }) {
                             }}>
                                 {benefit.icon}
                             </div>
-                            <h3 style={{
-                                fontSize: "1.1rem",
-                                fontWeight: 600,
-                                marginBottom: "0.5rem",
-                                color: "var(--foreground)",
-                            }}>
+                            <h3 className="card-title">
                                 {benefit.title}
                             </h3>
                             <p style={{
@@ -216,12 +211,10 @@ function ValuePropositionSection() {
                     alignItems: "center",
                 }}>
                     <div>
-                        <h2 style={{
+                        <h2 className="section-title" style={{
                             fontSize: "2rem",
-                            fontWeight: 700,
                             marginBottom: "1.5rem",
-                            color: "var(--foreground)",
-                            lineHeight: "1.3",
+                            textAlign: "left"
                         }}>
                             Conocimiento que puedes aplicar desde hoy
                         </h2>
@@ -267,12 +260,7 @@ function ValuePropositionSection() {
                         }}>
                             <BookStackIcon />
                         </div>
-                        <h3 style={{
-                            fontSize: "1.5rem",
-                            fontWeight: 600,
-                            marginBottom: "1rem",
-                            color: "var(--foreground)",
-                        }}>
+                        <h3 className="card-title">
                             Biblioteca en crecimiento
                         </h3>
                         <p style={{
@@ -307,12 +295,7 @@ function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
         }}>
             <div className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
                 <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-                    <h2 style={{
-                        fontSize: "2rem",
-                        fontWeight: 700,
-                        marginBottom: "1rem",
-                        color: "var(--foreground)",
-                    }}>
+                    <h2 className="section-title" style={{ fontSize: "2rem", marginBottom: "1rem" }}>
                         Catálogo de E-books
                     </h2>
                     <p style={{
@@ -390,12 +373,7 @@ function CTASection() {
     return (
         <section style={{ padding: "5rem 0", textAlign: "center" }}>
             <div className="container">
-                <h2 style={{
-                    fontSize: "2rem",
-                    fontWeight: 700,
-                    marginBottom: "1rem",
-                    color: "var(--foreground)",
-                }}>
+                <h2 className="section-title" style={{ fontSize: "2rem", marginBottom: "1rem" }}>
                     ¿Ya tienes e-books comprados?
                 </h2>
                 <p style={{

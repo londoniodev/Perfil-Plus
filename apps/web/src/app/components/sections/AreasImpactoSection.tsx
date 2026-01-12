@@ -61,7 +61,6 @@ export function AreasImpactoSection() {
                     style={{
                         marginBottom: "3rem",
                         textAlign: "center",
-                        fontSize: "2.5rem",
                     }}
                 >
                     Áreas de impacto
@@ -133,25 +132,10 @@ export function AreasImpactoSection() {
                                         marginBottom: "0.75rem",
                                     }}
                                 />
-                                <h3
-                                    style={{
-                                        color: "var(--foreground)",
-                                        fontSize: "1.1rem",
-                                        fontWeight: 600,
-                                        marginBottom: "0.5rem",
-                                        lineHeight: 1.3,
-                                    }}
-                                >
+                                <h3 className="card-title">
                                     {item.name}
                                 </h3>
-                                <p
-                                    style={{
-                                        color: "var(--foreground-muted)",
-                                        fontSize: "0.85rem",
-                                        lineHeight: 1.5,
-                                        margin: 0,
-                                    }}
-                                >
+                                <p className="card-text">
                                     {item.description}
                                 </p>
                             </div>

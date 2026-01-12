@@ -15,7 +15,6 @@ export function AboutSection() {
                         className="section-subtitle"
                         style={{
                             marginBottom: "2.5rem",
-                            color: "var(--foreground)",
                         }}
                     >
                         Psicólogo, consultor organizacional y coach. Integro psicología, pedagogía

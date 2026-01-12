@@ -30,10 +30,10 @@ export function ServiciosSection() {
                             }} />
                         </div>
                         <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: "1rem", lineHeight: 1.3 }}>
+                            <h3 className="card-title">
                                 Psicoterapia y Coaching personalizado
                             </h3>
-                            <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
                                 Espacio clínico para ordenar el mundo interno y sanar.
                             </p>
                             <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -68,10 +68,10 @@ export function ServiciosSection() {
                             }} />
                         </div>
                         <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: "1rem", lineHeight: 1.3 }}>
+                            <h3 className="card-title">
                                 Consultoría Organizacional y Experiencias de desarrollo humano
                             </h3>
-                            <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
                                 Alineación de cultura, liderazgo y equipos con resultados de negocio.
                             </p>
                             <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -127,10 +127,10 @@ export function ServiciosSection() {
                             }} />
                         </div>
                         <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: "1rem", lineHeight: 1.3 }}>
+                            <h3 className="card-title">
                                 Orientación vocacional y Profesional con TecnologIA
                             </h3>
-                            <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
+                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
                                 Claridad, seguimiento y lenguaje simple para decisiones complejas.
                             </p>
                             <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>

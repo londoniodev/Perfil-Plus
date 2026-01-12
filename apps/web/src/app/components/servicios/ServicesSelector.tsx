@@ -34,13 +34,10 @@ const Card = ({ children, className = "" }: { children: React.ReactNode; classNa
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }) => (
     <div style={{ marginBottom: "4rem", textAlign: "center" }}>
-        <h2 className="section-title" style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{title}</h2>
+        <h2 className="section-title" style={{ marginBottom: "1rem" }}>{title}</h2>
         <p className="section-subtitle" style={{
-            fontSize: "1.1rem",
-            color: "var(--foreground-muted)",
             maxWidth: "700px",
             margin: "0 auto",
-            lineHeight: 1.6
         }}>
             {subtitle}
         </p>
@@ -71,7 +68,7 @@ const ContentEmpresas = () => (
             {/* Row 1: Pain Points & Solution */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem" }}>
                 <Card>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem", color: "var(--foreground)" }}>
+                    <h3 className="card-title">
                         ¿Te suena familiar?
                     </h3>
                     <div style={{ display: "grid", gap: "1rem" }}>
@@ -97,7 +94,7 @@ const ContentEmpresas = () => (
                 </Card>
 
                 <Card>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem", color: "var(--foreground)" }}>
+                    <h3 className="card-title">
                         Nuestra Intervención
                     </h3>
                     <p style={{ marginBottom: "1.5rem", color: "var(--foreground-muted)", lineHeight: 1.6, textAlign: "left" }}>
@@ -120,7 +117,7 @@ const ContentEmpresas = () => (
                 padding: "3rem 2rem",
                 border: "1px solid var(--border)"
             }}>
-                <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "2rem", color: "var(--foreground)", textAlign: "center" }}>
+                <h3 className="card-title" style={{ textAlign: "center", marginBottom: "2rem" }}>
                     Cómo trabajamos
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "2rem", textAlign: "center" }}>
@@ -175,7 +172,7 @@ const ContentExplora = () => (
                 alignItems: "center"
             }}>
                 <Card>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem", color: "var(--accent)" }}>
+                    <h3 className="card-title" style={{ color: "var(--accent)" }}>
                         Para jóvenes y familias
                     </h3>
                     <p style={{ marginBottom: "1.5rem", color: "var(--foreground-muted)", textAlign: "left" }}>
@@ -206,7 +203,7 @@ const ContentExplora = () => (
                 </Card>
 
                 <Card>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem", color: "var(--accent)" }}>
+                    <h3 className="card-title" style={{ color: "var(--accent)" }}>
                         Lo que incluye el programa
                     </h3>
                     <FeatureList iconColor="var(--accent)" items={[
@@ -228,7 +225,7 @@ const ContentExplora = () => (
                 textAlign: "left"
             }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--accent)" }}>
+                    <h3 className="card-title" style={{ color: "var(--accent)" }}>
                         ¿Por qué es diferente?
                     </h3>
                     <p style={{ color: "var(--foreground-muted)", lineHeight: 1.6 }}>
@@ -273,7 +270,7 @@ const ContentTerapia = () => (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
                 <Card>
                     <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconHeart /></div>
-                    <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--foreground)" }}>
+                    <h3 className="card-title">
                         Clínica & Salud Mental
                     </h3>
                     <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
@@ -282,7 +279,7 @@ const ContentTerapia = () => (
                 </Card>
                 <Card>
                     <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconUsers /></div>
-                    <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--foreground)" }}>
+                    <h3 className="card-title">
                         Vínculos y Relaciones
                     </h3>
                     <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
@@ -291,7 +288,7 @@ const ContentTerapia = () => (
                 </Card>
                 <Card>
                     <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconCompass /></div>
-                    <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--foreground)" }}>
+                    <h3 className="card-title">
                         Coaching & Propósito
                     </h3>
                     <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
@@ -308,7 +305,7 @@ const ContentTerapia = () => (
                 alignItems: "center"
             }}>
                 <div style={{ textAlign: "left" }}>
-                    <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem", color: "white" }}>
+                    <h3 className="card-title" style={{ fontSize: "1.5rem", marginBottom: "1rem", color: "white" }}>
                         Mi enfoque
                     </h3>
                     <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", lineHeight: 1.6 }}>

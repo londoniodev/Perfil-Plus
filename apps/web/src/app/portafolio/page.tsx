@@ -198,8 +198,8 @@ function CaseSection({ caso, index }: CaseSectionProps) {
                         <IconTrendingUp /> {caso.categoria}
                     </div>
 
-                    <h2 style={{ fontSize: "2.5rem", marginBottom: "1rem", lineHeight: 1.2 }}>{caso.titulo}</h2>
-                    <h3 style={{ fontSize: "1.25rem", fontWeight: 400, color: "var(--foreground-muted)", marginBottom: "3rem" }}>{caso.cliente}</h3>
+                    <h2 className="section-title" style={{ marginBottom: "1rem", lineHeight: 1.2 }}>{caso.titulo}</h2>
+                    <h3 className="section-subtitle" style={{ marginBottom: "3rem" }}>{caso.cliente}</h3>
 
                     <div style={{ display: "grid", gap: "2rem", marginBottom: "3rem" }}>
                         <div>
@@ -265,8 +265,8 @@ function CTASection() {
             }} />
 
             <div className="container">
-                <h2 style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>Construyamos tu propio caso de éxito.</h2>
-                <p style={{ fontSize: "1.1rem", color: "var(--foreground-muted)", marginBottom: "3rem", maxWidth: "600px", marginInline: "auto" }}>
+                <h2 className="section-title" style={{ marginBottom: "1.5rem" }}>Construyamos tu propio caso de éxito.</h2>
+                <p className="section-subtitle" style={{ marginBottom: "3rem", maxWidth: "600px", marginInline: "auto" }}>
                     Ya sea para tu empresa, tu equipo o tu futuro profesional.
                 </p>
                 <Link

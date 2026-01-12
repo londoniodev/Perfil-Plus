@@ -11,7 +11,7 @@
 .blogHero h1 {
     font-family: var(--font-serif);
     font-size: 3.5rem;
-    font-weight: 700;
+    font-weight: 400;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-muted) 100%);
     -webkit-background-clip: text;
@@ -178,7 +178,7 @@
 .cardContent h2 {
     font-family: var(--font-serif);
     font-size: 1.35rem;
-    font-weight: 600;
+    font-weight: 450;
     margin-bottom: 0.75rem;
     line-height: 1.4;
     display: -webkit-box;

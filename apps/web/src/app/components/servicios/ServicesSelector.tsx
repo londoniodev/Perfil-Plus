@@ -159,7 +159,7 @@ const ContentEmpresas = () => (
 const ContentExplora = () => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         <SectionHeading
-            title="Explora: orientación vocacional"
+            title="Explora: Orientación Vocacional y Profesional"
             subtitle="Menos ansiedad. Más claridad. Decisiones de estudio y carrera con información que se entiende y se usa. Tecnología + Humanidad."
         />
 

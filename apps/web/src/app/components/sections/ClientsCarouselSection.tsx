@@ -51,17 +51,15 @@ export function ClientsCarouselSection() {
                     textAlign: "center",
                 }}
             >
-                <p
+                <h2
+                    className="section-title"
                     style={{
-                        fontSize: "0.875rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        color: "var(--foreground-muted)",
-                        fontFamily: "var(--font-mono)",
+                        marginBottom: "2rem",
+                        fontSize: "2.5rem", // Slightly smaller than main page titles
                     }}
                 >
                     Empresas que confían en nosotros
-                </p>
+                </h2>
             </div>
 
             <div className="carousel-container">

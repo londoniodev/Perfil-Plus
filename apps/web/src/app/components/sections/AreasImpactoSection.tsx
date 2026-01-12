@@ -56,19 +56,16 @@ export function AreasImpactoSection() {
             }}
         >
             <div className="container">
-                <p
+                <h2
+                    className="section-title"
                     style={{
                         marginBottom: "3rem",
-                        color: "var(--foreground-muted)",
-                        fontSize: "0.85rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.15em",
                         textAlign: "center",
-                        fontWeight: 600,
+                        fontSize: "2.5rem",
                     }}
                 >
                     Áreas de impacto
-                </p>
+                </h2>
                 <div
                     style={{
                         display: "grid",

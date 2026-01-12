@@ -373,4 +373,80 @@ export class AuthService {
             expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
         };
     }
+    async forgotPassword(email: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+        });
+
+        if (!user) {
+            // Security: Don't reveal if user exists
+            return { message: 'Si el email está registrado, recibirás instrucciones para restablecer tu contraseña.' };
+        }
+
+        // Generate token
+        const rawToken = randomBytes(32).toString('hex');
+        const tokenHash = this.hashToken(rawToken);
+        const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+
+        // Save token (invalidate previous ones)
+        await this.prisma.passwordResetToken.deleteMany({
+            where: { userId: user.id },
+        });
+
+        await this.prisma.passwordResetToken.create({
+            data: {
+                token: tokenHash,
+                userId: user.id,
+                expiresAt,
+            },
+        });
+
+        // Send email
+        await this.emailService.sendPasswordRecoveryEmail(user.email, user.name, rawToken);
+
+        return { message: 'Si el email está registrado, recibirás instrucciones para restablecer tu contraseña.' };
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        const tokenHash = this.hashToken(token);
+
+        const resetToken = await this.prisma.passwordResetToken.findUnique({
+            where: { token: tokenHash },
+            include: { user: true },
+        });
+
+        if (!resetToken) {
+            throw new BadRequestException('Token inválido o expirado.');
+        }
+
+        if (new Date() > resetToken.expiresAt) {
+            await this.prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
+            throw new BadRequestException('El token ha expirado. Solicita uno nuevo.');
+        }
+
+        // Update password
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+        await this.prisma.user.update({
+            where: { id: resetToken.userId },
+            data: {
+                password: hashedPassword,
+                // Unlock account if it was locked
+                failedLoginAttempts: 0,
+                lockedUntil: null,
+            },
+        });
+
+        // Delete used token
+        await this.prisma.passwordResetToken.delete({
+            where: { id: resetToken.id },
+        });
+
+        // Revoke all sessions (security best practice)
+        await this.prisma.refreshToken.deleteMany({
+            where: { userId: resetToken.userId },
+        });
+
+        return { message: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' };
+    }
 }

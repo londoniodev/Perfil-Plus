@@ -115,6 +115,22 @@ export class AuthController {
         return { message: 'Sesión cerrada correctamente' };
     }
 
+    @Public()
+    @Post('forgot-password')
+    @HttpCode(HttpStatus.OK)
+    async forgotPassword(@Body('email') email: string) {
+        return this.authService.forgotPassword(email);
+    }
+
+    @Public()
+    @Post('reset-password')
+    @HttpCode(HttpStatus.OK)
+    async resetPassword(
+        @Body() dto: { token: string; password: string },
+    ) {
+        return this.authService.resetPassword(dto.token, dto.password);
+    }
+
 
     @Get('me')
     async getMe(@CurrentUser('id') userId: string) {

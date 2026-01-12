@@ -104,6 +104,12 @@ function LoginForm() {
           />
         </div>
 
+        <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+          <a href="/auth/forgot-password" style={{ color: '#6366f1', fontSize: '0.875rem', textDecoration: 'none' }}>
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
         {error && <div className={styles.loginError}>{error}</div>}
 
         <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: "100%" }}>

@@ -62,8 +62,20 @@ export class PaymentsController {
     @HttpCode(HttpStatus.OK)
     async handleWebhook(
         @Body() body: any,
-        @Req() req: Request,
+        @Headers('x-signature') xSignature: string,
+        @Headers('x-request-id') xRequestId: string,
     ) {
+        // Validación de firma (Seguridad)
+        const isValid = await this.paymentsService.verifyWebhookSignature(
+            xSignature,
+            xRequestId,
+            body?.data?.id || body?.id
+        );
+
+        if (!isValid) {
+            return { status: 'error', reason: 'invalid signature' };
+        }
+
         // Mercado Pago envía el tipo de notificación y el ID
         const type = body.type || body.topic;
         const dataId = body.data?.id || body.id;

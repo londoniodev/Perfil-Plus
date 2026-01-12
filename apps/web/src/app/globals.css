@@ -190,6 +190,35 @@ h3 {
   line-height: 1.6;
 }
 
+/* Text Size Utilities */
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-sm {
+  font-size: 0.85rem;
+}
+
+.text-base {
+  font-size: 0.95rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.text-muted {
+  color: var(--foreground-muted);
+}
+
 /* Premium Buttons */
 .btn {
   display: inline-flex;

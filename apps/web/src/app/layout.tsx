@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Genos } from "next/font/google";
 import "./globals.css";
 import { NavigationWrapper } from "./components/NavigationWrapper";
 import { Footer } from "./components/Footer";
@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
+const genos = Genos({
   variable: "--font-serif",
   subsets: ["latin"],
 });
@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${genos.variable} antialiased`}>
         <NavigationWrapper footer={<Footer />}>
           {children}
         </NavigationWrapper>

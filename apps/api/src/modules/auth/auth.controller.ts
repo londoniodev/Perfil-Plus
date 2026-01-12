@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Get, Query, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Req, Res, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
@@ -17,6 +18,8 @@ const getCookieOptions = (isProduction: boolean, domain?: string) => ({
 
 @Controller('auth')
 export class AuthController {
+    private readonly logger = new Logger(AuthController.name);
+
     constructor(
         private readonly authService: AuthService,
         private configService: ConfigService,
@@ -47,6 +50,7 @@ export class AuthController {
     }
 
     @Public()
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 intentos por minuto para prevenir fuerza bruta
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(
@@ -56,17 +60,12 @@ export class AuthController {
     ) {
         const result = await this.authService.login(dto);
 
-        // Retornar usuario sin tokens en el body
         const hostname = req.get('host') || req.hostname;
-        const domain = (hostname && hostname.includes('mauromera.com')) ? '.mauromera.com' : undefined;
 
-        console.log('🔍 Login Debug:', {
-            hostHeader: req.get('host'),
-            hostname: req.hostname,
-            calculatedDomain: domain,
-            isProduction: this.isProduction(),
-            timestamp: new Date().toISOString(),
-        });
+        // Log solo en desarrollo
+        if (!this.isProduction()) {
+            this.logger.debug(`Login attempt from ${hostname}`);
+        }
 
         // Establecer cookies
         this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
@@ -101,6 +100,7 @@ export class AuthController {
     }
 
     @Public() // IMPORTANT: Logout must work even with expired/invalid tokens
+    @SkipThrottle() // No limitar logout para evitar bloqueos
     @Post('logout')
     @HttpCode(HttpStatus.OK)
     async logout(
@@ -108,22 +108,9 @@ export class AuthController {
         @Res({ passthrough: true }) res: Response,
     ) {
         const hostname = req.get('host') || req.hostname;
-        const refreshToken = req.cookies?.refreshToken;
-
-        console.log('🔓 Logout requested:', {
-            hostname,
-            hasRefreshToken: !!refreshToken,
-            cookies: Object.keys(req.cookies || {})
-        });
-
-        // Note: We can't invalidate tokens in DB without valid userId
-        // Just clearing cookies is sufficient for security
-
 
         // ALWAYS clear cookies, regardless of token validity
         this.clearAuthCookies(res, hostname);
-
-        console.log('✅ Cookies cleared for hostname:', hostname);
 
         return { message: 'Sesión cerrada correctamente' };
     }

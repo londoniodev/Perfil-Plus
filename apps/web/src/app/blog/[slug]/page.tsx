@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/api";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
 import styles from "./post.module.css";
 
@@ -227,18 +228,20 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-// Formato básico del contenido (convertir saltos de línea en párrafos)
+// Formato básico del contenido (convertir saltos de línea en párrafos) con sanitización XSS
 function formatContent(content: string): string {
   if (!content) return "";
 
-  // Si ya tiene HTML, retornar tal cual
-  if (content.includes("<p>") || content.includes("<div>")) {
-    return content;
+  let formatted = content;
+
+  // Si NO tiene HTML, convertir saltos de línea dobles en párrafos
+  if (!content.includes("<p>") && !content.includes("<div>")) {
+    formatted = content
+      .split(/\n\n+/)
+      .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br/>")}</p>`)
+      .join("");
   }
 
-  // Convertir saltos de línea dobles en párrafos
-  return content
-    .split(/\n\n+/)
-    .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br/>")}</p>`)
-    .join("");
+  // Sanitizar para prevenir XSS
+  return sanitizeHtml(formatted);
 }

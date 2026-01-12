@@ -179,10 +179,7 @@ function BlogCard({ post }: { post: Post }) {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="card-img"
               style={{ objectFit: "cover" }}
-            // Como las imágenes vienen de S3/externas y no sabemos el dominio exacto configurado,
-            // usamos unoptimized temporalmente si falla el build, pero intentaremos optimizado si está configurado.
-            // Si el usuario no tiene configured remotePatterns, esto fallará en runtime.
-            // Agregaremos unoptimized por seguridad si son URLs externas desconocidas.
+              unoptimized
             />
           ) : (
             <div style={{

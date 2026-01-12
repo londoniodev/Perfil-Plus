@@ -73,7 +73,7 @@ export function PropuestaSection() {
                                     fill
                                     sizes="(max-width: 768px) 100vw, 400px"
                                     loading="lazy"
-                                    quality={75}
+                                    unoptimized
                                     style={{
                                         objectFit: "cover",
                                         mixBlendMode: "screen",

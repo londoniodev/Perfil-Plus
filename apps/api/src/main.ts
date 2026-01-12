@@ -1,11 +1,19 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
+
+  // Helmet - Headers de seguridad adicionales
+  app.use(helmet({
+    contentSecurityPolicy: false, // Manejado por Next.js frontend
+    crossOriginEmbedderPolicy: false, // Permitir embeds (videos, iframes)
+  }));
 
   app.use(cookieParser());
 
@@ -15,6 +23,7 @@ async function bootstrap() {
   expressApp.set('trust proxy', 1);
 
   const configService = app.get(ConfigService);
+  const isProduction = configService.get('NODE_ENV') === 'production';
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -28,15 +37,26 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration
+  // CORS configuration - Dinámico por entorno
   const frontendUrl = configService.get('FRONTEND_URL', 'http://localhost:3000');
-  const allowedOrigins = [
-    frontendUrl,
-    'http://localhost:3000',
-    'https://mauromera.com',
-    'https://www.mauromera.com',
-  ];
-  console.log('🔧 CORS configured for:', allowedOrigins);
+
+  // En producción: solo dominios de producción
+  // En desarrollo: incluir localhost
+  const allowedOrigins = isProduction
+    ? [
+      'https://mauromera.com',
+      'https://www.mauromera.com',
+      frontendUrl, // Por si FRONTEND_URL está configurado
+    ].filter((origin, index, arr) => arr.indexOf(origin) === index) // Eliminar duplicados
+    : [
+      frontendUrl,
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ];
+
+  if (!isProduction) {
+    logger.debug(`CORS configured for: ${allowedOrigins.join(', ')}`);
+  }
 
   app.enableCors({
     origin: allowedOrigins,
@@ -51,7 +71,9 @@ async function bootstrap() {
   const port = configService.get('PORT', 3001);
   await app.listen(port);
 
-  console.log(`🚀 API running on: http://localhost:${port}/api`);
+  logger.log(`🚀 API running on port ${port}`);
+  logger.log(`📍 Environment: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
 }
 
 bootstrap();
+

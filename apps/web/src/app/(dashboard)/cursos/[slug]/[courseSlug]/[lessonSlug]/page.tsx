@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import styles from "./lesson.module.css";
 import { API_BASE } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface LessonData {
     id: string;
@@ -263,9 +264,17 @@ function getYouTubeEmbedUrl(url: string): string | null {
 
 function formatContent(content: string): string {
     if (!content) return "";
-    if (content.includes("<p>") || content.includes("<div>")) return content;
-    return content
-        .split(/\n\n+/)
-        .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
-        .join("");
+
+    let formatted = content;
+
+    // Si NO tiene HTML, convertir saltos de línea en párrafos
+    if (!content.includes("<p>") && !content.includes("<div>")) {
+        formatted = content
+            .split(/\n\n+/)
+            .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
+            .join("");
+    }
+
+    // Sanitizar para prevenir XSS
+    return sanitizeHtml(formatted);
 }

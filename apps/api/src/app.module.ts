@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -73,6 +74,12 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     EbooksModule,
     LeadsModule,
     EmailModule,
+
+    // Rate Limiting - 20 requests per minute globally
+    ThrottlerModule.forRoot([{
+      ttl: 60000,    // 1 minuto en milisegundos
+      limit: 20,     // 20 requests por minuto (global)
+    }]),
   ],
   controllers: [AppController],
   providers: [
@@ -88,6 +95,12 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+
+    // Global Rate Limiting Guard
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

@@ -27,20 +27,21 @@ export default function SuscripcionPage() {
     const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    // Verificación de sesión basada en el objeto 'user' (Auth v2 usa Cookies)
+    const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
     useEffect(() => {
-        if (token) {
+        if (user) {
             fetchSubscriptionStatus();
         } else {
             setLoading(false);
         }
-    }, [token]);
+    }, [user]);
 
     const fetchSubscriptionStatus = async () => {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription/status`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include", // Enviar Cookies
             });
             if (res.ok) {
                 const data = await res.json();
@@ -54,8 +55,9 @@ export default function SuscripcionPage() {
     };
 
     const handleSubscribe = async () => {
-        if (!token) {
-            window.location.href = "/login?redirect=/suscripcion";
+        if (!user) {
+            // Guardar ruta actual para redirect post-login
+            window.location.href = `/login?redirect=/suscripcion`;
             return;
         }
 
@@ -63,12 +65,13 @@ export default function SuscripcionPage() {
         setError(null);
 
         try {
+            // Auth v2: Usar cookies (credentials: include) y no header Authorization
             const res = await fetch(`${API_BASE}/payments/subscription/checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     frontUrl: window.location.origin,
                 }),
@@ -101,7 +104,7 @@ export default function SuscripcionPage() {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription`, {
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
             });
 
             if (!res.ok) {

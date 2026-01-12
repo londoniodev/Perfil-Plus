@@ -25,6 +25,7 @@
 /* 7. Feature Components */
 @import "./carousel.css";
 @import "./hero.css";
+@import "./header.css";
 
 /* 8. Responsive (must be last for proper cascade) */
 @import "./responsive.css";

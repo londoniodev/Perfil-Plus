@@ -1,0 +1,151 @@
+/* =============================================
+   HEADER - Navigation & Brand
+   ============================================= */
+
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(15, 20, 25, 0.85);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.header-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+/* --- LOGO --- */
+.header-logo-link {
+    flex: 0 0 auto;
+    width: 25%;
+    /* Target width from user request */
+    max-width: 280px;
+    /* Cap it so it doesn't get huge on 4k screens */
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.header-logo {
+    width: 100%;
+    height: auto;
+    max-height: 50px;
+    /* Constraint height */
+    object-fit: contain;
+    object-position: left center;
+}
+
+.logo-desktop {
+    display: block;
+}
+
+.logo-mobile {
+    display: none;
+    height: 40px;
+    width: auto;
+}
+
+/* --- DESKTOP NAV --- */
+.nav-desktop {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.nav-link {
+    color: var(--foreground-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: var(--font-serif);
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-link:hover {
+    color: white;
+    transform: translateY(-1px);
+}
+
+.nav-link.active {
+    color: white;
+    font-weight: 500;
+}
+
+/* --- MOBILE TOGGLE & MENU --- */
+.header-mobile-toggle {
+    display: none;
+    /* Hidden by default */
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.mobile-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(15, 20, 25, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- RESPONSIVE BREAKPOINTS --- */
+
+/* Tablet & Smaller Laptops: Switch to Hamburger earlier to prevent wrapping */
+@media (max-width: 1100px) {
+    .nav-desktop {
+        display: none;
+    }
+
+    .header-mobile-toggle {
+        display: block;
+    }
+
+    .header-logo-link {
+        width: auto;
+        /* Relax width constraint on mobile */
+        max-width: 180px;
+        flex: 1;
+    }
+
+    .header-logo {
+        height: 40px;
+        /* Slightly smaller on mobile */
+    }
+}

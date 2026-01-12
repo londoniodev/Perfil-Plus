@@ -1,99 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
-    const [isMobile, setIsMobile] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Use AuthContext for reliable auth state
     const { isAuthenticated, loading } = useAuth();
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-
-        // Initial check
-        handleResize();
-
-        window.addEventListener("resize", handleResize);
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
-
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-    // Don't show auth buttons while loading to prevent flicker
-    const showAuthButtons = !loading;
-
     return (
-
-        <header
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 50,
-                background: "rgba(15, 20, 25, 0.6)",
-                backdropFilter: "blur(16px) saturate(180%)",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            }}
-        >
-            <div
-                className="container"
-                style={{
-                    maxWidth: "1600px", // Más ancho para evitar que se amontone
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    height: "80px",
-                    position: "relative"
-                }}
-            >
-                <Link href="/">
+        <header className="site-header">
+            <div className="header-container">
+                <Link href="/" className="header-logo-link">
                     {/* Desktop Logo */}
                     <img
                         src="/menu_logo.png"
                         alt="Mauro Mera"
-                        style={{
-                            height: "50px",
-                            width: "auto",
-                            objectFit: "contain",
-                            display: isMobile ? "none" : "block"
-                        }}
+                        className="header-logo logo-desktop"
                     />
                     {/* Mobile Icon */}
                     <img
-                        src="/icon.ico" // Browser often renders .ico in img tags fine, or we can use a converted png if needed. 
-                        // If the user wants specific mobile icon, they mentioned icon.ico.
+                        src="/icon.ico"
                         alt="Mauro Mera"
-                        style={{
-                            height: "40px",
-                            width: "auto",
-                            objectFit: "contain",
-                            display: isMobile ? "block" : "none"
-                        }}
+                        className="header-logo logo-mobile"
                     />
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav
-                    style={{
-                        display: isMobile ? "none" : "flex",
-                        alignItems: "center",
-                        gap: "2.5rem"
-                    }}
-                >
+                <nav className="nav-desktop">
                     <NavLinks isLoggedIn={isAuthenticated} />
                 </nav>
 
                 {/* Mobile Toggle */}
-                <div style={{ display: isMobile ? "block" : "none" }}>
+                <div className="header-mobile-toggle">
                     <button
                         onClick={toggleMenu}
                         style={{
@@ -123,21 +66,8 @@ export function Header() {
                 </div>
 
                 {/* Mobile Dropdown Menu */}
-                {isMobile && isMenuOpen && (
-                    <div style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        right: 0,
-                        background: "rgba(15, 20, 25, 0.95)",
-                        backdropFilter: "blur(20px)",
-                        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                        padding: "2rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2rem",
-                        alignItems: "center"
-                    }}>
+                {isMenuOpen && (
+                    <div className="mobile-menu-dropdown">
                         <NavLinks isLoggedIn={isAuthenticated} onClick={() => setIsMenuOpen(false)} />
                     </div>
                 )}
@@ -152,85 +82,43 @@ function NavLinks({ onClick, isLoggedIn }: { onClick?: () => void, isLoggedIn: b
             <Link
                 href="/"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-serif)",
-                    transition: "color 0.2s",
-                }}
-                className="hover:text-white"
+                className="nav-link"
             >
                 Inicio
             </Link>
             <Link
                 href="/portafolio"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-serif)",
-                }}
-                className="hover:text-white"
+                className="nav-link"
             >
                 Portafolio
             </Link>
             <Link
                 href="/formacion"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-serif)",
-                }}
-                className="hover:text-white"
+                className="nav-link"
             >
                 Cursos
             </Link>
             <Link
                 href="/blog"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-serif)",
-                }}
-                className="hover:text-white"
+                className="nav-link"
             >
                 Blog
             </Link>
             <Link
                 href="/ebooks"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-serif)",
-                }}
-                className="hover:text-white"
+                className="nav-link"
             >
                 E-books
             </Link>
             <Link
                 href="/servicios"
                 onClick={onClick}
-                style={{
-                    color: "var(--foreground-muted)",
-                    textDecoration: "none",
-                    fontSize: "1rem",
-                    fontWeight: 500,
-                    fontFamily: "var(--font-serif)",
-                }}
-                className="hover:text-white"
+                className="nav-link"
+                style={{ fontWeight: 500 }}
             >
                 Servicios
             </Link>

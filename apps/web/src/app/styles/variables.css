@@ -42,7 +42,7 @@
     --color-primary: var(--primary);
     --color-secondary: var(--secondary);
     --color-accent: var(--accent);
-    --font-sans: var(--font-serif);
-    --font-serif: var(--font-serif);
+    --font-sans: var(--font-sans);
+    --font-serif: var(--font-sans);
     --font-mono: var(--font-geist-mono);
 }

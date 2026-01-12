@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Abhaya_Libre } from "next/font/google";
+import { Geist_Mono, Sansation } from "next/font/google";
 import "./styles/index.css";
 import { NavigationWrapper } from "./components/NavigationWrapper";
 import { Footer } from "./components/Footer";
 
-const abhayaLibre = Abhaya_Libre({
-  variable: "--font-serif",
+const sansation = Sansation({
+  variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -41,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${abhayaLibre.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${sansation.variable} ${geistMono.variable} antialiased`}>
         <NavigationWrapper footer={<Footer />}>
           {children}
         </NavigationWrapper>

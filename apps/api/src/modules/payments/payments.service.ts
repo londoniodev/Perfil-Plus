@@ -42,7 +42,7 @@ export class PaymentsService {
         }
 
         const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-        const subscriptionPrice = 49900; // COP - Precio mensual
+        const subscriptionPrice = 15; // USD - Precio mensual
 
         // Crear preferencia de pago en Mercado Pago
         const preferenceData = {
@@ -53,7 +53,7 @@ export class PaymentsService {
                     description: 'Acceso completo a todos los cursos, contenido premium y evaluaciones',
                     quantity: 1,
                     unit_price: subscriptionPrice,
-                    currency_id: 'COP',
+                    currency_id: 'USD',
                 },
             ],
             payer: {

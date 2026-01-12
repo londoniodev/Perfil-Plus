@@ -29,8 +29,8 @@ export default function PricingCard({ onSubscribe, processing, error }: PricingC
             <div className={styles.cardHeader}>
                 <h2>Plan Mensual</h2>
                 <div className={styles.price}>
-                    <span className={styles.currency}>$</span>
-                    <span className={styles.amount}>49.900</span>
+                    <span className={styles.currency}>US$</span>
+                    <span className={styles.amount}>15</span>
                     <span className={styles.period}>/mes</span>
                 </div>
             </div>

@@ -8,11 +8,13 @@ export function HeroSection() {
             <div className="grid-responsive-hero">
                 <div className="animate-reveal">
                     <h1 className="section-title hero-title">
-                        Psicología y <span className="gradient-text">Desarrollo Humano.</span>
+                        Psicología y Desarrollo Humano. <br />
+                        <span className="gradient-text">Experiencias educativas individuales y grupales que transforman, con método y tecnología.</span>
                     </h1>
 
                     <p className="section-subtitle mb-8">
-                        Experiencias educativas individuales y grupales que transforman, con método y tecnología.
+                        Acompaño a personas, equipos y organizaciones a construir claridad interna y
+                        resultados sostenibles, con procesos profundos y aplicables a la vida real.
                     </p>
 
                     <div className="hero-buttons">

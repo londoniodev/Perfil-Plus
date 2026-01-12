@@ -20,7 +20,7 @@ const areas = [
     },
     {
         name: "Orientación Vocacional y Profesional",
-        description: "Claridad para decisiones de carrera sin ansiedad.",
+        description: "Método validado y herramientas de IA para la exploración y elección de camino profesional con criterio y propósito.",
         image: "/areas_impacto/orientacion_vocacional.avif",
         href: "/servicios#explora",
         gradient: "linear-gradient(135deg, rgba(56, 189, 189, 0.15) 0%, rgba(40, 150, 150, 0.1) 100%)",
@@ -105,6 +105,7 @@ export function AreasImpactoSection() {
                                     src={item.image}
                                     alt={item.name}
                                     fill
+                                    unoptimized
                                     style={{
                                         objectFit: "cover",
                                         transition: "transform 0.5s ease, opacity 0.4s ease",

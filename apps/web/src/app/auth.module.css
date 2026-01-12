@@ -61,6 +61,14 @@
     box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.1);
 }
 
+.inputWithIcon {
+    padding-left: 2.75rem !important;
+}
+
+.inputWithAction {
+    padding-right: 2.75rem !important;
+}
+
 .formGroup input::placeholder {
     color: var(--foreground-muted);
 }

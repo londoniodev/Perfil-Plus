@@ -24,18 +24,19 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
     const [processing, setProcessing] = useState(false);
     const [downloading, setDownloading] = useState(false);
 
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    // Verificación de sesión basada en Cookie
+    const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
     useEffect(() => {
-        if (token) {
+        if (user) {
             checkPurchase();
         }
-    }, [token]);
+    }, [user]);
 
     const checkPurchase = async () => {
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/check-purchase`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
             });
             if (res.ok) {
                 const data = await res.json();
@@ -47,7 +48,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
     };
 
     const handlePurchase = async () => {
-        if (!token) {
+        if (!user) {
             window.location.href = `/login?redirect=/ebooks/${ebook.slug}`;
             return;
         }
@@ -59,8 +60,8 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     ebookId: ebook.id,
                     frontUrl: window.location.origin,
@@ -91,7 +92,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
 
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/download`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
             });
 
             if (!res.ok) throw new Error("Error al obtener enlace");

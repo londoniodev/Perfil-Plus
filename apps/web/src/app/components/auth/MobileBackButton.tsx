@@ -22,7 +22,7 @@ export function MobileBackButton() {
                 borderRadius: "50%",
                 width: "40px",
                 height: "40px",
-                display: "none", // Hidden by default (desktop)
+                display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "var(--foreground)",
@@ -31,11 +31,11 @@ export function MobileBackButton() {
             }}
         >
             <IconArrowLeft />
+            {/* Hover effect */}
             <style jsx>{`
-                @media (max-width: 768px) {
-                    .mobile-back-button {
-                        display: flex !important;
-                    }
+                button:hover {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    transform: scale(1.05);
                 }
             `}</style>
         </button>

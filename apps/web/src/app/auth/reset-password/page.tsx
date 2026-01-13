@@ -9,6 +9,8 @@ import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import styles from "../../auth.module.css";
+import { AuthLayout } from "@/app/components/auth/AuthLayout";
+import { MobileBackButton } from "@/app/components/auth/MobileBackButton";
 
 const resetPasswordSchema = z
     .object({
@@ -85,6 +87,7 @@ function ResetPasswordFormContent() {
     if (!token) {
         return (
             <div className={styles.loginCard} style={{ textAlign: "center" }}>
+                <MobileBackButton />
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
                     <Lock className="h-6 w-6 text-red-500" />
                 </div>
@@ -104,6 +107,21 @@ function ResetPasswordFormContent() {
 
     return (
         <div className={styles.loginCard}>
+            <MobileBackButton />
+            <div className="text-center mb-8">
+                <Link href="/" className="inline-block mb-6">
+                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+                        Mauro Mera
+                    </span>
+                </Link>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                    Restablecer contraseña
+                </h2>
+                <p className="text-sm text-gray-400">
+                    Ingresa tu nueva contraseña para acceder a tu cuenta.
+                </p>
+            </div>
+
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 <div className={styles.formGroup}>
                     <label htmlFor="password">Nueva contraseña</label>
@@ -198,26 +216,10 @@ function ResetPasswordFormContent() {
 
 export default function ResetPasswordPage() {
     return (
-        <div className={styles.loginPage}>
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <Link href="/" className="inline-block mb-6">
-                        <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
-                            Mauro Mera
-                        </span>
-                    </Link>
-                    <h2 className="text-2xl font-bold text-white mb-2">
-                        Restablecer contraseña
-                    </h2>
-                    <p className="text-sm text-gray-400">
-                        Ingresa tu nueva contraseña para acceder a tu cuenta.
-                    </p>
-                </div>
-
-                <Suspense fallback={<div className="text-center p-4 text-white">Cargando...</div>}>
-                    <ResetPasswordFormContent />
-                </Suspense>
-            </div>
-        </div>
+        <AuthLayout>
+            <Suspense fallback={<div className="text-center p-4 text-white">Cargando...</div>}>
+                <ResetPasswordFormContent />
+            </Suspense>
+        </AuthLayout>
     );
 }

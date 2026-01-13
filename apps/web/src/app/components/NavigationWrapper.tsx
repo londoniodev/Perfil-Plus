@@ -21,28 +21,15 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
         pathname === "/registro" ||
         pathname?.startsWith("/auth");
 
-    if (isDashboard) {
+    if (isDashboard || isAuthPage) {
         return <>{children}</>;
     }
 
     return (
         <>
-            <div className={isAuthPage ? "hide-on-mobile" : ""}>
-                <Header />
-            </div>
+            <Header />
             <main>{children}</main>
-            <div className={isAuthPage ? "hide-on-mobile" : ""}>
-                {footer}
-            </div>
-
-            {/* Global style to hide elements on mobile when class is present */}
-            <style jsx global>{`
-                @media (max-width: 768px) {
-                    .hide-on-mobile {
-                        display: none !important;
-                    }
-                }
-            `}</style>
+            {footer}
         </>
     );
 }

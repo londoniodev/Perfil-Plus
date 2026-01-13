@@ -20,17 +20,20 @@
 .backBtn {
     color: var(--foreground-muted);
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     border-radius: 0.5rem;
     background: rgba(255, 255, 255, 0.05);
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .backBtn:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Grid Layout */
 .grid {
     display: grid;
     grid-template-columns: 1.3fr 0.7fr;
@@ -44,7 +47,6 @@
     gap: 1.5rem;
 }
 
-/* Cards */
 .card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
@@ -53,21 +55,28 @@
 }
 
 .cardTitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     margin-bottom: 1.25rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--foreground);
 }
 
-/* Form Fields */
+.cardTitle svg {
+    color: var(--primary);
+}
+
 .field {
     margin-bottom: 1.25rem;
 }
 
 .field label {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--foreground-muted);
     margin-bottom: 0.5rem;
 }
@@ -96,7 +105,6 @@
     line-height: 1.5;
 }
 
-/* Price Input */
 .priceInput {
     position: relative;
     display: flex;
@@ -121,7 +129,6 @@
     font-size: 1rem;
 }
 
-/* File Boxes */
 .filesGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -133,13 +140,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
     border: 2px dashed var(--border);
     border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
-    min-height: 140px;
+    min-height: 160px;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .fileBox:hover {
@@ -149,12 +157,17 @@
 
 .fileBoxActive {
     border-color: #10b981 !important;
-    background: rgba(16, 185, 129, 0.1) !important;
+    border-style: solid !important;
+    background: rgba(16, 185, 129, 0.08) !important;
 }
 
 .fileIcon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--foreground-muted);
+}
+
+.fileBoxActive .fileIcon {
+    color: #10b981;
 }
 
 .fileName {
@@ -166,11 +179,21 @@
 }
 
 .fileHint {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--foreground-muted);
+    margin-bottom: 0.5rem;
 }
 
-/* Cover Box */
+.fileMeta {
+    font-size: 0.7rem;
+    color: var(--foreground-muted);
+    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.25rem;
+}
+
 .coverBox {
     display: flex;
     flex-direction: column;
@@ -180,8 +203,9 @@
     border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
-    min-height: 200px;
+    min-height: 220px;
     overflow: hidden;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .coverBox:hover {
@@ -194,18 +218,23 @@
 }
 
 .coverIcon {
-    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    color: var(--foreground-muted);
+}
+
+.coverText {
+    font-size: 0.9rem;
+    color: var(--foreground-muted);
     margin-bottom: 0.5rem;
 }
 
 .coverPreview {
     width: 100%;
-    height: 200px;
+    height: 220px;
     object-fit: cover;
     border-radius: 0.5rem;
 }
 
-/* Toggle */
 .toggleRow {
     display: flex;
     justify-content: space-between;
@@ -214,6 +243,7 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;
     cursor: pointer;
+    border: 1px solid var(--border);
 }
 
 .toggleLabel {
@@ -248,13 +278,16 @@
     top: 2px;
     left: 2px;
     transition: transform 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #10b981;
 }
 
 .toggleOn .toggleCircle {
     transform: translateX(22px);
 }
 
-/* Submit Button */
 .submitBtn {
     width: 100%;
     padding: 1rem;
@@ -267,6 +300,10 @@
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .submitBtn:hover {
@@ -280,7 +317,6 @@
     transform: none;
 }
 
-/* Loading */
 .loading {
     display: flex;
     align-items: center;
@@ -290,7 +326,6 @@
     color: var(--foreground-muted);
 }
 
-/* Responsive */
 @media (max-width: 900px) {
     .grid {
         grid-template-columns: 1fr;

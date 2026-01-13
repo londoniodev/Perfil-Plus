@@ -209,7 +209,7 @@ export class PaymentsService {
                     description: ebook.description.substring(0, 255),
                     quantity: 1,
                     unit_price: Number(ebook.price), // Convert Decimal to number
-                    currency_id: 'COP',
+                    currency_id: 'USD',
                 },
             ],
             payer: {

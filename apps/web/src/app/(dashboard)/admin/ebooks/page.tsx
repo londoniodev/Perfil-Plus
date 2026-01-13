@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import styles from "../cursos/lms.module.css"; // Reusing LMS styles for consistency
 import { API_BASE } from "@/lib/config";
+import styles from "./ebook-list.module.css";
 
 interface Ebook {
     id: string;
@@ -15,64 +15,49 @@ interface Ebook {
     coverImage: string;
     price: number;
     published: boolean;
-    _count?: {
-        purchases: number;
-    };
+    _count?: { purchases: number };
     createdAt: string;
 }
+
+// Icons
+const IconPlus = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>;
+const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>;
+const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>;
+const IconBook = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>;
 
 export default function AdminEbooksPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
-
     const [ebooks, setEbooks] = useState<Ebook[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
-        }
+        if (!authLoading && !isAdmin) router.push("/perfil");
     }, [isAdmin, authLoading, router]);
 
     useEffect(() => {
-        if (isAdmin) {
-            fetchEbooks();
-        }
+        if (isAdmin) fetchEbooks();
     }, [isAdmin]);
 
     const fetchEbooks = async () => {
         try {
-            setLoading(true);
-            const res = await fetch(`${API_BASE}/admin/ebooks`, {
-                credentials: "include",
-            });
-
-            if (!res.ok) throw new Error("Error al cargar e-books");
-
-            const data = await res.json();
-            setEbooks(data);
+            const res = await fetch(`${API_BASE}/admin/ebooks`, { credentials: "include" });
+            if (!res.ok) throw new Error("Error");
+            setEbooks(await res.json());
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("¿Estás seguro de eliminar este e-book? Esta acción no se puede deshacer.")) return;
-
+        if (!confirm("¿Eliminar este e-book?")) return;
         try {
-            const res = await fetch(`${API_BASE}/admin/ebooks/${id}`, {
-                method: "DELETE",
-                credentials: "include",
-            });
-
-            if (!res.ok) throw new Error("Error al eliminar e-book");
-
+            await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", credentials: "include" });
             setEbooks((prev) => prev.filter((e) => e.id !== id));
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al eliminar");
+            alert("Error al eliminar");
         }
     };
 
@@ -80,71 +65,48 @@ export default function AdminEbooksPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className={styles.lmsPage}>
+        <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Gestión de E-books</h1>
+                <div>
+                    <h1 className={styles.title}>Biblioteca de E-books</h1>
+                    <p className={styles.subtitle}>{ebooks.length} libros en tu catálogo</p>
+                </div>
                 <Link href="/admin/ebooks/new" className={styles.addBtn}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Nuevo E-book
+                    <IconPlus /> Nuevo E-book
                 </Link>
             </div>
-
-            {error && <div className={styles.error}>{error}</div>}
 
             {loading ? (
                 <div className={styles.loading}>Cargando e-books...</div>
             ) : ebooks.length === 0 ? (
-                <div className={styles.emptyState}>
-                    <div className={styles.emptyIcon}>📖</div>
-                    <h2 className={styles.emptyTitle}>No hay e-books creados</h2>
-                    <p className={styles.emptyText}>Crea tu primer e-book para comenzar a vender.</p>
+                <div className={styles.empty}>
+                    <div className={styles.emptyIcon}><IconBook /></div>
+                    <h2>No hay e-books</h2>
+                    <p>Crea tu primer e-book para comenzar a vender.</p>
                     <Link href="/admin/ebooks/new" className={styles.addBtn}>
-                        Crear Primer E-book
+                        <IconPlus /> Crear E-book
                     </Link>
                 </div>
             ) : (
-                <div className={styles.themesGrid}>
+                <div className={styles.booksGrid}>
                     {ebooks.map((ebook) => (
-                        <div key={ebook.id} className={styles.card} style={{ position: "relative" }}>
-                            <div className={styles.cardImage} style={{ height: "200px", overflow: "hidden" }}>
-                                <img
-                                    src={ebook.coverImage}
-                                    alt={ebook.title}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                                {!ebook.published && (
-                                    <span style={{
-                                        position: "absolute",
-                                        top: "10px",
-                                        right: "10px",
-                                        background: "rgba(0,0,0,0.7)",
-                                        color: "white",
-                                        padding: "4px 8px",
-                                        borderRadius: "4px",
-                                        fontSize: "0.8rem"
-                                    }}>
-                                        Borrador
-                                    </span>
-                                )}
+                        <div key={ebook.id} className={styles.bookCard}>
+                            <div className={styles.bookCover}>
+                                <img src={ebook.coverImage} alt={ebook.title} />
+                                {!ebook.published && <span className={styles.draftBadge}>Borrador</span>}
                             </div>
-                            <div className={styles.cardContent}>
-                                <h3 className={styles.cardTitle}>{ebook.title}</h3>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "#888", marginBottom: "1rem" }}>
-                                    <span>${ebook.price}</span>
-                                    <span>{ebook._count?.purchases || 0} ventas</span>
+                            <div className={styles.bookInfo}>
+                                <h3 className={styles.bookTitle}>{ebook.title}</h3>
+                                <div className={styles.bookMeta}>
+                                    <span className={styles.bookPrice}>${Number(ebook.price).toLocaleString("es-CO")}</span>
+                                    <span className={styles.bookSales}>{ebook._count?.purchases || 0} ventas</span>
                                 </div>
-                                <div className={styles.cardActions}>
+                                <div className={styles.bookActions}>
                                     <Link href={`/admin/ebooks/${ebook.id}`} className={styles.editBtn}>
-                                        Editar
+                                        <IconEdit /> Editar
                                     </Link>
-                                    <button
-                                        onClick={() => handleDelete(ebook.id)}
-                                        className={styles.deleteBtn}
-                                    >
-                                        Eliminar
+                                    <button onClick={() => handleDelete(ebook.id)} className={styles.deleteBtn}>
+                                        <IconTrash />
                                     </button>
                                 </div>
                             </div>

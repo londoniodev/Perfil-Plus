@@ -16,17 +16,22 @@ function LoginForm() {
   // Redirigir si ya está logueado (verificación rápida de cliente)
   useEffect(() => {
     const errorParam = searchParams.get("error");
+    const reasonParam = searchParams.get("reason");
     const user = localStorage.getItem("user");
 
     // Si hay un error de sesión (ej: cookie expirada o faltante), limpiamos localStorage
-    if (errorParam === 'session_missing') {
+    if (errorParam === 'session_missing' || reasonParam === 'session_expired') {
       if (user) {
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         // Disparar evento para que el Navbar se actualice (mostrar Login/Registro)
         window.dispatchEvent(new Event("user-login"));
       }
-      // Redirigir al usuario para limpiar los parámetros de la URL
-      router.replace("/login");
+      // Show friendly message
+      if (reasonParam === 'session_expired') {
+        setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+      }
       return;
     }
 

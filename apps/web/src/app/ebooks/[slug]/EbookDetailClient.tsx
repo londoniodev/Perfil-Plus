@@ -39,12 +39,21 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
             const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/check-purchase`, {
                 credentials: "include",
             });
+
+            // If token expired, clear local storage but don't redirect (just show as not purchased)
+            if (res.status === 401) {
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+                localStorage.removeItem("refreshToken");
+                return;
+            }
+
             if (res.ok) {
                 const data = await res.json();
                 setHasPurchased(data.hasPurchased);
             }
         } catch {
-            // Ignore
+            // Ignore network errors
         }
     };
 
@@ -68,6 +77,18 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                     frontUrl: window.location.origin,
                 }),
             });
+
+            // Handle expired token / unauthorized
+            if (res.status === 401) {
+                // Clear stale local data
+                localStorage.removeItem("user");
+                localStorage.removeItem("token");
+                localStorage.removeItem("refreshToken");
+
+                // Redirect to login with return URL
+                window.location.href = `/login?redirect=/ebooks/${ebook.slug}&reason=session_expired`;
+                return;
+            }
 
             if (!res.ok) {
                 const data = await res.json();
@@ -136,7 +157,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
 
                             <div className={styles.purchaseCard}>
                                 <div className={styles.price}>
-                                    ${Number(ebook.price).toLocaleString("es-CO")} COP
+                                    ${Number(ebook.price).toLocaleString("en-US")} USD
                                 </div>
 
                                 {hasPurchased ? (

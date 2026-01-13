@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "../../cursos/lms.module.css";
+import styles from "../../ebooks/ebook-form.module.css";
 
 export default function EditEbookPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);

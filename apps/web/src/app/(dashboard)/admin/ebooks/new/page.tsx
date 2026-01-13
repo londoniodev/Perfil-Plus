@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "../../cursos/lms.module.css"; // Reuse styles
+import styles from "../../ebooks/ebook-form.module.css";
 
 export default function NewEbookPage() {
     const router = useRouter();

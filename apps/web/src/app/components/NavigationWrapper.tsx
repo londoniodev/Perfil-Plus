@@ -14,6 +14,7 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
         pathname?.startsWith("/admin/cursos") ||
         pathname?.startsWith("/admin/blog") ||
         pathname?.startsWith("/admin/usuarios") ||
+        pathname?.startsWith("/admin/ebooks") ||
         pathname?.startsWith("/dashboard");
 
     if (isDashboard) {

@@ -57,7 +57,7 @@ const FeatureList = ({ items, iconColor = "var(--primary)" }: { items: string[],
 
 // --- Content Components ---
 
-const ContentEmpresas = () => (
+const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         <SectionHeading
             title="Consultoría organizacional & desarrollo"
@@ -66,7 +66,7 @@ const ContentEmpresas = () => (
 
         <div style={{ display: "grid", gap: "2rem", marginBottom: "3rem" }}>
             {/* Row 1: Pain Points & Solution */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "2rem" }}>
                 <Card>
                     <h3 className="card-title">
                         ¿Te suena familiar?
@@ -82,7 +82,7 @@ const ContentEmpresas = () => (
                                 padding: "1rem",
                                 background: "rgba(0,0,0,0.2)",
                                 borderRadius: "0.75rem",
-                                borderLeft: "3px solid var(--border)",
+                                borderLeft: `3px solid ${color}`, // Dynamic border color
                                 fontSize: "0.9rem",
                                 fontStyle: "italic",
                                 color: "var(--foreground-muted)"
@@ -100,7 +100,7 @@ const ContentEmpresas = () => (
                     <p style={{ marginBottom: "1.5rem", color: "var(--foreground-muted)", lineHeight: 1.6, textAlign: "left" }}>
                         No entregamos PDFs que nadie lee. Diseñamos experiencias y acompañamientos que cambian comportamientos.
                     </p>
-                    <FeatureList items={[
+                    <FeatureList iconColor={color} items={[
                         "Diagnóstico de cultura y clima (más allá de la encuesta).",
                         "Desarrollo de habilidades conversacionales para líderes.",
                         "Alineación de equipos directivos (Team Coaching).",
@@ -120,7 +120,7 @@ const ContentEmpresas = () => (
                 <h3 className="card-title" style={{ textAlign: "center", marginBottom: "2rem" }}>
                     Cómo trabajamos
                 </h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "2rem", textAlign: "center" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "2rem", textAlign: "center" }}>
                     {[
                         { step: "01", title: "Entender", desc: "Diagnóstico profundo y entrevistas." },
                         { step: "02", title: "Diseñar", desc: "Co-creación de la ruta de solución." },
@@ -129,7 +129,7 @@ const ContentEmpresas = () => (
                     ].map((s, i) => (
                         <div key={i} style={{ position: "relative" }}>
                             <div style={{ fontSize: "3rem", fontWeight: 900, opacity: 0.1, lineHeight: 1, marginBottom: "0.5rem" }}>{s.step}</div>
-                            <h4 style={{ fontWeight: 600, marginBottom: "0.5rem", color: "var(--primary)" }}>{s.title}</h4>
+                            <h4 style={{ fontWeight: 600, marginBottom: "0.5rem", color: color }}>{s.title}</h4>
                             <p style={{ fontSize: "0.85rem", color: "var(--foreground-muted)" }}>{s.desc}</p>
                         </div>
                     ))}
@@ -144,7 +144,12 @@ const ContentEmpresas = () => (
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary"
-                style={{ padding: "1rem 2rem", fontSize: "1rem" }}
+                style={{
+                    padding: "1rem 2rem",
+                    fontSize: "1rem",
+                    background: color, // Dynamic button bg
+                    borderColor: color
+                }}
             >
                 <IconCalendar />
                 Agenda reunión de diagnóstico
@@ -167,7 +172,7 @@ const ContentExplora = () => (
             {/* Main Value Prop */}
             <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
                 gap: "2rem",
                 alignItems: "center"
             }}>
@@ -225,13 +230,13 @@ const ContentExplora = () => (
                 textAlign: "left"
             }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <h3 className="card-title" style={{ color: "var(--accent)" }}>
+                    <h3 className="card-title" style={{ color: "var(--accent)", textAlign: "center" }}>
                         ¿Por qué es diferente?
                     </h3>
-                    <p style={{ color: "var(--foreground-muted)", lineHeight: 1.6 }}>
+                    <p style={{ color: "var(--foreground-muted)", marginBottom: "1.5rem", lineHeight: 1.6 }}>
                         La mayoría de tests te dan una lista fría de carreras. <strong>Explora</strong> combina data precisa con acompañamiento humano. Usamos IA para procesar miles de opciones, pero la decisión la tomas tú con criterio y acompañamiento experto.
                     </p>
-                    <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
                         <span style={{ padding: "0.25rem 0.75rem", borderRadius: "1rem", background: "var(--accent)", color: "black", fontWeight: 600, fontSize: "0.85rem" }}>Data-driven</span>
                         <span style={{ padding: "0.25rem 0.75rem", borderRadius: "1rem", background: "rgba(255,255,255,0.1)", color: "white", fontSize: "0.85rem" }}>100% Personalizado</span>
                         <span style={{ padding: "0.25rem 0.75rem", borderRadius: "1rem", background: "rgba(255,255,255,0.1)", color: "white", fontSize: "0.85rem" }}>Moderno</span>
@@ -258,7 +263,7 @@ const ContentExplora = () => (
     </div>
 );
 
-const ContentTerapia = () => (
+const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         <SectionHeading
             title="Psicoterapia y coaching"
@@ -267,31 +272,37 @@ const ContentTerapia = () => (
 
         <div style={{ display: "grid", gap: "2rem", marginBottom: "3rem" }}>
             {/* Grid 3 cols for types of work */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem" }}>
                 <Card>
-                    <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconHeart /></div>
-                    <h3 className="card-title">
+                    <div style={{ color: color, marginBottom: "1rem", fontSize: "1.5rem", display: "flex", justifyContent: "center" }}>
+                        <IconHeart />
+                    </div>
+                    <h3 className="card-title" style={{ textAlign: "center" }}>
                         Clínica & Salud Mental
                     </h3>
-                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
+                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "center" }}>
                         Ansiedad, depresión leve, duelos, estrés crónico. Un enfoque compasivo para recuperar tu equilibrio.
                     </p>
                 </Card>
                 <Card>
-                    <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconUsers /></div>
-                    <h3 className="card-title">
+                    <div style={{ color: color, marginBottom: "1rem", fontSize: "1.5rem", display: "flex", justifyContent: "center" }}>
+                        <IconUsers />
+                    </div>
+                    <h3 className="card-title" style={{ textAlign: "center" }}>
                         Vínculos y Relaciones
                     </h3>
-                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
+                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "center" }}>
                         Dificultades de pareja, familia, o patrones repetitivos en cómo te relacionas con los demás.
                     </p>
                 </Card>
                 <Card>
-                    <div style={{ color: "var(--success)", marginBottom: "1rem" }}><IconCompass /></div>
-                    <h3 className="card-title">
+                    <div style={{ color: color, marginBottom: "1rem", fontSize: "1.5rem", display: "flex", justifyContent: "center" }}>
+                        <IconCompass />
+                    </div>
+                    <h3 className="card-title" style={{ textAlign: "center" }}>
                         Coaching & Propósito
                     </h3>
-                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "left" }}>
+                    <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)", lineHeight: 1.5, textAlign: "center" }}>
                         Bloqueos creativos, decisiones de carrera, síndrome del impostor y búsqueda de sentido vital.
                     </p>
                 </Card>
@@ -300,7 +311,7 @@ const ContentTerapia = () => (
             {/* Approach */}
             <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", // Reduced min-width here too
                 gap: "2rem",
                 alignItems: "center"
             }}>
@@ -321,7 +332,7 @@ const ContentTerapia = () => (
                     borderRadius: "1rem",
                     border: "1px solid var(--border)"
                 }}>
-                    <h4 style={{ fontWeight: 700, marginBottom: "1rem", color: "var(--success)" }}>Modalidades</h4>
+                    <h4 style={{ fontWeight: 700, marginBottom: "1rem", color: color }}>Modalidades</h4>
                     <ul style={{ display: "grid", gap: "0.75rem" }}>
                         <li style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.5rem" }}>
                             <span style={{ color: "var(--foreground)" }}>Online (Google Meet)</span>
@@ -346,7 +357,12 @@ const ContentTerapia = () => (
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary"
-                style={{ padding: "1rem 2rem", fontSize: "1rem" }}
+                style={{
+                    padding: "1rem 2rem",
+                    fontSize: "1rem",
+                    background: color,
+                    borderColor: color
+                }}
             >
                 <IconCalendar />
                 Agendar primera sesión
@@ -359,28 +375,33 @@ const ContentTerapia = () => (
 );
 
 export function ServicesSelector() {
-    const [activeTab, setActiveTab] = useState<"empresas" | "explora" | "terapia">("explora");
+    const [activeTab, setActiveTab] = useState<"empresas" | "explora" | "psicoterapia">("empresas");
 
-    // Leer el hash de la URL para seleccionar el tab correcto
+    // Reading hash for deep linking
     useEffect(() => {
         const hash = window.location.hash.replace("#", "");
-        if (hash === "empresas") {
-            setActiveTab("empresas");
-        } else if (hash === "explora") {
-            setActiveTab("explora");
-        } else if (hash === "psicoterapia") {
-            setActiveTab("terapia");
-        }
+        if (hash === "empresas") setActiveTab("empresas");
+        else if (hash === "explora") setActiveTab("explora");
+        else if (hash === "bienestar" || hash === "psicoterapia") setActiveTab("psicoterapia");
     }, []);
+
+    const tabs = [
+        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" }, // Azul
+        { id: "explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" }, // Amarillo
+        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "var(--success)" }, // Verde
+    ];
+
+    const currentTabColor = tabs.find(t => t.id === activeTab)?.color || "var(--primary)";
 
     return (
         <section style={{
             minHeight: "100vh",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            padding: "6rem 0 5vh", // Adjusted padding
-            position: "relative"
+            justifyContent: "flex-start", // Changed from center to prevent top overlap
+            padding: "8rem 0 4rem", // Increased top padding for header clearance
+            position: "relative",
+            overflow: "hidden"
         }}>
             {/* Background Glows */}
             <div style={{
@@ -389,81 +410,82 @@ export function ServicesSelector() {
                 left: "10%",
                 width: "300px",
                 height: "300px",
-                background: activeTab === "empresas" ? "var(--primary)" : activeTab === "explora" ? "var(--accent)" : "var(--success)",
-                opacity: 0.05,
+                background: currentTabColor,
+                opacity: 0.08,
                 filter: "blur(100px)",
                 borderRadius: "50%",
                 transition: "background 0.5s ease",
                 zIndex: -1
             }} />
-            <div style={{
-                position: "absolute",
-                bottom: "10%",
-                right: "10%",
-                width: "400px",
-                height: "400px",
-                background: activeTab === "empresas" ? "var(--primary)" : activeTab === "explora" ? "var(--accent)" : "var(--success)",
-                opacity: 0.03,
-                filter: "blur(120px)",
-                borderRadius: "50%",
-                transition: "background 0.5s ease",
-                zIndex: -1
-            }} />
 
-            <div className="container" style={{ maxWidth: "1000px" }}>
+            <div className="container" style={{ width: "100%", maxWidth: "1400px", padding: "0 1.5rem", margin: "0 auto" }}> {/* Dynamic width with margins */}
 
                 {/* Selector Tabs */}
                 <div style={{
                     display: "flex",
                     justifyContent: "center",
-                    marginBottom: "1.5rem"
+                    marginBottom: "4rem" // Increased spacing as requested (User request 1)
                 }}>
                     <div style={{
                         display: "flex",
-                        background: "rgba(0,0,0,0.3)", // Darker contrasting bg for tabs
-                        border: "1px solid var(--border)",
+                        background: "rgba(10, 14, 20, 0.6)",
+                        border: "1px solid rgba(255, 255, 255, 0.08)",
                         borderRadius: "100px",
-                        padding: "0.4rem",
-                        gap: "0.25rem",
-                        backdropFilter: "blur(10px)",
-                        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)"
+                        padding: "0.3rem",
+                        gap: "0.5rem", // Increased gap for items
+                        backdropFilter: "blur(12px)",
+                        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
+                        overflowX: "auto", // Allow scroll on very small screens
+                        maxWidth: "100%",
+                        scrollbarWidth: "none"
                     }}>
-                        {[
-                            { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
-                            { id: "explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
-                            { id: "terapia", label: "Psicoterapia", icon: <IconHeart />, color: "var(--success)" },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`btn-selector ${activeTab === tab.id ? "active" : ""}`}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "0.5rem",
-                                    padding: "0.6rem 1.5rem",
-                                    borderRadius: "100px",
-                                    border: "none",
-                                    background: activeTab === tab.id ? tab.color : "transparent",
-                                    color: activeTab === tab.id ? (tab.id === "explora" ? "black" : "white") : "var(--foreground-muted)",
-                                    cursor: "pointer",
-                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                    fontSize: "0.95rem",
-                                    fontWeight: activeTab === tab.id ? 600 : 500
-                                }}
-                            >
-                                {tab.icon}
-                                {tab.label}
-                            </button>
-                        ))}
+                        {tabs.map((tab) => {
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className="btn-selector"
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        gap: isActive ? "0.6rem" : "0",
+                                        padding: isActive ? "0.7rem 1.5rem" : "0.7rem", // Circle when inactive, Pill when active
+                                        borderRadius: "100px",
+                                        border: "none",
+                                        background: isActive ? tab.color : "transparent",
+                                        color: isActive ? (tab.id === "explora" ? "black" : "white") : tab.color, // Color predominant when inactive
+                                        cursor: "pointer",
+                                        transition: "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                                        fontSize: "0.95rem",
+                                        fontWeight: 600,
+                                        minWidth: isActive ? "auto" : "3.2rem", // Ensure circle shape
+                                    }}
+                                >
+                                    <span style={{ fontSize: "1.2rem", display: "flex" }}>{tab.icon}</span>
+
+                                    {/* Text Label - Only visible when active */}
+                                    <span style={{
+                                        maxWidth: isActive ? "200px" : "0",
+                                        overflow: "hidden",
+                                        whiteSpace: "nowrap",
+                                        opacity: isActive ? 1 : 0,
+                                        transition: "all 0.4s ease",
+                                    }}>
+                                        {tab.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Content Area */}
                 <div style={{ textAlign: "center", minHeight: "600px" }}>
-                    {activeTab === "empresas" && <ContentEmpresas />}
+                    {activeTab === "empresas" && <ContentEmpresas color="var(--primary)" />}
                     {activeTab === "explora" && <ContentExplora />}
-                    {activeTab === "terapia" && <ContentTerapia />}
+                    {activeTab === "psicoterapia" && <ContentTerapia color="var(--success)" />}
                 </div>
 
             </div>

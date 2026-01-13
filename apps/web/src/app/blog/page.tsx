@@ -5,6 +5,8 @@ import { Post, Category } from "@/lib/types";
 import { Metadata } from "next";
 import { BreadcrumbSchema, CollectionPageSchema } from "../components/seo/JsonLd";
 
+import { BlogFilter } from "./BlogFilter";
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
 export const metadata: Metadata = {
@@ -84,23 +86,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         <section className="blog-content">
           <div className="container">
             {/* Filtros de categoría */}
-            <div className="blog-filters">
-              <Link
-                href="/blog"
-                className={`filter-btn ${!category ? "active" : ""}`}
-              >
-                Todos
-              </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/blog?category=${cat.slug}`}
-                  className={`filter-btn ${category === cat.slug ? "active" : ""}`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
+            <BlogFilter categories={categories} activeCategory={category} />
 
             {error ? (
               <div className="blog-error">

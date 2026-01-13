@@ -27,8 +27,18 @@ const clientLogos = [
 ];
 
 export function ClientsCarouselSection() {
-    // Duplicamos los logos para crear efecto infinito
-    const duplicatedLogos = [...clientLogos, ...clientLogos];
+    // Agrupamos los logos en pares para el diseño móvil (2 filas)
+    // Para desktop, podríamos mantenerlos individuales o usar la misma estructura
+    // Si queremos 2 filas en móvil pero 1 en desktop, necesitamos CSS media queries o estructura inteligente.
+    // La solicitud es: "logos pasen en filas de 2".
+    // Vamos a crear pares.
+    const pairedLogos = [];
+    for (let i = 0; i < clientLogos.length; i += 2) {
+        pairedLogos.push([clientLogos[i], clientLogos[i + 1] || null]);
+    }
+
+    // Duplicamos los pares para el efecto infinito
+    const duplicatedPairs = [...pairedLogos, ...pairedLogos];
 
     // Si no hay logos, no renderizar la sección
     if (clientLogos.length === 0) return null;
@@ -55,7 +65,7 @@ export function ClientsCarouselSection() {
                     className="section-title"
                     style={{
                         marginBottom: "2rem",
-                        fontSize: "2.5rem", // Slightly smaller than main page titles
+                        // fontSize removed to use class definition
                     }}
                 >
                     Empresas que confían en nosotros
@@ -64,23 +74,48 @@ export function ClientsCarouselSection() {
 
             <div className="carousel-container">
                 <div className="carousel-track">
-                    {duplicatedLogos.map((logo, index) => (
+                    {duplicatedPairs.map((pair, index) => (
                         <div
-                            key={`logo-${index}`}
+                            key={`pair-${index}`}
                             className="carousel-item"
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "2rem", // Espacio vertical entre los 2 logos
+                                justifyContent: "center"
+                            }}
                         >
-                            <Image
-                                src={logo.src}
-                                alt={logo.alt}
-                                width={200}
-                                height={80}
-                                className="carousel-logo"
-                                style={{
-                                    objectFit: "contain",
-                                    width: "auto",
-                                    height: "80px",
-                                }}
-                            />
+                            {/* Logo 1 */}
+                            {pair[0] && (
+                                <Image
+                                    src={pair[0].src}
+                                    alt={pair[0].alt}
+                                    width={200}
+                                    height={80}
+                                    className="carousel-logo"
+                                    style={{
+                                        objectFit: "contain",
+                                        width: "auto",
+                                        height: "60px", // Un poco más pequeños para que quepan 2 filas
+                                    }}
+                                />
+                            )}
+
+                            {/* Logo 2 */}
+                            {pair[1] && (
+                                <Image
+                                    src={pair[1].src}
+                                    alt={pair[1].alt}
+                                    width={200}
+                                    height={80}
+                                    className="carousel-logo"
+                                    style={{
+                                        objectFit: "contain",
+                                        width: "auto",
+                                        height: "60px",
+                                    }}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -88,4 +123,3 @@ export function ClientsCarouselSection() {
         </section>
     );
 }
-

@@ -20,7 +20,7 @@
 .carousel-track {
     display: flex;
     gap: 4rem;
-    animation: scroll-left 45s linear infinite;
+    animation: scroll-left 25s linear infinite;
     width: max-content;
 }
 

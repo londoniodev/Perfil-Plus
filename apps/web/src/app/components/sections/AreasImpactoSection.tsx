@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
 
 const areas = [
     {
@@ -7,7 +10,6 @@ const areas = [
         description: "Estrategia y valores, transformación cultural, experiencia del empleado y planes de acción.",
         image: "/areas_impacto/cultura_organizacional.avif",
         href: "/servicios#empresas",
-        gradient: "linear-gradient(135deg, rgba(91, 141, 239, 0.15) 0%, rgba(58, 98, 184, 0.1) 100%)",
         accentColor: "rgba(91, 141, 239, 0.8)",
     },
     {
@@ -15,7 +17,6 @@ const areas = [
         description: "Desarrollo de líderes que inspiran y transforman equipos.",
         image: "/areas_impacto/liderazgo_consciente.avif",
         href: "/servicios#empresas",
-        gradient: "linear-gradient(135deg, rgba(232, 168, 56, 0.15) 0%, rgba(200, 140, 40, 0.1) 100%)",
         accentColor: "rgba(232, 168, 56, 0.8)",
     },
     {
@@ -23,7 +24,6 @@ const areas = [
         description: "Método validado y herramientas de IA para la exploración y elección de camino profesional con criterio y propósito.",
         image: "/areas_impacto/orientacion_vocacional.avif",
         href: "/servicios#explora",
-        gradient: "linear-gradient(135deg, rgba(56, 189, 189, 0.15) 0%, rgba(40, 150, 150, 0.1) 100%)",
         accentColor: "rgba(56, 189, 189, 0.8)",
     },
     {
@@ -31,7 +31,6 @@ const areas = [
         description: "Espacio seguro para sanar y ordenar el mundo interno.",
         image: "/areas_impacto/psicoterapia_clinica.avif",
         href: "/servicios#psicoterapia",
-        gradient: "linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(56, 142, 60, 0.1) 100%)",
         accentColor: "rgba(76, 175, 80, 0.8)",
     },
     {
@@ -39,144 +38,153 @@ const areas = [
         description: "Aprendizaje que se vive, no solo se entiende.",
         image: "/areas_impacto/talleres_experienciales.avif",
         href: "/servicios#empresas",
-        gradient: "linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(123, 31, 162, 0.1) 100%)",
         accentColor: "rgba(156, 39, 176, 0.8)",
     },
 ];
 
 export function AreasImpactoSection() {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const index = Number(entry.target.getAttribute("data-index"));
+                        setActiveIndex(index);
+                    }
+                });
+            },
+            {
+                threshold: 0.5, // Trigger when 50% of the item is visible
+                rootMargin: "-10% 0px -10% 0px"
+            }
+        );
+
+        sectionRefs.current.forEach((ref) => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <section
-            style={{
-                padding: "4rem 0",
-                borderTop: "1px solid var(--border)",
-                borderBottom: "1px solid var(--border)",
-                background: "rgba(15, 20, 25, 0.4)",
-                backdropFilter: "blur(5px)",
-            }}
-        >
-            <div className="container">
-                <h2
-                    className="section-title"
-                    style={{
-                        marginBottom: "3rem",
-                        textAlign: "center",
-                    }}
-                >
-                    Áreas de impacto
-                </h2>
-                <div
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
-                        gap: "1.5rem",
-                        maxWidth: "1400px",
-                        margin: "0 auto",
-                        alignItems: "start",
-                    }}
-                >
-                    {areas.map((item, i) => (
-                        <Link
-                            key={i}
-                            href={item.href}
+        <section style={{ position: "relative" }}>
+            {/* Sticky Background Container */}
+            <div
+                style={{
+                    position: "sticky",
+                    top: 0,
+                    height: "100vh",
+                    width: "100%",
+                    overflow: "hidden",
+                    zIndex: 0,
+                }}
+            >
+                {areas.map((area, index) => (
+                    <div
+                        key={`bg-${index}`}
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            opacity: activeIndex === index ? 1 : 0,
+                            transition: "opacity 0.8s ease-in-out",
+                            // Ensure proper stacking context
+                            zIndex: activeIndex === index ? 1 : 0
+                        }}
+                    >
+                        <Image
+                            src={area.image}
+                            alt={area.name}
+                            fill
+                            priority={index === 0}
+                            unoptimized
                             style={{
+                                objectFit: "cover",
+                                filter: "brightness(0.7)" // MENOS oscurecimiento (antes 0.4)
+                            }}
+                        />
+                        {/* Removed the invasive linear gradient here */}
+                    </div>
+                ))}
+
+                {/* Bottom Gradient Fade to Next Section */}
+                <div style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: "150px",
+                    background: "linear-gradient(to bottom, transparent, var(--background))",
+                    zIndex: 2,
+                    pointerEvents: "none"
+                }} />
+            </div>
+
+            {/* Scrollable Text Content */}
+            <div style={{ marginTop: "-100vh", position: "relative", zIndex: 1, paddingBottom: "10vh" }}>
+                <div className="container" style={{ maxWidth: "1200px" }}>
+                    <h2 className="section-title" style={{ textAlign: "center", marginBottom: "4rem", paddingTop: "4rem", position: "relative", zIndex: 2 }}>
+                        Áreas de impacto
+                    </h2>
+
+                    {areas.map((area, index) => (
+                        <div
+                            key={`content-${index}`}
+                            ref={(el) => { sectionRefs.current[index] = el; }}
+                            data-index={index}
+                            style={{
+                                minHeight: "100vh",
                                 display: "flex",
                                 flexDirection: "column",
-                                position: "relative",
-                                borderRadius: "1.25rem",
-                                overflow: "hidden",
-                                border: "1px solid var(--border)",
-                                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                                textDecoration: "none",
-                                background: "var(--card-bg)",
+                                justifyContent: "center",
+                                alignItems: "center", // Centrado horizontal
+                                padding: "2rem",
+                                // On mobile, we might not want full screen height if content is short, but for this effect, spacing is key.
                             }}
-                            className="area-card"
                         >
-                            {/* Image Container - 9:16 aspect ratio */}
                             <div
                                 style={{
-                                    position: "relative",
-                                    aspectRatio: "9 / 16",
+                                    background: "rgba(15, 20, 25, 0.3)", // Ultra transparente
+                                    backdropFilter: "blur(8px)", // Blur suave
+                                    padding: "2rem",
+                                    borderRadius: "1rem",
+                                    // Removed border entirely for minimalism
+                                    maxWidth: "550px",
                                     width: "100%",
-                                    overflow: "hidden",
+                                    margin: "0 auto",
+                                    textAlign: "center",
+                                    transform: activeIndex === index ? "translateY(0)" : "translateY(20px)",
+                                    opacity: activeIndex === index ? 1 : 0,
+                                    transition: "all 0.6s ease-out 0.2s",
                                 }}
                             >
-                                {/* Background Image */}
-                                <Image
-                                    src={item.image}
-                                    alt={item.name}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 280px"
-                                    priority={i < 2}
-                                    loading={i < 2 ? "eager" : "lazy"}
-                                    unoptimized
-                                    style={{
-                                        objectFit: "cover",
-                                        transition: "transform 0.5s ease, opacity 0.4s ease",
-                                    }}
-                                    className="area-card-img"
-                                />
-
-                                {/* Blue tint overlay to homogenize tones */}
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        background: "rgba(15, 30, 60, 0.35)",
-                                        mixBlendMode: "multiply",
-                                        pointerEvents: "none",
-                                    }}
-                                />
-
-                                {/* Vignette overlay - bottom fade */}
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        background: `
-                                            radial-gradient(ellipse at center, transparent 40%, rgba(15, 20, 25, 0.3) 100%),
-                                            linear-gradient(to top, rgba(15, 20, 25, 1) 0%, rgba(15, 20, 25, 0.8) 15%, transparent 40%)
-                                        `,
-                                        pointerEvents: "none",
-                                    }}
-                                />
-                            </div>
-
-                            {/* Content Container - Solid background */}
-                            <div
-                                style={{
-                                    position: "relative",
-                                    marginTop: "-3rem",
-                                    zIndex: 2,
-                                    padding: "1.25rem",
-                                    background: "rgba(15, 20, 25, 0.95)",
-                                    backdropFilter: "blur(10px)",
-                                    borderTop: `2px solid ${item.accentColor}`,
-                                }}
-                            >
-                                <h3
-                                    className="card-title"
-                                    style={{
-                                        fontSize: "1.1rem",
-                                        marginBottom: "0.5rem",
-                                    }}
-                                >
-                                    {item.name}
+                                <h3 className="card-title" style={{ fontSize: "1.8rem", color: "white", marginBottom: "0.5rem" }}>
+                                    {area.name}
                                 </h3>
-                                <p
-                                    className="card-text"
-                                    style={{
-                                        fontSize: "0.85rem",
-                                        lineHeight: "1.5",
-                                    }}
-                                >
-                                    {item.description}
+
+                                {/* Minimal accent line */}
+                                <div style={{ width: "40px", height: "3px", background: area.accentColor, margin: "0.5rem auto 1rem auto", borderRadius: "2px" }} />
+
+                                <p className="card-text" style={{ fontSize: "1.05rem", color: "rgba(255, 255, 255, 0.9)", marginBottom: "1.5rem" }}>
+                                    {area.description}
                                 </p>
+                                <Link
+                                    href={area.href}
+                                    className="btn btn-primary"
+                                    style={{ display: "inline-flex", padding: "0.6rem 1.5rem", fontSize: "0.9rem" }}
+                                >
+                                    Ver más
+                                </Link>
                             </div>
-                        </Link>
+                        </div>
                     ))}
+
+                    {/* Significant bottom space to fix overlap with next section's negative margin */}
+                    <div style={{ height: "40vh" }} />
                 </div>
             </div>
-        </section >
+        </section>
     );
 }

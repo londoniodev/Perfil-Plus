@@ -5,7 +5,8 @@ export function Footer() {
     return (
         <footer className="site-footer">
             <div className="container">
-                <div className="footer-container">
+                {/* Full Footer - Hidden on Mobile */}
+                <div className="footer-container hidden-on-mobile">
                     {/* Logo y tagline */}
                     <div className="footer-brand">
                         <Image
@@ -31,14 +32,14 @@ export function Footer() {
                     </nav>
                 </div>
 
-                {/* Copyright */}
+                {/* Copyright & Credits - Adapted for Mobile */}
                 <div className="footer-bottom">
-                    <span className="footer-copyright">
+                    <span className="footer-copyright hidden-on-mobile">
                         © {new Date().getFullYear()} Mauro Mera. Todos los derechos reservados.
                     </span>
-                    <span className="footer-credits">
+                    <span className="footer-credits mobile-minimal-signature">
                         Desarrollado por{" "}
-                        <a href="https://portafolio.alvarolondoño.dev" target="_blank" rel="noopener noreferrer">
+                        <a href="https://portafolio.alvarolondoño.dev" target="_blank" rel="noopener noreferrer" style={{ fontStyle: "italic" }}>
                             Alvaro Londoño
                         </a>
                     </span>

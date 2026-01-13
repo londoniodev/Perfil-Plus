@@ -135,6 +135,9 @@
 
     .header-mobile-toggle {
         display: block;
+        z-index: 60;
+        /* Above the side drawer */
+        position: relative;
     }
 
     .header-logo-link {
@@ -147,5 +150,60 @@
     .header-logo {
         height: 40px;
         /* Slightly smaller on mobile */
+    }
+}
+
+/* --- SIDE DRAWER MENU (Mobile) --- */
+
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 55;
+    animation: fadeIn 0.3s ease;
+}
+
+.mobile-side-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 70vw;
+    /* Wider for better touch targets, originally planned 60% */
+    max-width: 350px;
+    background: rgba(18, 24, 32, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6rem 2rem 2rem 2rem;
+    /* Top padding for close button area */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-end;
+    /* Align links to right or center? Let's keep right for ease of thumb */
+    z-index: 56;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }

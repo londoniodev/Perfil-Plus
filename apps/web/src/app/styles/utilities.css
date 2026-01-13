@@ -41,3 +41,7 @@
     border-color: rgba(74, 222, 128, 0.2);
     color: var(--success);
 }
+
+.text-balance-mobile {
+    text-wrap: balance;
+}

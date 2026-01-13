@@ -21,13 +21,14 @@ interface Categoria {
     id: CategoriaId;
     label: string;
     icon: React.ReactNode;
+    color: string;
 }
 
 const categorias: Categoria[] = [
-    { id: "Empresas", label: "Empresas", icon: <IconBuilding /> },
-    { id: "Explora", label: "Explora", icon: <IconCompass /> },
-    { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers /> },
-    { id: "Bienestar", label: "Bienestar", icon: <IconHeart /> },
+    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
+    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
+    { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" },
+    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "var(--success)" }, // Using var(--success) for consistency
 ];
 
 // ============================================================================
@@ -38,10 +39,13 @@ export default function PortafolioContent() {
     const [activeCategory, setActiveCategory] = useState<CategoriaId>("Empresas");
     const filteredCases = casos.filter((c) => c.categoria === activeCategory);
 
+    // Get current color for background effect (optional, if we want to add the glow later)
+    // const currentColor = categorias.find(c => c.id === activeCategory)?.color;
+
     return (
         <div style={{ background: "var(--background)", minHeight: "100vh" }}>
             {/* Header con Filtros */}
-            <section style={{ padding: "120px 0 40px", textAlign: "center", position: "relative" }}>
+            <section style={{ padding: "120px 0 20px", textAlign: "center", position: "relative" }}>
                 <CategoryFilterBar
                     categorias={categorias}
                     activeCategory={activeCategory}
@@ -94,32 +98,34 @@ interface CategoryFilterBarProps {
 }
 
 function CategoryFilterBar({ categorias, activeCategory, onCategoryChange }: CategoryFilterBarProps) {
-    const getButtonBackground = (catId: CategoriaId, isActive: boolean) => {
-        if (!isActive) return "transparent";
-        if (catId === "Explora") return "var(--accent)";
-        if (catId === "Bienestar") return "#10b981";
-        return "var(--primary)";
-    };
-
     return (
         <div style={{
             position: "sticky",
             top: "80px",
             zIndex: 40,
-            padding: "1rem 0",
+            padding: "1rem 1.5rem", // Horizontal padding for mobile
             display: "flex",
             justifyContent: "center",
         }}>
-            <div className="container" style={{ display: "flex", gap: "2rem", overflowX: "auto", scrollbarWidth: "none", justifyContent: "center" }}>
+            <div className="container" style={{
+                display: "flex",
+                justifyContent: "center",
+                width: "100%",
+                maxWidth: "1400px",
+                margin: "0 auto"
+            }}>
                 <div style={{
                     display: "flex",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--border)",
+                    background: "rgba(10, 14, 20, 0.6)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
                     borderRadius: "100px",
-                    padding: "0.4rem",
-                    gap: "0.25rem",
-                    backdropFilter: "blur(10px)",
+                    padding: "0.3rem",
+                    gap: "0.5rem",
+                    backdropFilter: "blur(12px)",
                     boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
+                    overflowX: "auto",
+                    maxWidth: "100%",
+                    scrollbarWidth: "none"
                 }}>
                     {categorias.map((cat) => {
                         const isActive = activeCategory === cat.id;
@@ -130,21 +136,32 @@ function CategoryFilterBar({ categorias, activeCategory, onCategoryChange }: Cat
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: "0.5rem",
-                                    padding: "0.6rem 1.5rem",
+                                    justifyContent: "center",
+                                    gap: isActive ? "0.6rem" : "0",
+                                    padding: isActive ? "0.7rem 1.5rem" : "0.7rem", // Circle when inactive, Pill when active
                                     borderRadius: "100px",
                                     border: "none",
-                                    background: getButtonBackground(cat.id, isActive),
-                                    color: isActive ? (cat.id === "Explora" ? "black" : "white") : "var(--foreground-muted)",
-                                    fontSize: "0.95rem",
-                                    fontWeight: isActive ? 600 : 500,
+                                    background: isActive ? cat.color : "transparent",
+                                    color: isActive ? (cat.id === "Explora" ? "black" : "white") : cat.color,
                                     cursor: "pointer",
-                                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                    whiteSpace: "nowrap",
+                                    transition: "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                                    fontSize: "0.95rem",
+                                    fontWeight: 600,
+                                    minWidth: isActive ? "auto" : "3.2rem", // Ensure circle shape
                                 }}
                             >
-                                {cat.icon}
-                                {cat.label}
+                                <span style={{ fontSize: "1.2rem", display: "flex" }}>{cat.icon}</span>
+
+                                {/* Text Label - Only visible when active */}
+                                <span style={{
+                                    maxWidth: isActive ? "200px" : "0",
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    opacity: isActive ? 1 : 0,
+                                    transition: "all 0.4s ease",
+                                }}>
+                                    {cat.label}
+                                </span>
                             </button>
                         );
                     })}
@@ -162,7 +179,7 @@ interface CaseSectionProps {
 function CaseSection({ caso, index }: CaseSectionProps) {
     return (
         <section style={{
-            minHeight: "100vh",
+            minHeight: index === 0 ? "calc(100vh - 200px)" : "100vh", // Reduced height for first section to pull content up
             display: "flex",
             alignItems: "center",
             borderBottom: "1px solid var(--border)",

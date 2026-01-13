@@ -115,7 +115,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {/* Collapsible Meta Info */}
             <BlogMeta
               date={post.createdAt}
-              readingTime={post.readingTime}
+              readingTime={post.readingTime || undefined}
               category={post.categories[0]}
             />
 

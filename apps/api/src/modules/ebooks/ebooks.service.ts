@@ -52,13 +52,22 @@ export class EbooksService {
     }
 
     async getDownloadUrl(ebookId: string, userId: string) {
-        // Verificar que el usuario ha comprado el e-book
-        const purchase = await this.prisma.purchase.findUnique({
-            where: { userId_ebookId: { userId, ebookId } },
+        // 1. Verificar si tiene suscripción activa
+        const subscription = await this.prisma.subscription.findUnique({
+            where: { userId },
         });
 
-        if (!purchase || purchase.status !== 'approved') {
-            throw new ForbiddenException('No has comprado este e-book');
+        const hasActiveSubscription = subscription?.status === 'ACTIVE';
+
+        // 2. Si no tiene suscripción, verificar si lo ha comprado
+        if (!hasActiveSubscription) {
+            const purchase = await this.prisma.purchase.findUnique({
+                where: { userId_ebookId: { userId, ebookId } },
+            });
+
+            if (!purchase || purchase.status !== 'approved') {
+                throw new ForbiddenException('No tienes acceso a este e-book');
+            }
         }
 
         const ebook = await this.prisma.ebook.findUnique({
@@ -93,6 +102,15 @@ export class EbooksService {
     }
 
     async hasPurchased(ebookId: string, userId: string): Promise<boolean> {
+        // Verificar suscripción primero
+        const subscription = await this.prisma.subscription.findUnique({
+            where: { userId },
+        });
+
+        if (subscription?.status === 'ACTIVE') {
+            return true;
+        }
+
         const purchase = await this.prisma.purchase.findUnique({
             where: { userId_ebookId: { userId, ebookId } },
         });

@@ -142,7 +142,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                                 {hasPurchased ? (
                                     <>
                                         <div className={styles.ownedBadge}>
-                                            ✓ Ya tienes este e-book
+                                            ✓ Tienes acceso a este e-book
                                         </div>
                                         <button
                                             onClick={handleDownload}

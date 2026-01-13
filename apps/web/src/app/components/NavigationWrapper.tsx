@@ -17,15 +17,32 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
         pathname?.startsWith("/admin/ebooks") ||
         pathname?.startsWith("/dashboard");
 
+    const isAuthPage = pathname === "/login" ||
+        pathname === "/registro" ||
+        pathname?.startsWith("/auth");
+
     if (isDashboard) {
         return <>{children}</>;
     }
 
     return (
         <>
-            <Header />
+            <div className={isAuthPage ? "hide-on-mobile" : ""}>
+                <Header />
+            </div>
             <main>{children}</main>
-            {footer}
+            <div className={isAuthPage ? "hide-on-mobile" : ""}>
+                {footer}
+            </div>
+
+            {/* Global style to hide elements on mobile when class is present */}
+            <style jsx global>{`
+                @media (max-width: 768px) {
+                    .hide-on-mobile {
+                        display: none !important;
+                    }
+                }
+            `}</style>
         </>
     );
 }

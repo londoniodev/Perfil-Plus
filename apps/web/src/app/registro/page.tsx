@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "../auth.module.css";
 import { API_BASE } from "@/lib/config";
+import { MobileBackButton } from "@/app/components/auth/MobileBackButton";
+import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -138,15 +140,9 @@ export default function RegisterPage() {
     }
 
     return (
-        <div style={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "2rem",
-            background: "var(--background)"
-        }}>
-            <div className={styles.loginCard} style={{ maxWidth: "450px", width: "100%" }}>
+        <AuthLayout>
+            <div className={styles.loginCard}>
+                <MobileBackButton />
                 <h1 className="card-title" style={{ textAlign: "center", marginBottom: "0.5rem", fontSize: "2rem" }}>Crear Cuenta</h1>
                 <p className="card-text" style={{ textAlign: "center", marginBottom: "2rem" }}>
                     Únete a nuestra comunidad para acceder a contenido exclusivo.
@@ -219,6 +215,6 @@ export default function RegisterPage() {
                     </Link>
                 </div>
             </div>
-        </div>
+        </AuthLayout>
     );
 }

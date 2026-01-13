@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../auth.module.css";
 import { API_BASE } from "@/lib/config";
+import { MobileBackButton } from "@/app/components/auth/MobileBackButton";
+import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
 function LoginForm() {
   const router = useRouter();
@@ -83,6 +85,7 @@ function LoginForm() {
 
   return (
     <div className={styles.loginCard}>
+      <MobileBackButton />
       <h1 className="card-title" style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Iniciar Sesión</h1>
       <p className="card-text">Bienvenido de nuevo</p>
 
@@ -127,10 +130,10 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className={styles.loginPage}>
+    <AuthLayout>
       <Suspense fallback={<div className={styles.loginCard}>Cargando...</div>}>
         <LoginForm />
       </Suspense>
-    </div>
+    </AuthLayout>
   );
 }

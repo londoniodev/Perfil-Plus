@@ -94,3 +94,91 @@
     margin-bottom: 1rem;
     text-align: center;
 }
+
+@media (max-width: 768px) {
+    .loginPage {
+        padding: 0 !important;
+        align-items: flex-start !important;
+        background: var(--background) !important;
+    }
+
+    .loginCard {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 100vh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 5rem 2rem 2rem !important;
+        /* Top padding for back button clearance */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: var(--background) !important;
+    }
+}
+
+/* Desktop Split Layout */
+.desktopSplitLayout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: var(--background);
+}
+
+.imageSide {
+    width: 50%;
+    position: relative;
+    display: none;
+    /* Hidden by default on mobile/tablet if needed, but we used media query for mobile specific overrides */
+}
+
+.imageOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 14, 20, 0.4);
+    /* Dark overlay */
+    display: flex;
+    align-items: flex-end;
+    padding: 3rem;
+}
+
+.quoteBox {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 300;
+    font-family: var(--font-sans);
+    max-width: 80%;
+}
+
+.formSide {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.formContainer {
+    width: 100%;
+    max-width: 450px;
+}
+
+
+@media (min-width: 1024px) {
+    .imageSide {
+        display: block;
+    }
+
+    .formSide {
+        width: 50%;
+    }
+
+    /* On desktop, reset the loginPage/Card styles to fit inside the split layout if they were used directly */
+    .loginCard {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+}

@@ -100,7 +100,7 @@
    RESPONSIVE
    ============================================================================ */
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .footer-container {
         flex-direction: column;
         align-items: center;

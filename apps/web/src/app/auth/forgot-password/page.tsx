@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import styles from "../../auth.module.css";
+import { MobileBackButton } from "@/app/components/auth/MobileBackButton";
+import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),
@@ -52,8 +54,9 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className={styles.loginPage}>
+        <AuthLayout>
             <div className={styles.loginCard}>
+                <MobileBackButton />
                 <div className="text-center mb-8">
                     <Link href="/" className="inline-block mb-6">
                         <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
@@ -124,6 +127,6 @@ export default function ForgotPasswordPage() {
                     </Link>
                 </div>
             </div>
-        </div>
+        </AuthLayout>
     );
 }

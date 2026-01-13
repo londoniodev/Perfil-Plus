@@ -160,7 +160,8 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
-    z-index: 55;
+    z-index: 998;
+    /* Very high z-index */
     animation: fadeIn 0.3s ease;
 }
 
@@ -183,7 +184,8 @@
     gap: 1.5rem;
     align-items: flex-end;
     /* Align links to right or center? Let's keep right for ease of thumb */
-    z-index: 56;
+    z-index: 999;
+    /* Highest z-index */
     animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }

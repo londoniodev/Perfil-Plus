@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE } from "@/lib/config";
-import PostsTable, { Post } from "@/app/components/admin/PostsTable";
+import PostsGrid, { Post } from "@/app/components/admin/PostsGrid";
 import FilterTabs from "@/app/components/ui/FilterTabs";
 import Pagination from "@/app/components/ui/Pagination";
 
@@ -197,16 +197,18 @@ export default function AdminBlogPage() {
                 <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
             ) : (
                 <>
-                    <PostsTable
+                    <PostsGrid
                         posts={posts}
                         onDelete={handleDelete}
                         onTogglePublish={handleTogglePublish}
                     />
-                    <Pagination
-                        currentPage={page}
-                        totalPages={totalPages}
-                        onPageChange={setPage}
-                    />
+                    <div style={{ marginTop: "2rem" }}>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={totalPages}
+                            onPageChange={setPage}
+                        />
+                    </div>
                 </>
             )}
         </div>

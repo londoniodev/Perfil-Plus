@@ -3,4 +3,4 @@
 
 export const API_BASE = process.env.NODE_ENV === 'production'
     ? "https://api.mauromera.com/api"
-    : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api");
+    : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api");

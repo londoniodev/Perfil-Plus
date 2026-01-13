@@ -1,5 +1,6 @@
 "use client";
 
+import "@/app/styles/dashboard.css";
 import { Sidebar } from "../components/dashboard/Sidebar";
 import { BottomNav } from "../components/dashboard/BottomNav";
 import { DashboardProvider, useDashboard } from "@/context/DashboardContext";
@@ -11,7 +12,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return (
         <div style={{ display: "flex", minHeight: "100vh", background: "var(--background)" }}>
             {/* Desktop Sidebar */}
-            <Sidebar />
+            <div className="desktop-sidebar-wrapper">
+                <Sidebar />
+            </div>
 
             {/* Main Content Area */}
             <main
@@ -22,15 +25,28 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                     flexDirection: "column",
                     marginLeft: isCollapsed ? "80px" : "280px",
                     transition: "margin-left 0.3s ease",
+                    width: "100%"
                 }}
             >
-                <div style={{ padding: "2rem", width: "100%", maxWidth: "1200px", margin: "0 auto" }}>
+                <div className="dashboard-content-wrapper">
                     {children}
                 </div>
             </main>
 
             {/* Mobile Bottom Nav */}
             <BottomNav />
+
+            <style jsx global>{`
+                @media (max-width: 1024px) {
+                    .desktop-sidebar-wrapper {
+                        display: none;
+                    }
+                    .dashboard-main {
+                        margin-left: 0 !important;
+                        width: 100%;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

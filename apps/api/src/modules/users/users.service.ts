@@ -89,11 +89,37 @@ export class UsersService {
     }
 
     // Admin: Lista de usuarios
-    async findAll(page = 1, limit = 20) {
+    async findAll(page = 1, limit = 20, search?: string, role?: Role, subscription?: string) {
         const skip = (page - 1) * limit;
+
+        const where: any = {};
+
+        // Búsqueda por nombre o email
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        // Filtro por rol
+        if (role) {
+            where.role = role;
+        }
+
+        // Filtro por suscripción
+        if (subscription === 'active') {
+            where.subscription = { status: 'ACTIVE' };
+        } else if (subscription === 'inactive') {
+            where.OR = [
+                { subscription: null },
+                { subscription: { status: { not: 'ACTIVE' } } },
+            ];
+        }
 
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
+                where,
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
@@ -111,7 +137,7 @@ export class UsersService {
                     },
                 },
             }),
-            this.prisma.user.count(),
+            this.prisma.user.count({ where }),
         ]);
 
         return {

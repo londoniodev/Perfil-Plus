@@ -4,6 +4,9 @@ import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
 import styles from "./post.module.css";
+import { BlogBreadcrumbs } from "../BlogBreadcrumbs";
+import { BlogMeta } from "../BlogMeta";
+import { BlogBackButton } from "../BlogBackButton";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -101,41 +104,29 @@ export default async function PostPage({ params }: PostPageProps) {
       />
 
       <article className={styles.postPage}>
+        <BlogBackButton />
+
         {/* Hero */}
         <header className={styles.postHero}>
           <div className="container">
             {/* Breadcrumb */}
-            <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-              <Link href="/">Inicio</Link>
-              <span>›</span>
-              <Link href="/blog">Blog</Link>
-              <span>›</span>
-              <span>{post.title}</span>
-            </nav>
+            <BlogBreadcrumbs />
 
-            <div className={styles.postMeta}>
-              {post.categories.length > 0 && (
-                <Link href={`/blog?category=${post.categories[0].slug}`} className={styles.category}>
-                  {post.categories[0].name}
-                </Link>
-              )}
-              <time dateTime={post.createdAt}>
-                {new Date(post.createdAt).toLocaleDateString("es-CO", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </time>
-              {post.readingTime && (
-                <span className={styles.readingTime}>
-                  📖 {post.readingTime} min de lectura
-                </span>
-              )}
-            </div>
+            {/* Collapsible Meta Info */}
+            <BlogMeta
+              date={post.createdAt}
+              readingTime={post.readingTime}
+              category={post.categories[0]}
+            />
+
             <h1>{post.title}</h1>
             <p className={styles.excerpt}>{post.excerpt}</p>
+
             <div className={styles.author}>
-              <span className={styles.authorName}>Por {post.authorName}</span>
+              <Link href="/about-me" className={styles.authorLink}>
+                <span className={styles.authorLabel}>Por</span>
+                <span className={styles.authorName}>{post.authorName}</span>
+              </Link>
             </div>
           </div>
         </header>
@@ -208,14 +199,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className={styles.postNav}>
-          <div className="container">
-            <Link href="/blog" className={styles.backLink}>
-              ← Volver al blog
-            </Link>
-          </div>
-        </div>
+
       </article>
     </>
   );

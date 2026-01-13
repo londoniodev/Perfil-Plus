@@ -272,8 +272,8 @@ export default function PostForm({ mode, postId }: PostFormProps) {
 
                     {/* Fila de configuración: Categoría + Toggles */}
                     <div style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr auto",
+                        display: "flex",
+                        flexWrap: "wrap",
                         gap: "1.5rem",
                         padding: "1rem",
                         background: "var(--card-bg)",
@@ -281,12 +281,14 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                         borderRadius: "0.5rem",
                     }}>
                         {/* Selector de categoría */}
-                        <CategorySelector
-                            categories={categories}
-                            selectedId={categoryId}
-                            onChange={setCategoryId}
-                            onCategoryCreated={(cat) => setCategories((prev) => [...prev, cat])}
-                        />
+                        <div style={{ flex: 1, minWidth: "250px" }}>
+                            <CategorySelector
+                                categories={categories}
+                                selectedId={categoryId}
+                                onChange={setCategoryId}
+                                onCategoryCreated={(cat) => setCategories((prev) => [...prev, cat])}
+                            />
+                        </div>
 
                         {/* Toggles Premium/Publicado */}
                         <div style={{ display: "flex", gap: "1rem", alignItems: "flex-end", paddingBottom: "0.25rem" }}>

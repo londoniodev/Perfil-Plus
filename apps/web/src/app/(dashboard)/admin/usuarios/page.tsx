@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/lib/config";
-import UsersTable, { User } from "@/app/components/admin/UsersTable";
+import UsersGrid, { UserGridItem as User } from "@/app/components/admin/UsersGrid";
 import Pagination from "@/app/components/ui/Pagination";
+import UserFilters from "@/app/components/admin/UserFilters";
 
 // ============================================================================
 // TIPOS
@@ -34,12 +35,28 @@ export default function AdminUsuariosPage() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+    // Filtros
+    const [search, setSearch] = useState("");
+    const [role, setRole] = useState("");
+    const [subscription, setSubscription] = useState("");
+
     // Cargar usuarios
-    const fetchUsers = useCallback(async (page = 1) => {
+    const fetchUsers = useCallback(async (pageParam = 1) => {
+        setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/admin/users?page=${page}&limit=20`, {
+            const queryParams = new URLSearchParams({
+                page: pageParam.toString(),
+                limit: "20",
+            });
+
+            if (search) queryParams.append("search", search);
+            if (role) queryParams.append("role", role);
+            if (subscription) queryParams.append("subscription", subscription);
+
+            const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
                 credentials: "include",
             });
+
             if (res.ok) {
                 const data: UsersResponse = await res.json();
                 setUsers(data.data);
@@ -50,15 +67,23 @@ export default function AdminUsuariosPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [search, role, subscription]);
+
+    // Resetear a página 1 cuando cambian los filtros
+    useEffect(() => {
+        if (!authLoading && isAdmin) {
+            fetchUsers(1);
+        }
+    }, [search, role, subscription, authLoading, isAdmin]); // Se ejecuta al cambiar filtros
 
     useEffect(() => {
         if (!authLoading && !isAdmin) {
             router.push("/perfil");
-        } else if (!authLoading) {
-            fetchUsers();
         }
-    }, [isAdmin, authLoading, router, fetchUsers]);
+        // fetchUsers() inicial se maneja en el efecto anterior o aquí si filtros vacíos, 
+        // pero mejor dejar que el efecto de filtros se encargue.
+        // Solo necesitamos cargar si es la primera vez y filtros están en default.
+    }, [isAdmin, authLoading, router]);
 
     // Manejadores de acciones
     const handleRoleChange = async (userId: string, newRole: "USER" | "ADMIN") => {
@@ -174,8 +199,18 @@ export default function AdminUsuariosPage() {
                 </div>
             </div>
 
-            {/* Tabla de usuarios */}
-            <UsersTable
+            {/* Filtros */}
+            <UserFilters
+                search={search}
+                role={role}
+                subscription={subscription}
+                onSearchChange={setSearch}
+                onRoleChange={setRole}
+                onSubscriptionChange={setSubscription}
+            />
+
+            {/* Grid de usuarios */}
+            <UsersGrid
                 users={users}
                 actionLoading={actionLoading}
                 onRoleChange={handleRoleChange}

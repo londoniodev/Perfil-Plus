@@ -22,7 +22,14 @@ export default function FilterTabs<T extends string>({
     onChange,
 }: FilterTabsProps<T>) {
     return (
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="no-scrollbar" style={{
+            display: "flex",
+            gap: "0.5rem",
+            overflowX: "auto",
+            whiteSpace: "nowrap",
+            paddingBottom: "0.25rem",
+            // Eliminate horizontal scrollbar visual if possible (via class) or accepted
+        }}>
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -38,6 +45,7 @@ export default function FilterTabs<T extends string>({
                             cursor: "pointer",
                             fontSize: "0.875rem",
                             transition: "all 0.15s ease",
+                            flexShrink: 0, // Prevent shrinking
                         }}
                     >
                         {tab.label}

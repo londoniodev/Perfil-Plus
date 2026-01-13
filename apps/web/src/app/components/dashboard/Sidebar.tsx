@@ -25,6 +25,7 @@ export function Sidebar() {
         { name: "Dashboard", href: "/perfil", icon: <HomeIcon /> },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: <EditIcon /> },
         { name: "Gestionar Blog", href: "/admin/blog", icon: <BlogIcon /> },
+        { name: "Gestionar E-books", href: "/admin/ebooks", icon: <BookIcon /> },
         { name: "Usuarios", href: "/admin/usuarios", icon: <UsersIcon /> },
     ];
 

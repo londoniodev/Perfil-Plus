@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "../../ebooks/ebook-form.module.css";
+import styles from "../ebook-form.module.css";
 
 export default function EditEbookPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
@@ -12,7 +12,6 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    // Form States
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
@@ -21,7 +20,6 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
     const [hasFullFile, setHasFullFile] = useState(false);
     const [hasPreviewFile, setHasPreviewFile] = useState(false);
 
-    // File States (Only if changing)
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [fullFile, setFullFile] = useState<File | null>(null);
     const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -32,12 +30,9 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
 
     const fetchEbook = async () => {
         try {
-            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, {
-                credentials: "include",
-            });
-            if (!res.ok) throw new Error("Error al cargar eBook");
+            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, { credentials: "include" });
+            if (!res.ok) throw new Error("Error");
             const data = await res.json();
-
             setTitle(data.title);
             setDescription(data.description);
             setPrice(data.price);
@@ -45,8 +40,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             setCurrentCover(data.coverImage);
             setHasFullFile(!!data.fileUrl);
             setHasPreviewFile(!!data.previewUrl);
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Error cargar");
+        } catch {
             router.push("/admin/ebooks");
         } finally {
             setLoading(false);
@@ -62,60 +56,44 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             if (coverFile) {
                 const formData = new FormData();
                 formData.append("file", coverFile);
-                const res = await fetch(`${API_BASE}/storage/upload/image`, {
-                    method: "POST", credentials: "include", body: formData
-                });
-                if (!res.ok) throw new Error("Error imagen");
-                const data = await res.json();
-                coverUrl = data.url;
+                const res = await fetch(`${API_BASE}/storage/upload/image`, { method: "POST", credentials: "include", body: formData });
+                if (res.ok) coverUrl = (await res.json()).url;
             }
 
             let fileUrl = undefined;
             if (fullFile) {
                 const formData = new FormData();
                 formData.append("file", fullFile);
-                const res = await fetch(`${API_BASE}/storage/upload/ebook`, {
-                    method: "POST", credentials: "include", body: formData
-                });
-                if (!res.ok) throw new Error("Error eBook");
-                const data = await res.json();
-                fileUrl = data.url;
+                const res = await fetch(`${API_BASE}/storage/upload/ebook`, { method: "POST", credentials: "include", body: formData });
+                if (res.ok) fileUrl = (await res.json()).url;
             }
 
             let previewUrl = undefined;
             if (previewFile) {
                 const formData = new FormData();
                 formData.append("file", previewFile);
-                const res = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, {
-                    method: "POST", credentials: "include", body: formData
-                });
-                if (!res.ok) throw new Error("Error preview");
-                const data = await res.json();
-                previewUrl = data.url;
+                const res = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, { method: "POST", credentials: "include", body: formData });
+                if (res.ok) previewUrl = (await res.json()).url;
             }
-
-            const ebookData = {
-                title,
-                description,
-                price: parseFloat(price),
-                published,
-                ...(coverUrl && { coverImage: coverUrl }),
-                ...(fileUrl && { fileUrl }),
-                ...(previewUrl && { previewUrl }),
-            };
 
             const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(ebookData),
+                body: JSON.stringify({
+                    title,
+                    description,
+                    price: parseFloat(price),
+                    published,
+                    ...(coverUrl && { coverImage: coverUrl }),
+                    ...(fileUrl && { fileUrl }),
+                    ...(previewUrl && { previewUrl }),
+                }),
             });
 
-            if (!res.ok) throw new Error("Error actualizar");
-
+            if (!res.ok) throw new Error("Error");
             router.push("/admin/ebooks");
             router.refresh();
-
         } catch (error) {
             alert(error instanceof Error ? error.message : "Error");
         } finally {
@@ -126,59 +104,90 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
     if (loading) return <div className={styles.loading}>Cargando...</div>;
 
     return (
-        <div className={styles.lmsPage}>
+        <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Editar E-book</h1>
-                <Link href="/admin/ebooks" className={styles.backBtn}>← Volver</Link>
+                <h1 className={styles.title}>✏️ Editar E-book</h1>
+                <Link href="/admin/ebooks" className={styles.backBtn}>← Cancelar</Link>
             </div>
 
-            <div className={styles.formContainer} style={{ maxWidth: "800px", margin: "0 auto", background: "var(--card-bg)", padding: "2rem", borderRadius: "1rem" }}>
-                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Título</label>
-                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className={styles.input} required />
+            <form onSubmit={handleSubmit} className={styles.grid}>
+                {/* LEFT */}
+                <div className={styles.leftColumn}>
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>📝 Información</h2>
+                        <div className={styles.field}>
+                            <label>Título *</label>
+                            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                        </div>
+                        <div className={styles.field}>
+                            <label>Descripción *</label>
+                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} required />
+                        </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Descripción</label>
-                        <textarea value={description} onChange={e => setDescription(e.target.value)} className={styles.textarea} rows={5} required />
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>📁 Archivos</h2>
+                        <div className={styles.filesGrid}>
+                            <label className={`${styles.fileBox} ${(fullFile || hasFullFile) ? styles.fileBoxActive : ''}`}>
+                                <input type="file" accept=".pdf,.epub" onChange={(e) => setFullFile(e.target.files?.[0] || null)} hidden />
+                                <div className={styles.fileIcon}>🔒</div>
+                                <div className={styles.fileName}>{fullFile ? fullFile.name : (hasFullFile ? "✅ PDF Cargado" : "PDF Completo *")}</div>
+                                <div className={styles.fileHint}>Click para reemplazar</div>
+                            </label>
+
+                            <label className={`${styles.fileBox} ${(previewFile || hasPreviewFile) ? styles.fileBoxActive : ''}`}>
+                                <input type="file" accept=".pdf" onChange={(e) => setPreviewFile(e.target.files?.[0] || null)} hidden />
+                                <div className={styles.fileIcon}>👁️</div>
+                                <div className={styles.fileName}>{previewFile ? previewFile.name : (hasPreviewFile ? "✅ Preview Cargado" : "Vista Previa")}</div>
+                                <div className={styles.fileHint}>Click para reemplazar</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT */}
+                <div className={styles.rightColumn}>
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>🖼️ Portada</h2>
+                        <label className={`${styles.coverBox} ${(coverFile || currentCover) ? styles.coverBoxActive : ''}`}>
+                            <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} hidden />
+                            {(coverFile || currentCover) ? (
+                                <img src={coverFile ? URL.createObjectURL(coverFile) : currentCover} alt="Preview" className={styles.coverPreview} />
+                            ) : (
+                                <>
+                                    <div className={styles.coverIcon}>📸</div>
+                                    <div>Click para subir</div>
+                                </>
+                            )}
+                        </label>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Precio</label>
-                        <input type="number" value={price} onChange={e => setPrice(e.target.value)} className={styles.input} required />
+                    <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>⚙️ Configuración</h2>
+                        <div className={styles.field}>
+                            <label>Precio (COP) *</label>
+                            <div className={styles.priceInput}>
+                                <span>$</span>
+                                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+                            </div>
+                        </div>
+
+                        <label className={styles.toggleRow}>
+                            <div>
+                                <div className={styles.toggleLabel}>Estado</div>
+                                <div className={styles.toggleHint}>{published ? "Visible en tienda" : "Borrador"}</div>
+                            </div>
+                            <div className={`${styles.toggle} ${published ? styles.toggleOn : ''}`} onClick={() => setPublished(!published)}>
+                                <div className={styles.toggleCircle}></div>
+                            </div>
+                        </label>
                     </div>
 
-                    <div className={styles.formGroup} style={{ flexDirection: "row", alignItems: "center", gap: "0.5rem" }}>
-                        <input type="checkbox" checked={published} onChange={e => setPublished(e.target.checked)} id="pub" style={{ width: "20px", height: "20px" }} />
-                        <label htmlFor="pub" style={{ marginBottom: 0 }}>Publicado</label>
-                    </div>
-
-                    <hr />
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Imagen Portada</label>
-                        {currentCover && <img src={currentCover} alt="Cover" style={{ width: "100px", marginBottom: "1rem" }} />}
-                        <input type="file" onChange={e => setCoverFile(e.target.files?.[0] || null)} />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Archivo Completo {hasFullFile && "✅ (Ya subido)"}</label>
-                        <input type="file" onChange={e => setFullFile(e.target.files?.[0] || null)} />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Vista Previa {hasPreviewFile && "✅ (Ya subido)"}</label>
-                        <input type="file" onChange={e => setPreviewFile(e.target.files?.[0] || null)} />
-                        <small>Dejar vacío para mantener el actual</small>
-                    </div>
-
-                    <button type="submit" disabled={submitting} className={styles.saveBtn} style={{ marginTop: "1rem" }}>
-                        {submitting ? "Guardando..." : "Guardar Cambios"}
+                    <button type="submit" disabled={submitting} className={styles.submitBtn}>
+                        {submitting ? "⏳ Guardando..." : "💾 Guardar Cambios"}
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     );
 }

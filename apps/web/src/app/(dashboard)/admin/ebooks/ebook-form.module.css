@@ -3,299 +3,273 @@
     margin: 0 auto;
     padding: 2rem;
     color: var(--foreground);
-    font-family: var(--font-sans);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 }
 
 .title {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    color: var(--foreground);
-    letter-spacing: -0.02em;
 }
 
 .backBtn {
     color: var(--foreground-muted);
     text-decoration: none;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
     transition: all 0.2s;
-    background: rgba(255, 255, 255, 0.03);
 }
 
 .backBtn:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--foreground);
 }
 
+/* Grid Layout */
 .grid {
     display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    /* Responsive split */
-    gap: 2.5rem;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 2rem;
 }
 
-.card {
-    background: var(--card-bg);
-    /* Ensure this var exists or use a fallback like #111 */
-    border: 1px solid var(--border);
-    border-radius: 1.25rem;
-    padding: 2rem;
-    height: fit-content;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.sectionTitle {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--foreground);
+.leftColumn,
+.rightColumn {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.sectionTitle span {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    font-size: 1.1rem;
-}
-
-.formGroup {
-    margin-bottom: 1.5rem;
-}
-
-.row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    flex-direction: column;
     gap: 1.5rem;
 }
 
-.label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.6rem;
-    color: var(--foreground-muted);
+/* Cards */
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
 }
 
-.input,
-.textarea {
+.cardTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Form Fields */
+.field {
+    margin-bottom: 1.25rem;
+}
+
+.field label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--foreground-muted);
+    margin-bottom: 0.5rem;
+}
+
+.field input,
+.field textarea {
     width: 100%;
-    padding: 0.875rem 1rem;
-    border-radius: 0.75rem;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
     border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.2);
     color: var(--foreground);
     font-family: inherit;
     font-size: 0.95rem;
-    transition: all 0.2s;
-}
-
-.input:focus,
-.textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.05);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-}
-
-.textarea {
-    line-height: 1.6;
-    resize: vertical;
-}
-
-/* Custom Checkbox as Toggle Switch */
-.toggleWrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0.75rem;
-    border: 1px solid var(--border);
-    cursor: pointer;
     transition: border-color 0.2s;
 }
 
-.toggleWrapper:hover {
-    border-color: var(--foreground-muted);
-}
-
-.toggleInput {
-    display: none;
-}
-
-.toggleLabel {
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-}
-
-.toggleTitle {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--foreground);
-}
-
-.toggleDesc {
-    font-size: 0.8rem;
-    color: var(--foreground-muted);
-    margin-top: 0.2rem;
-}
-
-.toggleSwitch {
-    position: relative;
-    width: 48px;
-    height: 26px;
-    background: var(--border);
-    border-radius: 99px;
-    transition: background 0.3s;
-    flex-shrink: 0;
-}
-
-.toggleInput:checked+.toggleWrapper .toggleSwitch {
-    background: var(--success);
-    /* Green for published */
-}
-
-/* Targeting sibling correctly requires structure adjustment in JSX or simpler CSS selector */
-/* Simplified approach for toggle switch visual */
-.switch {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    background-color: var(--border);
-    border-radius: 20px;
-    transition: all 0.3s;
-}
-
-.switch::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    transition: all 0.3s;
-}
-
-.toggleInput:checked~.switch {
-    background-color: var(--success);
-}
-
-.toggleInput:checked~.switch::after {
-    transform: translateX(20px);
-}
-
-
-/* File Upload Card */
-.fileUploadCard {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed var(--border);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-
-.fileUploadCard:hover {
-    background: rgba(99, 102, 241, 0.05);
+.field input:focus,
+.field textarea:focus {
+    outline: none;
     border-color: var(--primary);
 }
 
-.fileUploadCard.active {
-    border-color: var(--success);
-    background: rgba(16, 185, 129, 0.05);
+.field textarea {
+    resize: vertical;
+    line-height: 1.5;
 }
 
-.iconCircle {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
+/* Price Input */
+.priceInput {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.5rem;
-    transition: transform 0.2s;
 }
 
-.fileUploadCard:hover .iconCircle {
-    transform: scale(1.1);
-    background: var(--primary);
-    color: white;
+.priceInput span {
+    position: absolute;
+    left: 1rem;
+    color: var(--foreground-muted);
+    font-weight: 500;
+}
+
+.priceInput input {
+    width: 100%;
+    padding: 0.875rem;
+    padding-left: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--foreground);
+    font-size: 1rem;
+}
+
+/* File Boxes */
+.filesGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.fileBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    border: 2px dashed var(--border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-height: 140px;
+}
+
+.fileBox:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.fileBoxActive {
+    border-color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+}
+
+.fileIcon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 .fileName {
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--foreground);
     margin-bottom: 0.25rem;
     word-break: break-all;
+    max-width: 100%;
 }
 
 .fileHint {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--foreground-muted);
 }
 
-/* Image Preview */
-.imagePreview {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-    border: 1px solid var(--border);
+/* Cover Box */
+.coverBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 200px;
+    overflow: hidden;
 }
 
-/* Buttons */
+.coverBox:hover {
+    border-color: var(--primary);
+}
+
+.coverBoxActive {
+    border: none !important;
+    padding: 0;
+}
+
+.coverIcon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.coverPreview {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
+
+/* Toggle */
+.toggleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.toggleLabel {
+    font-weight: 500;
+}
+
+.toggleHint {
+    font-size: 0.8rem;
+    color: var(--foreground-muted);
+    margin-top: 0.25rem;
+}
+
+.toggle {
+    width: 48px;
+    height: 26px;
+    background: var(--border);
+    border-radius: 99px;
+    position: relative;
+    transition: background 0.3s;
+}
+
+.toggleOn {
+    background: #10b981;
+}
+
+.toggleCircle {
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+.toggleOn .toggleCircle {
+    transform: translateX(22px);
+}
+
+/* Submit Button */
 .submitBtn {
     width: 100%;
     padding: 1rem;
+    border-radius: 0.75rem;
+    border: none;
     background: var(--primary);
     color: white;
-    border: none;
-    border-radius: 0.75rem;
-    font-weight: 600;
     font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .submitBtn:hover {
-    background: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
 }
@@ -306,22 +280,23 @@
     transform: none;
 }
 
-.helperBox {
-    font-size: 0.85rem;
+/* Loading */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    font-size: 1.1rem;
     color: var(--foreground-muted);
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    margin-top: 0.5rem;
-    line-height: 1.5;
 }
 
+/* Responsive */
 @media (max-width: 900px) {
     .grid {
         grid-template-columns: 1fr;
     }
 
-    .row {
+    .filesGrid {
         grid-template-columns: 1fr;
     }
 }

@@ -39,6 +39,7 @@ export class EbooksService {
                 coverImage: true,
                 price: true,
                 createdAt: true,
+                previewUrl: true,
                 // NO incluir fileUrl para usuarios públicos
             },
         });

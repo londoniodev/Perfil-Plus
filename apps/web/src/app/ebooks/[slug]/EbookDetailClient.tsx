@@ -12,6 +12,7 @@ interface Ebook {
     description: string;
     coverImage: string;
     price: number;
+    previewUrl?: string;
     createdAt: string;
 }
 
@@ -154,14 +155,40 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                                     </>
                                 ) : (
                                     <>
-                                        <button
-                                            onClick={handlePurchase}
-                                            className={styles.purchaseBtn}
-                                            disabled={processing}
-                                        >
-                                            {processing ? "Procesando..." : "Comprar ahora"}
-                                        </button>
-                                        <p className={styles.guarantee}>
+                                        <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
+                                            {ebook.previewUrl && (
+                                                <a
+                                                    href={ebook.previewUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={styles.secondaryBtn}
+                                                    style={{
+                                                        textAlign: "center",
+                                                        padding: "0.75rem",
+                                                        border: "1px solid var(--border)",
+                                                        borderRadius: "0.5rem",
+                                                        background: "transparent",
+                                                        color: "var(--foreground)",
+                                                        textDecoration: "none",
+                                                        fontWeight: 500,
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        gap: "0.5rem"
+                                                    }}
+                                                >
+                                                    👁️ Ver Vista Previa
+                                                </a>
+                                            )}
+                                            <button
+                                                onClick={handlePurchase}
+                                                className={styles.purchaseBtn}
+                                                disabled={processing}
+                                            >
+                                                {processing ? "Procesando..." : "Comprar ahora"}
+                                            </button>
+                                        </div>
+                                        <p className={styles.guarantee} style={{ marginTop: "1rem" }}>
                                             🔒 Pago seguro con Mercado Pago
                                         </p>
                                     </>

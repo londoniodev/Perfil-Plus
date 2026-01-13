@@ -13,6 +13,10 @@ export class CreateEbookDto {
     @IsString()
     fileUrl: string;
 
+    @IsOptional()
+    @IsString()
+    previewUrl?: string;
+
     @IsNumber()
     @Min(0)
     price: number;
@@ -38,6 +42,10 @@ export class UpdateEbookDto {
     @IsOptional()
     @IsString()
     fileUrl?: string;
+
+    @IsOptional()
+    @IsString()
+    previewUrl?: string;
 
     @IsOptional()
     @IsNumber()

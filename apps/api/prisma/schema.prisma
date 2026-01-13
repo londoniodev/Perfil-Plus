@@ -322,6 +322,7 @@ model Ebook {
   description String   @db.Text
   coverImage  String
   fileUrl     String   // PDF en Minio (protegido)
+  previewUrl  String?  // PDF/Imagen de vista previa (público)
   price       Decimal  @db.Decimal(10, 2)
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())

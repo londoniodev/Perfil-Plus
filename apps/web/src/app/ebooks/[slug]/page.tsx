@@ -13,6 +13,7 @@ interface Ebook {
     description: string;
     coverImage: string;
     price: number;
+    previewUrl?: string;
     createdAt: string;
 }
 

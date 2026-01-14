@@ -30,9 +30,7 @@
 .header-logo-link {
     flex: 0 0 auto;
     width: 25%;
-    /* Target width from user request */
     max-width: 280px;
-    /* Cap it so it doesn't get huge on 4k screens */
     min-width: 160px;
     display: flex;
     align-items: center;
@@ -43,7 +41,6 @@
     width: 100%;
     height: auto;
     max-height: 50px;
-    /* Constraint height */
     object-fit: contain;
     object-position: left center;
 }
@@ -84,39 +81,218 @@
     font-weight: 500;
 }
 
-/* --- MOBILE TOGGLE & MENU --- */
+/* --- MOBILE TOGGLE --- */
 .header-mobile-toggle {
     display: none;
-    /* Hidden by default */
+    order: -1;
+    /* Move to LEFT on mobile */
+}
+
+.hamburger-btn {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
     padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
 }
 
-.mobile-menu-dropdown {
-    position: absolute;
-    top: 100%;
+.hamburger-btn:hover {
+    opacity: 0.8;
+}
+
+/* --- MOBILE OVERLAY --- */
+.mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+    z-index: 998;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-overlay.active {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+}
+
+/* --- MOBILE SIDE DRAWER (From LEFT) --- */
+.mobile-side-drawer {
+    position: fixed;
+    top: 0;
     left: 0;
-    right: 0;
-    background: rgba(15, 20, 25, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 2rem;
+    bottom: 0;
+    width: 85vw;
+    max-width: 400px;
+    background: var(--background);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 999;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    align-items: center;
-    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    transform: translateX(-100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
 }
 
-@keyframes slideDown {
+.mobile-side-drawer.active {
+    transform: translateX(0);
+}
+
+/* Drawer Header */
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.drawer-logo-link {
+    display: flex;
+    align-items: center;
+}
+
+.drawer-logo {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+}
+
+.drawer-close-btn {
+    background: none;
+    border: none;
+    color: var(--foreground-muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.drawer-close-btn:hover {
+    color: white;
+    transform: rotate(90deg);
+}
+
+/* Drawer Navigation */
+.drawer-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    overflow-y: auto;
+}
+
+/* Mobile Nav Item - Fivewoods Style */
+.mobile-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    color: var(--foreground);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    font-family: var(--font-serif);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideInItem 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(4) {
+    animation-delay: 0.25s;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(5) {
+    animation-delay: 0.3s;
+}
+
+.mobile-side-drawer.active .mobile-nav-item:nth-child(6) {
+    animation-delay: 0.35s;
+}
+
+.mobile-side-drawer.active .mobile-nav-cta {
+    animation-delay: 0.45s;
+}
+
+@keyframes slideInItem {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.mobile-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: 2rem;
+}
+
+.mobile-nav-item.active {
+    color: var(--primary-light);
+    background: rgba(91, 141, 239, 0.08);
+}
+
+.mobile-nav-item .menu-arrow {
+    color: var(--foreground-muted);
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.mobile-nav-item:hover .menu-arrow {
+    transform: translateX(4px);
+    color: var(--primary-light);
+}
+
+/* Mobile CTA Button - Accent Style */
+.mobile-nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font-serif);
+    border-radius: 0.75rem;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(91, 141, 239, 0.3);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
     to {
@@ -125,9 +301,12 @@
     }
 }
 
-/* --- RESPONSIVE BREAKPOINTS --- */
+.mobile-nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(91, 141, 239, 0.4);
+}
 
-/* Tablet & Smaller Laptops: Switch to Hamburger earlier to prevent wrapping */
+/* --- RESPONSIVE BREAKPOINTS --- */
 @media (max-width: 1100px) {
     .nav-desktop {
         display: none;
@@ -136,76 +315,31 @@
     .header-mobile-toggle {
         display: block;
         z-index: 60;
-        /* Above the side drawer */
         position: relative;
+    }
+
+    .header-container {
+        /* Hamburger left, logo right on mobile */
+        flex-direction: row;
     }
 
     .header-logo-link {
         width: auto;
-        /* Relax width constraint on mobile */
-        max-width: 180px;
-        flex: 1;
+        max-width: 50px;
+        flex: 0;
+        order: 1;
+        /* Move to RIGHT */
+    }
+
+    .logo-desktop {
+        display: none;
+    }
+
+    .logo-mobile {
+        display: block;
     }
 
     .header-logo {
         height: 40px;
-        /* Slightly smaller on mobile */
-    }
-}
-
-/* --- SIDE DRAWER MENU (Mobile) --- */
-
-.mobile-menu-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 998;
-    /* Very high z-index */
-    animation: fadeIn 0.3s ease;
-}
-
-.mobile-side-drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 70vw;
-    /* Wider for better touch targets, originally planned 60% */
-    max-width: 350px;
-    background: rgba(18, 24, 32, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 6rem 2rem 2rem 2rem;
-    /* Top padding for close button area */
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-end;
-    /* Align links to right or center? Let's keep right for ease of thumb */
-    z-index: 999;
-    /* Highest z-index */
-    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-    }
-
-    to {
-        transform: translateX(0);
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
     }
 }

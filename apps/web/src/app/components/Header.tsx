@@ -43,17 +43,12 @@ export function Header() {
                     </button>
                 </div>
 
-                {/* Logo - RIGHT on mobile, LEFT on desktop */}
+                {/* Logo - Wide logo for both desktop and mobile */}
                 <Link href="/" className="header-logo-link" onClick={closeMenu}>
                     <img
                         src="/menu_logo.png"
                         alt="Mauro Mera"
-                        className="header-logo logo-desktop"
-                    />
-                    <img
-                        src="/icon.ico"
-                        alt="Mauro Mera"
-                        className="header-logo logo-mobile"
+                        className="header-logo"
                     />
                 </Link>
 
@@ -65,11 +60,8 @@ export function Header() {
                 {/* Mobile Side Drawer - From LEFT */}
                 <div className={`mobile-menu-overlay ${isMenuOpen ? 'active' : ''}`} onClick={closeMenu} />
                 <div className={`mobile-side-drawer ${isMenuOpen ? 'active' : ''}`}>
-                    {/* Header inside drawer */}
+                    {/* Close button only - no logo in drawer */}
                     <div className="drawer-header">
-                        <Link href="/" className="drawer-logo-link" onClick={closeMenu}>
-                            <img src="/menu_logo.png" alt="Mauro Mera" className="drawer-logo" />
-                        </Link>
                         <button onClick={closeMenu} className="drawer-close-btn" aria-label="Close menu">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18" />

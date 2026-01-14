@@ -11,13 +11,8 @@
     /* Subtle border */
     padding: 0.75rem 0;
     /* Minimal padding */
-    position: fixed;
-    /* Fixed at bottom */
-    bottom: 0;
-    left: 0;
     width: 100%;
     z-index: 100;
-    /* Ensure it stays above other content */
 }
 
 .footer-container {

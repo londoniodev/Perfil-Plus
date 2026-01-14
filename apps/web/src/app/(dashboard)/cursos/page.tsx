@@ -25,7 +25,7 @@ export default async function CursosPage() {
             <section className={styles.lmsHero}>
                 <div className="container">
                     <h1>Programa de Formación</h1>
-                    <p>
+                    <p className="hero-description">
                         Explora nuestros temas de formación en psicología, liderazgo
                         y desarrollo personal para transformar tu vida y carrera.
                     </p>

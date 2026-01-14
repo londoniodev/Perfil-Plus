@@ -8,20 +8,8 @@
     text-align: center;
 }
 
-.ebooksHero h1 {
-    font-family: var(--font-serif);
-    font-size: 3.5rem;
-    font-weight: 400;
-    margin-bottom: 1rem;
-}
-
-.ebooksHero p {
-    font-size: 1.25rem;
-    color: var(--foreground-muted);
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    line-height: 1.7;
-}
+/* h1/heroTitle styles now handled by global typography.css */
+/* Hero p - use global .hero-description class */
 
 .heroButtons {
     display: flex;
@@ -320,13 +308,7 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
-.ebookInfo h1 {
-    font-family: var(--font-serif);
-    font-size: 2.5rem;
-    font-weight: 400;
-    margin-bottom: 1rem;
-    line-height: 1.2;
-}
+/* h1 styles now handled by global typography.css */
 
 .ebookMeta {
     display: flex;
@@ -446,9 +428,7 @@
 }
 
 @media (max-width: 768px) {
-    .ebooksHero h1 {
-        font-size: 2.5rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .detailGrid {
         grid-template-columns: 1fr;
@@ -460,10 +440,6 @@
         top: 0;
         max-width: 300px;
         margin: 0 auto;
-    }
-
-    .ebookInfo h1 {
-        font-size: 1.75rem;
     }
 }
 

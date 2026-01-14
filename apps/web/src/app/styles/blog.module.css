@@ -8,24 +8,8 @@
     text-align: center;
 }
 
-.blogHero h1 {
-    font-family: var(--font-serif);
-    font-size: 3.5rem;
-    font-weight: 400;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-muted) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.blogHero p {
-    font-size: 1.25rem;
-    color: var(--foreground-muted);
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.7;
-}
+/* h1 styles now handled by global typography.css */
+/* Hero p - use global .hero-description class */
 
 .blogContent {
     padding: 4rem 0;
@@ -216,9 +200,7 @@
         padding: 6rem 0 3rem;
     }
 
-    .blogHero h1 {
-        font-size: 2.5rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .blogGrid {
         grid-template-columns: 1fr;

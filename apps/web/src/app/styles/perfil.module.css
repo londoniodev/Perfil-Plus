@@ -20,12 +20,7 @@
     margin-bottom: 3rem;
 }
 
-.header h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+/* h1 styles now handled by global typography.css */
 
 .logoutBtn {
     padding: 0.5rem 1.5rem;
@@ -133,7 +128,5 @@
         text-align: center;
     }
 
-    .header h1 {
-        font-size: 2rem;
-    }
+    /* h1 responsive handled by global typography.css */
 }

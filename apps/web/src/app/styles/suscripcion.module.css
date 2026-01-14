@@ -2,27 +2,6 @@
     min-height: 100vh;
 }
 
-.subscriptionHero {
-    background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background) 100%);
-    padding: 8rem 0 4rem;
-    text-align: center;
-}
-
-.subscriptionHero h1 {
-    font-family: var(--font-serif);
-    font-size: 3.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.subscriptionHero p {
-    font-size: 1.25rem;
-    color: var(--foreground-muted);
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.7;
-}
-
 .pricingSection {
     padding: 4rem 0;
 }
@@ -178,11 +157,7 @@
     margin-bottom: 1.5rem;
 }
 
-.resultPage h1 {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-}
+/* h1 styles now handled by global typography.css */
 
 .resultPage p {
     color: var(--foreground-muted);
@@ -202,14 +177,13 @@
 }
 
 @media (max-width: 768px) {
-    .subscriptionHero h1 {
-        font-size: 2.5rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .amount {
         font-size: 2.5rem;
     }
 }
+
 .loadingState {
     padding: 10rem 0;
     text-align: center;

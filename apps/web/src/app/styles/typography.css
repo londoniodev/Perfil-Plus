@@ -1,7 +1,11 @@
 /* =============================================
-   TYPOGRAPHY - Headings & Text Styles
+   TYPOGRAPHY - SINGLE SOURCE OF TRUTH FOR ALL TEXT
    ============================================= */
 
+/* =============================================
+   BASE HEADING STYLES
+   All headings share these properties.
+   ============================================= */
 h1,
 h2,
 h3,
@@ -10,17 +14,74 @@ h5,
 h6 {
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
+    color: var(--foreground);
+    line-height: 1.2;
 }
 
+/* =============================================
+   H1 - Primary Page Titles
+   Used for: Hero sections, main page titles
+   ============================================= */
+h1 {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* =============================================
+   H2 - Section Titles
+   Used for: Section headers, major divisions
+   ============================================= */
+h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+/* =============================================
+   H3 - Subsection Titles
+   Used for: Card titles, minor sections
+   ============================================= */
 h3 {
-    font-weight: 450;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
 }
 
+/* =============================================
+   HEADING RESPONSIVE OVERRIDES
+   ============================================= */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.25rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+}
+
+/* =============================================
+   UTILITY CLASSES FOR HEADINGS
+   Use these when you need variations
+   ============================================= */
+
+/* Section title - gradient effect for special sections */
 .section-title {
     font-size: 3.5rem;
     font-weight: 400;
     margin-bottom: 1.5rem;
-    color: var(--foreground);
     line-height: 1.3;
     padding-bottom: 0.2em;
     padding-left: 0.1em;
@@ -31,6 +92,42 @@ h3 {
     background-clip: text;
 }
 
+/* Hero title - same as h1 but explicit class */
+.hero-title {
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    margin-bottom: 1.5rem;
+    line-height: 1.0;
+}
+
+/* Page hero title - explicit class for page headers */
+.page-hero-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.75rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .page-hero-title {
+        font-size: 2.25rem;
+    }
+}
+
+/* =============================================
+   SUBTITLE & DESCRIPTION STYLES
+   ============================================= */
 .section-subtitle {
     font-size: 1.25rem;
     color: var(--foreground-muted);
@@ -41,7 +138,7 @@ h3 {
 
 .card-title {
     font-size: 1.35rem;
-    font-weight: 450;
+    font-weight: 500;
     margin-bottom: 1rem;
     line-height: 1.3;
     color: var(--foreground);
@@ -53,7 +150,39 @@ h3 {
     line-height: 1.6;
 }
 
-/* Text Size Utilities */
+/* =============================================
+   PARAGRAPH STYLES - SINGLE SOURCE OF TRUTH
+   ============================================= */
+
+/* Base paragraph style */
+p {
+    color: var(--foreground);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+/* Hero/Section description paragraphs */
+.hero-description,
+.section-description {
+    font-size: 1.25rem;
+    color: var(--foreground-muted);
+    max-width: 600px;
+    line-height: 1.7;
+    margin: 0 auto;
+}
+
+/* Card description paragraphs */
+.card-description {
+    color: var(--foreground-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   TEXT SIZE UTILITIES
+   ============================================= */
 .text-xs {
     font-size: 0.75rem;
 }
@@ -78,6 +207,9 @@ h3 {
     font-size: 1.5rem;
 }
 
+/* =============================================
+   TEXT COLOR UTILITIES
+   ============================================= */
 .text-muted {
     color: var(--foreground-muted);
 }

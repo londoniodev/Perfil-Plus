@@ -75,8 +75,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       <div className="blog-page">
         <section className="blog-hero">
           <div className="container">
-            <h1>Blog</h1>
-            <p>
+            <h1 className="page-hero-title">Blog</h1>
+            <p className="hero-description">
               Reflexiones, herramientas y estrategias para transformar
               tu vida personal y profesional.
             </p>

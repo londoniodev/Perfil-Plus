@@ -8,20 +8,8 @@
     text-align: center;
 }
 
-.lmsHero h1 {
-    font-family: var(--font-serif);
-    font-size: 3.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-
-.lmsHero p {
-    font-size: 1.25rem;
-    color: var(--foreground-muted);
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.7;
-}
+/* h1 styles now handled by global typography.css */
+/* Hero p - use global .hero-description class */
 
 .lmsContent {
     padding: 4rem 0;
@@ -110,12 +98,7 @@
     margin-bottom: 2rem;
 }
 
-.themeHeader h1 {
-    font-family: var(--font-serif);
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
+/* h1 styles now handled by global typography.css */
 
 .themeDescription {
     font-size: 1.15rem;
@@ -308,11 +291,7 @@
         padding: 6rem 0 3rem;
     }
 
-    .lmsHero h1,
-    .themeHeader h1,
-    .courseHeader h1 {
-        font-size: 2rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .themesGrid {
         grid-template-columns: 1fr;

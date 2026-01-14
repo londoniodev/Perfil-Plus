@@ -37,10 +37,10 @@ export default function FormacionContent() {
                     <span className={`animate-in fade-in slide-in-from-bottom-4 duration-500 ${styles.heroBadge}`}>
                         Formación Profesional
                     </span>
-                    <h1 className={`animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100 ${styles.heroTitle}`}>
+                    <h1 className={`animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100 page-hero-title`}>
                         Cursos que transforman carreras
                     </h1>
-                    <p className={`animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 ${styles.heroDesc}`}>
+                    <p className={`animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 hero-description`}>
                         Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones
                         con enfoque en psicología aplicada y desarrollo personal.
                     </p>

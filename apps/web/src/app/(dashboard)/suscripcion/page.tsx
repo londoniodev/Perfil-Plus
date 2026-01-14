@@ -137,7 +137,7 @@ export default function SuscripcionPage() {
             <section className={styles.subscriptionHero}>
                 <div className="container">
                     <h1>Suscripción Premium</h1>
-                    <p>
+                    <p className="hero-description">
                         Accede a todo el contenido exclusivo: cursos, lecciones en video,
                         evaluaciones y material de apoyo.
                     </p>

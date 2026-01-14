@@ -24,14 +24,7 @@
     font-weight: 500;
 }
 
-.postHero h1 {
-    font-family: var(--font-serif);
-    font-size: 3rem;
-    font-weight: 400;
-    max-width: 800px;
-    margin: 0 auto 1.5rem;
-    line-height: 1.2;
-}
+/* h1 styles now handled by global typography.css */
 
 .excerpt {
     font-size: 1.25rem;
@@ -280,8 +273,9 @@
     padding: 4rem 1rem;
 }
 
+/* .notFound h1 - Exception: 404 page has extra large decorative styling
+   Keeping this as intentional exception to global h1 */
 .notFound h1 {
-    font-family: var(--font-serif);
     font-size: 6rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
@@ -395,9 +389,7 @@
         padding: 6rem 0 3rem;
     }
 
-    .postHero h1 {
-        font-size: 2rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .excerpt {
         font-size: 1.1rem;

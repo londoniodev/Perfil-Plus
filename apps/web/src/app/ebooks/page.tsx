@@ -121,10 +121,10 @@ function HeroSection() {
                 <span className={`badge ${styles.heroBadge}`}>
                     Biblioteca Digital
                 </span>
-                <h1 className={`${styles.ebooksHero} ${styles.heroTitle}`}>
+                <h1 className="page-hero-title">
                     E-books que transforman tu mentalidad
                 </h1>
-                <p>
+                <p className="hero-description">
                     Recursos prácticos escritos por Mauro Mera. Herramientas de psicología aplicada,
                     liderazgo y desarrollo personal que puedes implementar hoy mismo.
                 </p>

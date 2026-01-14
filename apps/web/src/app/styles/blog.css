@@ -27,23 +27,8 @@
     pointer-events: none;
 }
 
-.blog-hero h1 {
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
-
-    background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.7));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.blog-hero p {
-    font-size: 1.25rem;
-    color: var(--foreground-muted);
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
+/* h1 styles now handled by global typography.css */
+/* Hero p - use global .hero-description class */
 
 /* --- Filters --- */
 .blog-filters {
@@ -257,9 +242,7 @@
         padding: 6rem 0 3rem;
     }
 
-    .blog-hero h1 {
-        font-size: 2.5rem;
-    }
+    /* h1 responsive handled by global typography.css */
 
     .blog-grid {
         grid-template-columns: 1fr;

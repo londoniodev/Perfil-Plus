@@ -47,3 +47,18 @@
     opacity: 1;
     transform: scale(1.15);
 }
+
+/* Reverse animation for brick wall effect - second row moves opposite direction */
+.carousel-track-reverse {
+    animation: scroll-right 30s linear infinite;
+}
+
+@keyframes scroll-right {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}

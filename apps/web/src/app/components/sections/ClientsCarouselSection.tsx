@@ -27,20 +27,15 @@ const clientLogos = [
 ];
 
 export function ClientsCarouselSection() {
-    // Agrupamos los logos en pares para el diseño móvil (2 filas)
-    // Para desktop, podríamos mantenerlos individuales o usar la misma estructura
-    // Si queremos 2 filas en móvil pero 1 en desktop, necesitamos CSS media queries o estructura inteligente.
-    // La solicitud es: "logos pasen en filas de 2".
-    // Vamos a crear pares.
-    const pairedLogos = [];
-    for (let i = 0; i < clientLogos.length; i += 2) {
-        pairedLogos.push([clientLogos[i], clientLogos[i + 1] || null]);
-    }
+    // Dividir logos en 2 filas para efecto ladrillo
+    const halfLength = Math.ceil(clientLogos.length / 2);
+    const row1 = clientLogos.slice(0, halfLength);
+    const row2 = clientLogos.slice(halfLength);
 
-    // Duplicamos los pares para el efecto infinito
-    const duplicatedPairs = [...pairedLogos, ...pairedLogos];
+    // Duplicar para efecto infinito
+    const duplicatedRow1 = [...row1, ...row1];
+    const duplicatedRow2 = [...row2, ...row2];
 
-    // Si no hay logos, no renderizar la sección
     if (clientLogos.length === 0) return null;
 
     return (
@@ -65,57 +60,69 @@ export function ClientsCarouselSection() {
                     className="section-title"
                     style={{
                         marginBottom: "2rem",
-                        // fontSize removed to use class definition
                     }}
                 >
                     Empresas que confían en nosotros
                 </h2>
             </div>
 
-            <div className="carousel-container">
+            {/* Fila 1 - Normal */}
+            <div className="carousel-container" style={{ marginBottom: "1.5rem" }}>
                 <div className="carousel-track">
-                    {duplicatedPairs.map((pair, index) => (
+                    {duplicatedRow1.map((logo, index) => (
                         <div
-                            key={`pair-${index}`}
+                            key={`row1-${index}`}
                             className="carousel-item"
                             style={{
                                 display: "flex",
-                                flexDirection: "column",
-                                gap: "2rem", // Espacio vertical entre los 2 logos
-                                justifyContent: "center"
+                                justifyContent: "center",
+                                alignItems: "center",
+                                padding: "0 2rem",
                             }}
                         >
-                            {/* Logo 1 */}
-                            {pair[0] && (
-                                <Image
-                                    src={pair[0].src}
-                                    alt={pair[0].alt}
-                                    width={200}
-                                    height={80}
-                                    className="carousel-logo"
-                                    style={{
-                                        objectFit: "contain",
-                                        width: "auto",
-                                        height: "60px", // Un poco más pequeños para que quepan 2 filas
-                                    }}
-                                />
-                            )}
+                            <Image
+                                src={logo.src}
+                                alt={logo.alt}
+                                width={200}
+                                height={80}
+                                className="carousel-logo"
+                                style={{
+                                    objectFit: "contain",
+                                    width: "auto",
+                                    height: "60px",
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                            {/* Logo 2 */}
-                            {pair[1] && (
-                                <Image
-                                    src={pair[1].src}
-                                    alt={pair[1].alt}
-                                    width={200}
-                                    height={80}
-                                    className="carousel-logo"
-                                    style={{
-                                        objectFit: "contain",
-                                        width: "auto",
-                                        height: "60px",
-                                    }}
-                                />
-                            )}
+            {/* Fila 2 - Intercalada (offset) - Movimiento inverso */}
+            <div className="carousel-container">
+                <div className="carousel-track carousel-track-reverse">
+                    {duplicatedRow2.map((logo, index) => (
+                        <div
+                            key={`row2-${index}`}
+                            className="carousel-item"
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                padding: "0 2rem",
+                            }}
+                        >
+                            <Image
+                                src={logo.src}
+                                alt={logo.alt}
+                                width={200}
+                                height={80}
+                                className="carousel-logo"
+                                style={{
+                                    objectFit: "contain",
+                                    width: "auto",
+                                    height: "60px",
+                                }}
+                            />
                         </div>
                     ))}
                 </div>

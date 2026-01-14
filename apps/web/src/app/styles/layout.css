@@ -17,6 +17,13 @@
     position: relative;
 }
 
+/* Hero Buttons Container */
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
 /* Responsive Grid Utilities */
 .grid-responsive {
     display: grid;

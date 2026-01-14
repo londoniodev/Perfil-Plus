@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getThemes } from "@/lib/api";
 import { Theme } from "@/lib/lms-types";
 import { Metadata } from "next";
-import styles from "./cursos.module.css";
+import styles from "@/app/styles/cursos.module.css";
 
 export const metadata: Metadata = {
     title: "Cursos | Mauro Mera",

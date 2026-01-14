@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import styles from "@/app/styles/sections.module.css";
 
 const areas = [
     {
@@ -57,7 +58,7 @@ export function AreasImpactoSection() {
                 });
             },
             {
-                threshold: 0.5, // Trigger when 50% of the item is visible
+                threshold: 0.5,
                 rootMargin: "-10% 0px -10% 0px"
             }
         );
@@ -72,25 +73,13 @@ export function AreasImpactoSection() {
     return (
         <section style={{ position: "relative" }}>
             {/* Sticky Background Container */}
-            <div
-                style={{
-                    position: "sticky",
-                    top: 0,
-                    height: "100vh",
-                    width: "100%",
-                    overflow: "hidden",
-                    zIndex: 0,
-                }}
-            >
+            <div className={styles.stickyContainer}>
                 {areas.map((area, index) => (
                     <div
                         key={`bg-${index}`}
+                        className={styles.stickyBg}
                         style={{
-                            position: "absolute",
-                            inset: 0,
                             opacity: activeIndex === index ? 1 : 0,
-                            transition: "opacity 0.8s ease-in-out",
-                            // Ensure proper stacking context
                             zIndex: activeIndex === index ? 1 : 0
                         }}
                     >
@@ -102,28 +91,18 @@ export function AreasImpactoSection() {
                             unoptimized
                             style={{
                                 objectFit: "cover",
-                                filter: "brightness(0.7)" // MENOS oscurecimiento (antes 0.4)
+                                filter: "brightness(0.7)"
                             }}
                         />
-                        {/* Removed the invasive linear gradient here */}
                     </div>
                 ))}
 
-                {/* Bottom Gradient Fade to Next Section */}
-                <div style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "150px",
-                    background: "linear-gradient(to bottom, transparent, var(--background))",
-                    zIndex: 2,
-                    pointerEvents: "none"
-                }} />
+                {/* Bottom Gradient Fade */}
+                <div className={styles.stickyOverlay} />
             </div>
 
             {/* Scrollable Text Content */}
-            <div style={{ marginTop: "-100vh", position: "relative", zIndex: 1, paddingBottom: "10vh" }}>
+            <div className={styles.scrollContent}>
                 <div className="container" style={{ maxWidth: "1200px" }}>
                     <h2 className="section-title" style={{ textAlign: "center", marginBottom: "4rem", paddingTop: "4rem", position: "relative", zIndex: 2 }}>
                         Áreas de impacto
@@ -134,38 +113,20 @@ export function AreasImpactoSection() {
                             key={`content-${index}`}
                             ref={(el) => { sectionRefs.current[index] = el; }}
                             data-index={index}
-                            style={{
-                                minHeight: "100vh",
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                                alignItems: "center", // Centrado horizontal
-                                padding: "2rem",
-                                // On mobile, we might not want full screen height if content is short, but for this effect, spacing is key.
-                            }}
+                            className={styles.areaCardContainer}
                         >
                             <div
+                                className={styles.areaCard}
                                 style={{
-                                    background: "rgba(15, 20, 25, 0.3)", // Ultra transparente
-                                    backdropFilter: "blur(8px)", // Blur suave
-                                    padding: "2rem",
-                                    borderRadius: "1rem",
-                                    // Removed border entirely for minimalism
-                                    maxWidth: "550px",
-                                    width: "100%",
-                                    margin: "0 auto",
-                                    textAlign: "center",
                                     transform: activeIndex === index ? "translateY(0)" : "translateY(20px)",
                                     opacity: activeIndex === index ? 1 : 0,
-                                    transition: "all 0.6s ease-out 0.2s",
                                 }}
                             >
                                 <h3 className="card-title" style={{ fontSize: "1.8rem", color: "white", marginBottom: "0.5rem" }}>
                                     {area.name}
                                 </h3>
 
-                                {/* Minimal accent line */}
-                                <div style={{ width: "40px", height: "3px", background: area.accentColor, margin: "0.5rem auto 1rem auto", borderRadius: "2px" }} />
+                                <div className={styles.areaAccent} style={{ background: area.accentColor }} />
 
                                 <p className="card-text" style={{ fontSize: "1.05rem", color: "rgba(255, 255, 255, 0.9)", marginBottom: "1.5rem" }}>
                                     {area.description}
@@ -181,7 +142,6 @@ export function AreasImpactoSection() {
                         </div>
                     ))}
 
-                    {/* Significant bottom space to fix overlap with next section's negative margin */}
                     <div style={{ height: "40vh" }} />
                 </div>
             </div>

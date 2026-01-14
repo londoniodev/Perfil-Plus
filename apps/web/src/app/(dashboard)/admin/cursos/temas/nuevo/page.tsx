@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ImageUploader";
-import styles from "../../lms.module.css";
+import ImageUploader from "@/app/components/admin/ui/ImageUploader";
+import styles from "@/app/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
+import { IconBack } from "@/app/components/ui/Icons";
 
 export default function NuevoTemaPage() {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -71,9 +72,7 @@ export default function NuevoTemaPage() {
     return (
         <div className={styles.formPage}>
             <Link href="/admin/cursos" className={styles.backLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
+                <IconBack size={16} />
                 Volver a Temas
             </Link>
 

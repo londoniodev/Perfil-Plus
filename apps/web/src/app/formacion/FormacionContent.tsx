@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { IconTarget, IconBrain, IconBulb } from "../components/icons";
+import { IconTarget, IconBrain, IconZap } from "@/app/components/ui/Icons";
+import styles from "@/app/styles/formacion.module.css";
 
 export default function FormacionContent() {
     const cursos = [
@@ -24,22 +25,22 @@ export default function FormacionContent() {
             description: "Aprende a gestionar tus emociones y las de tu equipo para mejorar la comunicación y productividad.",
             level: "Básico",
             duration: "4 semanas",
-            icon: <IconBulb />,
+            icon: <IconZap />, // Used Zap for "Bulb" (Idea/Energy) if Bulb unavailable
         }
     ];
 
     return (
         <div style={{ minHeight: "100vh" }}>
             {/* Hero Section */}
-            <section className="courses-hero">
+            <section className={styles.formacionHero}>
                 <div className="container">
-                    <span className="hero-badge animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <span className={`animate-in fade-in slide-in-from-bottom-4 duration-500 ${styles.heroBadge}`}>
                         Formación Profesional
                     </span>
-                    <h1 className="animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
+                    <h1 className={`animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100 ${styles.heroTitle}`}>
                         Cursos que transforman carreras
                     </h1>
-                    <p className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                    <p className={`animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 ${styles.heroDesc}`}>
                         Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones
                         con enfoque en psicología aplicada y desarrollo personal.
                     </p>
@@ -52,49 +53,51 @@ export default function FormacionContent() {
             </section>
 
             {/* Courses Grid */}
-            <section className="courses-content">
+            <section className={styles.coursesContent}>
                 <div className="container">
-                    <div className="courses-grid animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-                        {cursos.map((curso, index) => (
-                            <div key={index} className="course-card">
-                                <div className="course-icon-wrapper">
-                                    {curso.icon}
+                    <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+                        <div className={styles.coursesGrid}>
+                            {cursos.map((curso, index) => (
+                                <div key={index} className={styles.courseCard}>
+                                    <div className={styles.courseIconWrapper}>
+                                        {curso.icon}
+                                    </div>
+                                    <h3 className={styles.courseTitle}>
+                                        {curso.title}
+                                    </h3>
+                                    <p className={styles.courseDesc}>
+                                        {curso.description}
+                                    </p>
+                                    <div className={styles.courseTags}>
+                                        <span className={`${styles.courseTag} ${styles.tagLevel}`}>
+                                            {curso.level}
+                                        </span>
+                                        <span className={`${styles.courseTag} ${styles.tagDuration}`}>
+                                            {curso.duration}
+                                        </span>
+                                    </div>
+                                    <Link
+                                        href="/login?redirect=/cursos"
+                                        className="btn btn-secondary"
+                                        style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
+                                    >
+                                        Ver Detalles
+                                    </Link>
                                 </div>
-                                <h3 className="course-title">
-                                    {curso.title}
-                                </h3>
-                                <p className="course-desc">
-                                    {curso.description}
-                                </p>
-                                <div className="course-tags">
-                                    <span className="course-tag tag-level">
-                                        {curso.level}
-                                    </span>
-                                    <span className="course-tag tag-duration">
-                                        {curso.duration}
-                                    </span>
-                                </div>
-                                <Link
-                                    href="/login?redirect=/cursos"
-                                    className="btn btn-secondary"
-                                    style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
-                                >
-                                    Ver Detalles
-                                </Link>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>
 
             {/* CTA Section */}
-            <section className="courses-cta">
+            <section className={styles.coursesCta}>
                 <div className="container">
                     <h2>¿Listo para dar el siguiente paso?</h2>
-                    <p>
+                    <p style={{ maxWidth: "600px", margin: "1rem auto 2rem", color: "var(--foreground-muted)" }}>
                         Únete a cientos de profesionales que ya han transformado su carrera con nuestros programas.
                     </p>
-                    <div className="cta-buttons">
+                    <div className={styles.ctaButtons}>
                         <Link href="/login?redirect=/cursos" className="btn btn-primary">
                             Inscribirme Ahora
                         </Link>

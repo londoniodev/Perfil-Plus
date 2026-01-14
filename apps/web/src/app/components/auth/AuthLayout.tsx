@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "../../auth.module.css";
+import styles from "@/app/styles/auth.module.css";
 import Image from "next/image";
 import { MobileBackButton } from "./MobileBackButton";
 

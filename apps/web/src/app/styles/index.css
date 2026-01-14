@@ -24,11 +24,11 @@
 
 /* 7. Feature Components */
 @import "./carousel.css";
-@import "./hero.css";
-@import "./header.css";
-@import "./footer.css";
 @import "./blog.css";
-@import "./courses.css";
+@import "./dashboard.css";
 
 /* 8. Responsive (must be last for proper cascade) */
 @import "./responsive.css";
+
+/* Note: header, footer, hero, and sections use CSS Modules
+   imported directly in their respective components */

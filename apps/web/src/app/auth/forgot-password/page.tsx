@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import styles from "../../auth.module.css";
+import styles from "@/app/styles/auth.module.css";
 import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
 const forgotPasswordSchema = z.object({
@@ -55,27 +55,27 @@ export default function ForgotPasswordPage() {
     return (
         <AuthLayout>
             <div className={styles.loginCard}>
-                <div className="text-center" style={{ marginBottom: "2.5rem" }}>
-                    <h1 className="text-2xl font-bold text-white" style={{ marginBottom: "1rem" }}>Recuperar contraseña</h1>
-                    <p className="text-gray-400 text-sm" style={{ lineHeight: "1.6" }}>
+                <div className={styles.authHeader}>
+                    <h1 className={styles.authTitle}>Recuperar contraseña</h1>
+                    <p className={styles.authDescription}>
                         Ingresa tu email y te enviaremos las instrucciones <br /> para restablecer tu contraseña.
                     </p>
                 </div>
 
                 {!isSubmitted ? (
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className={styles.formGroup} style={{ marginBottom: "2rem" }}>
+                        <div className={`${styles.formGroup} mb-lg`}>
                             <label htmlFor="email">Email</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-500" aria-hidden="true" />
+                                    <Mail className="h-5 w-5 text-muted" aria-hidden="true" />
                                 </div>
                                 <input
                                     {...register('email')}
                                     id="email"
                                     type="email"
                                     autoComplete="email"
-                                    className="pl-10"
+                                    className={styles.inputWithIcon}
                                     placeholder="tu@email.com"
                                 />
                             </div>
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                             )}
                         </div>
 
-                        <div style={{ marginBottom: "1.5rem" }}>
+                        <div className="mb-md">
                             <button
                                 type="submit"
                                 disabled={isLoading}
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
                         </div>
                     </form>
                 ) : (
-                    <div className={styles.successMessage} style={{ padding: "2rem", marginBottom: "1.5rem" }}>
+                    <div className={styles.successMessage}>
                         <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100/10 mb-4">
                             <Mail className="h-6 w-6 text-green-400" />
                         </div>
@@ -110,10 +110,10 @@ export default function ForgotPasswordPage() {
                     </div>
                 )}
 
-                <div className="text-center" style={{ marginTop: "1rem" }}>
+                <div className={styles.backLinkContainer}>
                     <Link
                         href="/login"
-                        className="text-primary-400 hover:text-primary-300 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                        className={styles.backLink}
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Volver al inicio de sesión

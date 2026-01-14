@@ -1,17 +1,14 @@
 import Image from "next/image";
+import styles from "@/app/styles/sections.module.css";
 
 /**
  * Lista de logos de clientes.
- * Para agregar uno nuevo: añade un objeto con src y alt.
- * Para quitar uno: simplemente borra la línea.
- * Asegúrate que el archivo exista en /public/clients_logo_optimized/
  */
 const clientLogos = [
     { src: "/clients_logo_optimized/1.webp", alt: "Fundación Valle del Lili" },
     { src: "/clients_logo_optimized/2.webp", alt: "Cliente 2" },
     { src: "/clients_logo_optimized/3.webp", alt: "Cliente 3" },
     { src: "/clients_logo_optimized/4.webp", alt: "Cliente 4" },
-    // { src: "/clients_logo_optimized/5.webp", alt: "Cliente 5" }, // Eliminado
     { src: "/clients_logo_optimized/6.webp", alt: "Cliente 6" },
     { src: "/clients_logo_optimized/7.webp", alt: "Cliente 7" },
     { src: "/clients_logo_optimized/8.webp", alt: "Cliente 8" },
@@ -27,69 +24,38 @@ const clientLogos = [
 ];
 
 export function ClientsCarouselSection() {
-    // Dividir logos en 2 filas para efecto ladrillo
     const halfLength = Math.ceil(clientLogos.length / 2);
     const row1 = clientLogos.slice(0, halfLength);
     const row2 = clientLogos.slice(halfLength);
 
-    // Duplicar para efecto infinito
     const duplicatedRow1 = [...row1, ...row1];
     const duplicatedRow2 = [...row2, ...row2];
 
     if (clientLogos.length === 0) return null;
 
     return (
-        <section
-            style={{
-                padding: "3rem 0",
-                overflow: "hidden",
-                background: "rgba(0, 0, 0, 0.2)",
-                borderTop: "1px solid var(--border)",
-                borderBottom: "1px solid var(--border)",
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: "1400px",
-                    margin: "0 auto",
-                    paddingBottom: "1.5rem",
-                    textAlign: "center",
-                }}
-            >
-                <h2
-                    className="section-title"
-                    style={{
-                        marginBottom: "2rem",
-                    }}
-                >
+        <section className={styles.clientsSection}>
+            <div className="container" style={{ textAlign: "center", marginBottom: "2rem" }}>
+                <h2 className="section-title">
                     Empresas que confían en nosotros
                 </h2>
             </div>
 
-            {/* Fila 1 - Normal */}
-            <div className="carousel-container" style={{ marginBottom: "1.5rem" }}>
-                <div className="carousel-track">
+            {/* Row 1 - Normal Scroll */}
+            <div style={{ marginBottom: "1.5rem", overflow: "hidden" }}>
+                <div className={styles.carouselTrack}>
                     {duplicatedRow1.map((logo, index) => (
-                        <div
-                            key={`row1-${index}`}
-                            className="carousel-item"
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                padding: "0 2rem",
-                            }}
-                        >
+                        <div key={`row1-${index}`} className={styles.carouselItem}>
                             <Image
                                 src={logo.src}
                                 alt={logo.alt}
-                                width={200}
-                                height={80}
-                                className="carousel-logo"
+                                width={160}
+                                height={60}
                                 style={{
                                     objectFit: "contain",
                                     width: "auto",
-                                    height: "60px",
+                                    height: "50px",
+                                    maxWidth: "180px"
                                 }}
                             />
                         </div>
@@ -97,30 +63,21 @@ export function ClientsCarouselSection() {
                 </div>
             </div>
 
-            {/* Fila 2 - Intercalada (offset) - Movimiento inverso */}
-            <div className="carousel-container">
-                <div className="carousel-track carousel-track-reverse">
+            {/* Row 2 - Reverse Scroll */}
+            <div style={{ overflow: "hidden" }}>
+                <div className={`${styles.carouselTrack} ${styles.carouselTrackReverse}`}>
                     {duplicatedRow2.map((logo, index) => (
-                        <div
-                            key={`row2-${index}`}
-                            className="carousel-item"
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                padding: "0 2rem",
-                            }}
-                        >
+                        <div key={`row2-${index}`} className={styles.carouselItem}>
                             <Image
                                 src={logo.src}
                                 alt={logo.alt}
-                                width={200}
-                                height={80}
-                                className="carousel-logo"
+                                width={160}
+                                height={60}
                                 style={{
                                     objectFit: "contain",
                                     width: "auto",
-                                    height: "60px",
+                                    height: "50px",
+                                    maxWidth: "180px"
                                 }}
                             />
                         </div>

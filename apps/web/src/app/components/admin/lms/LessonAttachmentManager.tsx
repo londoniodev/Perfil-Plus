@@ -2,6 +2,15 @@
 
 import React, { useState, useRef } from 'react';
 import { API_BASE } from "@/lib/config";
+import styles from '@/app/styles/lms.module.css';
+import {
+    IconUpload,
+    IconDownload,
+    IconTrash,
+    IconFile,
+    IconImage,
+    IconDocument
+} from "@/app/components/ui/Icons";
 
 interface Attachment {
     id: string;
@@ -27,31 +36,12 @@ function formatFileSize(bytes: number): string {
 
 function getFileIcon(fileType: string): React.ReactNode {
     if (fileType.includes('pdf')) {
-        return (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-            </svg>
-        );
+        return <div className={`${styles.fileIcon} ${styles.pdf}`}><IconDocument size={24} /></div>;
     }
     if (fileType.includes('image')) {
-        return (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-            </svg>
-        );
+        return <div className={`${styles.fileIcon} ${styles.image}`}><IconImage size={24} /></div>;
     }
-    return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--foreground-muted)" strokeWidth="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-        </svg>
-    );
+    return <div className={styles.fileIcon}><IconFile size={24} /></div>;
 }
 
 export default function LessonAttachmentManager({ lessonId, attachments, onUpdate }: LessonAttachmentManagerProps) {
@@ -154,49 +144,18 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
     };
 
     return (
-        <div style={{
-            padding: "1rem",
-            background: "var(--card-bg)",
-            border: "1px solid var(--border)",
-            borderRadius: "0.5rem",
-            marginTop: "1rem"
-        }}>
-            <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem"
-            }}>
-                <h3 style={{
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    color: "var(--foreground)",
-                    margin: 0
-                }}>
+        <div className={styles.attachmentManager}>
+            <div className={styles.uploadHeader}>
+                <h3 className={styles.uploadTitle}>
                     Material Complementario
                 </h3>
                 <button
                     type="button"
                     onClick={() => inputRef.current?.click()}
                     disabled={uploading}
-                    style={{
-                        padding: "0.5rem 1rem",
-                        background: uploading ? "var(--foreground-muted)" : "var(--accent)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "0.375rem",
-                        cursor: uploading ? "wait" : "pointer",
-                        fontSize: "0.875rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem"
-                    }}
+                    className={styles.uploadBtn}
                 >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
+                    <IconUpload size={16} />
                     {uploading ? 'Subiendo...' : 'Subir archivo'}
                 </button>
             </div>
@@ -211,59 +170,25 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
             />
 
             {error && (
-                <div style={{
-                    padding: "0.75rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    borderRadius: "0.375rem",
-                    color: "#ef4444",
-                    fontSize: "0.875rem",
-                    marginBottom: "1rem"
-                }}>
+                <div className={styles.error} style={{ fontSize: "0.875rem", padding: "0.75rem", marginBottom: "1rem" }}>
                     {error}
                 </div>
             )}
 
             {attachments.length === 0 ? (
-                <p style={{
-                    color: "var(--foreground-muted)",
-                    fontSize: "0.875rem",
-                    textAlign: "center",
-                    padding: "1rem 0"
-                }}>
+                <p className={styles.emptyText} style={{ textAlign: "center", fontSize: "0.875rem" }}>
                     No hay material complementario
                 </p>
             ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <div className={styles.attachmentList}>
                     {attachments.map((attachment) => (
-                        <div
-                            key={attachment.id}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.75rem",
-                                padding: "0.75rem",
-                                background: "var(--background)",
-                                borderRadius: "0.375rem",
-                                border: "1px solid var(--border)"
-                            }}
-                        >
+                        <div key={attachment.id} className={styles.attachmentItem}>
                             {getFileIcon(attachment.fileType)}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{
-                                    margin: 0,
-                                    fontSize: "0.875rem",
-                                    color: "var(--foreground)",
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis"
-                                }}>
+                            <div className={styles.attachmentInfo}>
+                                <p className={styles.attachmentName}>
                                     {attachment.name}
                                 </p>
-                                <p style={{
-                                    margin: 0,
-                                    fontSize: "0.75rem",
-                                    color: "var(--foreground-muted)"
-                                }}>
+                                <p className={styles.attachmentSize}>
                                     {formatFileSize(attachment.fileSize)}
                                 </p>
                             </div>
@@ -271,35 +196,18 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
                                 href={attachment.fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style={{
-                                    padding: "0.375rem",
-                                    color: "var(--foreground-muted)",
-                                    borderRadius: "0.25rem"
-                                }}
+                                className={styles.actionBtn}
                                 title="Descargar"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
+                                <IconDownload size={16} />
                             </a>
                             <button
                                 type="button"
                                 onClick={() => handleDelete(attachment)}
-                                style={{
-                                    padding: "0.375rem",
-                                    background: "transparent",
-                                    border: "none",
-                                    color: "#ef4444",
-                                    cursor: "pointer",
-                                    borderRadius: "0.25rem"
-                                }}
+                                className={`${styles.actionBtn} ${styles.danger}`}
                                 title="Eliminar"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                                </svg>
+                                <IconTrash size={16} />
                             </button>
                         </div>
                     ))}

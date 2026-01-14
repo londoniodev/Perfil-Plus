@@ -1,4 +1,5 @@
-import { IconQuote } from "../icons";
+import { IconQuote } from "@/app/components/ui/Icons";
+import styles from "@/app/styles/sections.module.css";
 
 const testimonials = [
     {
@@ -20,33 +21,24 @@ const testimonials = [
 
 export function TestimoniosSection() {
     return (
-        <section className="section section-alt">
+        <section className={`${styles.section} ${styles.sectionAlt}`}>
             <div className="container">
-                <div style={{ textAlign: "center", marginBottom: "4rem" }}>
+                <div className={styles.sectionTitle}>
                     <h2 className="section-title">Voces de la experiencia</h2>
                 </div>
 
-                <div className="grid-responsive">
+                <div className={styles.gridResponsive}>
                     {testimonials.map((test, i) => (
-                        <div key={i} className="card" style={{ position: "relative" }}>
-                            <div style={{ position: "absolute", top: "1.5rem", left: "1.5rem", opacity: 0.1 }}>
+                        <div key={i} className={`card ${styles.testimonialCard}`}>
+                            <div className={styles.quoteIcon}>
                                 <IconQuote />
                             </div>
-                            <p
-                                style={{
-                                    fontSize: "1.125rem",
-                                    color: "var(--foreground)",
-                                    marginBottom: "2rem",
-                                    lineHeight: 1.6,
-                                    fontStyle: "italic",
-                                    paddingTop: "1.5rem",
-                                }}
-                            >
+                            <p className={styles.quoteText}>
                                 "{test.quote}"
                             </p>
                             <div>
                                 <p style={{ fontWeight: 700, marginBottom: "0.25rem", fontSize: "1rem" }}>{test.author}</p>
-                                <span className="badge" style={{ fontSize: "0.7rem", padding: "0.2rem 0.6rem" }}>{test.role}</span>
+                                <span className={`badge ${styles.authorRole}`}>{test.role}</span>
                             </div>
                         </div>
                     ))}

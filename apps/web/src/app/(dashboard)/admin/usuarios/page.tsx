@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/lib/config";
-import UsersGrid, { UserGridItem as User } from "@/app/components/admin/UsersGrid";
+import UsersGrid, { UserGridItem as User } from "@/app/components/admin/users/UsersGrid";
 import Pagination from "@/app/components/ui/Pagination";
-import UserFilters from "@/app/components/admin/UserFilters";
+import UserFilters from "@/app/components/admin/users/UserFilters";
 
 // ============================================================================
 // TIPOS
@@ -168,7 +168,7 @@ export default function AdminUsuariosPage() {
 
     // Estados de carga
     if (authLoading || loading) {
-        return <div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>;
+        return <div className="state-loading">Cargando...</div>;
     }
 
     if (!isAdmin) {
@@ -178,22 +178,12 @@ export default function AdminUsuariosPage() {
     return (
         <div>
             {/* Header */}
-            <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "2rem",
-            }}>
+            <div className="page-header">
                 <div>
-                    <h1 style={{
-                        fontSize: "1.75rem",
-                        fontWeight: 700,
-                        color: "var(--foreground)",
-                        marginBottom: "0.25rem",
-                    }}>
+                    <h1 className="page-title">
                         Gestión de Usuarios
                     </h1>
-                    <p style={{ color: "var(--foreground-muted)", fontSize: "0.9rem" }}>
+                    <p className="page-subtitle">
                         {meta.total} usuarios registrados
                     </p>
                 </div>

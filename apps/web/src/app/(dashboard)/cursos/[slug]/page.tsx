@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import styles from "../cursos.module.css";
+import styles from "@/app/styles/cursos.module.css";
 
 interface ThemePageProps {
     params: Promise<{ slug: string }>;

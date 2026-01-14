@@ -10,7 +10,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     const { isCollapsed } = useDashboard();
 
     return (
-        <div style={{ display: "flex", minHeight: "100vh", background: "var(--background)" }}>
+        <div className="dashboard-flex">
             {/* Desktop Sidebar */}
             <div className="desktop-sidebar-wrapper">
                 <Sidebar />
@@ -18,15 +18,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
             {/* Main Content Area */}
             <main
-                className="dashboard-main"
-                style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    marginLeft: isCollapsed ? "80px" : "280px",
-                    transition: "margin-left 0.3s ease",
-                    width: "100%"
-                }}
+                className="dashboard-main dashboard-main-content"
+                style={{ marginLeft: isCollapsed ? "80px" : "280px" }}
             >
                 <div className="dashboard-content-wrapper">
                     {children}

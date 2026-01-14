@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { IconChevronDown } from "@/app/components/ui/Icons";
+import styles from "@/app/styles/sections.module.css";
 
 const steps = [
     {
@@ -71,24 +73,16 @@ export function MetodoSection() {
     };
 
     return (
-        <section className="section" id="metodo">
+        <section className={styles.section} id="metodo">
             <div className="container">
-                <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+                <div className={styles.sectionTitle}>
                     <h2 className="section-title">El proceso</h2>
-                    <p className="section-subtitle" style={{ margin: "0 auto" }}>
+                    <p className={styles.sectionSubtitle}>
                         Claridad desde el primer paso hasta el resultado.
                     </p>
                 </div>
 
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "1rem",
-                        maxWidth: "800px",
-                        margin: "0 auto",
-                    }}
-                >
+                <div className={styles.procesoContainer}>
                     {steps.map((step, i) => {
                         const isActive = activeIndex === i;
                         return (
@@ -97,28 +91,14 @@ export function MetodoSection() {
                                 ref={(el) => { itemRefs.current[i] = el; }}
                                 data-index={i}
                                 onClick={() => handleItemClick(i)}
-                                className="proceso-card"
+                                className={`${styles.procesoCard} ${isActive ? styles.procesoCardActive : ""}`}
                                 style={{
-                                    position: "relative",
-                                    borderRadius: "1.25rem",
-                                    overflow: "hidden",
-                                    background: isActive ? step.gradient : "rgba(255, 255, 255, 0.03)", // Light bg for inactive
-                                    border: isActive ? `1px solid ${step.accentColor}` : "1px solid var(--border)",
-                                    transition: "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)",
-                                    height: isActive ? "320px" : "80px", // Collapsed vs Expanded height
-                                    cursor: "pointer",
+                                    background: isActive ? step.gradient : undefined,
+                                    borderColor: isActive ? step.accentColor : undefined,
                                 }}
                             >
                                 {/* Background Image (Only visible when active) */}
-                                <div
-                                    className="proceso-card-bg"
-                                    style={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        opacity: isActive ? 0.3 : 0,
-                                        transition: "opacity 0.5s ease",
-                                    }}
-                                >
+                                <div className={`${styles.procesoCardBg} ${isActive ? styles.procesoCardBgActive : ""}`}>
                                     <Image
                                         src={step.image}
                                         alt={step.title}
@@ -128,85 +108,30 @@ export function MetodoSection() {
                                 </div>
 
                                 {/* Content Container */}
-                                <div
-                                    style={{
-                                        position: "relative",
-                                        zIndex: 2,
-                                        height: "100%",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: isActive ? "flex-end" : "center",
-                                        padding: "1.5rem",
-                                        // Gradient overlay for readability when active
-                                        background: isActive
-                                            ? "linear-gradient(to top, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.4) 60%, transparent 100%)"
-                                            : "none",
-                                    }}
-                                >
-                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isActive ? "1rem" : "0" }}>
+                                <div className={`${styles.procesoContent} ${isActive ? styles.procesoContentActive : ""}`}>
+                                    <div className={`${styles.cardHeader} ${isActive ? styles.cardHeaderActive : ""}`}>
                                         {/* Header Row: Number + Title */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                                        <div className={styles.headerRow}>
                                             <div
-                                                style={{
-                                                    width: "40px",
-                                                    height: "40px",
-                                                    borderRadius: "50%",
-                                                    background: isActive ? step.accentColor : "rgba(255, 255, 255, 0.1)",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontFamily: "var(--font-mono)",
-                                                    fontSize: "0.9rem",
-                                                    fontWeight: 700,
-                                                    color: isActive ? "white" : "var(--foreground-muted)",
-                                                    transition: "all 0.3s ease"
-                                                }}
+                                                className={`${styles.numberCircle} ${isActive ? styles.numberCircleActive : ""}`}
+                                                style={{ background: isActive ? step.accentColor : undefined }}
                                             >
                                                 {step.num}
                                             </div>
-                                            <h3
-                                                style={{
-                                                    margin: 0,
-                                                    fontSize: isActive ? "1.5rem" : "1.2rem",
-                                                    color: isActive ? "white" : "var(--foreground-muted)",
-                                                    fontWeight: isActive ? 600 : 400,
-                                                    transition: "all 0.3s ease"
-                                                }}
-                                            >
+                                            <h3 className={`${styles.cardTitle} ${isActive ? styles.cardTitleActive : ""}`}>
                                                 {step.title}
                                             </h3>
                                         </div>
 
                                         {/* Expand Icon (Chevrons) */}
-                                        <div style={{
-                                            transform: isActive ? "rotate(180deg)" : "rotate(0deg)",
-                                            transition: "transform 0.4s ease",
-                                            color: "var(--foreground-muted)"
-                                        }}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polyline points="6 9 12 15 18 9"></polyline>
-                                            </svg>
+                                        <div className={`${styles.expandIcon} ${isActive ? styles.expandIconActive : ""}`}>
+                                            <IconChevronDown />
                                         </div>
                                     </div>
 
                                     {/* Description (Hidden when collapsed) */}
-                                    <div
-                                        style={{
-                                            opacity: isActive ? 1 : 0,
-                                            height: isActive ? "auto" : 0,
-                                            overflow: "hidden",
-                                            transition: "all 0.4s ease 0.1s"
-                                        }}
-                                    >
-                                        <p
-                                            style={{
-                                                color: "var(--foreground-muted)",
-                                                fontSize: "1rem",
-                                                lineHeight: 1.6,
-                                                margin: 0,
-                                                maxWidth: "90%"
-                                            }}
-                                        >
+                                    <div className={`${styles.descriptionBox} ${isActive ? styles.descriptionBoxActive : ""}`}>
+                                        <p className={styles.descriptionText}>
                                             {step.description}
                                         </p>
                                     </div>

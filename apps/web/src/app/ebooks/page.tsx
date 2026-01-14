@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import styles from "./ebooks.module.css";
+import styles from "@/app/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 import {
-    DownloadIcon,
-    TargetIcon,
-    ShieldIcon,
-    LightbulbIcon,
-    BookStackIcon,
-    BookOpenIcon,
-    CheckIcon,
-} from "../components/icons/EbookIcons";
+    IconDownload as DownloadIcon,
+    IconTarget as TargetIcon,
+    IconShield as ShieldIcon,
+    IconZap as LightbulbIcon,
+    IconBook as BookStackIcon, // Fallback
+    IconBook as BookOpenIcon,
+    IconCheck as CheckIcon,
+} from "@/app/components/ui/Icons";
 
 // ============================================================================
 // METADATA Y TIPOS
@@ -91,6 +91,8 @@ const benefits = [
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
+// ... imports unchanged
+
 export default async function EbooksPage() {
     const ebooks = await getEbooks();
 
@@ -111,43 +113,22 @@ export default async function EbooksPage() {
 
 function HeroSection() {
     return (
-        <section style={{
-            paddingTop: "120px",
-            paddingBottom: "4rem",
-            textAlign: "center",
-            position: "relative",
-            overflow: "hidden",
-        }}>
+        <section className={styles.ebooksHero}>
             {/* Background gradient */}
-            <div style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: "radial-gradient(ellipse at center top, rgba(91, 141, 239, 0.15) 0%, transparent 60%)",
-                pointerEvents: "none",
-            }} />
+            <div className={styles.heroBackground} />
 
-            <div className="container" style={{ position: "relative", zIndex: 1 }}>
-                <span className="badge" style={{ marginBottom: "1.5rem" }}>
+            <div className={`container ${styles.heroContent}`}>
+                <span className={`badge ${styles.heroBadge}`}>
                     Biblioteca Digital
                 </span>
-                <h1 className="section-title" style={{
-                    maxWidth: "700px",
-                    margin: "0 auto 1.5rem",
-                    fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                }}>
+                <h1 className={`${styles.ebooksHero} ${styles.heroTitle}`}>
                     E-books que transforman tu mentalidad
                 </h1>
-                <p className="section-subtitle" style={{
-                    maxWidth: "600px",
-                    margin: "0 auto 2rem",
-                }}>
+                <p>
                     Recursos prácticos escritos por Mauro Mera. Herramientas de psicología aplicada,
                     liderazgo y desarrollo personal que puedes implementar hoy mismo.
                 </p>
-                <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                <div className={styles.heroButtons}>
                     <a href="#catalogo" className="btn btn-primary">
                         Ver Catálogo
                     </a>
@@ -168,36 +149,18 @@ interface Benefit {
 
 function BenefitsSection({ benefits }: { benefits: Benefit[] }) {
     return (
-        <section style={{
-            padding: "4rem 0",
-            background: "var(--background-secondary)",
-            borderTop: "1px solid var(--border)",
-            borderBottom: "1px solid var(--border)",
-        }}>
+        <section className={styles.benefitsSection}>
             <div className="container">
-                <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                    gap: "2rem",
-                }}>
+                <div className={styles.benefitsGrid}>
                     {benefits.map((benefit, index) => (
-                        <div key={index} style={{ textAlign: "center", padding: "1.5rem" }}>
-                            <div style={{
-                                color: "var(--primary-light)",
-                                marginBottom: "1rem",
-                                display: "flex",
-                                justifyContent: "center",
-                            }}>
+                        <div key={index} className={styles.benefitCard}>
+                            <div className={styles.benefitIcon}>
                                 {benefit.icon}
                             </div>
                             <h3 className="card-title">
                                 {benefit.title}
                             </h3>
-                            <p style={{
-                                color: "var(--foreground-muted)",
-                                fontSize: "0.9rem",
-                                lineHeight: "1.6",
-                            }}>
+                            <p className={styles.benefitDescription}>
                                 {benefit.description}
                             </p>
                         </div>
@@ -216,82 +179,44 @@ function ValuePropositionSection() {
     ];
 
     return (
-        <section style={{ padding: "5rem 0" }}>
+        <section className={styles.valuePropSection}>
             <div className="container">
-                <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                    gap: "4rem",
-                    alignItems: "center",
-                }}>
+                <div className={styles.valuePropGrid}>
                     <div>
-                        <h2 className="section-title" style={{
-                            fontSize: "2rem",
-                            marginBottom: "1.5rem",
-                            textAlign: "left"
-                        }}>
+                        <h2 className={`${styles.sectionTitle} ${styles.valuePropTitle}`}>
                             Conocimiento que puedes aplicar desde hoy
                         </h2>
-                        <p style={{
-                            color: "var(--foreground-muted)",
-                            marginBottom: "1.5rem",
-                            lineHeight: "1.8",
-                        }}>
+                        <p className={styles.valuePropText}>
                             Cada e-book está diseñado para darte herramientas prácticas y aplicables.
                             No es teoría vacía—es conocimiento basado en años de experiencia trabajando
                             con líderes, equipos y organizaciones.
                         </p>
-                        <p style={{
-                            color: "var(--foreground-muted)",
-                            marginBottom: "2rem",
-                            lineHeight: "1.8",
-                        }}>
+                        <p className={styles.valuePropText}>
                             Ya seas un profesional buscando mejorar tu liderazgo, un emprendedor
                             construyendo su equipo, o alguien en un viaje de desarrollo personal,
                             encontrarás recursos valiosos aquí.
                         </p>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                        <div className={styles.featureList}>
                             {features.map((feature, index) => (
-                                <div key={index} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                                    <span style={{ color: "var(--success)", display: "flex" }}><CheckIcon /></span>
-                                    <span style={{ color: "var(--foreground)" }}>{feature}</span>
+                                <div key={index} className={styles.featureItem}>
+                                    <span className={styles.featureIcon}><CheckIcon /></span>
+                                    <span className={styles.featureText}>{feature}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <div style={{
-                        background: "var(--card-bg)",
-                        borderRadius: "1.5rem",
-                        padding: "2.5rem",
-                        border: "1px solid var(--border)",
-                        textAlign: "center",
-                    }}>
-                        <div style={{
-                            color: "var(--primary-light)",
-                            marginBottom: "1rem",
-                            display: "flex",
-                            justifyContent: "center",
-                        }}>
+                    <div className={styles.libraryCard}>
+                        <div className={styles.libraryIcon}>
                             <BookStackIcon />
                         </div>
                         <h3 className="card-title">
                             Biblioteca en crecimiento
                         </h3>
-                        <p style={{
-                            color: "var(--foreground-muted)",
-                            marginBottom: "1.5rem",
-                        }}>
+                        <p className={styles.benefitDescription} style={{ marginBottom: "1.5rem" }}>
                             Nuevos títulos agregados regularmente.
                             Cada e-book es el resultado de meses de investigación y experiencia práctica.
                         </p>
-                        <span style={{
-                            background: "rgba(232, 168, 56, 0.1)",
-                            color: "var(--accent)",
-                            padding: "0.5rem 1rem",
-                            borderRadius: "999px",
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
-                        }}>
+                        <span className={styles.comingSoonBadge}>
                             Próximamente: Nuevos títulos 2025
                         </span>
                     </div>
@@ -303,20 +228,13 @@ function ValuePropositionSection() {
 
 function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
     return (
-        <section id="catalogo" className={styles.ebooksContent} style={{
-            background: "var(--background-secondary)",
-            borderTop: "1px solid var(--border)",
-        }}>
-            <div className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
-                <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-                    <h2 className="section-title" style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+        <section id="catalogo" className={styles.catalogSection}>
+            <div className={`container ${styles.catalogContainer}`}>
+                <div className={styles.catalogHeader}>
+                    <h2 className={`${styles.sectionTitle} ${styles.catalogTitle}`}>
                         Catálogo de E-books
                     </h2>
-                    <p style={{
-                        color: "var(--foreground-muted)",
-                        maxWidth: "500px",
-                        margin: "0 auto",
-                    }}>
+                    <p className={styles.catalogSubtitle}>
                         Explora nuestra colección y encuentra el recurso perfecto para tu próximo paso.
                     </p>
                 </div>
@@ -337,29 +255,14 @@ function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
 
 function EmptyState() {
     return (
-        <div className={styles.emptyState} style={{
-            textAlign: "center",
-            padding: "4rem 2rem",
-            background: "var(--card-bg)",
-            borderRadius: "1rem",
-            border: "1px solid var(--border)",
-        }}>
-            <div style={{
-                color: "var(--foreground-muted)",
-                marginBottom: "1rem",
-                display: "flex",
-                justifyContent: "center",
-            }}>
+        <div className={styles.emptyState}>
+            <div className={styles.emptyStateIcon}>
                 <BookOpenIcon />
             </div>
-            <h3 style={{
-                fontSize: "1.25rem",
-                marginBottom: "0.5rem",
-                color: "var(--foreground)",
-            }}>
+            <h3 className={styles.emptyStateTitle}>
                 Próximamente
             </h3>
-            <p style={{ color: "var(--foreground-muted)" }}>
+            <p>
                 Estamos preparando nuevos e-books. ¡Vuelve pronto!
             </p>
         </div>
@@ -385,17 +288,12 @@ function EbookCard({ ebook }: { ebook: Ebook }) {
 
 function CTASection() {
     return (
-        <section style={{ padding: "5rem 0", textAlign: "center" }}>
+        <section className={styles.ctaSection}>
             <div className="container">
-                <h2 className="section-title" style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+                <h2 className={`${styles.sectionTitle} ${styles.ctaTitle}`}>
                     ¿Ya tienes e-books comprados?
                 </h2>
-                <p style={{
-                    color: "var(--foreground-muted)",
-                    marginBottom: "2rem",
-                    maxWidth: "500px",
-                    margin: "0 auto 2rem",
-                }}>
+                <p className={styles.ctaText}>
                     Accede a tu biblioteca personal para leer y descargar todos tus e-books.
                 </p>
                 <Link href="/login?redirect=/ebooks/mis-compras" className="btn btn-accent">

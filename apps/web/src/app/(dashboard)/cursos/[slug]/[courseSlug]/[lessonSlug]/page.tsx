@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import styles from "./lesson.module.css";
+import styles from "@/app/styles/lesson.module.css";
 import { API_BASE } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -106,7 +106,7 @@ export default function LessonPage({
     if (loading || authLoading) {
         return (
             <div className={styles.lessonPage}>
-                <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
+                <div className="container state-container">
                     Cargando...
                 </div>
             </div>
@@ -116,7 +116,7 @@ export default function LessonPage({
     if (error === "needsAuth" || !isAuthenticated) {
         return (
             <div className={styles.lessonPage}>
-                <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
+                <div className="container state-container">
                     <div className={styles.premiumBlock}>
                         <div className={styles.premiumIcon}>🔐</div>
                         <h2>Inicia sesión para ver esta lección</h2>
@@ -133,7 +133,7 @@ export default function LessonPage({
     if (error === "premium") {
         return (
             <div className={styles.lessonPage}>
-                <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
+                <div className="container state-container">
                     <div className={styles.premiumBlock}>
                         <div className={styles.premiumIcon}>🔒</div>
                         <h2>Contenido Premium</h2>
@@ -150,9 +150,9 @@ export default function LessonPage({
     if (error === "notFound" || !lesson) {
         return (
             <div className={styles.lessonPage}>
-                <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
+                <div className="container state-container">
                     <h2>Lección no encontrada</h2>
-                    <Link href="/cursos" style={{ color: "var(--primary)" }}>
+                    <Link href="/cursos" className="dashboard-link">
                         Volver a cursos
                     </Link>
                 </div>
@@ -178,7 +178,7 @@ export default function LessonPage({
                         {lesson.duration && (
                             <span>⏱️ {Math.floor(lesson.duration / 60)} min</span>
                         )}
-                        {completed && <span style={{ color: "#22c55e" }}>✓ Completada</span>}
+                        {completed && <span className="status-completed">✓ Completada</span>}
                     </div>
                 </div>
             </header>

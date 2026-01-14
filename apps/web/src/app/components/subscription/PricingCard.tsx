@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "../../(dashboard)/suscripcion/suscripcion.module.css";
+import styles from "@/app/styles/suscripcion.module.css";
 
 interface PricingCardProps {
     onSubscribe: () => void;

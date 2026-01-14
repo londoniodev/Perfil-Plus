@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "../ebooks.module.css";
+import styles from "@/app/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
+import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@/app/components/ui/Icons";
 
 interface Ebook {
     id: string;
@@ -138,20 +139,20 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                         </div>
 
                         <div className={styles.ebookInfo}>
-                            <Link href="/ebooks" style={{ color: "var(--primary)", textDecoration: "none", marginBottom: "1rem", display: "inline-block" }}>
-                                ← Volver a e-books
+                            <Link href="/ebooks" className={styles.backLink}>
+                                <IconBack /> Volver a e-books
                             </Link>
 
                             <h1>{ebook.title}</h1>
 
                             <div className={styles.ebookMeta}>
-                                <span>📖 E-book digital (PDF)</span>
-                                <span>✨ Descarga inmediata</span>
+                                <span><IconBook /> E-book digital (PDF)</span>
+                                <span><IconZap /> Descarga inmediata</span>
                             </div>
 
                             <div className={styles.description}>
                                 {ebook.description.split("\n").map((p, i) => (
-                                    <p key={i} style={{ marginBottom: "1rem" }}>{p}</p>
+                                    <p key={i} className={styles.descriptionParagraph}>{p}</p>
                                 ))}
                             </div>
 
@@ -163,7 +164,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                                 {hasPurchased ? (
                                     <>
                                         <div className={styles.ownedBadge}>
-                                            ✓ Tienes acceso a este e-book
+                                            <IconCheck /> Tienes acceso a este e-book
                                         </div>
                                         <button
                                             onClick={handleDownload}
@@ -171,34 +172,20 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                                             disabled={downloading}
                                             style={{ marginTop: "1rem" }}
                                         >
-                                            {downloading ? "Preparando..." : "📥 Descargar ahora"}
+                                            {downloading ? "Preparando..." : <><IconDownload style={{ marginRight: "0.5rem" }} /> Descargar ahora</>}
                                         </button>
                                     </>
                                 ) : (
                                     <>
-                                        <div style={{ display: "flex", gap: "1rem", flexDirection: "column" }}>
+                                        <div className={styles.actionButtonsContainer}>
                                             {ebook.previewUrl && (
                                                 <a
                                                     href={ebook.previewUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={styles.secondaryBtn}
-                                                    style={{
-                                                        textAlign: "center",
-                                                        padding: "0.75rem",
-                                                        border: "1px solid var(--border)",
-                                                        borderRadius: "0.5rem",
-                                                        background: "transparent",
-                                                        color: "var(--foreground)",
-                                                        textDecoration: "none",
-                                                        fontWeight: 500,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        gap: "0.5rem"
-                                                    }}
+                                                    className={styles.previewBtn}
                                                 >
-                                                    👁️ Ver Vista Previa
+                                                    <IconEye /> Ver Vista Previa
                                                 </a>
                                             )}
                                             <button
@@ -209,8 +196,8 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                                                 {processing ? "Procesando..." : "Comprar ahora"}
                                             </button>
                                         </div>
-                                        <p className={styles.guarantee} style={{ marginTop: "1rem" }}>
-                                            🔒 Pago seguro con Mercado Pago
+                                        <p className={styles.guaranteeText}>
+                                            <IconLock size={14} /> Pago seguro con Mercado Pago
                                         </p>
                                     </>
                                 )}

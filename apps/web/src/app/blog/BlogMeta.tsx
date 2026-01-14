@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from 'next/link';
-import { IconChevronDown } from "../components/icons";
+import { IconChevronDown } from "../components/ui/Icons";
 import { Category } from "@/lib/types";
-import styles from "./BlogMeta.module.css";
+import styles from "@/app/styles/BlogMeta.module.css";
 
 interface BlogMetaProps {
     date: string;

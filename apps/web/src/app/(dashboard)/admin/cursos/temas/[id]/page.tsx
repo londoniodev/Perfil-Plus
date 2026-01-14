@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ImageUploader";
+import ImageUploader from "@/app/components/admin/ui/ImageUploader";
 import CourseCard from "@/app/components/admin/lms/CourseCard";
-import styles from "../../lms.module.css";
+import styles from "@/app/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
+import { IconBack, IconPlus } from "@/app/components/ui/Icons";
 
 interface EditarTemaPageProps {
     params: Promise<{ id: string }>;
@@ -171,9 +172,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
     return (
         <div className={styles.formPage}>
             <Link href="/admin/cursos" className={styles.backLink}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
+                <IconBack size={16} />
                 Volver a Temas
             </Link>
 
@@ -254,10 +253,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
                     <h2 className={styles.formTitle} style={{ marginBottom: 0 }}>Cursos del Tema</h2>
                     <Link href={`/admin/cursos/temas/${themeId}/cursos/nuevo`} className={styles.addBtn}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
+                        <IconPlus size={16} />
                         Agregar Curso
                     </Link>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styles from "./suscripcion.module.css";
+import styles from "@/app/styles/suscripcion.module.css";
 import { API_BASE } from "@/lib/config";
 import ActiveSubscriptionCard from "@/app/components/subscription/ActiveSubscriptionCard";
 import PricingCard from "@/app/components/subscription/PricingCard";
@@ -122,7 +122,7 @@ export default function SuscripcionPage() {
     if (loading) {
         return (
             <div className={styles.subscriptionPage}>
-                <div className="container" style={{ padding: "10rem 0", textAlign: "center" }}>
+                <div className={`container ${styles.loadingState}`}>
                     Cargando...
                 </div>
             </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCourseBySlug, getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import styles from "../../cursos.module.css";
+import styles from "@/app/styles/cursos.module.css";
 import { CourseSchema, BreadcrumbSchema } from "@/app/components/seo/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";

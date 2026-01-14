@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import styles from "../../auth.module.css";
+import styles from "@/app/styles/auth.module.css";
 import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
 
@@ -86,20 +86,22 @@ function ResetPasswordFormContent() {
 
     if (!token) {
         return (
-            <div className={styles.loginCard} style={{ textAlign: "center" }}>
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
-                    <Lock className="h-6 w-6 text-red-500" />
+            <div className={styles.loginCard}>
+                <div className="text-center">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
+                        <Lock className="h-6 w-6 text-red-500" />
+                    </div>
+                    <h3 className="text-lg font-medium text-white">Enlace inválido</h3>
+                    <p className="mt-2 text-sm text-gray-400 mb-6">
+                        El enlace de recuperación es inválido o ha expirado. Por favor solicita uno nuevo.
+                    </p>
+                    <Link
+                        href="/auth/forgot-password"
+                        className={styles.backLink}
+                    >
+                        Solicitar nuevo enlace
+                    </Link>
                 </div>
-                <h3 className="text-lg font-medium text-white">Enlace inválido</h3>
-                <p className="mt-2 text-sm text-gray-400 mb-6">
-                    El enlace de recuperación es inválido o ha expirado. Por favor solicita uno nuevo.
-                </p>
-                <Link
-                    href="/auth/forgot-password"
-                    className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
-                >
-                    Solicitar nuevo enlace
-                </Link>
             </div>
         );
     }
@@ -107,16 +109,16 @@ function ResetPasswordFormContent() {
     return (
         <div className={styles.loginCard}>
 
-            <div className="text-center mb-8">
-                <Link href="/" className="inline-block mb-6">
+            <div className={styles.authHeader}>
+                <Link href="/" className="inline-block mb-md">
                     <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
                         Mauro Mera
                     </span>
                 </Link>
-                <h2 className="text-2xl font-bold text-white mb-2">
+                <h2 className={styles.authTitle}>
                     Restablecer contraseña
                 </h2>
-                <p className="text-sm text-gray-400">
+                <p className={styles.authDescription}>
                     Ingresa tu nueva contraseña para acceder a tu cuenta.
                 </p>
             </div>
@@ -126,13 +128,13 @@ function ResetPasswordFormContent() {
                     <label htmlFor="password">Nueva contraseña</label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                            <Lock className="h-5 w-5 text-muted" aria-hidden="true" />
                         </div>
                         <input
                             {...register('password')}
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            className="pl-10 pr-10"
+                            className={`${styles.inputWithAction} ${styles.inputWithIcon}`}
                             placeholder="••••••••"
                         />
                         <button
@@ -141,16 +143,16 @@ function ResetPasswordFormContent() {
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             {showPassword ? (
-                                <EyeOff className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                <EyeOff className="h-5 w-5 text-muted" aria-hidden="true" />
                             ) : (
-                                <Eye className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                <Eye className="h-5 w-5 text-muted" aria-hidden="true" />
                             )}
                         </button>
                     </div>
                     {errors.password && (
                         <p className={styles.loginError}>{errors.password.message}</p>
                     )}
-                    <p className="mt-2 text-xs text-gray-400">
+                    <p className="mt-2 text-xs text-muted">
                         Mínimo 8 caracteres, mayúscula, minúscula y número.
                     </p>
                 </div>
@@ -159,13 +161,13 @@ function ResetPasswordFormContent() {
                     <label htmlFor="confirmPassword">Confirmar contraseña</label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                            <Lock className="h-5 w-5 text-muted" aria-hidden="true" />
                         </div>
                         <input
                             {...register('confirmPassword')}
                             id="confirmPassword"
                             type={showConfirmPassword ? 'text' : 'password'}
-                            className="pl-10 pr-10"
+                            className={`${styles.inputWithAction} ${styles.inputWithIcon}`}
                             placeholder="••••••••"
                         />
                         <button
@@ -174,9 +176,9 @@ function ResetPasswordFormContent() {
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                             {showConfirmPassword ? (
-                                <EyeOff className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                <EyeOff className="h-5 w-5 text-muted" aria-hidden="true" />
                             ) : (
-                                <Eye className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                <Eye className="h-5 w-5 text-muted" aria-hidden="true" />
                             )}
                         </button>
                     </div>
@@ -200,10 +202,10 @@ function ResetPasswordFormContent() {
                 </div>
             </form>
 
-            <div className="mt-8 text-center">
+            <div className={styles.backLinkContainer}>
                 <Link
                     href="/login"
-                    className="text-primary-400 hover:text-primary-300 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+                    className={styles.backLink}
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Volver al inicio de sesión

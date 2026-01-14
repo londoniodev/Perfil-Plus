@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/app/components/admin/lms/ThemeCard";
-import styles from "./lms.module.css";
+import styles from "@/app/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
+import { IconPlus, IconBook } from "@/app/components/ui/Icons";
 
 interface Theme {
     id: string;
@@ -95,10 +96,7 @@ export default function AdminCursosPage() {
             <div className={styles.header}>
                 <h1 className={styles.title}>Gestión de Cursos</h1>
                 <Link href="/admin/cursos/temas/nuevo" className={styles.addBtn}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
+                    <IconPlus size={20} />
                     Nuevo Tema
                 </Link>
             </div>
@@ -132,7 +130,7 @@ export default function AdminCursosPage() {
                 <div className={styles.themesGrid}>
                     {filteredThemes.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}>📚</div>
+                            <div className={styles.emptyIcon}><IconBook size={32} /></div>
                             <h2 className={styles.emptyTitle}>
                                 {filter === "all"
                                     ? "No hay temas creados"

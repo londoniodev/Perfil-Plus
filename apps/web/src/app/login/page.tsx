@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import styles from "../auth.module.css";
+import styles from "@/app/styles/auth.module.css";
 import { API_BASE } from "@/lib/config";
 import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
@@ -84,7 +84,7 @@ function LoginForm() {
 
   return (
     <div className={styles.loginCard}>
-      <h1 className="card-title" style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Iniciar Sesión</h1>
+      <h1 className="card-title">Iniciar Sesión</h1>
       <p className="card-text">Bienvenido de nuevo</p>
 
       <form onSubmit={handleSubmit}>
@@ -110,15 +110,15 @@ function LoginForm() {
           />
         </div>
 
-        <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
-          <a href="/auth/forgot-password" style={{ color: '#6366f1', fontSize: '0.875rem', textDecoration: 'none' }}>
+        <div className="text-right mb-md">
+          <a href="/auth/forgot-password" className="link-accent">
             ¿Olvidaste tu contraseña?
           </a>
         </div>
 
         {error && <div className={styles.loginError}>{error}</div>}
 
-        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: "100%" }}>
+        <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
           {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </button>
       </form>

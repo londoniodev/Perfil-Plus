@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import styles from "../../(dashboard)/suscripcion/suscripcion.module.css";
+import styles from "@/app/styles/suscripcion.module.css";
 
 interface ActiveSubscriptionCardProps {
     endDate: string | null;

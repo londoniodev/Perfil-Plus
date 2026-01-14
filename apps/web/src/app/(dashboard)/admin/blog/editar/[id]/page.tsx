@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import PostForm from "@/app/components/admin/PostForm";
+import PostForm from "@/app/components/admin/blog/PostForm";
 
 /**
  * Página para editar un post existente del blog.

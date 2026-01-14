@@ -1,0 +1,136 @@
+/* Formacion Page CSS Module */
+
+.formacionHero {
+    padding: 8rem 0 4rem;
+    text-align: center;
+    background: radial-gradient(circle at center, rgba(91, 141, 239, 0.08) 0%, transparent 60%);
+}
+
+.heroBadge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.heroTitle {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+}
+
+@media (max-width: 768px) {
+    .heroTitle {
+        font-size: 2.5rem;
+    }
+}
+
+.heroDesc {
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    color: var(--foreground-muted);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Courses Grid */
+.coursesContent {
+    padding: 4rem 0;
+}
+
+.coursesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.courseCard {
+    background: var(--background-secondary);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.courseCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary);
+}
+
+.courseIconWrapper {
+    width: 60px;
+    height: 60px;
+    background: rgba(91, 141, 239, 0.1);
+    color: var(--primary);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.courseTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.courseDesc {
+    color: var(--foreground-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.courseTags {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.courseTag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-weight: 600;
+}
+
+.tagLevel {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--foreground);
+}
+
+.tagDuration {
+    background: rgba(232, 168, 56, 0.1);
+    color: var(--accent);
+}
+
+/* CTA */
+.coursesCta {
+    padding: 6rem 0;
+    text-align: center;
+    background: linear-gradient(to top, rgba(91, 141, 239, 0.05), transparent);
+}
+
+.ctaButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 600px) {
+    .ctaButtons {
+        flex-direction: column;
+    }
+}

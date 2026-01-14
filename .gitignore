@@ -55,4 +55,6 @@ postgres_data/
 minio_data/
 
 # Agent rules
-.agent/rules/powershell.md
+# Agent rules
+.agent/rules/
+

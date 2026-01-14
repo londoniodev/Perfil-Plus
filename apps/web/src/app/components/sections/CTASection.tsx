@@ -1,24 +1,12 @@
 import LeadForm from "../LeadForm/LeadForm";
+import styles from "@/app/styles/sections.module.css";
 
 export function CTASection() {
     return (
-        <section
-            id="agendar"
-            style={{
-                padding: "8rem 0",
-                textAlign: "center",
-                position: "relative",
-                overflow: "hidden"
-            }}
-        >
-            <div style={{
-                position: "absolute",
-                inset: 0,
-                background: "radial-gradient(circle at center, rgba(91,141,239,0.15), transparent 70%)",
-                zIndex: -1
-            }} />
+        <section id="agendar" className={styles.ctaSection}>
+            <div className={styles.ctaBg} />
 
-            <div className="container" style={{ position: "relative", zIndex: 1, maxWidth: "600px", margin: "0 auto" }}>
+            <div className={`container ${styles.ctaContainer}`}>
                 <LeadForm
                     source="cta-home"
                     title="¿Hablamos?"

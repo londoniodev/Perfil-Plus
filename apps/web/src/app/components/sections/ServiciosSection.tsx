@@ -1,44 +1,41 @@
 import Link from "next/link";
 import NextImage from "next/image";
-import { IconBuilding, IconCompass, IconHeart, IconCheck, IconExternalLink } from "../icons";
+import { IconCheck, IconExternalLink } from "@/app/components/ui/Icons";
+import styles from "@/app/styles/sections.module.css";
 
 export function ServiciosSection() {
     return (
-        <section className="section" id="servicios">
+        <section className={styles.section} id="servicios">
             <div className="container">
-                <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+                <div className={styles.sectionTitle}>
                     <h2 className="section-title">Rutas de acompañamiento</h2>
-                    <p className="section-subtitle" style={{ margin: "0 auto" }}>
+                    <p className={styles.sectionSubtitle}>
                         Soluciones diseñadas para tu momento actual.
                     </p>
                 </div>
 
-                <div className="grid-responsive">
+                <div className={styles.gridResponsive}>
                     {/* Service 1 - Psicoterapia */}
-                    <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <div style={{ position: "relative", height: "240px", width: "100%" }}>
+                    <div className={`card ${styles.serviceCard}`}>
+                        <div className={styles.imageContainer}>
                             <NextImage
                                 src="/services/psicoterapia.avif"
                                 alt="Psicoterapia y Coaching"
                                 fill
                                 style={{ objectFit: "cover" }}
                             />
-                            <div style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: "linear-gradient(to top, rgba(16, 16, 28, 0.8), transparent)"
-                            }} />
+                            <div className={styles.imageOverlay} />
                         </div>
-                        <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 className="card-title">
+                        <div className={styles.serviceContent}>
+                            <h3 className={`card-title ${styles.serviceTitle}`}>
                                 Psicoterapia y Coaching personalizado
                             </h3>
-                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
+                            <p className={`card-text ${styles.serviceText}`}>
                                 Espacio clínico para ordenar el mundo interno y sanar.
                             </p>
-                            <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <ul className={styles.serviceList}>
                                 {["Ansiedad y estrés", "Duelo y crisis", "Vínculos sanos", "Propósito de vida"].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem" }}>
+                                    <li key={i} className={styles.serviceItem}>
                                         <span style={{ color: "var(--success)" }}><IconCheck /></span>
                                         {item}
                                     </li>
@@ -53,30 +50,26 @@ export function ServiciosSection() {
                     </div>
 
                     {/* Service 2 - Consultoría (Empresas) */}
-                    <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <div style={{ position: "relative", height: "240px", width: "100%" }}>
+                    <div className={`card ${styles.serviceCard}`}>
+                        <div className={styles.imageContainer}>
                             <NextImage
                                 src="/services/consultoria.avif"
                                 alt="Consultoría Organizacional"
                                 fill
                                 style={{ objectFit: "cover" }}
                             />
-                            <div style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: "linear-gradient(to top, rgba(16, 16, 28, 0.8), transparent)"
-                            }} />
+                            <div className={styles.imageOverlay} />
                         </div>
-                        <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 className="card-title">
+                        <div className={styles.serviceContent}>
+                            <h3 className={`card-title ${styles.serviceTitle}`}>
                                 Consultoría Organizacional y Experiencias de desarrollo humano
                             </h3>
-                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
+                            <p className={`card-text ${styles.serviceText}`}>
                                 Alineación de cultura, liderazgo y equipos con resultados de negocio.
                             </p>
-                            <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <ul className={styles.serviceList}>
                                 {["Cultura y cambio", "Escuelas de liderazgo", "Talleres de equipo", "Eventos corporativos"].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem" }}>
+                                    <li key={i} className={styles.serviceItem}>
                                         <span style={{ color: "var(--primary)" }}><IconCheck /></span>
                                         {item}
                                     </li>
@@ -91,51 +84,31 @@ export function ServiciosSection() {
                     </div>
 
                     {/* Service 3 - Orientación (Explora) */}
-                    <div className="card card-featured" style={{ padding: 0, overflow: "visible", display: "flex", flexDirection: "column" }}>
+                    <div className={`card card-featured ${styles.serviceCard}`} style={{ overflow: "visible" }}>
                         {/* Featured Badge */}
-                        <div className="badge" style={{
-                            position: "absolute",
-                            top: "-12px",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            background: "var(--background)",
-                            color: "#e8a838",
-                            border: "1px solid rgba(232, 168, 56, 0.3)",
-                            zIndex: 20,
-                            padding: "0.35rem 1rem",
-                            borderRadius: "2rem",
-                            fontSize: "0.75rem",
-                            fontWeight: 600,
-                            letterSpacing: "0.05em",
-                            textTransform: "uppercase",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                        }}>
+                        <div className={styles.featuredBadge}>
                             Tecnología + IA
                         </div>
 
-                        <div style={{ position: "relative", height: "240px", width: "100%", borderTopLeftRadius: "inherit", borderTopRightRadius: "inherit", overflow: "hidden" }}>
+                        <div className={styles.imageContainer} style={{ borderTopLeftRadius: "inherit", borderTopRightRadius: "inherit", overflow: "hidden" }}>
                             <NextImage
                                 src="/services/orientacion.avif"
                                 alt="Orientación Vocacional"
                                 fill
                                 style={{ objectFit: "cover" }}
                             />
-                            <div style={{
-                                position: "absolute",
-                                inset: 0,
-                                background: "linear-gradient(to top, rgba(16, 16, 28, 0.8), transparent)"
-                            }} />
+                            <div className={styles.imageOverlay} />
                         </div>
-                        <div style={{ padding: "2rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                            <h3 className="card-title">
+                        <div className={styles.serviceContent}>
+                            <h3 className={`card-title ${styles.serviceTitle}`}>
                                 Orientación Vocacional y Profesional
                             </h3>
-                            <p className="card-text" style={{ marginBottom: "1.5rem" }}>
+                            <p className={`card-text ${styles.serviceText}`}>
                                 Claridad, seguimiento y lenguaje simple para decisiones complejas.
                             </p>
-                            <ul style={{ marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                            <ul className={styles.serviceList}>
                                 {["Evaluación 360° con IA", "Sesiones 1 a 1", "App de resultados", "Ruta de carrera"].map((item, i) => (
-                                    <li key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem" }}>
+                                    <li key={i} className={styles.serviceItem}>
                                         <span style={{ color: "var(--accent)" }}><IconCheck /></span>
                                         {item}
                                     </li>

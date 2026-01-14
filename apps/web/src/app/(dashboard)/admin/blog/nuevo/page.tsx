@@ -1,6 +1,6 @@
 "use client";
 
-import PostForm from "@/app/components/admin/PostForm";
+import PostForm from "@/app/components/admin/blog/PostForm";
 
 /**
  * Página para crear un nuevo post del blog.

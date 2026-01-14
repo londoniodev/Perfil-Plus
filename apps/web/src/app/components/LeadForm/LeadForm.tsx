@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import styles from "./LeadForm.module.css";
+import styles from "@/app/styles/LeadForm.module.css";
 import { API_BASE } from "@/lib/config";
 
 interface LeadFormProps {

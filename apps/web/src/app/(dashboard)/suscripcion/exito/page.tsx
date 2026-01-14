@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "../suscripcion.module.css";
+import styles from "@/app/styles/suscripcion.module.css";
 
 export default function SuscripcionExitoPage() {
     return (

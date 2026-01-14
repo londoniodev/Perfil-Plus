@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Sansation } from "next/font/google";
 import "./styles/index.css";
-import { NavigationWrapper } from "./components/NavigationWrapper";
-import { Footer } from "./components/Footer";
+import { NavigationWrapper } from "./components/layout/NavigationWrapper";
+import { Footer } from "./components/layout/Footer";
 import { GlobalSchemas } from "./components/seo/JsonLd";
 
 const sansation = Sansation({

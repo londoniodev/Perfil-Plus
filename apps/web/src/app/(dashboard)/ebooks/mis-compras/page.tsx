@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "../../../ebooks/ebooks.module.css";
+import styles from "@/app/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 
 interface Purchase {

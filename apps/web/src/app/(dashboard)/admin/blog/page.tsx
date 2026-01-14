@@ -4,9 +4,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE } from "@/lib/config";
-import PostsGrid, { Post } from "@/app/components/admin/PostsGrid";
+import PostsGrid, { Post } from "@/app/components/admin/blog/PostsGrid";
 import FilterTabs from "@/app/components/ui/FilterTabs";
 import Pagination from "@/app/components/ui/Pagination";
+import { IconPlus } from "@/app/components/ui/Icons";
 
 // ============================================================================
 // TIPOS
@@ -122,7 +123,7 @@ export default function AdminBlogPage() {
 
     // Estados de carga y autenticación
     if (authLoading) {
-        return <div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>;
+        return <div className="state-loading">Cargando...</div>;
     }
 
     if (!isAdmin) {
@@ -132,41 +133,21 @@ export default function AdminBlogPage() {
     return (
         <div style={{ padding: "2rem" }}>
             {/* Header */}
-            <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1.5rem",
-                flexWrap: "wrap",
-                gap: "1rem",
-            }}>
-                <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--foreground)" }}>
+            <div className="page-header">
+                <h1 className="page-title">
                     Gestión del Blog
                 </h1>
                 <button
                     onClick={() => router.push("/admin/blog/nuevo")}
-                    style={{
-                        padding: "0.75rem 1.5rem",
-                        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "0.5rem",
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                    }}
+                    className="btn btn-primary"
                 >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
+                    <IconPlus size={20} />
                     Nuevo Post
                 </button>
             </div>
 
             {/* Filtros */}
-            <div style={{ marginBottom: "1.5rem" }}>
+            <div className="search-bar">
                 <FilterTabs
                     tabs={FILTER_TABS}
                     activeTab={filter}
@@ -175,43 +156,40 @@ export default function AdminBlogPage() {
             </div>
 
             {/* Error */}
-            {error && (
-                <div style={{
-                    padding: "1rem",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: "0.5rem",
-                    color: "#ef4444",
-                    marginBottom: "1rem",
-                }}>
-                    {error}
-                </div>
-            )}
+            {
+                error && (
+                    <div className="alert alert-error">
+                        {error}
+                    </div>
+                )
+            }
 
             {/* Contenido */}
-            {loading ? (
-                <div style={{ textAlign: "center", padding: "3rem", color: "var(--foreground-muted)" }}>
-                    Cargando posts...
-                </div>
-            ) : posts.length === 0 ? (
-                <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
-            ) : (
-                <>
-                    <PostsGrid
-                        posts={posts}
-                        onDelete={handleDelete}
-                        onTogglePublish={handleTogglePublish}
-                    />
-                    <div style={{ marginTop: "2rem" }}>
-                        <Pagination
-                            currentPage={page}
-                            totalPages={totalPages}
-                            onPageChange={setPage}
-                        />
+            {
+                loading ? (
+                    <div className="state-loading">
+                        Cargando posts...
                     </div>
-                </>
-            )}
-        </div>
+                ) : posts.length === 0 ? (
+                    <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
+                ) : (
+                    <>
+                        <PostsGrid
+                            posts={posts}
+                            onDelete={handleDelete}
+                            onTogglePublish={handleTogglePublish}
+                        />
+                        <div style={{ marginTop: "2rem" }}>
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                onPageChange={setPage}
+                            />
+                        </div>
+                    </>
+                )
+            }
+        </div >
     );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import styles from "./BlogBreadcrumbs.module.css";
+import styles from "@/app/styles/BlogBreadcrumbs.module.css";
 
 export function BlogBreadcrumbs() {
     return (

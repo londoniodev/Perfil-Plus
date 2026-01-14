@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styles from "../auth.module.css";
+import styles from "@/app/styles/auth.module.css";
 import { API_BASE } from "@/lib/config";
 import { AuthLayout } from "@/app/components/auth/AuthLayout";
 
@@ -59,76 +59,38 @@ export default function RegisterPage() {
     // Pantalla de éxito con instrucciones de verificación
     if (success) {
         return (
-            <div style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "2rem",
-                background: "var(--background)"
-            }}>
-                <div className={styles.loginCard} style={{ maxWidth: "500px", width: "100%", textAlign: "center" }}>
-                    <div style={{
-                        width: "80px",
-                        height: "80px",
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto 1.5rem",
-                        fontSize: "2.5rem"
-                    }}>
+            <div className={styles.successContainer}>
+                <div className={`${styles.loginCard} ${styles.successCard}`}>
+                    <div className={styles.successIcon}>
                         ✉️
                     </div>
 
-                    <h1 className="card-title" style={{ marginBottom: "0.5rem" }}>¡Revisa tu email!</h1>
+                    <h1 className="card-title mb-sm">¡Revisa tu email!</h1>
 
-                    <p className="card-text" style={{
-                        marginBottom: "1.5rem",
-                    }}>
+                    <p className="card-text">
                         Te hemos enviado un correo de verificación a{" "}
-                        <strong style={{ color: "var(--foreground)" }}>{formData.email}</strong>
+                        <strong>{formData.email}</strong>
                     </p>
 
-                    <p style={{
-                        color: "var(--foreground-muted)",
-                        fontSize: "0.9rem",
-                        marginBottom: "2rem"
-                    }}>
+                    <p className="text-muted text-sm mb-lg">
                         Haz clic en el enlace del correo para verificar tu cuenta y
                         acceder a todos los contenidos. El enlace expira en 24 horas.
                     </p>
 
-                    <div style={{
-                        padding: "1rem",
-                        background: "rgba(99, 102, 241, 0.1)",
-                        borderRadius: "0.5rem",
-                        marginBottom: "1.5rem",
-                        fontSize: "0.85rem",
-                        color: "var(--foreground-muted)"
-                    }}>
+                    <div className={styles.tipBox}>
                         💡 <strong>Tip:</strong> Revisa también tu carpeta de spam si no ves el correo.
                     </div>
 
-                    <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                    <div className="flex-center">
                         <Link
                             href="/login"
                             className="btn btn-primary"
-                            style={{ padding: "0.75rem 1.5rem" }}
                         >
                             Ir a Iniciar Sesión
                         </Link>
                         <button
                             onClick={() => setSuccess(false)}
-                            style={{
-                                padding: "0.75rem 1.5rem",
-                                background: "transparent",
-                                border: "1px solid var(--border)",
-                                borderRadius: "0.5rem",
-                                color: "var(--foreground-muted)",
-                                cursor: "pointer"
-                            }}
+                            className="btn btn-secondary"
                         >
                             Registrar otro email
                         </button>
@@ -141,8 +103,8 @@ export default function RegisterPage() {
     return (
         <AuthLayout>
             <div className={styles.loginCard}>
-                <h1 className="card-title" style={{ textAlign: "center", marginBottom: "0.5rem", fontSize: "2rem" }}>Crear Cuenta</h1>
-                <p className="card-text" style={{ textAlign: "center", marginBottom: "2rem" }}>
+                <h1 className="card-title text-center mb-sm">Crear Cuenta</h1>
+                <p className="card-text text-center mb-lg">
                     Únete a nuestra comunidad para acceder a contenido exclusivo.
                 </p>
 
@@ -183,32 +145,23 @@ export default function RegisterPage() {
                     </div>
 
                     {error && (
-                        <div style={{
-                            padding: "0.75rem",
-                            background: "rgba(220, 38, 38, 0.1)",
-                            border: "1px solid rgba(220, 38, 38, 0.2)",
-                            color: "#ef4444",
-                            borderRadius: "0.5rem",
-                            fontSize: "0.9rem",
-                            marginBottom: "1.5rem"
-                        }}>
+                        <div className={styles.errorBox}>
                             {error}
                         </div>
                     )}
 
                     <button
                         type="submit"
-                        className="btn btn-primary"
+                        className="btn btn-primary btn-block"
                         disabled={loading}
-                        style={{ width: "100%", padding: "1rem" }}
                     >
                         {loading ? "Creando cuenta..." : "Registrarse"}
                     </button>
                 </form>
 
-                <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.9rem", color: "var(--foreground-muted)" }}>
+                <div className="mt-lg text-center text-sm text-muted">
                     ¿Ya tienes una cuenta?{" "}
-                    <Link href="/login" style={{ color: "var(--primary-light)", textDecoration: "none", fontWeight: 500 }}>
+                    <Link href="/login" className="link-primary">
                         Inicia sesión aquí
                     </Link>
                 </div>

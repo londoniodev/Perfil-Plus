@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
-import styles from "./post.module.css";
+import styles from "@/app/styles/post.module.css";
 import { BlogBreadcrumbs } from "../BlogBreadcrumbs";
 import { BlogMeta } from "../BlogMeta";
 import { BlogBackButton } from "../BlogBackButton";

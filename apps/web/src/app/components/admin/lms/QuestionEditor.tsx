@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ImageUploader from "../ImageUploader";
-import styles from "@/app/(dashboard)/admin/cursos/lms.module.css";
+import ImageUploader from "@/app/components/admin/ui/ImageUploader";
+import styles from "@/app/styles/lms.module.css";
 
 interface Option {
     id: string;

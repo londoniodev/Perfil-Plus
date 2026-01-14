@@ -22,31 +22,14 @@ export default function FilterTabs<T extends string>({
     onChange,
 }: FilterTabsProps<T>) {
     return (
-        <div className="no-scrollbar" style={{
-            display: "flex",
-            gap: "0.5rem",
-            overflowX: "auto",
-            whiteSpace: "nowrap",
-            paddingBottom: "0.25rem",
-            // Eliminate horizontal scrollbar visual if possible (via class) or accepted
-        }}>
+        <div className="filter-tabs no-scrollbar">
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                     <button
                         key={tab.id}
                         onClick={() => onChange(tab.id)}
-                        style={{
-                            padding: "0.5rem 1rem",
-                            background: isActive ? "var(--accent)" : "var(--card-bg)",
-                            color: isActive ? "white" : "var(--foreground)",
-                            border: "1px solid var(--border)",
-                            borderRadius: "0.375rem",
-                            cursor: "pointer",
-                            fontSize: "0.875rem",
-                            transition: "all 0.15s ease",
-                            flexShrink: 0, // Prevent shrinking
-                        }}
+                        className={`btn-filter ${isActive ? "active" : ""}`}
                     >
                         {tab.label}
                     </button>

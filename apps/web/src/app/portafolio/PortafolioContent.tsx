@@ -9,9 +9,23 @@ import {
     IconUsers,
     IconCompass,
     IconHeart,
-    IconTrendingUp,
     IconCalendar,
-} from "../components/icons/PortfolioIcons";
+} from "../components/ui/Icons";
+import styles from "@/app/styles/portfolio.module.css";
+// IconTrendingUp is not in Icons.tsx, we can use IconActivity or IconTrendingUp if added, or IconZap.
+// Let's use IconActivity as "Trending" or just import from Icons if available.
+// Looking at Icons.tsx, FiActivity is aliased as IconBrain.
+// We can use IconBriefcase or similar, or just IconActivity.
+// Let's check Icons.tsx again. It has IconTarget.
+// Let's use IconActivity directly if possible, or add it, or use IconZap.
+// I will use IconZap for now as "Impact/Trend" or assume IconTrendingUp will be added/aliased.
+// Actually, let's use a generic icon or just IconActivity (Brain).
+// Wait, I can import { FiTrendingUp } from "react-icons/fi" inside Icons.tsx or just use what I have.
+// I'll stick to Icons.tsx exports. I'll use IconActivity for "Trending" context if sensible, or IconTarget.
+// Actually, `IconTrendingUp` was used for the category tag.
+// I'll use `IconTarget` instead for now to stay safe with existing exports.
+
+import { IconTarget as IconTrendingUp } from "../components/ui/Icons";
 
 // ============================================================================
 // DATOS DE CATEGORÍAS
@@ -28,7 +42,7 @@ const categorias: Categoria[] = [
     { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
     { id: "Explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
     { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" },
-    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "var(--success)" }, // Using var(--success) for consistency
+    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "var(--success)" },
 ];
 
 // ============================================================================
@@ -39,13 +53,10 @@ export default function PortafolioContent() {
     const [activeCategory, setActiveCategory] = useState<CategoriaId>("Empresas");
     const filteredCases = casos.filter((c) => c.categoria === activeCategory);
 
-    // Get current color for background effect (optional, if we want to add the glow later)
-    // const currentColor = categorias.find(c => c.id === activeCategory)?.color;
-
     return (
-        <div style={{ background: "var(--background)", minHeight: "100vh" }}>
+        <div className={styles.portfolioPage}>
             {/* Header con Filtros */}
-            <section style={{ padding: "120px 0 20px", textAlign: "center", position: "relative" }}>
+            <section className={styles.filtersSection}>
                 <CategoryFilterBar
                     categorias={categorias}
                     activeCategory={activeCategory}
@@ -54,7 +65,7 @@ export default function PortafolioContent() {
             </section>
 
             {/* Lista de Casos */}
-            <div style={{ position: "relative" }}>
+            <div>
                 {filteredCases.map((caso, index) => (
                     <CaseSection key={caso.id} caso={caso} index={index} />
                 ))}
@@ -62,27 +73,6 @@ export default function PortafolioContent() {
 
             {/* Call to Action Final */}
             <CTASection />
-
-            {/* CSS Responsivo */}
-            <style>{`
-                @media (max-width: 768px) {
-                    .grid-responsive-portfolio {
-                        grid-template-columns: 1fr !important;
-                        gap: 2rem !important;
-                    }
-                    .hidden-on-mobile {
-                        display: none !important;
-                    }
-                    .show-on-mobile {
-                        display: block !important;
-                    }
-                }
-                @media (min-width: 769px) {
-                    .show-on-mobile {
-                        display: none !important;
-                    }
-                }
-            `}</style>
         </div>
     );
 }
@@ -99,66 +89,30 @@ interface CategoryFilterBarProps {
 
 function CategoryFilterBar({ categorias, activeCategory, onCategoryChange }: CategoryFilterBarProps) {
     return (
-        <div style={{
-            position: "sticky",
-            top: "80px",
-            zIndex: 40,
-            padding: "1rem 1.5rem", // Horizontal padding for mobile
-            display: "flex",
-            justifyContent: "center",
-        }}>
-            <div className="container" style={{
-                display: "flex",
-                justifyContent: "center",
-                width: "100%",
-                maxWidth: "1400px",
-                margin: "0 auto"
-            }}>
-                <div style={{
-                    display: "flex",
-                    background: "rgba(10, 14, 20, 0.6)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "100px",
-                    padding: "0.3rem",
-                    gap: "0.5rem",
-                    backdropFilter: "blur(12px)",
-                    boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)",
-                    overflowX: "auto",
-                    maxWidth: "100%",
-                    scrollbarWidth: "none"
-                }}>
+        <div className={styles.filterBar}>
+            <div className={styles.filterContainer}>
+                <div className={styles.filterScroll}>
                     {categorias.map((cat) => {
                         const isActive = activeCategory === cat.id;
                         return (
                             <button
                                 key={cat.id}
                                 onClick={() => onCategoryChange(cat.id)}
+                                className={styles.filterButton}
                                 style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
                                     gap: isActive ? "0.6rem" : "0",
-                                    padding: isActive ? "0.7rem 1.5rem" : "0.7rem", // Circle when inactive, Pill when active
-                                    borderRadius: "100px",
-                                    border: "none",
+                                    padding: isActive ? "0.7rem 1.5rem" : "0.7rem",
                                     background: isActive ? cat.color : "transparent",
                                     color: isActive ? (cat.id === "Explora" ? "black" : "white") : cat.color,
-                                    cursor: "pointer",
-                                    transition: "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
-                                    fontSize: "0.95rem",
-                                    fontWeight: 600,
-                                    minWidth: isActive ? "auto" : "3.2rem", // Ensure circle shape
+                                    minWidth: isActive ? "auto" : "3.2rem",
                                 }}
                             >
-                                <span style={{ fontSize: "1.2rem", display: "flex" }}>{cat.icon}</span>
+                                <span className={styles.filterIcon}>{cat.icon}</span>
 
                                 {/* Text Label - Only visible when active */}
-                                <span style={{
+                                <span className={styles.filterLabel} style={{
                                     maxWidth: isActive ? "200px" : "0",
-                                    overflow: "hidden",
-                                    whiteSpace: "nowrap",
                                     opacity: isActive ? 1 : 0,
-                                    transition: "all 0.4s ease",
                                 }}>
                                     {cat.label}
                                 </span>
@@ -178,63 +132,39 @@ interface CaseSectionProps {
 
 function CaseSection({ caso, index }: CaseSectionProps) {
     return (
-        <section style={{
-            minHeight: index === 0 ? "calc(100vh - 200px)" : "100vh", // Reduced height for first section to pull content up
-            display: "flex",
-            alignItems: "center",
-            borderBottom: "1px solid var(--border)",
-            position: "relative",
-        }}>
-            <div
-                className="container grid-responsive-portfolio"
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "4rem",
-                    width: "100%",
-                    alignItems: "center",
-                }}
-            >
+        <section className={`${styles.caseSection} ${index === 0 ? styles.caseSectionFirst : ''}`}>
+            <div className={`container ${styles.caseContainer}`}>
                 {/* Contenido de texto */}
-                <div style={{ order: index % 2 === 0 ? 1 : 2, padding: "4rem 0" }}>
+                <div className={styles.caseContent} style={{ order: index % 2 === 0 ? 1 : 2 }}>
                     {/* Tag de categoría */}
-                    <div style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        padding: "0.5rem 1rem",
-                        borderRadius: "100px",
+                    <div className={styles.caseTag} style={{
                         border: `1px solid ${caso.color}40`,
                         background: `${caso.color}10`,
                         color: caso.color,
-                        fontSize: "0.8rem",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        marginBottom: "2rem",
                     }}>
                         <IconTrendingUp /> {caso.categoria}
                     </div>
 
-                    <h2 className="section-title" style={{ marginBottom: "1rem", lineHeight: 1.2 }}>{caso.titulo}</h2>
-                    <h3 className="section-subtitle" style={{ marginBottom: "3rem" }}>{caso.cliente}</h3>
+                    <h2 className={`section-title ${styles.caseTitle}`}>{caso.titulo}</h2>
+                    <h3 className={`section-subtitle ${styles.caseSubtitle}`}>{caso.cliente}</h3>
 
-                    <div style={{ display: "grid", gap: "2rem", marginBottom: "3rem" }}>
+                    <div className={styles.challengeSolutionGrid}>
                         <div>
-                            <h4 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)", marginBottom: "0.5rem" }}>Desafío</h4>
-                            <p style={{ lineHeight: 1.6 }}>{caso.contexto} {caso.reto}</p>
+                            <h4 className={styles.sectionHeadingSmall}>Desafío</h4>
+                            <p className={styles.textBody}>{caso.contexto} {caso.reto}</p>
                         </div>
                         <div>
-                            <h4 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--foreground-muted)", marginBottom: "0.5rem" }}>Solución</h4>
-                            <p style={{ lineHeight: 1.6 }}>{caso.intervencion}</p>
+                            <h4 className={styles.sectionHeadingSmall}>Solución</h4>
+                            <p className={styles.textBody}>{caso.intervencion}</p>
                         </div>
                     </div>
 
                     {/* KPIs */}
-                    <div style={{ display: "flex", gap: "2rem", paddingTop: "2rem", borderTop: "1px solid var(--border)" }}>
+                    <div className={styles.kpiContainer}>
                         {caso.resultados.map((res, i) => (
-                            <div key={i}>
-                                <div style={{ fontSize: "2rem", fontWeight: 700, color: caso.color }}>{res.metric}</div>
-                                <div style={{ fontSize: "0.75rem", color: "var(--foreground-muted)" }}>{res.label}</div>
+                            <div key={i} className={styles.kpiItem}>
+                                <div className={styles.kpiMetric} style={{ color: caso.color }}>{res.metric}</div>
+                                <div className={styles.kpiLabel}>{res.label}</div>
                             </div>
                         ))}
                     </div>
@@ -242,22 +172,16 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
                 {/* Visual - Desktop */}
                 <div
-                    className="hidden-on-mobile"
+                    className={styles.visualDesktop}
                     style={{
                         order: index % 2 === 0 ? 2 : 1,
-                        height: "80vh",
-                        position: "sticky",
-                        top: "10vh",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                     }}
                 >
                     <CaseVisual category={caso.categoria} color={caso.color} id={caso.id} />
                 </div>
 
                 {/* Visual - Mobile */}
-                <div className="show-on-mobile" style={{ order: 3, height: "300px", width: "100%", marginTop: "2rem" }}>
+                <div className={styles.visualMobile}>
                     <CaseVisual category={caso.categoria} color={caso.color} id={caso.id} />
                 </div>
             </div>
@@ -267,23 +191,12 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
 function CTASection() {
     return (
-        <section style={{ padding: "10rem 0", textAlign: "center", position: "relative", overflow: "hidden" }}>
-            <div style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "600px",
-                height: "600px",
-                background: "radial-gradient(circle, rgba(58, 98, 184, 0.15) 0%, transparent 70%)",
-                borderRadius: "50%",
-                filter: "blur(100px)",
-                zIndex: -1,
-            }} />
+        <section className={styles.ctaSection}>
+            <div className={styles.ctaGlow} />
 
             <div className="container">
                 <h2 className="section-title" style={{ marginBottom: "1.5rem" }}>Construyamos tu propio caso de éxito.</h2>
-                <p className="section-subtitle" style={{ marginBottom: "3rem", maxWidth: "600px", marginInline: "auto" }}>
+                <p className={`section-subtitle ${styles.ctaSubtitle}`}>
                     Ya sea para tu empresa, tu equipo o tu futuro profesional.
                 </p>
                 <Link
@@ -293,7 +206,7 @@ function CTASection() {
                     className="btn btn-primary"
                     style={{ padding: "1rem 2rem", fontSize: "1.1rem" }}
                 >
-                    <IconCalendar />
+                    <IconCalendar className="w-5 h-5 mr-2" />
                     Hablemos ahora
                 </Link>
             </div>

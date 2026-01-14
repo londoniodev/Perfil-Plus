@@ -105,16 +105,23 @@
     .loginCard {
         width: 100% !important;
         max-width: 100% !important;
-        min-height: 100vh !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        overflow: hidden !important;
         border-radius: 0 !important;
         border: none !important;
         box-shadow: none !important;
-        padding: 5rem 2rem 2rem !important;
-        /* Top padding for back button clearance */
+        padding: 3rem 2rem 2rem !important;
+        /* Reduced top padding */
         display: flex;
         flex-direction: column;
         justify-content: center;
         background: var(--background) !important;
+    }
+
+    .desktopSplitLayout {
+        height: 100vh !important;
+        overflow: hidden !important;
     }
 }
 

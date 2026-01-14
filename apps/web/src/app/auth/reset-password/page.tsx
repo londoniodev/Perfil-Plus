@@ -10,7 +10,7 @@ import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import styles from "../../auth.module.css";
 import { AuthLayout } from "@/app/components/auth/AuthLayout";
-import { MobileBackButton } from "@/app/components/auth/MobileBackButton";
+
 
 const resetPasswordSchema = z
     .object({
@@ -87,7 +87,6 @@ function ResetPasswordFormContent() {
     if (!token) {
         return (
             <div className={styles.loginCard} style={{ textAlign: "center" }}>
-                <MobileBackButton />
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
                     <Lock className="h-6 w-6 text-red-500" />
                 </div>
@@ -107,7 +106,7 @@ function ResetPasswordFormContent() {
 
     return (
         <div className={styles.loginCard}>
-            <MobileBackButton />
+
             <div className="text-center mb-8">
                 <Link href="/" className="inline-block mb-6">
                     <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">

@@ -2,6 +2,7 @@
 
 import styles from "../../auth.module.css";
 import Image from "next/image";
+import { MobileBackButton } from "./MobileBackButton";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -12,6 +13,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     return (
         <div className={styles.desktopSplitLayout}>
+            <MobileBackButton />
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className={styles.imageSide}>
                 <Image

@@ -9,8 +9,10 @@ import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/auth.module.css";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { AuthLayout } from "@/components/auth/AuthLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 
 
 const resetPasswordSchema = z
@@ -88,112 +90,107 @@ function ResetPasswordFormContent() {
 
     if (!token) {
         return (
-            <div className={styles.loginCard}>
-                <div className="text-center">
-                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100/10 mb-4">
-                        <Lock className="h-6 w-6 text-red-500" />
+            <Card className="w-full border-none shadow-none bg-transparent p-0">
+                <CardContent className="text-center pt-8">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error/10 mb-4">
+                        <Lock className="h-6 w-6 text-error" />
                     </div>
                     <h3 className="text-lg font-medium text-white">Enlace inválido</h3>
-                    <p className="mt-2 text-sm text-gray-400 mb-6">
+                    <p className="mt-2 text-sm text-foreground-muted mb-6 max-w-xs mx-auto">
                         El enlace de recuperación es inválido o ha expirado. Por favor solicita uno nuevo.
                     </p>
-                    <Link
-                        href="/auth/forgot-password"
-                        className={styles.backLink}
-                    >
-                        Solicitar nuevo enlace
-                    </Link>
-                </div>
-            </div>
+                    <Button asChild variant="outline">
+                        <Link href="/auth/forgot-password">Solicitar nuevo enlace</Link>
+                    </Button>
+                </CardContent>
+            </Card>
         );
     }
 
     return (
-        <div className={styles.loginCard}>
-
-            <div className={styles.authHeader}>
-                <Link href="/" className="inline-block mb-md">
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600">
+        <Card className="w-full border-none shadow-none bg-transparent p-0">
+            <CardHeader className="text-center px-0 pt-0">
+                <Link href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
+                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600 font-serif">
                         Mauro Mera
                     </span>
                 </Link>
-                <h2 className={styles.authTitle}>
-                    Restablecer contraseña
-                </h2>
-                <p className={styles.authDescription}>
+                <CardTitle className="text-2xl font-bold font-serif mb-2">Restablecer contraseña</CardTitle>
+                <CardDescription className="text-base text-foreground-muted">
                     Ingresa tu nueva contraseña para acceder a tu cuenta.
-                </p>
-            </div>
+                </CardDescription>
+            </CardHeader>
 
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                <div className={styles.formGroup}>
-                    <label htmlFor="password">Nueva contraseña</label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-muted" aria-hidden="true" />
+            <CardContent className="px-0">
+                <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Nueva contraseña</Label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                                <Lock className="h-5 w-5" aria-hidden="true" />
+                            </div>
+                            <Input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                className="pl-10 pr-10"
+                                placeholder="••••••••"
+                                {...register('password')}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                                ) : (
+                                    <Eye className="h-5 w-5" aria-hidden="true" />
+                                )}
+                            </button>
                         </div>
-                        <input
-                            {...register('password')}
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            className={`${styles.inputWithAction} ${styles.inputWithIcon}`}
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                            {showPassword ? (
-                                <EyeOff className="h-5 w-5 text-muted" aria-hidden="true" />
-                            ) : (
-                                <Eye className="h-5 w-5 text-muted" aria-hidden="true" />
-                            )}
-                        </button>
+                        {errors.password && (
+                            <p className="text-sm text-error font-medium">{errors.password.message}</p>
+                        )}
+                        <p className="text-xs text-foreground-muted">
+                            Mínimo 8 caracteres, mayúscula, minúscula y número.
+                        </p>
                     </div>
-                    {errors.password && (
-                        <p className={styles.loginError}>{errors.password.message}</p>
-                    )}
-                    <p className="mt-2 text-xs text-muted">
-                        Mínimo 8 caracteres, mayúscula, minúscula y número.
-                    </p>
-                </div>
 
-                <div className={styles.formGroup}>
-                    <label htmlFor="confirmPassword">Confirmar contraseña</label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-muted" aria-hidden="true" />
+                    <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                                <Lock className="h-5 w-5" aria-hidden="true" />
+                            </div>
+                            <Input
+                                id="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                className="pl-10 pr-10"
+                                placeholder="••••••••"
+                                {...register('confirmPassword')}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                                {showConfirmPassword ? (
+                                    <EyeOff className="h-5 w-5" aria-hidden="true" />
+                                ) : (
+                                    <Eye className="h-5 w-5" aria-hidden="true" />
+                                )}
+                            </button>
                         </div>
-                        <input
-                            {...register('confirmPassword')}
-                            id="confirmPassword"
-                            type={showConfirmPassword ? 'text' : 'password'}
-                            className={`${styles.inputWithAction} ${styles.inputWithIcon}`}
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                            {showConfirmPassword ? (
-                                <EyeOff className="h-5 w-5 text-muted" aria-hidden="true" />
-                            ) : (
-                                <Eye className="h-5 w-5 text-muted" aria-hidden="true" />
-                            )}
-                        </button>
+                        {errors.confirmPassword && (
+                            <p className="text-sm text-error font-medium">{errors.confirmPassword.message}</p>
+                        )}
                     </div>
-                    {errors.confirmPassword && (
-                        <p className={styles.loginError}>{errors.confirmPassword.message}</p>
-                    )}
-                </div>
 
-                <div>
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        fullWidth
+                        className="w-full"
+                        size="lg"
                     >
                         {isLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -201,26 +198,26 @@ function ResetPasswordFormContent() {
                             'Actualizar contraseña'
                         )}
                     </Button>
-                </div>
-            </form>
+                </form>
 
-            <div className={styles.backLinkContainer}>
-                <Link
-                    href="/login"
-                    className={styles.backLink}
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Volver al inicio de sesión
-                </Link>
-            </div>
-        </div>
+                <div className="mt-8 text-center">
+                    <Link
+                        href="/login"
+                        className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors gap-2"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Volver al inicio de sesión
+                    </Link>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 
 export default function ResetPasswordPage() {
     return (
         <AuthLayout>
-            <Suspense fallback={<div className="text-center p-4 text-white">Cargando...</div>}>
+            <Suspense fallback={<div className="text-center p-8 text-foreground-muted">Cargando...</div>}>
                 <ResetPasswordFormContent />
             </Suspense>
         </AuthLayout>

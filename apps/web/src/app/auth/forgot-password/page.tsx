@@ -8,8 +8,10 @@ import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/auth.module.css";
+import { InputWithIcon } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { AuthLayout } from "@/components/auth/AuthLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),
@@ -56,41 +58,36 @@ export default function ForgotPasswordPage() {
 
     return (
         <AuthLayout>
-            <div className={styles.loginCard}>
-                <div className={styles.authHeader}>
-                    <h1 className={styles.authTitle}>Recuperar contraseña</h1>
-                    <p className={styles.authDescription}>
-                        Ingresa tu email y te enviaremos las instrucciones <br /> para restablecer tu contraseña.
-                    </p>
-                </div>
+            <Card className="w-full border-none shadow-none bg-transparent p-0">
+                <CardHeader className="text-center px-0 pt-0">
+                    <CardTitle className="text-3xl font-bold mb-2 font-serif">Recuperar contraseña</CardTitle>
+                    <CardDescription className="text-base text-foreground-muted">
+                        Ingresa tu email y te enviaremos las instrucciones <br className="hidden sm:block" /> para restablecer tu contraseña.
+                    </CardDescription>
+                </CardHeader>
 
-                {!isSubmitted ? (
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <div className={`${styles.formGroup} mb-lg`}>
-                            <label htmlFor="email">Email</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-muted" aria-hidden="true" />
-                                </div>
-                                <input
-                                    {...register('email')}
+                <CardContent className="px-0">
+                    {!isSubmitted ? (
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <InputWithIcon
+                                    icon={<Mail className="h-5 w-5" />}
                                     id="email"
                                     type="email"
-                                    autoComplete="email"
-                                    className={styles.inputWithIcon}
                                     placeholder="tu@email.com"
+                                    {...register('email')}
                                 />
+                                {errors.email && (
+                                    <p className="text-sm text-error font-medium">{errors.email.message}</p>
+                                )}
                             </div>
-                            {errors.email && (
-                                <p className={styles.loginError}>{errors.email.message}</p>
-                            )}
-                        </div>
 
-                        <div className="mb-md">
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                fullWidth
+                                className="w-full"
+                                size="lg"
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -98,30 +95,30 @@ export default function ForgotPasswordPage() {
                                     'Enviar instrucciones'
                                 )}
                             </Button>
+                        </form>
+                    ) : (
+                        <div className="bg-success/10 border border-success/30 rounded-lg p-6 text-center mb-6">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-success/20 mb-4">
+                                <Mail className="h-6 w-6 text-success" />
+                            </div>
+                            <h3 className="text-lg font-medium text-white mb-2">¡Correo enviado!</h3>
+                            <p className="text-sm text-foreground-muted">
+                                Hemos enviado las instrucciones a tu correo electrónico. Por favor revisa tu bandeja de entrada (y spam).
+                            </p>
                         </div>
-                    </form>
-                ) : (
-                    <div className={styles.successMessage}>
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100/10 mb-4">
-                            <Mail className="h-6 w-6 text-green-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-white">¡Correo enviado!</h3>
-                        <p className="mt-2 text-sm text-gray-300">
-                            Hemos enviado las instrucciones a tu correo electrónico. Por favor revisa tu bandeja de entrada (y spam).
-                        </p>
-                    </div>
-                )}
+                    )}
 
-                <div className={styles.backLinkContainer}>
-                    <Link
-                        href="/login"
-                        className={styles.backLink}
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Volver al inicio de sesión
-                    </Link>
-                </div>
-            </div>
+                    <div className="mt-8 text-center">
+                        <Link
+                            href="/login"
+                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Volver al inicio de sesión
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
         </AuthLayout>
     );
 }

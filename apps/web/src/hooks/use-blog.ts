@@ -5,68 +5,10 @@ import { Post, Category } from "@/types/blog";
 import { getPosts, getCategories } from "@/lib/api";
 
 // ============================================================================
-// MOCK DATA - Para desarrollo y testing
-// ============================================================================
-const MOCK_POSTS: Post[] = [
-    {
-        id: "mock-1",
-        title: "El Arte del Liderazgo Auténtico",
-        slug: "arte-liderazgo-autentico",
-        excerpt: "Descubre cómo desarrollar un estilo de liderazgo genuino que conecte con las personas.",
-        content: "<p>Contenido del artículo...</p>",
-        coverImage: null,
-        isPremium: false,
-        published: true,
-        authorName: "Mauro Mera",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        categories: [{ id: "cat-1", name: "Liderazgo", slug: "liderazgo" }],
-        tags: [],
-    },
-    {
-        id: "mock-2",
-        title: "Psicología del Cambio Organizacional",
-        slug: "psicologia-cambio-organizacional",
-        excerpt: "Las claves psicológicas para gestionar transiciones en las organizaciones.",
-        content: "<p>Contenido del artículo...</p>",
-        coverImage: null,
-        isPremium: true,
-        published: true,
-        authorName: "Mauro Mera",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        categories: [{ id: "cat-2", name: "Psicología", slug: "psicologia" }],
-        tags: [],
-    },
-    {
-        id: "mock-3",
-        title: "Mindfulness en el Trabajo",
-        slug: "mindfulness-trabajo",
-        excerpt: "Técnicas de atención plena para mejorar tu productividad y bienestar laboral.",
-        content: "<p>Contenido del artículo...</p>",
-        coverImage: null,
-        isPremium: false,
-        published: true,
-        authorName: "Mauro Mera",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        categories: [{ id: "cat-3", name: "Desarrollo Personal", slug: "desarrollo-personal" }],
-        tags: [],
-    },
-];
-
-const MOCK_CATEGORIES: Category[] = [
-    { id: "cat-1", name: "Liderazgo", slug: "liderazgo" },
-    { id: "cat-2", name: "Psicología", slug: "psicologia" },
-    { id: "cat-3", name: "Desarrollo Personal", slug: "desarrollo-personal" },
-];
-
-// ============================================================================
-// HOOK
+// HOOK - Conectado a API real
 // ============================================================================
 
 interface UseBlogOptions {
-    useMockData?: boolean;
     page?: number;
     limit?: number;
     category?: string;
@@ -83,11 +25,11 @@ interface UseBlogResult {
 }
 
 /**
- * Hook para obtener posts del blog con categorías.
- * Soporta paginación, filtro por categoría y modo mock.
+ * Hook para obtener posts del blog con categorías desde la API.
+ * Soporta paginación y filtro por categoría.
  */
 export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
-    const { useMockData = false, page = 1, limit = 9, category } = options;
+    const { page = 1, limit = 9, category } = options;
 
     const [posts, setPosts] = useState<Post[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -96,23 +38,6 @@ export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
     const [error, setError] = useState<string | null>(null);
 
     const fetchBlogData = useCallback(async () => {
-        if (useMockData) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            let filteredPosts = MOCK_POSTS;
-            if (category) {
-                filteredPosts = MOCK_POSTS.filter(p =>
-                    p.categories.some(c => c.slug === category)
-                );
-            }
-
-            setPosts(filteredPosts);
-            setCategories(MOCK_CATEGORIES);
-            setTotalPages(1);
-            setIsLoading(false);
-            return;
-        }
-
         try {
             setIsLoading(true);
             setError(null);
@@ -131,7 +56,7 @@ export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
         } finally {
             setIsLoading(false);
         }
-    }, [useMockData, page, limit, category]);
+    }, [page, limit, category]);
 
     useEffect(() => {
         fetchBlogData();

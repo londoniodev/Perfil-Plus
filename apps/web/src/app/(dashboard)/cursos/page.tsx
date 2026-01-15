@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getThemes } from "@/lib/api";
-import { Theme } from "@/lib/lms-types";
+import { Theme } from "@/types/lms";
 import { Metadata } from "next";
 import { IconBook } from "@/components/ui/Icons";
 import ClientToast from "@/components/ui/ClientToast";

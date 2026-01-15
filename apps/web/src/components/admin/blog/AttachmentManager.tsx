@@ -14,14 +14,7 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 
-interface Attachment {
-    id: string;
-    name: string;
-    fileUrl: string;
-    fileType: string;
-    fileSize: number;
-    isPublic: boolean;
-}
+import { Attachment } from "@/types/blog";
 
 interface AttachmentManagerProps {
     postId: string;

@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { CaseVisual } from "@/components/portfolio/CaseVisual";
-import { casos, Caso, CategoriaId } from "@/constants/casosData";
+import { casos } from "@/constants/casosData";
+import { Caso, CategoriaId } from "@/types/marketing";
 import {
     IconBuilding,
     IconUsers,

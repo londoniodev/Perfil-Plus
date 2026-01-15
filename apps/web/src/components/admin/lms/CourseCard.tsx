@@ -6,17 +6,7 @@ import { IconEdit, IconTrash } from '@/components/ui/Icons';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 
-interface Course {
-    id: string;
-    title: string;
-    description: string;
-    published: boolean;
-    isFree: boolean;
-    order: number;
-    _count?: {
-        lessons: number;
-    };
-}
+import { Course } from "@/types/lms";
 
 interface CourseCardProps {
     course: Course;

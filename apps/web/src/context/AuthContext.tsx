@@ -3,26 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { API_BASE } from "@/lib/config";
 
-export type UserRole = "USER" | "ADMIN";
-
-export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    emailVerified: boolean;
-    hasActiveSubscription: boolean;
-    avatar?: string | null;
-}
-
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
-    isAdmin: boolean;
-    isAuthenticated: boolean;
-    refreshUser: () => Promise<void>;
-    logout: () => Promise<void>;
-}
+import { User, AuthContextType } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

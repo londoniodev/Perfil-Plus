@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from 'next/link';
 import { IconChevronDown } from "@/components/ui/Icons";
-import { Category } from "@/lib/types";
+import { Category } from "@/types/blog";
 
 interface BlogMetaProps {
     date: string;

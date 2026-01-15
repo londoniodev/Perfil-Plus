@@ -3,10 +3,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
 
-export interface Tag {
-    id: string;
-    name: string;
-}
+import { Tag } from "@/types/blog";
 
 interface TagSelectorProps {
     tags: Tag[];

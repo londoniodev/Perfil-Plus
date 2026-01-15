@@ -6,8 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 import { API_BASE } from "@/lib/config";
 import BlogEditor from "./BlogEditor";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
-import CategorySelector, { Category } from "./CategorySelector";
-import TagSelector, { Tag } from "./TagSelector";
+import CategorySelector from "./CategorySelector";
+import TagSelector from "./TagSelector";
 import ToggleButton, { PremiumIcon, PublishIcon } from "@/components/admin/ui/ToggleButton"; // Legacy toggle, might need refactor or replace with Switch
 import { IconBack } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
@@ -22,18 +22,7 @@ import { Switch } from "@/components/ui/switch"; // Recommended replacement for 
 // TIPOS
 // ============================================================================
 
-export interface PostFormData {
-    title: string;
-    excerpt: string;
-    content: string;
-    coverImage: string | null;
-    isPremium: boolean;
-    published: boolean;
-    categoryId: string;
-    tagIds: string[];
-    metaTitle: string;
-    metaDescription: string;
-}
+import { Category, Tag, PostFormData } from "@/types/blog";
 
 interface PostFormProps {
     mode: "create" | "edit";

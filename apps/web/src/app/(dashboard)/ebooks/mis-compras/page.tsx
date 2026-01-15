@@ -9,16 +9,7 @@ import { IconDownload, IconBook, IconLoader } from "@/components/ui/Icons";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-interface Purchase {
-    id: string;
-    purchasedAt: string;
-    ebook: {
-        id: string;
-        title: string;
-        slug: string;
-        coverImage: string;
-    };
-}
+import { Purchase } from "@/types/ecommerce";
 
 export default function MisEbooksPage() {
     const [purchases, setPurchases] = useState<Purchase[]>([]);

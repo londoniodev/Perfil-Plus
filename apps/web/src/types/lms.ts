@@ -1,4 +1,3 @@
-// LMS Types
 export interface Theme {
     id: string;
     title: string;

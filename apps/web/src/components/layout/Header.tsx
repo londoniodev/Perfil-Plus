@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import { useAuth, useScroll } from "@/hooks";
 import { usePathname } from "next/navigation";
 import {
     IconMenu,
@@ -18,15 +18,7 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 10);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    const isScrolled = useScroll(10);
 
     return (
         <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-2" : "bg-transparent py-4"}`}>

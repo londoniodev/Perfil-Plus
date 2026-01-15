@@ -7,11 +7,7 @@ import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-export interface Category {
-    id: string;
-    name: string;
-    slug: string;
-}
+import { Category } from "@/types/blog";
 
 interface CategorySelectorProps {
     categories: Category[];

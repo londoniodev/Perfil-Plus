@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDashboard } from "@/context/DashboardContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks";
 import {
     IconHome,
     IconBook,

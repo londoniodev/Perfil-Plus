@@ -6,16 +6,7 @@ import { API_BASE } from "@/lib/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
-interface Ebook {
-    id: string;
-    title: string;
-    slug: string;
-    description: string;
-    coverImage: string;
-    price: number;
-    previewUrl?: string;
-    createdAt: string;
-}
+import { Ebook } from "@/types/ecommerce";
 
 interface EbookPageProps {
     params: Promise<{ slug: string }>;

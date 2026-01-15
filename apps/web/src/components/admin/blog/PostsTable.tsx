@@ -10,20 +10,7 @@ import { IconEye, IconEyeOff, IconEdit, IconTrash } from "@/components/ui/Icons"
 // TIPOS
 // ============================================================================
 
-export interface Post {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt: string;
-    coverImage: string | null;
-    isPremium: boolean;
-    published: boolean;
-    publishedAt: string | null;
-    createdAt: string;
-    readingTime: number | null;
-    categories: { id: string; name: string }[];
-    tags: { id: string; name: string }[];
-}
+import { Post } from "@/types/blog";
 
 interface PostsTableProps {
     posts: Post[];

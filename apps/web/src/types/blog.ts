@@ -1,4 +1,3 @@
-// Blog Types
 export interface Post {
     id: string;
     title: string;
@@ -51,12 +50,15 @@ export interface Attachment {
     isPublic: boolean;
 }
 
-export interface PaginatedResponse<T> {
-    data: T[];
-    meta: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    };
+export interface PostFormData {
+    title: string;
+    excerpt: string;
+    content: string;
+    coverImage: string | null;
+    isPremium: boolean;
+    published: boolean;
+    categoryId: string;
+    tagIds: string[];
+    metaTitle: string;
+    metaDescription: string;
 }

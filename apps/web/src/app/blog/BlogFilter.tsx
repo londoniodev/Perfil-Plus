@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Category } from "@/lib/types";
+import { Category } from "@/types/blog";
 import { IconChevronDown } from "@/components/ui/Icons";
 
 interface BlogFilterProps {

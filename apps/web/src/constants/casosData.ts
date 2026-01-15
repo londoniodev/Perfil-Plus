@@ -3,22 +3,7 @@
  * Separados para facilitar mantenimiento y posible carga desde API en el futuro.
  */
 
-export interface CasoResult {
-    metric: string;
-    label: string;
-}
-
-export interface Caso {
-    id: number;
-    titulo: string;
-    cliente: string;
-    categoria: "Empresas" | "Explora" | "Liderazgo" | "Bienestar";
-    color: string;
-    contexto: string;
-    reto: string;
-    intervencion: string;
-    resultados: CasoResult[];
-}
+import { Caso, CasoResult, CategoriaId } from "@/types/marketing";
 
 export const casos: Caso[] = [
     {
@@ -143,4 +128,3 @@ export const casos: Caso[] = [
     },
 ];
 
-export type CategoriaId = "Empresas" | "Explora" | "Liderazgo" | "Bienestar";

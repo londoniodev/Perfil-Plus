@@ -20,26 +20,7 @@ interface EditarTemaPageProps {
     params: Promise<{ id: string }>;
 }
 
-interface Course {
-    id: string;
-    title: string;
-    description: string;
-    published: boolean;
-    isFree: boolean;
-    order: number;
-    _count?: { lessons: number };
-}
-
-interface Theme {
-    id: string;
-    title: string;
-    description: string;
-    coverImage: string | null;
-    order: number;
-    published: boolean;
-    courses: Course[];
-    evaluation: { id: string; title: string } | null;
-}
+import { Course, Theme } from "@/types/lms";
 
 export default function EditarTemaPage({ params }: EditarTemaPageProps) {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -86,7 +67,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                 published: data.published,
             });
             setCourses(data.courses || []);
-            setEvaluation(data.evaluation);
+            setEvaluation(data.evaluation || null);
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error al cargar tema");
         } finally {

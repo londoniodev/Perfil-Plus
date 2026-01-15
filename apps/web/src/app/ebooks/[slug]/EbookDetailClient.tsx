@@ -10,16 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Separator } from "@/components/ui/separator";
 
-interface Ebook {
-    id: string;
-    title: string;
-    slug: string;
-    description: string;
-    coverImage: string;
-    price: number;
-    previewUrl?: string;
-    createdAt: string;
-}
+import { Ebook } from "@/types/ecommerce";
 
 interface EbookDetailClientProps {
     ebook: Ebook;

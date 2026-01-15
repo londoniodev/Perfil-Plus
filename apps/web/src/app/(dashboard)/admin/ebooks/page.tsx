@@ -12,17 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-interface Ebook {
-    id: string;
-    title: string;
-    slug: string;
-    description: string;
-    coverImage: string;
-    price: number;
-    published: boolean;
-    _count?: { purchases: number };
-    createdAt: string;
-}
+import { Ebook } from "@/types/ecommerce";
 
 export default function AdminEbooksPage() {
     const { isAdmin, loading: authLoading } = useAuth();

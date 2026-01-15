@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getPosts, getCategories } from "@/lib/api";
-import { Post, Category } from "@/lib/types";
+import { Post, Category } from "@/types/blog";
 import { Metadata } from "next";
 import { BreadcrumbSchema, CollectionPageSchema } from "@/components/seo/JsonLd";
 import { BlogFilter } from "./BlogFilter";

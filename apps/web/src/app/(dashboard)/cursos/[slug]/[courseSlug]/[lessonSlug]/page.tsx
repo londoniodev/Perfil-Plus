@@ -33,17 +33,7 @@ interface LessonData {
     userProgress: { completed: boolean; watchedTime: number };
 }
 
-interface CourseData {
-    id: string;
-    title: string;
-    lessons: {
-        id: string;
-        title: string;
-        slug: string;
-        duration: number | null;
-        completed?: boolean;
-    }[];
-}
+import { Course as CourseData } from "@/types/lms";
 
 export default function LessonPage({
     params,
@@ -129,7 +119,7 @@ export default function LessonPage({
             toast.success("Lección completada");
 
             // Update local course state for sidebar
-            if (course) {
+            if (course && course.lessons) {
                 setCourse({
                     ...course,
                     lessons: course.lessons.map(l =>
@@ -305,11 +295,11 @@ export default function LessonPage({
                                     <h3 className="font-semibold">Temario del Curso</h3>
                                     {course && (
                                         <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                                            <span>{course.lessons.filter(l => l.completed).length} / {course.lessons.length} completadas</span>
+                                            <span>{(course.lessons || []).filter(l => l.completed).length} / {(course.lessons || []).length} completadas</span>
                                             <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-primary"
-                                                    style={{ width: `${(course.lessons.filter(l => l.completed).length / course.lessons.length) * 100}%` }}
+                                                    style={{ width: `${((course.lessons || []).filter(l => l.completed).length / Math.max(1, (course.lessons || []).length)) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -324,7 +314,7 @@ export default function LessonPage({
                                             </AccordionTrigger>
                                             <AccordionContent className="pb-0">
                                                 <div className="flex flex-col">
-                                                    {course?.lessons.map((item, index) => {
+                                                    {(course?.lessons || []).map((item, index) => {
                                                         const isActive = item.slug === lesson.slug;
                                                         return (
                                                             <Link

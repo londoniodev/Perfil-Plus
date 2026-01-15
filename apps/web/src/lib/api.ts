@@ -1,4 +1,5 @@
-import { Post, Category, Tag, PaginatedResponse } from './types';
+import { Post, Category, Tag } from '@/types/blog';
+import { PaginatedResponse } from '@/types/common';
 import { API_BASE as API_BASE_URL } from './config';
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -46,7 +47,7 @@ export async function getTags(): Promise<Tag[]> {
 }
 
 // ============ LMS ============
-import { Theme, Course, Lesson } from './lms-types';
+import { Theme, Course, Lesson } from '@/types/lms';
 
 export async function getThemes(): Promise<Theme[]> {
     return fetchAPI<Theme[]>('/lms/themes');

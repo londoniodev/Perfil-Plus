@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { API_BASE } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
 import {
   Card,
   CardContent,
@@ -15,14 +16,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { LoginSchema, type LoginValues } from "@/schemas/auth";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const toast = useToast();
+
+  const form = useForm<LoginValues>({
+    resolver: standardSchemaResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const { isSubmitting } = form.formState;
 
   // Redirigir si ya está logueado
   useEffect(() => {
@@ -48,16 +65,13 @@ function LoginForm() {
     }
   }, [router, searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const onSubmit = async (values: LoginValues) => {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Permitir cookies
-        body: JSON.stringify({ email, password }),
+        credentials: "include",
+        body: JSON.stringify(values),
       });
 
       const data = await res.json();
@@ -77,8 +91,6 @@ function LoginForm() {
       }
     } catch (err: any) {
       toast.error(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -90,44 +102,58 @@ function LoginForm() {
       </CardHeader>
 
       <CardContent className="px-0">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="admin@mauromera.com"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="admin@mauromera.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Contraseña</Label>
-              <a
-                href="/auth/forgot-password"
-                className="text-sm font-medium text-primary hover:text-primary-light hover:underline underline-offset-4 transition-colors"
-                tabIndex={-1}
-              >
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Contraseña</FormLabel>
+                    <a
+                      href="/auth/forgot-password"
+                      className="text-sm font-medium text-primary hover:text-primary-light hover:underline underline-offset-4 transition-colors"
+                      tabIndex={-1}
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </a>
+                  </div>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <Button type="submit" className="w-full" disabled={loading} size="lg">
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-          </Button>
-        </form>
+            <Button type="submit" className="w-full" disabled={isSubmitting} size="lg">
+              {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

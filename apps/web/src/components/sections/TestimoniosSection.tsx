@@ -1,7 +1,6 @@
 "use client";
 
 import { IconQuote } from "@/components/ui/Icons";
-import styles from "@/styles/sections.module.css";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
@@ -26,9 +25,9 @@ const testimonials = [
 
 export function TestimoniosSection() {
     return (
-        <section className={`${styles.section} ${styles.sectionAlt}`}>
+        <section className="py-20 md:py-32 bg-muted/30">
             <div className="container">
-                <div className={styles.sectionTitle}>
+                <div className="text-center mb-16">
                     <h2 className="section-title">Voces de la experiencia</h2>
                 </div>
 
@@ -39,12 +38,12 @@ export function TestimoniosSection() {
                             <IconQuote className="absolute top-4 left-4 text-white/5 text-8xl pointer-events-none select-none" />
 
                             <CardContent className="p-8 relative z-10 h-full flex flex-col">
-                                <p className="text-lg text-foreground-muted mb-8 italic relative leading-relaxed flex-1">
+                                <p className="text-lg text-muted-foreground mb-8 italic relative leading-relaxed flex-1">
                                     "{test.quote}"
                                 </p>
                                 <div className="border-t border-white/5 pt-4">
                                     <p className="font-bold text-white mb-1.5 text-base">{test.author}</p>
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-foreground-muted/80">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-muted-foreground">
                                         {test.role}
                                     </span>
                                 </div>

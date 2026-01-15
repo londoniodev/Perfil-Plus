@@ -1,5 +1,4 @@
 import Image from "next/image";
-import styles from "@/styles/sections.module.css";
 
 /**
  * Lista de logos de clientes.
@@ -34,29 +33,24 @@ export function ClientsCarouselSection() {
     if (clientLogos.length === 0) return null;
 
     return (
-        <section className={styles.clientsSection}>
-            <div className="container" style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <section className="py-16 md:py-24 overflow-hidden bg-background">
+            <div className="container text-center mb-12">
                 <h2 className="section-title">
                     Empresas que confían en nosotros
                 </h2>
             </div>
 
             {/* Row 1 - Normal Scroll */}
-            <div style={{ marginBottom: "1.5rem", overflow: "hidden" }}>
-                <div className={styles.carouselTrack}>
+            <div className="mb-6 flex overflow-hidden relative w-full [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
+                <div className="flex min-w-full shrink-0 gap-8 animate-scroll-left items-center">
                     {duplicatedRow1.map((logo, index) => (
-                        <div key={`row1-${index}`} className={styles.carouselItem}>
+                        <div key={`row1-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
                             <Image
                                 src={logo.src}
                                 alt={logo.alt}
                                 width={160}
                                 height={60}
-                                style={{
-                                    objectFit: "contain",
-                                    width: "auto",
-                                    height: "50px",
-                                    maxWidth: "180px"
-                                }}
+                                className="object-contain h-12 w-auto max-w-[180px]"
                             />
                         </div>
                     ))}
@@ -64,21 +58,16 @@ export function ClientsCarouselSection() {
             </div>
 
             {/* Row 2 - Reverse Scroll */}
-            <div style={{ overflow: "hidden" }}>
-                <div className={`${styles.carouselTrack} ${styles.carouselTrackReverse}`}>
+            <div className="flex overflow-hidden relative w-full [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
+                <div className="flex min-w-full shrink-0 gap-8 animate-scroll-right items-center">
                     {duplicatedRow2.map((logo, index) => (
-                        <div key={`row2-${index}`} className={styles.carouselItem}>
+                        <div key={`row2-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
                             <Image
                                 src={logo.src}
                                 alt={logo.alt}
                                 width={160}
                                 height={60}
-                                style={{
-                                    objectFit: "contain",
-                                    width: "auto",
-                                    height: "50px",
-                                    maxWidth: "180px"
-                                }}
+                                className="object-contain h-12 w-auto max-w-[180px]"
                             />
                         </div>
                     ))}

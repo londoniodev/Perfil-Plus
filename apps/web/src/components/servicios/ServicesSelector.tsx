@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/services.module.css";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
 } from "@/components/ui/Card";
-import { cn } from "@/lib/utils"; // Asegúrate de tener cn
+import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 import {
     IconBuilding,
@@ -26,9 +25,9 @@ import {
 // --- Components Helpers ---
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }) => (
-    <div className={styles.sectionHeading}>
-        <h2 className="section-title mb-8">{title}</h2>
-        <p className={`section-subtitle ${styles.sectionSubtitle}`}>
+    <div className="text-center mb-12">
+        <h2 className="section-title mb-4">{title}</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
             {subtitle}
         </p>
     </div>
@@ -57,7 +56,6 @@ const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            {/* Card 1: Pain Points */}
             <Card className={cn(GLASS_CARD_STYLES, "h-full")}>
                 <CardHeader>
                     <CardTitle className="text-xl font-bold">¿Te suena familiar?</CardTitle>
@@ -80,7 +78,6 @@ const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
                 </CardContent>
             </Card>
 
-            {/* Card 2: Solution */}
             <Card className={cn(GLASS_CARD_STYLES, "h-full")}>
                 <CardHeader>
                     <CardTitle className="text-xl font-bold">Nuestra Intervención</CardTitle>
@@ -101,25 +98,24 @@ const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
         </div>
 
         {/* Process Steps */}
-        <div className={styles.processBox}>
+        <div className="bg-muted/30 rounded-2xl p-8 mb-12">
             <h3 className="text-2xl font-bold text-center mb-10">Cómo trabajamos</h3>
-            <div className={styles.gridSteps}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                     { step: "01", title: "Entender", desc: "Diagnóstico profundo y entrevistas." },
                     { step: "02", title: "Diseñar", desc: "Co-creación de la ruta de solución." },
                     { step: "03", title: "Activar", desc: "Talleres, coaching y mentoría." },
                     { step: "04", title: "Medir", desc: "Seguimiento a indicadores de impacto." }
                 ].map((s, i) => (
-                    <div key={i} className={styles.stepContainer}>
-                        <div className={styles.stepNumber}>{s.step}</div>
-                        <h4 className={styles.stepTitle} style={{ color }}>{s.title}</h4>
-                        <p className={styles.stepDesc}>{s.desc}</p>
+                    <div key={i} className="text-center">
+                        <div className="text-3xl font-bold text-muted-foreground/50 mb-2">{s.step}</div>
+                        <h4 className="font-bold mb-1" style={{ color }}>{s.title}</h4>
+                        <p className="text-sm text-muted-foreground">{s.desc}</p>
                     </div>
                 ))}
             </div>
         </div>
 
-        {/* CTA */}
         <div className="text-center mt-12">
             <Button asChild size="lg" style={{ background: color, borderColor: color }} className="shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <Link
@@ -146,7 +142,6 @@ const ContentExplora = () => (
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            {/* Main Value Prop */}
             <Card className={cn(GLASS_CARD_STYLES, "h-full")}>
                 <CardHeader>
                     <CardTitle className="text-xl font-bold text-accent">Para jóvenes y familias</CardTitle>
@@ -187,7 +182,6 @@ const ContentExplora = () => (
             </Card>
         </div>
 
-        {/* Why Different */}
         <div className="bg-accent/5 border border-accent/20 rounded-2xl p-8 mb-12 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10 max-w-3xl mx-auto text-center">
@@ -230,7 +224,6 @@ const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
             subtitle="Un espacio seguro para entenderte, sanar, ordenar y decidir. Más allá del alivio sintomático, buscamos una vida con mayor sentido y agencia."
         />
 
-        {/* Grid 3 cols */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06]")}>
                 <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
@@ -269,7 +262,6 @@ const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
             </Card>
         </div>
 
-        {/* Approach */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 bg-white/[0.02] border border-white/5 rounded-2xl p-8 mb-12">
             <div className="md:col-span-3">
                 <h3 className="text-2xl font-bold mb-4 text-white">
@@ -316,13 +308,12 @@ const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
                 Si tienes dudas sobre qué modalidad es para ti, escríbeme.
             </p>
         </div>
-    </div >
+    </div>
 );
 
 export function ServicesSelector() {
     const [activeTab, setActiveTab] = useState<"empresas" | "explora" | "psicoterapia">("empresas");
 
-    // Reading hash for deep linking
     useEffect(() => {
         const hash = window.location.hash.replace("#", "");
         if (hash === "empresas") setActiveTab("empresas");
@@ -331,47 +322,42 @@ export function ServicesSelector() {
     }, []);
 
     const tabs = [
-        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" }, // Azul
-        { id: "explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" }, // Amarillo
-        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "var(--success)" }, // Verde
+        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
+        { id: "explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
+        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "var(--success)" },
     ];
 
     const currentTabColor = tabs.find(t => t.id === activeTab)?.color || "var(--primary)";
 
     return (
-        <section className={styles.mainSection}>
+        <section className="relative py-20 md:py-32 overflow-hidden">
             {/* Background Glows */}
-            <div className={styles.bgGlow} style={{ background: currentTabColor }} />
+            <div
+                className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[150px] opacity-20 pointer-events-none transition-colors duration-700"
+                style={{ background: currentTabColor }}
+            />
 
-            <div className={styles.selectorContainer}>
-
+            <div className="container relative z-10">
                 {/* Selector Tabs */}
-                <div className={styles.tabsWrapper}>
-                    <div className={styles.tabsContainer}>
+                <div className="flex justify-center mb-16">
+                    <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border">
                         {tabs.map((tab) => {
                             const isActive = activeTab === tab.id;
                             return (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
-                                    className={styles.tabButton}
+                                    className={cn(
+                                        "flex items-center rounded-full transition-all duration-300 font-medium text-sm",
+                                        isActive ? "gap-2.5 px-6 py-2.5 text-white" : "p-2.5"
+                                    )}
                                     style={{
-                                        gap: isActive ? "0.6rem" : "0",
-                                        padding: isActive ? "0.7rem 1.5rem" : "0.7rem",
                                         background: isActive ? tab.color : "transparent",
                                         color: isActive ? (tab.id === "explora" ? "black" : "white") : tab.color,
-                                        minWidth: isActive ? "auto" : "3.2rem",
                                     }}
                                 >
-                                    <span className={styles.tabIcon}>{tab.icon}</span>
-
-                                    {/* Text Label - Only visible when active */}
-                                    <span className={styles.tabLabel} style={{
-                                        maxWidth: isActive ? "200px" : "0",
-                                        opacity: isActive ? 1 : 0,
-                                    }}>
-                                        {tab.label}
-                                    </span>
+                                    <span className="text-lg">{tab.icon}</span>
+                                    {isActive && <span>{tab.label}</span>}
                                 </button>
                             );
                         })}
@@ -379,12 +365,11 @@ export function ServicesSelector() {
                 </div>
 
                 {/* Content Area */}
-                <div className={styles.contentArea}>
+                <div>
                     {activeTab === "empresas" && <ContentEmpresas color="var(--primary)" />}
                     {activeTab === "explora" && <ContentExplora />}
                     {activeTab === "psicoterapia" && <ContentTerapia color="var(--success)" />}
                 </div>
-
             </div>
         </section>
     );

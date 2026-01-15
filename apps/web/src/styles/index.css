@@ -1,13 +1,7 @@
 @import "tailwindcss";
 
-/* 1. Variables & Theme (must be first) */
+/* 1. Variables & Theme (must be first, includes animations now) */
 @import "./variables.css";
-
-/* 6. Animations */
-@import "./animations.css";
-
-/* 7. Feature Components */
-@import "./carousel.css";
 
 @custom-variant dark (&:is(.dark *));
 

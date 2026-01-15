@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import styles from "@/styles/LeadForm.module.css";
 import { API_BASE } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { IconCheck } from "@/components/ui/Icons";
+import { cn } from "@/lib/utils";
 
 interface LeadFormProps {
     source: string;
@@ -61,8 +65,6 @@ export default function LeadForm({
             setSuccess(true);
             setFormData({ name: "", email: "", phone: "", message: "" });
             onSuccess?.();
-            setFormData({ name: "", email: "", phone: "", message: "" });
-            onSuccess?.();
         } catch (err) {
             toast.error("Hubo un error. Por favor intenta nuevamente.");
         } finally {
@@ -72,79 +74,79 @@ export default function LeadForm({
 
     if (success) {
         return (
-            <div className={`${styles.leadForm} ${styles[variant]}`}>
-                <div className={styles.successMessage}>
-                    <span className={styles.successIcon}>✓</span>
-                    <h3>¡Gracias!</h3>
-                    <p>Hemos recibido tu información. Te contactaremos pronto.</p>
+            <div className={cn(
+                "bg-card/60 backdrop-blur-md border border-border rounded-2xl p-8 text-center",
+                variant === "compact" && "p-4",
+                variant === "inline" && "p-4 flex items-center gap-4"
+            )}>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <IconCheck className="w-8 h-8 text-green-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground">¡Gracias!</h3>
+                    <p className="text-muted-foreground">Hemos recibido tu información. Te contactaremos pronto.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={`${styles.leadForm} ${styles[variant]}`}>
+        <div className={cn(
+            "bg-card/60 backdrop-blur-md border border-border rounded-2xl",
+            variant === "default" && "p-8",
+            variant === "compact" && "p-4",
+            variant === "inline" && "p-4"
+        )}>
             {variant !== "compact" && variant !== "inline" && (
-                <div className={styles.formHeader}>
-                    {title && <h3>{title}</h3>}
-                    {subtitle && <p>{subtitle}</p>}
+                <div className="text-center mb-8">
+                    {title && <h3 className="text-2xl font-bold text-foreground mb-2">{title}</h3>}
+                    {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.formRow}>
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="text"
-                            placeholder="Tu nombre"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            required
-                            className={styles.input}
-                        />
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className={cn(
+                    "grid gap-4",
+                    variant === "inline" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" : "grid-cols-1 md:grid-cols-2"
+                )}>
+                    <Input
+                        type="text"
+                        placeholder="Tu nombre"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                    />
 
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="email"
-                            placeholder="Tu email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                            className={styles.input}
-                        />
-                    </div>
+                    <Input
+                        type="email"
+                        placeholder="Tu email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                    />
                 </div>
 
                 {showPhone && (
-                    <div className={styles.inputGroup}>
-                        <input
-                            type="tel"
-                            placeholder="Tu teléfono (opcional)"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className={styles.input}
-                        />
-                    </div>
+                    <Input
+                        type="tel"
+                        placeholder="Tu teléfono (opcional)"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
                 )}
 
                 {showMessage && (
-                    <div className={styles.inputGroup}>
-                        <textarea
-                            placeholder="Tu mensaje"
-                            value={formData.message}
-                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                            rows={3}
-                            className={styles.textarea}
-                        />
-                    </div>
+                    <Textarea
+                        placeholder="Tu mensaje"
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        rows={3}
+                    />
                 )}
 
-
-
-                <button type="submit" disabled={loading} className={styles.submitBtn}>
+                <Button type="submit" disabled={loading} className="w-full" size="lg">
                     {loading ? "Enviando..." : buttonText}
-                </button>
+                </Button>
             </form>
         </div>
     );

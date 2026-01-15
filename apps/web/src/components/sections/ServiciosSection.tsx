@@ -5,17 +5,16 @@ import NextImage from "next/image";
 import { IconCheck, IconExternalLink } from "@/components/ui/Icons";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import styles from "@/styles/sections.module.css";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 
 export function ServiciosSection() {
     return (
-        <section className={styles.section} id="servicios">
+        <section className="py-20 md:py-32 bg-background" id="servicios">
             <div className="container">
-                <div className={styles.sectionTitle}>
+                <div className="text-center mb-16">
                     <h2 className="section-title">Rutas de acompañamiento</h2>
-                    <p className={styles.sectionSubtitle}>
+                    <p className="text-muted-foreground max-w-xl mx-auto mt-4">
                         Soluciones diseñadas para tu momento actual.
                     </p>
                 </div>
@@ -28,8 +27,7 @@ export function ServiciosSection() {
                                 src="/services/psicoterapia.avif"
                                 alt="Psicoterapia y Coaching"
                                 fill
-                                style={{ objectFit: "cover" }}
-                                className="group-hover:scale-105 transition-transform duration-700"
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0f1419] to-transparent opacity-90" />
                         </div>
@@ -43,7 +41,7 @@ export function ServiciosSection() {
                             <ul className="space-y-3 mb-8">
                                 {["Ansiedad y estrés", "Duelo y crisis", "Vínculos sanos", "Propósito de vida"].map((item, i) => (
                                     <li key={i} className="flex gap-2.5 items-start text-sm text-foreground/80">
-                                        <span className="text-success mt-0.5"><IconCheck className="w-4 h-4" /></span>
+                                        <span className="text-green-500 mt-0.5"><IconCheck className="w-4 h-4" /></span>
                                         {item}
                                     </li>
                                 ))}
@@ -63,8 +61,7 @@ export function ServiciosSection() {
                                 src="/services/consultoria.avif"
                                 alt="Consultoría Organizacional"
                                 fill
-                                style={{ objectFit: "cover" }}
-                                className="group-hover:scale-105 transition-transform duration-700"
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0f1419] to-transparent opacity-90" />
                         </div>
@@ -103,8 +100,7 @@ export function ServiciosSection() {
                                 src="/services/orientacion.avif"
                                 alt="Orientación Vocacional"
                                 fill
-                                style={{ objectFit: "cover" }}
-                                className="group-hover:scale-105 transition-transform duration-700"
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0f1419] to-transparent opacity-90" />
                         </div>

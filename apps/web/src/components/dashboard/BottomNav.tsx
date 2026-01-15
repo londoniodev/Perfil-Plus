@@ -10,12 +10,13 @@ import {
     IconGrid,
     IconMenu,
     IconEdit,
-    IconDocument as IconFileText, // Aliased for local compatibility
+    IconDocument,
     IconUsers,
     IconCreditCard,
-    IconLogout as IconLogOut // Aliased for local compatibility
+    IconLogout,
+    IconClose
 } from "@/components/ui/Icons";
-import styles from "@/styles/dashboard.module.css";
+import { cn } from "@/lib/utils";
 
 export function BottomNav() {
     const pathname = usePathname();
@@ -24,7 +25,6 @@ export function BottomNav() {
 
     const isActive = (path: string) => pathname?.startsWith(path);
 
-    // User navigation items
     const userNavItems = [
         { name: "Inicio", href: "/perfil", icon: <IconHome size={24} /> },
         { name: "Cursos", href: "/cursos", icon: <IconBook size={24} /> },
@@ -32,15 +32,13 @@ export function BottomNav() {
         { name: "Más", href: "#", icon: <IconMenu size={24} />, action: () => setIsMenuOpen(!isMenuOpen) },
     ];
 
-    // Admin navigation items
     const adminNavItems = [
         { name: "Inicio", href: "/perfil", icon: <IconHome size={24} /> },
         { name: "Cursos", href: "/admin/cursos", icon: <IconEdit size={24} /> },
-        { name: "Blog", href: "/admin/blog", icon: <IconFileText size={24} /> },
+        { name: "Blog", href: "/admin/blog", icon: <IconDocument size={24} /> },
         { name: "Más", href: "#", icon: <IconMenu size={24} />, action: () => setIsMenuOpen(!isMenuOpen) },
     ];
 
-    // Select nav based on role
     const navItems = isAdmin ? adminNavItems : userNavItems;
 
     const handleLogout = async () => {
@@ -49,60 +47,64 @@ export function BottomNav() {
 
     return (
         <>
-            {/* Overlay Menu for "Más" */}
+            {/* Overlay Menu */}
             {isMenuOpen && (
                 <div
-                    className={styles.mobileMenuOverlay}
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={() => setIsMenuOpen(false)}
                 >
                     <div
-                        className={styles.mobileMenuContent}
+                        className="absolute bottom-16 left-4 right-4 bg-card border border-border rounded-xl shadow-xl overflow-hidden"
                         onClick={e => e.stopPropagation()}
                     >
-                        {/* Role-specific additional items */}
-                        {isAdmin ? (
-                            // Admin extra item
-                            <Link
-                                href="/admin/usuarios"
-                                onClick={() => setIsMenuOpen(false)}
-                                className={styles.mobileMenuItem}
+                        <div className="flex items-center justify-between p-4 border-b border-border">
+                            <span className="font-medium text-foreground">Más opciones</span>
+                            <button onClick={() => setIsMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                                <IconClose size={20} />
+                            </button>
+                        </div>
+                        <div className="p-2">
+                            {isAdmin ? (
+                                <Link
+                                    href="/admin/usuarios"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <IconUsers size={20} /> Usuarios
+                                </Link>
+                            ) : (
+                                <Link
+                                    href="/suscripcion"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-muted transition-colors"
+                                >
+                                    <IconCreditCard size={20} /> Suscripción
+                                </Link>
+                            )}
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                             >
-                                <IconUsers size={20} /> Usuarios
-                            </Link>
-                        ) : (
-                            // User extra item
-                            <Link
-                                href="/suscripcion"
-                                onClick={() => setIsMenuOpen(false)}
-                                className={styles.mobileMenuItem}
-                            >
-                                <IconCreditCard size={20} /> Suscripción
-                            </Link>
-                        )}
-
-                        {/* Logout Button */}
-                        <button
-                            onClick={handleLogout}
-                            className={styles.mobileMenuItem}
-                            style={{ border: "none", color: "var(--error)", padding: "1rem" }}
-                        >
-                            <IconLogOut size={20} /> Cerrar Sesión
-                        </button>
+                                <IconLogout size={20} /> Cerrar Sesión
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Bottom Navigation Bar */}
-            <nav className={styles.bottomNav}>
-                {navItems.map((item) => (
+            <nav className="fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex justify-around md:hidden z-50 safe-area-inset-bottom">
+                {navItems.map((item) =>
                     item.action ? (
                         <button
                             key={item.name}
                             onClick={item.action}
-                            className={`
-                                ${styles.navItemMobile}
-                                ${isMenuOpen ? (isAdmin ? styles.navItemMobileActiveAdmin : styles.navItemMobileActive) : ""}
-                            `}
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 py-2 text-xs font-medium transition-colors",
+                                isMenuOpen
+                                    ? "text-primary"
+                                    : "text-muted-foreground"
+                            )}
                         >
                             {item.icon}
                             <span>{item.name}</span>
@@ -111,16 +113,18 @@ export function BottomNav() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`
-                                ${styles.navItemMobile}
-                                ${isActive(item.href) ? (isAdmin ? styles.navItemMobileActiveAdmin : styles.navItemMobileActive) : ""}
-                            `}
+                            className={cn(
+                                "flex flex-col items-center justify-center gap-1 flex-1 py-2 text-xs font-medium transition-colors",
+                                isActive(item.href)
+                                    ? "text-primary"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
                         >
                             {item.icon}
                             <span>{item.name}</span>
                         </Link>
                     )
-                ))}
+                )}
             </nav>
         </>
     );

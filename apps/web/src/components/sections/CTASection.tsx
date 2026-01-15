@@ -1,12 +1,12 @@
 import LeadForm from "../LeadForm/LeadForm";
-import styles from "@/styles/sections.module.css";
 
 export function CTASection() {
     return (
-        <section id="agendar" className={styles.ctaSection}>
-            <div className={styles.ctaBg} />
+        <section id="agendar" className="relative py-20 md:py-32 overflow-hidden">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background pointer-events-none" />
 
-            <div className={`container ${styles.ctaContainer}`}>
+            <div className="container relative z-10 max-w-3xl mx-auto">
                 <LeadForm
                     source="cta-home"
                     title="¿Hablamos?"

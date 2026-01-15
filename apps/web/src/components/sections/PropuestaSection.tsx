@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import { IconBrain, IconStar, IconCpu } from "@/components/ui/Icons";
-import styles from "@/styles/sections.module.css";
 import { Card } from "@/components/ui/Card";
-import { cn } from "@/lib/utils";
 
 const pillars = [
     {
@@ -12,7 +10,7 @@ const pillars = [
         title: "Psicología aplicada",
         desc: "Comprender lo que pasa adentro para actuar mejor afuera.",
         image: "/propuesta/propuesta_psychology.png",
-        accent: "rgba(91, 141, 239, 1)", // Blue
+        accent: "rgba(91, 141, 239, 1)",
         gradient: "linear-gradient(135deg, rgba(91, 141, 239, 0.2) 0%, rgba(58, 98, 184, 0.1) 100%)",
     },
     {
@@ -20,7 +18,7 @@ const pillars = [
         title: "Experiencias educativas para las organizaciones",
         desc: "Talleres y programas vivenciales para el desarrollo de habilidades y competencias.",
         image: "/propuesta/propuesta_education.png",
-        accent: "rgba(232, 168, 56, 1)", // Gold/Orange
+        accent: "rgba(232, 168, 56, 1)",
         gradient: "linear-gradient(135deg, rgba(232, 168, 56, 0.2) 0%, rgba(200, 140, 40, 0.1) 100%)",
     },
     {
@@ -28,23 +26,23 @@ const pillars = [
         title: "Tecnología e IA",
         desc: "Claridad, seguimiento y lenguaje simple para decisiones complejas.",
         image: "/propuesta/propuesta_tech.png",
-        accent: "rgba(56, 189, 189, 1)", // Cyan/Teal
+        accent: "rgba(56, 189, 189, 1)",
         gradient: "linear-gradient(135deg, rgba(56, 189, 189, 0.2) 0%, rgba(40, 150, 150, 0.1) 100%)",
     },
 ];
 
 export function PropuestaSection() {
     return (
-        <section className={styles.section}>
+        <section className="py-20 md:py-32 bg-background">
             <div className="container">
-                <div className={styles.sectionTitle}>
+                <div className="text-center mb-16">
                     <h2 className="section-title">Lo humano y lo medible</h2>
-                    <p className={styles.sectionSubtitle}>
+                    <p className="text-muted-foreground max-w-2xl mx-auto mt-4">
                         Decisiones conscientes, cultura plena, desarrollo del talento, autoconocimiento y salud mental.
                     </p>
                 </div>
 
-                <div className={styles.gridResponsive}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {pillars.map((item, i) => (
                         <Card
                             key={i}
@@ -58,11 +56,8 @@ export function PropuestaSection() {
                                         alt=""
                                         fill
                                         sizes="(max-width: 768px) 100vw, 400px"
-                                        style={{
-                                            objectFit: "cover",
-                                            mixBlendMode: "screen",
-                                        }}
-                                        unoptimized // Asumiendo que pueden no ser locales optimizadas aun
+                                        className="object-cover mix-blend-screen"
+                                        unoptimized
                                     />
                                 </div>
                                 {/* Gradient Overlay */}
@@ -72,7 +67,7 @@ export function PropuestaSection() {
                             {/* Content Layer */}
                             <div className="relative z-10 p-10 flex flex-col items-center h-full">
                                 <div
-                                    className="w-[64px] h-[64px] rounded-2xl flex items-center justify-center text-3xl mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 backdrop-blur-sm"
+                                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 backdrop-blur-sm"
                                     style={{
                                         color: item.accent,
                                         background: item.gradient,
@@ -83,10 +78,10 @@ export function PropuestaSection() {
                                     {item.icon}
                                 </div>
 
-                                <h3 className="text-xl font-bold mb-4 text-white group-hover:text-primary-light transition-colors duration-300">
+                                <h3 className="text-xl font-bold mb-4 text-white group-hover:text-primary transition-colors duration-300">
                                     {item.title}
                                 </h3>
-                                <p className="text-foreground-muted leading-relaxed text-base">
+                                <p className="text-muted-foreground leading-relaxed text-base">
                                     {item.desc}
                                 </p>
                             </div>

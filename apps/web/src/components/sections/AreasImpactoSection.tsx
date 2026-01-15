@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import styles from "@/styles/sections.module.css";
+import { cn } from "@/lib/utils";
 
 const areas = [
     {
@@ -73,17 +73,16 @@ export function AreasImpactoSection() {
     }, []);
 
     return (
-        <section style={{ position: "relative" }}>
+        <section className="relative">
             {/* Sticky Background Container */}
-            <div className={styles.stickyContainer}>
+            <div className="sticky top-0 h-screen w-full -z-10">
                 {areas.map((area, index) => (
                     <div
                         key={`bg-${index}`}
-                        className={styles.stickyBg}
-                        style={{
-                            opacity: activeIndex === index ? 1 : 0,
-                            zIndex: activeIndex === index ? 1 : 0
-                        }}
+                        className={cn(
+                            "absolute inset-0 transition-opacity duration-700",
+                            activeIndex === index ? "opacity-100 z-1" : "opacity-0 z-0"
+                        )}
                     >
                         <Image
                             src={area.image}
@@ -91,22 +90,19 @@ export function AreasImpactoSection() {
                             fill
                             priority={index === 0}
                             unoptimized
-                            style={{
-                                objectFit: "cover",
-                                filter: "brightness(0.7)"
-                            }}
+                            className="object-cover brightness-[0.7]"
                         />
                     </div>
                 ))}
 
                 {/* Bottom Gradient Fade */}
-                <div className={styles.stickyOverlay} />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
             </div>
 
             {/* Scrollable Text Content */}
-            <div className={styles.scrollContent}>
-                <div className="container" style={{ maxWidth: "1200px" }}>
-                    <h2 className="section-title" style={{ textAlign: "center", marginBottom: "4rem", paddingTop: "4rem", position: "relative", zIndex: 2 }}>
+            <div className="relative z-10">
+                <div className="container max-w-5xl">
+                    <h2 className="section-title text-center mb-16 pt-16 relative z-20">
                         Áreas de impacto
                     </h2>
 
@@ -115,14 +111,13 @@ export function AreasImpactoSection() {
                             key={`content-${index}`}
                             ref={(el) => { sectionRefs.current[index] = el; }}
                             data-index={index}
-                            className={styles.areaCardContainer}
+                            className="min-h-screen flex items-center justify-center py-20"
                         >
                             <Card
-                                className="bg-black/40 backdrop-blur-md border border-white/10 mx-auto text-center px-8 py-12 max-w-[600px] shadow-2xl transition-all duration-700 w-full"
-                                style={{
-                                    transform: activeIndex === index ? "translateY(0)" : "translateY(40px)",
-                                    opacity: activeIndex === index ? 1 : 0,
-                                }}
+                                className={cn(
+                                    "bg-black/40 backdrop-blur-md border border-white/10 mx-auto text-center px-8 py-12 max-w-xl shadow-2xl transition-all duration-700 w-full",
+                                    activeIndex === index ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+                                )}
                             >
                                 <h3 className="text-3xl font-bold text-white mb-4">
                                     {area.name}
@@ -143,7 +138,7 @@ export function AreasImpactoSection() {
                         </div>
                     ))}
 
-                    <div style={{ height: "40vh" }} />
+                    <div className="h-[40vh]" />
                 </div>
             </div>
         </section>

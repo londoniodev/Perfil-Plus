@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { IconChevronDown } from "@/components/ui/Icons";
-import styles from "@/styles/sections.module.css";
+import { cn } from "@/lib/utils";
 
 const steps = [
     {
@@ -56,7 +56,7 @@ export function MetodoSection() {
             },
             {
                 threshold: 0.5,
-                rootMargin: "-30% 0px -30% 0px" // Slightly wider zone to catch scroll-up easier
+                rootMargin: "-30% 0px -30% 0px"
             }
         );
 
@@ -68,21 +68,20 @@ export function MetodoSection() {
     }, []);
 
     const handleItemClick = (index: number) => {
-        // Toggle logic: if clicking active, set to null; otherwise set to index
         setActiveIndex((prev) => (prev === index ? null : index));
     };
 
     return (
-        <section className={styles.section} id="metodo">
+        <section className="py-20 md:py-32 bg-background" id="metodo">
             <div className="container">
-                <div className={styles.sectionTitle}>
+                <div className="text-center mb-16">
                     <h2 className="section-title">El proceso</h2>
-                    <p className={styles.sectionSubtitle}>
+                    <p className="text-muted-foreground max-w-xl mx-auto mt-4">
                         Claridad desde el primer paso hasta el resultado.
                     </p>
                 </div>
 
-                <div className={styles.procesoContainer}>
+                <div className="max-w-3xl mx-auto space-y-4">
                     {steps.map((step, i) => {
                         const isActive = activeIndex === i;
                         return (
@@ -91,47 +90,68 @@ export function MetodoSection() {
                                 ref={(el) => { itemRefs.current[i] = el; }}
                                 data-index={i}
                                 onClick={() => handleItemClick(i)}
-                                className={`${styles.procesoCard} ${isActive ? styles.procesoCardActive : ""}`}
+                                className={cn(
+                                    "relative rounded-xl overflow-hidden cursor-pointer transition-all duration-500 ease-out border",
+                                    isActive ? "h-80" : "h-20"
+                                )}
                                 style={{
-                                    background: isActive ? step.gradient : undefined,
-                                    borderColor: isActive ? step.accentColor : undefined,
+                                    background: isActive ? step.gradient : "rgba(255,255,255,0.03)",
+                                    borderColor: isActive ? step.accentColor : "rgba(255,255,255,0.1)",
                                 }}
                             >
                                 {/* Background Image (Only visible when active) */}
-                                <div className={`${styles.procesoCardBg} ${isActive ? styles.procesoCardBgActive : ""}`}>
+                                <div className={cn(
+                                    "absolute inset-0 transition-opacity duration-500",
+                                    isActive ? "opacity-30" : "opacity-0"
+                                )}>
                                     <Image
                                         src={step.image}
                                         alt={step.title}
                                         fill
-                                        style={{ objectFit: "cover" }}
+                                        className="object-cover"
                                     />
                                 </div>
 
                                 {/* Content Container */}
-                                <div className={`${styles.procesoContent} ${isActive ? styles.procesoContentActive : ""}`}>
-                                    <div className={`${styles.cardHeader} ${isActive ? styles.cardHeaderActive : ""}`}>
+                                <div className="relative z-10 p-6 h-full flex flex-col">
+                                    <div className={cn(
+                                        "flex items-center justify-between",
+                                        isActive && "mb-6"
+                                    )}>
                                         {/* Header Row: Number + Title */}
-                                        <div className={styles.headerRow}>
+                                        <div className="flex items-center gap-4">
                                             <div
-                                                className={`${styles.numberCircle} ${isActive ? styles.numberCircleActive : ""}`}
+                                                className={cn(
+                                                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
+                                                    isActive ? "text-white" : "bg-muted text-muted-foreground"
+                                                )}
                                                 style={{ background: isActive ? step.accentColor : undefined }}
                                             >
                                                 {step.num}
                                             </div>
-                                            <h3 className={`${styles.cardTitle} ${isActive ? styles.cardTitleActive : ""}`}>
+                                            <h3 className={cn(
+                                                "text-lg font-semibold transition-colors duration-300",
+                                                isActive ? "text-white" : "text-foreground"
+                                            )}>
                                                 {step.title}
                                             </h3>
                                         </div>
 
                                         {/* Expand Icon (Chevrons) */}
-                                        <div className={`${styles.expandIcon} ${isActive ? styles.expandIconActive : ""}`}>
-                                            <IconChevronDown />
+                                        <div className={cn(
+                                            "transition-transform duration-300",
+                                            isActive && "rotate-180"
+                                        )}>
+                                            <IconChevronDown className="text-muted-foreground" />
                                         </div>
                                     </div>
 
                                     {/* Description (Hidden when collapsed) */}
-                                    <div className={`${styles.descriptionBox} ${isActive ? styles.descriptionBoxActive : ""}`}>
-                                        <p className={styles.descriptionText}>
+                                    <div className={cn(
+                                        "transition-all duration-500 overflow-hidden flex-1 flex items-center",
+                                        isActive ? "opacity-100" : "opacity-0"
+                                    )}>
+                                        <p className="text-white/90 text-lg leading-relaxed max-w-lg">
                                             {step.description}
                                         </p>
                                     </div>

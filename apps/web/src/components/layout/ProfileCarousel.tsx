@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import styles from "@/styles/sections.module.css";
+import { cn } from "@/lib/utils";
 
 const images = [
     "/profile_images/mauro_1.png",
@@ -22,9 +22,9 @@ export default function ProfileCarousel() {
     }, []);
 
     return (
-        <div className={styles.profileCarouselContainer}>
-            {/* Aura background similar to Hero */}
-            <div className={styles.profileAura} />
+        <div className="relative h-[400px] md:h-[600px] w-full flex items-end justify-center overflow-hidden">
+            {/* Aura background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[500px] md:h-[500px] bg-primary/30 blur-[100px] animate-aura-pulse rounded-full pointer-events-none" />
 
             {images.map((src, index) => {
                 const isActive = index === currentIndex;
@@ -32,13 +32,18 @@ export default function ProfileCarousel() {
                 return (
                     <div
                         key={src}
-                        className={`${styles.profileImageWrapper} ${isActive ? styles.profileImageWrapperActive : styles.profileImageWrapperInactive}`}
+                        className={cn(
+                            "absolute bottom-0 h-full w-full transition-all duration-700",
+                            isActive
+                                ? "opacity-100 z-10 animate-char-enter"
+                                : "opacity-0 z-0 scale-95"
+                        )}
                     >
                         <Image
                             src={src}
                             alt={`Mauro Mera ${index + 1}`}
                             fill
-                            className={styles.profileImageImg}
+                            className="object-contain object-bottom"
                             sizes="(max-width: 768px) 100vw, 500px"
                             priority={index === 0}
                         />

@@ -1,8 +1,8 @@
 "use client";
 
-import "@/app/styles/dashboard.css";
-import { Sidebar } from "../components/dashboard/Sidebar";
-import { BottomNav } from "../components/dashboard/BottomNav";
+import "@/styles/dashboard.css";
+import { Sidebar } from "@/components/dashboard/Sidebar";
+import { BottomNav } from "@/components/dashboard/BottomNav";
 import { DashboardProvider, useDashboard } from "@/context/DashboardContext";
 import { AuthProvider } from "@/context/AuthContext";
 

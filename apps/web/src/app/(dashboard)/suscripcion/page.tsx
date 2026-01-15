@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import styles from "@/app/styles/suscripcion.module.css";
+import { useToast } from "@/components/ui/Toast";
 import { API_BASE } from "@/lib/config";
-import ActiveSubscriptionCard from "@/app/components/subscription/ActiveSubscriptionCard";
-import PricingCard from "@/app/components/subscription/PricingCard";
+import ActiveSubscriptionCard from "@/components/subscription/ActiveSubscriptionCard";
+import PricingCard from "@/components/subscription/PricingCard";
 
 // ============================================================================
 // TIPOS
@@ -25,7 +25,7 @@ export default function SuscripcionPage() {
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
 
     // Verificación de sesión basada en el objeto 'user' (Auth v2 usa Cookies)
     const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
@@ -62,7 +62,6 @@ export default function SuscripcionPage() {
         }
 
         setProcessing(true);
-        setError(null);
 
         try {
             // Auth v2: Usar cookies (credentials: include) y no header Authorization
@@ -92,7 +91,7 @@ export default function SuscripcionPage() {
             }
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Error desconocido";
-            setError(message);
+            toast.error(message);
         } finally {
             setProcessing(false);
         }
@@ -114,16 +113,16 @@ export default function SuscripcionPage() {
             fetchSubscriptionStatus();
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Error desconocido";
-            alert(message);
+            toast.error(message);
         }
     };
 
     // Estado de carga
     if (loading) {
         return (
-            <div className={styles.subscriptionPage}>
-                <div className={`container ${styles.loadingState}`}>
-                    Cargando...
+            <div className="min-h-screen flex items-center justify-center p-8">
+                <div className="animate-pulse text-foreground-muted font-medium">
+                    Cargando información...
                 </div>
             </div>
         );
@@ -132,12 +131,12 @@ export default function SuscripcionPage() {
     const isActive = subscriptionStatus?.status === "ACTIVE";
 
     return (
-        <div className={styles.subscriptionPage}>
+        <div className="min-h-screen">
             {/* Hero */}
-            <section className={styles.subscriptionHero}>
-                <div className="container">
-                    <h1>Suscripción Premium</h1>
-                    <p className="hero-description">
+            <section className="py-16 md:py-24 text-center">
+                <div className="container px-4">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-6 font-serif">Suscripción Premium</h1>
+                    <p className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto leading-relaxed">
                         Accede a todo el contenido exclusivo: cursos, lecciones en video,
                         evaluaciones y material de apoyo.
                     </p>
@@ -145,8 +144,8 @@ export default function SuscripcionPage() {
             </section>
 
             {/* Contenido principal */}
-            <section className={styles.pricingSection}>
-                <div className="container">
+            <section className="pb-24">
+                <div className="container px-4">
                     {isActive ? (
                         <ActiveSubscriptionCard
                             endDate={subscriptionStatus?.endDate ?? null}
@@ -156,7 +155,6 @@ export default function SuscripcionPage() {
                         <PricingCard
                             onSubscribe={handleSubscribe}
                             processing={processing}
-                            error={error}
                         />
                     )}
                 </div>

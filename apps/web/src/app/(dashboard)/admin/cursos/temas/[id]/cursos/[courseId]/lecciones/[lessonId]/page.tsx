@@ -4,15 +4,17 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import BlogEditor from "@/app/components/admin/blog/BlogEditor";
-import VideoUploader from "@/app/components/admin/ui/VideoUploader";
-import LessonAttachmentManager from "@/app/components/admin/lms/LessonAttachmentManager";
-import styles from "@/app/styles/lms.module.css";
-import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconSuccess, IconEyeOff } from "@/app/components/ui/Icons";
+import BlogEditor from "@/components/admin/blog/BlogEditor";
+import VideoUploader from "@/components/admin/ui/VideoUploader";
+import LessonAttachmentManager from "@/components/admin/lms/LessonAttachmentManager";
+import { useToast } from "@/components/ui/Toast";
+import styles from "@/styles/lms.module.css";
+import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconSuccess, IconEyeOff } from "@/components/ui/Icons";
 
 export default function EditarLeccionPage() {
     const params = useParams();
     const router = useRouter();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -52,7 +54,7 @@ export default function EditarLeccionPage() {
             setOrder(data.order || 0);
             setPublished(data.published);
         } catch (err) {
-            alert("Error al cargar datos");
+            toast.error("Error al cargar datos de la lección");
             router.push(`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`);
         } finally {
             setLoading(false);
@@ -84,9 +86,10 @@ export default function EditarLeccionPage() {
 
             if (!res.ok) throw new Error("Error al actualizar lección");
 
+            toast.success("Lección actualizada correctamente");
             router.push(`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al guardar");
+            toast.error(err instanceof Error ? err.message : "Error al guardar");
         } finally {
             setSaving(false);
         }

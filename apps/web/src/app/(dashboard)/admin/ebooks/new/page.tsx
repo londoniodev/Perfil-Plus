@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "@/app/styles/ebook-form.module.css";
+import styles from "@/styles/ebook-form.module.css";
 
-import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconCheck, IconRocket } from "@/app/components/ui/Icons";
+import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconCheck, IconRocket } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 
 export default function NewEbookPage() {
     const router = useRouter();
+    const toast = useToast();
     const [submitting, setSubmitting] = useState(false);
 
     const [title, setTitle] = useState("");
@@ -24,7 +26,7 @@ export default function NewEbookPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !description || !price || !coverFile || !fullFile) {
-            alert("Por favor completa todos los campos requeridos");
+            toast.error("Por favor completa todos los campos requeridos");
             return;
         }
 
@@ -59,10 +61,11 @@ export default function NewEbookPage() {
             });
 
             if (!res.ok) throw new Error("Error al crear eBook");
+            toast.success("E-book creado correctamente");
             router.push("/admin/ebooks");
             router.refresh();
         } catch (error) {
-            alert(error instanceof Error ? error.message : "Error");
+            toast.error(error instanceof Error ? error.message : "Error al crear E-book");
         } finally {
             setSubmitting(false);
         }

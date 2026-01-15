@@ -4,10 +4,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { API_BASE } from "@/lib/config";
-import PostsGrid, { Post } from "@/app/components/admin/blog/PostsGrid";
-import FilterTabs from "@/app/components/ui/FilterTabs";
-import Pagination from "@/app/components/ui/Pagination";
-import { IconPlus } from "@/app/components/ui/Icons";
+import PostsGrid, { Post } from "@/components/admin/blog/PostsGrid";
+import FilterTabs from "@/components/ui/FilterTabs";
+import Pagination from "@/components/ui/Pagination";
+import { IconPlus } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/admin.module.css";
 
 // ============================================================================
 // TIPOS
@@ -38,10 +41,10 @@ const FILTER_TABS: { id: FilterType; label: string }[] = [
 export default function AdminBlogPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filter, setFilter] = useState<FilterType>("all");
@@ -56,7 +59,6 @@ export default function AdminBlogPage() {
     // Cargar posts
     const fetchPosts = useCallback(async () => {
         setLoading(true);
-        setError(null);
         try {
             const publishedParam =
                 filter === "published" ? "&published=true" :
@@ -73,7 +75,7 @@ export default function AdminBlogPage() {
             setPosts(data.data);
             setTotalPages(data.meta.totalPages);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setLoading(false);
         }
@@ -96,8 +98,9 @@ export default function AdminBlogPage() {
             });
             if (!res.ok) throw new Error("Error al eliminar");
             fetchPosts();
+            toast.success("Post eliminado correctamente");
         } catch {
-            alert("Error al eliminar el post");
+            toast.error("Error al eliminar el post");
         }
     };
 
@@ -111,8 +114,9 @@ export default function AdminBlogPage() {
             });
             if (!res.ok) throw new Error("Error al actualizar");
             fetchPosts();
+            toast.success(post.published ? "Post despublicado" : "Post publicado");
         } catch {
-            alert("Error al actualizar el post");
+            toast.error("Error al actualizar el post");
         }
     };
 
@@ -131,19 +135,14 @@ export default function AdminBlogPage() {
     }
 
     return (
-        <div style={{ padding: "2rem" }}>
+        <div className={styles.adminPageWrapper}>
             {/* Header */}
             <div className="page-header">
-                <h1 className="page-title">
-                    Gestión del Blog
-                </h1>
-                <button
-                    onClick={() => router.push("/admin/blog/nuevo")}
-                    className="btn btn-primary"
-                >
+                <h1>Gestión del Blog</h1>
+                <Button onClick={() => router.push("/admin/blog/nuevo")}>
                     <IconPlus size={20} />
                     Nuevo Post
-                </button>
+                </Button>
             </div>
 
             {/* Filtros */}
@@ -155,41 +154,30 @@ export default function AdminBlogPage() {
                 />
             </div>
 
-            {/* Error */}
-            {
-                error && (
-                    <div className="alert alert-error">
-                        {error}
-                    </div>
-                )
-            }
-
             {/* Contenido */}
-            {
-                loading ? (
-                    <div className="state-loading">
-                        Cargando posts...
-                    </div>
-                ) : posts.length === 0 ? (
-                    <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
-                ) : (
-                    <>
-                        <PostsGrid
-                            posts={posts}
-                            onDelete={handleDelete}
-                            onTogglePublish={handleTogglePublish}
+            {loading ? (
+                <div className="state-loading">
+                    Cargando posts...
+                </div>
+            ) : posts.length === 0 ? (
+                <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
+            ) : (
+                <>
+                    <PostsGrid
+                        posts={posts}
+                        onDelete={handleDelete}
+                        onTogglePublish={handleTogglePublish}
+                    />
+                    <div className={styles.paginationWrapper}>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={totalPages}
+                            onPageChange={setPage}
                         />
-                        <div style={{ marginTop: "2rem" }}>
-                            <Pagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                onPageChange={setPage}
-                            />
-                        </div>
-                    </>
-                )
-            }
-        </div >
+                    </div>
+                </>
+            )}
+        </div>
     );
 }
 
@@ -207,29 +195,11 @@ function EmptyState({ filter, onCreateNew }: EmptyStateProps) {
         filter === "draft" ? " en borrador" : "";
 
     return (
-        <div style={{
-            textAlign: "center",
-            padding: "3rem",
-            background: "var(--card-bg)",
-            border: "1px solid var(--border)",
-            borderRadius: "1rem",
-        }}>
-            <p style={{ color: "var(--foreground-muted)", marginBottom: "1rem" }}>
-                No hay posts{filterText}
-            </p>
-            <button
-                onClick={onCreateNew}
-                style={{
-                    padding: "0.75rem 1.5rem",
-                    background: "var(--accent)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0.5rem",
-                    cursor: "pointer",
-                }}
-            >
+        <div className={styles.emptyState}>
+            <p>No hay posts{filterText}</p>
+            <Button onClick={onCreateNew}>
                 Crear primer post
-            </button>
+            </Button>
         </div>
     );
 }

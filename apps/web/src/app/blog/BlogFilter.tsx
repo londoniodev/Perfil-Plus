@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Category } from "@/lib/types";
-import { IconChevronDown } from "@/app/components/ui/Icons";
-import styles from "@/app/styles/blog.module.css";
+import { IconChevronDown } from "@/components/ui/Icons";
+import styles from "@/styles/blog.module.css";
 
 interface BlogFilterProps {
     categories: Category[];

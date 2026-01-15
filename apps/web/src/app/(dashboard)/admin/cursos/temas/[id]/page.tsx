@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ui/ImageUploader";
-import CourseCard from "@/app/components/admin/lms/CourseCard";
-import styles from "@/app/styles/lms.module.css";
+import ImageUploader from "@/components/admin/ui/ImageUploader";
+import CourseCard from "@/components/admin/lms/CourseCard";
+import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
-import { IconBack, IconPlus } from "@/app/components/ui/Icons";
+import { IconBack, IconPlus } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 interface EditarTemaPageProps {
     params: Promise<{ id: string }>;
@@ -51,7 +52,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
     const [evaluation, setEvaluation] = useState<{ id: string; title: string } | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
 
     useEffect(() => {
         params.then((p) => setThemeId(p.id));
@@ -82,7 +83,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
             setCourses(data.courses || []);
             setEvaluation(data.evaluation);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error al cargar tema");
+            toast.error(err instanceof Error ? err.message : "Error al cargar tema");
         } finally {
             setLoading(false);
         }
@@ -101,11 +102,10 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         e.preventDefault();
 
         if (!formData.title.trim()) {
-            setError("El título es requerido");
+            toast.error("El título es requerido");
             return;
         }
 
-        setError(null);
         setSaving(true);
 
         try {
@@ -122,8 +122,9 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
             }
 
             router.push("/admin/cursos");
+            toast.success("Tema actualizado correctamente");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setSaving(false);
         }
@@ -141,8 +142,9 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
             if (!res.ok) throw new Error("Error al eliminar curso");
 
             setCourses((prev) => prev.filter((c) => c.id !== courseId));
+            toast.success("Curso eliminado correctamente");
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al eliminar");
+            toast.error(err instanceof Error ? err.message : "Error al eliminar");
         }
     };
 
@@ -164,8 +166,9 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
             const newEval = await res.json();
             setEvaluation(newEval);
             router.push(`/admin/cursos/temas/${themeId}/evaluacion/${newEval.id}`);
+            toast.success("Evaluación creada");
         } catch (err) {
-            alert("Error al crear la evaluación");
+            toast.error("Error al crear la evaluación");
         }
     };
 
@@ -178,8 +181,6 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
 
             <div className={styles.formCard}>
                 <h1 className={styles.formTitle}>Editar Tema</h1>
-
-                {error && <div className={styles.error}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>

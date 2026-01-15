@@ -4,13 +4,15 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "@/app/styles/ebook-form.module.css";
+import styles from "@/styles/ebook-form.module.css";
 
-import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconSave, IconCheck } from "@/app/components/ui/Icons";
+import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconSave, IconCheck } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 export default function EditEbookPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
     const router = useRouter();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
@@ -89,10 +91,11 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             });
 
             if (!res.ok) throw new Error("Error");
+            toast.success("E-book actualizado correctamente");
             router.push("/admin/ebooks");
             router.refresh();
         } catch (error) {
-            alert(error instanceof Error ? error.message : "Error");
+            toast.error(error instanceof Error ? error.message : "Error al actualizar E-book");
         } finally {
             setSubmitting(false);
         }

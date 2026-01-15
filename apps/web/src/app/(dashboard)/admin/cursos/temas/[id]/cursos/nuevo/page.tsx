@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ui/ImageUploader";
-import styles from "@/app/styles/lms.module.css";
+import ImageUploader from "@/components/admin/ui/ImageUploader";
+import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
-import { IconBack } from "@/app/components/ui/Icons";
+import { IconBack } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 interface NuevoCursoPageProps {
     params: Promise<{ id: string }>;
@@ -27,7 +28,7 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
         published: false,
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
 
     useEffect(() => {
         params.then((p) => setThemeId(p.id));
@@ -46,16 +47,15 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
         e.preventDefault();
 
         if (!formData.title.trim()) {
-            setError("El título es requerido");
+            toast.error("El título es requerido");
             return;
         }
 
         if (!formData.description.trim()) {
-            setError("La descripción es requerida");
+            toast.error("La descripción es requerida");
             return;
         }
 
-        setError(null);
         setLoading(true);
 
         try {
@@ -74,9 +74,10 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
                 throw new Error(data.message || "Error al crear curso");
             }
 
+            toast.success("Curso creado correctamente");
             router.push(`/admin/cursos/temas/${themeId}`);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setLoading(false);
         }
@@ -92,7 +93,7 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
             <div className={styles.formCard}>
                 <h1 className={styles.formTitle}>Nuevo Curso</h1>
 
-                {error && <div className={styles.error}>{error}</div>}
+                <h1 className={styles.formTitle}>Nuevo Curso</h1>
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>

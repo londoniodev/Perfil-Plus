@@ -7,9 +7,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
-import styles from "@/app/styles/auth.module.css";
-import { AuthLayout } from "@/app/components/auth/AuthLayout";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/auth.module.css";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 
 const resetPasswordSchema = z
@@ -33,6 +34,7 @@ function ResetPasswordFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
+    const toast = useToast();
 
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -188,17 +190,17 @@ function ResetPasswordFormContent() {
                 </div>
 
                 <div>
-                    <button
+                    <Button
                         type="submit"
                         disabled={isLoading}
-                        className="btn btn-primary w-full"
+                        fullWidth
                     >
                         {isLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                         ) : (
                             'Actualizar contraseña'
                         )}
-                    </button>
+                    </Button>
                 </div>
             </form>
 

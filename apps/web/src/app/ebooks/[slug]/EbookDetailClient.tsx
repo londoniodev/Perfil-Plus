@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "@/app/styles/ebooks.module.css";
+import styles from "@/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
-import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@/app/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
+import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@/components/ui/Icons";
 
 interface Ebook {
     id: string;
@@ -25,6 +26,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
     const [hasPurchased, setHasPurchased] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [downloading, setDownloading] = useState(false);
+    const toast = useToast();
 
     // Verificación de sesión basada en Cookie
     const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
@@ -104,7 +106,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                 window.location.href = data.sandboxInitPoint;
             }
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         } finally {
             setProcessing(false);
         }
@@ -123,7 +125,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
             const data = await res.json();
             window.open(data.downloadUrl, "_blank");
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         } finally {
             setDownloading(false);
         }

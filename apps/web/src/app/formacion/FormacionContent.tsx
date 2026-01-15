@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { IconTarget, IconBrain, IconZap } from "@/app/components/ui/Icons";
-import styles from "@/app/styles/formacion.module.css";
+import { IconTarget, IconBrain, IconZap } from "@/components/ui/Icons";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/formacion.module.css";
 
 export default function FormacionContent() {
     const cursos = [
@@ -45,9 +46,9 @@ export default function FormacionContent() {
                         con enfoque en psicología aplicada y desarrollo personal.
                     </p>
                     <div className="animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
-                        <Link href="/login?redirect=/cursos" className="btn btn-primary" style={{ padding: "0.8rem 2rem", fontSize: "1rem" }}>
-                            Comenzar Ahora
-                        </Link>
+                        <Button asChild>
+                            <Link href="/login?redirect=/cursos">Comenzar Ahora</Link>
+                        </Button>
                     </div>
                 </div>
             </section>
@@ -76,13 +77,9 @@ export default function FormacionContent() {
                                             {curso.duration}
                                         </span>
                                     </div>
-                                    <Link
-                                        href="/login?redirect=/cursos"
-                                        className="btn btn-secondary"
-                                        style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}
-                                    >
-                                        Ver Detalles
-                                    </Link>
+                                    <Button asChild variant="secondary" fullWidth>
+                                        <Link href="/login?redirect=/cursos">Ver Detalles</Link>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
@@ -98,12 +95,12 @@ export default function FormacionContent() {
                         Únete a cientos de profesionales que ya han transformado su carrera con nuestros programas.
                     </p>
                     <div className={styles.ctaButtons}>
-                        <Link href="/login?redirect=/cursos" className="btn btn-primary">
-                            Inscribirme Ahora
-                        </Link>
-                        <Link href="/servicios" className="btn btn-secondary">
-                            Conocer Servicios
-                        </Link>
+                        <Button asChild>
+                            <Link href="/login?redirect=/cursos">Inscribirme Ahora</Link>
+                        </Button>
+                        <Button asChild variant="secondary">
+                            <Link href="/servicios">Conocer Servicios</Link>
+                        </Button>
                     </div>
                 </div>
             </section>

@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import BlogEditor from "@/app/components/admin/blog/BlogEditor";
-import VideoUploader from "@/app/components/admin/ui/VideoUploader";
-import styles from "@/app/styles/lms.module.css";
-import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconSuccess, IconEyeOff, IconBack } from "@/app/components/ui/Icons";
+import BlogEditor from "@/components/admin/blog/BlogEditor";
+import VideoUploader from "@/components/admin/ui/VideoUploader";
+import { useToast } from "@/components/ui/Toast";
+import styles from "@/styles/lms.module.css";
+import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconSuccess, IconEyeOff, IconBack } from "@/components/ui/Icons";
 
 export default function NuevaLeccionPage() {
     const params = useParams();
     const router = useRouter();
+    const toast = useToast();
     const [loading, setLoading] = useState(false);
 
     // Form state
@@ -45,9 +47,10 @@ export default function NuevaLeccionPage() {
 
             if (!res.ok) throw new Error("Error al crear lección");
 
+            toast.success("Lección creada correctamente");
             router.push(`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`);
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al guardar");
+            toast.error(err instanceof Error ? err.message : "Error al guardar");
         } finally {
             setLoading(false);
         }

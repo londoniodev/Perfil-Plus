@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "@/app/styles/ebooks.module.css";
+import styles from "@/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
+import { Button } from "@/components/ui/Button";
+import { useToast } from "@/components/ui/Toast";
+import { IconDownload, IconBook } from "@/components/ui/Icons";
 
 interface Purchase {
     id: string;
@@ -18,6 +21,7 @@ interface Purchase {
 
 export default function MisEbooksPage() {
     const [purchases, setPurchases] = useState<Purchase[]>([]);
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -35,9 +39,12 @@ export default function MisEbooksPage() {
             } else if (res.status === 401 || res.status === 403) {
                 // No autenticado
                 window.location.href = "/login?redirect=/ebooks/mis-compras";
+            } else {
+                // Handle non-401/403 errors (e.g. 500)
+                toast.error("Error al cargar tus compras");
             }
         } catch {
-            // Ignore for now
+            toast.error("Error de conexión al cargar compras");
         } finally {
             setLoading(false);
         }
@@ -54,7 +61,7 @@ export default function MisEbooksPage() {
             const data = await res.json();
             window.open(data.downloadUrl, "_blank");
         } catch (err: any) {
-            alert(err.message);
+            toast.error(err.message);
         }
     };
 
@@ -82,9 +89,11 @@ export default function MisEbooksPage() {
                     {purchases.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>Aún no has comprado ningún e-book.</p>
-                            <Link href="/ebooks" className="btn btn-primary" style={{ marginTop: "1rem" }}>
-                                Ver e-books disponibles
-                            </Link>
+                            <Button asChild className="mt-md">
+                                <Link href="/ebooks">
+                                    <IconBook size={18} /> Ver e-books disponibles
+                                </Link>
+                            </Button>
                         </div>
                     ) : (
                         <div className={styles.purchasesList}>
@@ -104,13 +113,12 @@ export default function MisEbooksPage() {
                                             })}
                                         </p>
                                     </div>
-                                    <button
+                                    <Button
                                         onClick={() => handleDownload(purchase.ebook.id)}
-                                        className="btn btn-primary"
                                         style={{ alignSelf: "center" }}
                                     >
-                                        📥 Descargar
-                                    </button>
+                                        <IconDownload size={18} /> Descargar
+                                    </Button>
                                 </div>
                             ))}
                         </div>

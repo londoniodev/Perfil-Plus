@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { IconBack as IconArrowLeft } from "../components/ui/Icons";
-import styles from "@/app/styles/BlogBackButton.module.css";
+import { IconBack as IconArrowLeft } from "@/components/ui/Icons";
+import styles from "@/styles/BlogBackButton.module.css";
 
 export function BlogBackButton() {
     return (

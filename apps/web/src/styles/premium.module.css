@@ -1,0 +1,27 @@
+.premiumBlock {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px;
+    padding: 3rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.premiumIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent, #FFA500);
+}
+
+.premiumBlock h2 {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.premiumBlock p {
+    color: var(--foreground-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}

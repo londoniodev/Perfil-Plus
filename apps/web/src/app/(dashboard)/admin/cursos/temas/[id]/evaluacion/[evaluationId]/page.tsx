@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import QuestionEditor from "@/app/components/admin/lms/QuestionEditor";
-import styles from "@/app/styles/lms.module.css";
-import { IconEdit, IconDocument, IconCheck, IconTrash } from "@/app/components/ui/Icons";
+import QuestionEditor from "@/components/admin/lms/QuestionEditor";
+import styles from "@/styles/lms.module.css";
+import { IconEdit, IconDocument, IconCheck, IconTrash } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 interface Option {
     id: string;
@@ -33,6 +34,7 @@ interface Evaluation {
 export default function EditarEvaluacionPage() {
     const params = useParams();
     const router = useRouter();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
@@ -60,7 +62,7 @@ export default function EditarEvaluacionPage() {
                 passingScore: data.passingScore
             });
         } catch (err) {
-            alert("Error al cargar datos");
+            toast.error("Error al cargar datos de la evaluación");
             router.push(`/admin/cursos/temas/${params.id}`);
         } finally {
             setLoading(false);
@@ -81,10 +83,11 @@ export default function EditarEvaluacionPage() {
                 credentials: "include",
                 body: JSON.stringify(basicInfo),
             });
+
             if (!res.ok) throw new Error("Error al actualizar");
-            alert("Información actualizada");
+            toast.success("Información actualizada correctamente");
         } catch (err) {
-            alert("Error al guardar cambios");
+            toast.error("Error al guardar cambios");
         } finally {
             setSaving(false);
         }
@@ -114,9 +117,12 @@ export default function EditarEvaluacionPage() {
 
             setEditingQuestion(null);
             setIsCreatingQuestion(false);
+            setEditingQuestion(null);
+            setIsCreatingQuestion(false);
             fetchEvaluation();
+            toast.success("Pregunta guardada correctamente");
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al guardar pregunta");
+            toast.error(err instanceof Error ? err.message : "Error al guardar pregunta");
         }
     };
 
@@ -129,8 +135,9 @@ export default function EditarEvaluacionPage() {
             });
             if (!res.ok) throw new Error("Error al eliminar");
             fetchEvaluation();
+            toast.success("Pregunta eliminada correctamente");
         } catch (err) {
-            alert("Error al eliminar pregunta");
+            toast.error("Error al eliminar pregunta");
         }
     };
 

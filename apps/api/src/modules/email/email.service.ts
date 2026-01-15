@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { getVerificationEmailTemplate } from './templates/verification-email';
-import { getPasswordRecoveryEmailTemplate } from './templates/recovery-email';
+import { render } from '@react-email/render';
+import { VerificationEmail } from './emails/VerificationEmail';
+import { RecoveryEmail } from './emails/RecoveryEmail';
 
 interface SendEmailOptions {
     to: string;
@@ -64,7 +65,8 @@ export class EmailService {
         );
         const verificationUrl = `${frontendUrl}/verificar-email?token=${verificationToken}`;
 
-        const { html, text } = getVerificationEmailTemplate(name, verificationUrl);
+        const html = await render(VerificationEmail({ name, url: verificationUrl }));
+        const text = `¡Hola ${name}!\n\nGracias por registrarte. Verifica tu email: ${verificationUrl}\n\nEste enlace expira en 24 horas.`;
 
         return this.sendEmail({
             to: email,
@@ -85,7 +87,8 @@ export class EmailService {
         );
         const recoveryUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
-        const { html, text } = getPasswordRecoveryEmailTemplate(name, recoveryUrl);
+        const html = await render(RecoveryEmail({ name, url: recoveryUrl }));
+        const text = `¡Hola ${name}!\n\nHemos recibido una solicitud para restablecer tu contraseña.\nVisita: ${recoveryUrl}\n\nEste enlace expira en 1 hora.`;
 
         return this.sendEmail({
             to: email,

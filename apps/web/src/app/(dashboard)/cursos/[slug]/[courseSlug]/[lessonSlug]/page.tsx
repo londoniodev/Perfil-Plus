@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import styles from "@/app/styles/lesson.module.css";
+import styles from "@/styles/lesson.module.css";
 import { API_BASE } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useToast } from "@/components/ui/Toast";
+import { IconClock, IconSuccess } from "@/components/ui/Icons";
+import PremiumLock from "@/components/ui/PremiumLock";
 
 interface LessonData {
     id: string;
@@ -32,6 +35,7 @@ export default function LessonPage({
     params: Promise<{ slug: string; courseSlug: string; lessonSlug: string }>;
 }) {
     const { isAuthenticated, loading: authLoading, user } = useAuth();
+    const toast = useToast();
     const [lesson, setLesson] = useState<LessonData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -98,8 +102,9 @@ export default function LessonPage({
                 body: JSON.stringify({ completed: true }),
             });
             setCompleted(true);
+            toast.success("Lección completada");
         } catch (err) {
-            console.error("Error updating progress");
+            toast.error("Error al actualizar el progreso");
         }
     };
 
@@ -117,14 +122,12 @@ export default function LessonPage({
         return (
             <div className={styles.lessonPage}>
                 <div className="container state-container">
-                    <div className={styles.premiumBlock}>
-                        <div className={styles.premiumIcon}>🔐</div>
-                        <h2>Inicia sesión para ver esta lección</h2>
-                        <p>Necesitas una cuenta para acceder al contenido del curso.</p>
-                        <Link href="/admin/login" className="btn btn-primary">
-                            Iniciar Sesión
-                        </Link>
-                    </div>
+                    <PremiumLock
+                        title="Inicia sesión para ver esta lección"
+                        description="Necesitas una cuenta para acceder al contenido del curso."
+                        actionHref="/admin/login"
+                        actionText="Iniciar Sesión"
+                    />
                 </div>
             </div>
         );
@@ -134,14 +137,12 @@ export default function LessonPage({
         return (
             <div className={styles.lessonPage}>
                 <div className="container state-container">
-                    <div className={styles.premiumBlock}>
-                        <div className={styles.premiumIcon}>🔒</div>
-                        <h2>Contenido Premium</h2>
-                        <p>Necesitas una suscripción activa para acceder a este contenido.</p>
-                        <Link href="/suscripcion" className="btn btn-primary">
-                            Ver Planes
-                        </Link>
-                    </div>
+                    <PremiumLock
+                        title="Contenido Premium"
+                        description="Necesitas una suscripción activa para acceder a este contenido."
+                        actionHref="/suscripcion"
+                        actionText="Ver Planes"
+                    />
                 </div>
             </div>
         );
@@ -176,9 +177,15 @@ export default function LessonPage({
                     <h1 className={styles.lessonTitle}>{lesson.title}</h1>
                     <div className={styles.lessonMeta}>
                         {lesson.duration && (
-                            <span>⏱️ {Math.floor(lesson.duration / 60)} min</span>
+                            <span className="flex items-center gap-1">
+                                <IconClock size={16} /> {Math.floor(lesson.duration / 60)} min
+                            </span>
                         )}
-                        {completed && <span className="status-completed">✓ Completada</span>}
+                        {completed && (
+                            <span className="status-completed flex items-center gap-1">
+                                <IconSuccess size={16} /> Completada
+                            </span>
+                        )}
                     </div>
                 </div>
             </header>
@@ -221,7 +228,13 @@ export default function LessonPage({
                             className={`${styles.markComplete} ${completed ? styles.completed : ""}`}
                             disabled={completed}
                         >
-                            {completed ? "✓ Completada" : "Marcar como completada"}
+                            {completed ? (
+                                <>
+                                    <IconSuccess size={18} /> Completada
+                                </>
+                            ) : (
+                                "Marcar como completada"
+                            )}
                         </button>
                     </div>
 

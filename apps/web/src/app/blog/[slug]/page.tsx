@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
-import styles from "@/app/styles/post.module.css";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/post.module.css";
 import { BlogBreadcrumbs } from "../BlogBreadcrumbs";
 import { BlogMeta } from "../BlogMeta";
 import { BlogBackButton } from "../BlogBackButton";
@@ -148,9 +149,9 @@ export default async function PostPage({ params }: PostPageProps) {
                 <div className={styles.premiumIcon}>🔒</div>
                 <h3>Contenido Premium</h3>
                 <p>Este artículo es exclusivo para suscriptores. Suscríbete para acceder al contenido completo.</p>
-                <Link href="/suscripcion" className="btn btn-primary">
-                  Suscribirme ahora
-                </Link>
+                <Button asChild>
+                  <Link href="/suscripcion">Suscribirme ahora</Link>
+                </Button>
               </div>
             )}
 

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCourseBySlug, getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import styles from "@/app/styles/cursos.module.css";
-import { CourseSchema, BreadcrumbSchema } from "@/app/components/seo/JsonLd";
+import { IconCheck } from "@/components/ui/Icons";
+import styles from "@/styles/cursos.module.css";
+import { CourseSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
@@ -112,7 +113,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                                         className={`${styles.lessonItem} ${lesson.completed ? styles.completed : ""}`}
                                     >
                                         <span className={`${styles.lessonStatus} ${lesson.completed ? styles.complete : styles.pending}`}>
-                                            {lesson.completed ? "✓" : index + 1}
+                                            {lesson.completed ? <IconCheck size={16} /> : index + 1}
                                         </span>
                                         <div className={styles.lessonInfo}>
                                             <h4>{lesson.title}</h4>

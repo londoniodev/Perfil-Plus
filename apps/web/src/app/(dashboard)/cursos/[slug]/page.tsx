@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import styles from "@/app/styles/cursos.module.css";
+import { IconClipboard } from "@/components/ui/Icons";
+import styles from "@/styles/cursos.module.css";
 
 interface ThemePageProps {
     params: Promise<{ slug: string }>;
@@ -82,7 +83,9 @@ export default async function ThemePage({ params }: ThemePageProps) {
                                 className={styles.courseItem}
                                 style={{ borderColor: "var(--primary)" }}
                             >
-                                <span className={styles.courseNumber}>📝</span>
+                                <span className={styles.courseNumber}>
+                                    <IconClipboard size={24} />
+                                </span>
                                 <div className={styles.courseInfo}>
                                     <h3>{theme.evaluation.title}</h3>
                                     <p>Pon a prueba tus conocimientos del tema</p>

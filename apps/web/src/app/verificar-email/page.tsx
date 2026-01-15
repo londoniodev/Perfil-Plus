@@ -4,6 +4,16 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    CardFooter,
+} from "@/components/ui/Card";
 
 type VerificationStatus = "loading" | "success" | "error" | "expired" | "no-token";
 
@@ -46,151 +56,108 @@ function VerifyEmailContent() {
         }
     };
 
-    const containerStyle: React.CSSProperties = {
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-        background: "var(--background)"
-    };
-
-    const cardStyle: React.CSSProperties = {
-        maxWidth: "500px",
-        width: "100%",
-        textAlign: "center",
-        padding: "3rem 2rem",
-        background: "var(--surface)",
-        borderRadius: "1rem",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
-    };
-
-    const iconStyle: React.CSSProperties = {
-        width: "80px",
-        height: "80px",
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        margin: "0 auto 1.5rem",
-        fontSize: "2.5rem"
-    };
+    // Estilos comunes (icon wrappers)
+    const iconWrapperClass = "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl";
+    const containerClass = "min-h-screen flex items-center justify-center p-8 bg-background";
+    const cardClass = "w-full max-w-[500px] text-center shadow-xl border-border/50";
 
     if (status === "loading") {
         return (
-            <div style={containerStyle}>
-                <div style={cardStyle}>
-                    <div style={{ ...iconStyle, background: "rgba(99, 102, 241, 0.1)" }}>
-                        ⏳
-                    </div>
-                    <h1 className="card-title" style={{ marginBottom: "1rem" }}>Verificando tu email...</h1>
-                    <p className="card-text">
-                        Por favor espera un momento.
-                    </p>
-                </div>
+            <div className={containerClass}>
+                <Card className={cardClass}>
+                    <CardHeader>
+                        <div className={`${iconWrapperClass} bg-indigo-500/10`}>⏳</div>
+                        <CardTitle>Verificando tu email...</CardTitle>
+                        <CardDescription>Por favor espera un momento.</CardDescription>
+                    </CardHeader>
+                </Card>
             </div>
         );
     }
 
     if (status === "no-token") {
         return (
-            <div style={containerStyle}>
-                <div style={cardStyle}>
-                    <div style={{ ...iconStyle, background: "rgba(239, 68, 68, 0.1)" }}>
-                        ❓
-                    </div>
-                    <h1 className="card-title" style={{ marginBottom: "1rem" }}>Token no encontrado</h1>
-                    <p className="card-text" style={{ marginBottom: "2rem" }}>
-                        El enlace de verificación no es válido. Asegúrate de copiar el enlace completo del email.
-                    </p>
-                    <Link href="/registro" className="btn btn-primary">
-                        Crear cuenta nueva
-                    </Link>
-                </div>
+            <div className={containerClass}>
+                <Card className={cardClass}>
+                    <CardHeader>
+                        <div className={`${iconWrapperClass} bg-red-500/10`}>❓</div>
+                        <CardTitle>Token no encontrado</CardTitle>
+                        <CardDescription className="mb-4">
+                            El enlace de verificación no es válido. Asegúrate de copiar el enlace completo del email.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href="/registro">Crear cuenta nueva</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (status === "success") {
         return (
-            <div style={containerStyle}>
-                <div style={cardStyle}>
-                    <div style={{
-                        ...iconStyle,
-                        background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
-                    }}>
-                        ✓
-                    </div>
-                    <h1 className="card-title" style={{ marginBottom: "1rem", color: "#22c55e" }}>
-                        ¡Email verificado!
-                    </h1>
-                    <p className="card-text" style={{ marginBottom: "2rem" }}>
-                        Tu cuenta ha sido verificada correctamente.
-                        Ya puedes acceder a todo el contenido de la plataforma.
-                    </p>
-                    <Link
-                        href="/login"
-                        className="btn btn-primary"
-                        style={{ padding: "1rem 2rem" }}
-                    >
-                        Iniciar Sesión
-                    </Link>
-                </div>
+            <div className={containerClass}>
+                <Card className={cardClass}>
+                    <CardHeader>
+                        <div className={`${iconWrapperClass} bg-gradient-to-br from-green-500 to-green-600 text-white`}>✓</div>
+                        <CardTitle className="text-green-500">¡Email verificado!</CardTitle>
+                        <CardDescription className="mb-4 text-base">
+                            Tu cuenta ha sido verificada correctamente.
+                            Ya puedes acceder a todo el contenido de la plataforma.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href="/login">Iniciar Sesión</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (status === "expired") {
         return (
-            <div style={containerStyle}>
-                <div style={cardStyle}>
-                    <div style={{ ...iconStyle, background: "rgba(251, 146, 60, 0.1)" }}>
-                        ⏰
-                    </div>
-                    <h1 className="card-title" style={{ marginBottom: "1rem", color: "#f97316" }}>
-                        Enlace expirado
-                    </h1>
-                    <p className="card-text" style={{ marginBottom: "2rem" }}>
-                        El enlace de verificación ha expirado.
-                        Los enlaces son válidos por 24 horas.
-                    </p>
-                    <ResendVerificationForm />
-                </div>
+            <div className={containerClass}>
+                <Card className={cardClass}>
+                    <CardHeader>
+                        <div className={`${iconWrapperClass} bg-orange-500/10`}>⏰</div>
+                        <CardTitle className="text-orange-500">Enlace expirado</CardTitle>
+                        <CardDescription className="mb-4">
+                            El enlace de verificación ha expirado.
+                            Los enlaces son válidos por 24 horas.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ResendVerificationForm />
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     // Error state
     return (
-        <div style={containerStyle}>
-            <div style={cardStyle}>
-                <div style={{ ...iconStyle, background: "rgba(239, 68, 68, 0.1)" }}>
-                    ✕
-                </div>
-                <h1 className="card-title" style={{ marginBottom: "1rem", color: "#ef4444" }}>
-                    Error de verificación
-                </h1>
-                <p className="card-text" style={{ marginBottom: "2rem" }}>
-                    {message}
-                </p>
-                <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-                    <Link href="/registro" className="btn btn-primary">
-                        Crear cuenta nueva
-                    </Link>
-                    <Link
-                        href="/login"
-                        style={{
-                            padding: "0.75rem 1.5rem",
-                            border: "1px solid var(--border)",
-                            borderRadius: "0.5rem",
-                            color: "var(--foreground-muted)",
-                            textDecoration: "none"
-                        }}
-                    >
-                        Iniciar Sesión
-                    </Link>
-                </div>
-            </div>
+        <div className={containerClass}>
+            <Card className={cardClass}>
+                <CardHeader>
+                    <div className={`${iconWrapperClass} bg-red-500/10`}>✕</div>
+                    <CardTitle className="text-red-500">Error de verificación</CardTitle>
+                    <CardDescription className="mb-4 text-base">
+                        {message}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4 justify-center">
+                    <Button asChild>
+                        <Link href="/registro">Crear cuenta nueva</Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                        <Link href="/login">Iniciar Sesión</Link>
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     );
 }
@@ -199,12 +166,11 @@ function ResendVerificationForm() {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
-    const [error, setError] = useState("");
+    const toast = useToast();
 
     const handleResend = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError("");
 
         try {
             const res = await fetch(`${API_BASE}/auth/resend-verification`, {
@@ -220,8 +186,9 @@ function ResendVerificationForm() {
             }
 
             setSent(true);
+            toast.success("Email enviado correctamente");
         } catch (err: any) {
-            setError(err.message);
+            toast.error(err.message);
         } finally {
             setLoading(false);
         }
@@ -229,14 +196,9 @@ function ResendVerificationForm() {
 
     if (sent) {
         return (
-            <div style={{
-                padding: "1.5rem",
-                background: "rgba(34, 197, 94, 0.1)",
-                borderRadius: "0.75rem",
-                color: "#22c55e"
-            }}>
-                <p style={{ marginBottom: "0.5rem", fontWeight: 600 }}>✓ Email enviado</p>
-                <p style={{ fontSize: "0.9rem", color: "var(--foreground-muted)" }}>
+            <div className="p-6 bg-green-500/10 rounded-xl text-green-500 border border-green-500/20">
+                <p className="font-semibold mb-2">✓ Email enviado</p>
+                <p className="text-sm text-foreground-muted">
                     Si el email está registrado, recibirás un nuevo enlace de verificación.
                 </p>
             </div>
@@ -245,7 +207,7 @@ function ResendVerificationForm() {
 
     return (
         <form onSubmit={handleResend}>
-            <p className="card-text" style={{ marginBottom: "1rem" }}>
+            <p className="text-sm text-muted-foreground mb-4">
                 Ingresa tu email para recibir un nuevo enlace:
             </p>
             <input
@@ -254,29 +216,16 @@ function ResendVerificationForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tucorreo@ejemplo.com"
                 required
-                style={{
-                    width: "100%",
-                    padding: "0.75rem 1rem",
-                    border: "1px solid var(--border)",
-                    borderRadius: "0.5rem",
-                    marginBottom: "1rem",
-                    background: "var(--background)",
-                    color: "var(--foreground)"
-                }}
+                className="w-full p-3 border border-border rounded-lg mb-4 bg-background text-foreground focus:ring-2 focus:ring-primary/50 outline-none"
             />
-            {error && (
-                <p style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "0.9rem" }}>
-                    {error}
-                </p>
-            )}
-            <button
+
+            <Button
                 type="submit"
-                className="btn btn-primary"
+                fullWidth
                 disabled={loading}
-                style={{ width: "100%" }}
             >
                 {loading ? "Enviando..." : "Reenviar verificación"}
-            </button>
+            </Button>
         </form>
     );
 }
@@ -284,13 +233,7 @@ function ResendVerificationForm() {
 export default function VerificarEmailPage() {
     return (
         <Suspense fallback={
-            <div style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "var(--background)"
-            }}>
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <p>Cargando...</p>
             </div>
         }>

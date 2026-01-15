@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE } from "@/lib/config";
-import styles from "@/app/styles/ebook-list.module.css";
+import styles from "@/styles/ebook-list.module.css";
 
 interface Ebook {
     id: string;
@@ -19,11 +19,13 @@ interface Ebook {
     createdAt: string;
 }
 
-import { IconPlus, IconEdit, IconTrash, IconBook } from "@/app/components/ui/Icons";
+import { IconPlus, IconEdit, IconTrash, IconBook } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 export default function AdminEbooksPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const toast = useToast();
     const [ebooks, setEbooks] = useState<Ebook[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,8 +54,9 @@ export default function AdminEbooksPage() {
         try {
             await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", credentials: "include" });
             setEbooks((prev) => prev.filter((e) => e.id !== id));
+            toast.success("E-book eliminado correctamente");
         } catch (err) {
-            alert("Error al eliminar");
+            toast.error("Error al eliminar el E-book");
         }
     };
 

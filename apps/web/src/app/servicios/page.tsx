@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ServicesSelector } from "../components/servicios/ServicesSelector";
-import { ServicesPageSchema, FAQSchema, BreadcrumbSchema } from "../components/seo/JsonLd";
+import { ServicesSelector } from "@/components/servicios/ServicesSelector";
+import { ServicesPageSchema, FAQSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 

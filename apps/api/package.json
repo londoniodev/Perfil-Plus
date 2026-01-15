@@ -32,6 +32,8 @@
     "@nestjs/platform-express": "^11.1.11",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "5.22.0",
+    "@react-email/components": "^1.0.4",
+    "@react-email/render": "^2.0.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/helmet": "^4.0.0",
     "bcryptjs": "^3.0.3",
@@ -46,6 +48,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "prisma": "5.22.0",
+    "react": "^19.2.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

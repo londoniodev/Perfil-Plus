@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import styles from "@/app/styles/ebooks.module.css";
+import styles from "@/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 import {
     IconDownload as DownloadIcon,
     IconTarget as TargetIcon,
     IconShield as ShieldIcon,
     IconZap as LightbulbIcon,
-    IconBook as BookStackIcon, // Fallback
+    IconBook as BookStackIcon,
     IconBook as BookOpenIcon,
     IconCheck as CheckIcon,
-} from "@/app/components/ui/Icons";
+} from "@/components/ui/Icons";
+import { Button } from "@/components/ui/Button";
 
 // ============================================================================
 // METADATA Y TIPOS
@@ -129,12 +130,12 @@ function HeroSection() {
                     liderazgo y desarrollo personal que puedes implementar hoy mismo.
                 </p>
                 <div className={styles.heroButtons}>
-                    <a href="#catalogo" className="btn btn-primary">
-                        Ver Catálogo
-                    </a>
-                    <Link href="/formacion" className="btn btn-secondary">
-                        Explorar Cursos
-                    </Link>
+                    <Button asChild>
+                        <a href="#catalogo">Ver Catálogo</a>
+                    </Button>
+                    <Button asChild variant="secondary">
+                        <Link href="/formacion">Explorar Cursos</Link>
+                    </Button>
                 </div>
             </div>
         </section>
@@ -296,9 +297,9 @@ function CTASection() {
                 <p className={styles.ctaText}>
                     Accede a tu biblioteca personal para leer y descargar todos tus e-books.
                 </p>
-                <Link href="/login?redirect=/ebooks/mis-compras" className="btn btn-accent">
-                    Ir a Mis E-books
-                </Link>
+                <Button asChild variant="accent">
+                    <Link href="/login?redirect=/ebooks/mis-compras">Ir a Mis E-books</Link>
+                </Button>
             </div>
         </section>
     );

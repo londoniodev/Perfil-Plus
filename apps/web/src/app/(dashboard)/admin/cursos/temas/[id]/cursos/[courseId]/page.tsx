@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ui/ImageUploader";
-import LessonItem from "@/app/components/admin/lms/LessonItem";
-import styles from "@/app/styles/lms.module.css";
+import ImageUploader from "@/components/admin/ui/ImageUploader";
+import LessonItem from "@/components/admin/lms/LessonItem";
+import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
-import { IconBack, IconPlus } from "@/app/components/ui/Icons";
+import { IconBack, IconPlus } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 interface EditarCursoPageProps {
     params: Promise<{ id: string; courseId: string }>;
@@ -54,7 +55,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
 
     useEffect(() => {
         params.then(setIds);
@@ -85,7 +86,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                 published: data.published,
             });
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error al cargar curso");
+            toast.error(err instanceof Error ? err.message : "Error al cargar curso");
         } finally {
             setLoading(false);
         }
@@ -104,11 +105,10 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
         e.preventDefault();
 
         if (!formData.title.trim()) {
-            setError("El título es requerido");
+            toast.error("El título es requerido");
             return;
         }
 
-        setError(null);
         setSaving(true);
 
         try {
@@ -125,8 +125,9 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
             }
 
             router.push(`/admin/cursos/temas/${ids!.id}`);
+            toast.success("Curso actualizado correctamente");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setSaving(false);
         }
@@ -150,8 +151,9 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                     lessons: prev.lessons.filter((l) => l.id !== lessonId),
                 };
             });
+            toast.success("Lección eliminada correctamente");
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al eliminar");
+            toast.error(err instanceof Error ? err.message : "Error al eliminar");
         }
     };
 
@@ -164,8 +166,6 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
 
             <div className={styles.formCard}>
                 <h1 className={styles.formTitle}>Editar Curso</h1>
-
-                {error && <div className={styles.error}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>

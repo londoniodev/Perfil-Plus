@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import styles from "@/app/styles/perfil.module.css";
+import styles from "@/styles/perfil.module.css";
 
 export default function PerfilPage() {
     const router = useRouter();

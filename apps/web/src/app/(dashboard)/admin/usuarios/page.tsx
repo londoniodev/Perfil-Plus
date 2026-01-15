@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/lib/config";
-import UsersGrid, { UserGridItem as User } from "@/app/components/admin/users/UsersGrid";
-import Pagination from "@/app/components/ui/Pagination";
-import UserFilters from "@/app/components/admin/users/UserFilters";
+import UsersGrid, { UserGridItem as User } from "@/components/admin/users/UsersGrid";
+import Pagination from "@/components/ui/Pagination";
+import UserFilters from "@/components/admin/users/UserFilters";
+import { useToast } from "@/components/ui/Toast";
 
 // ============================================================================
 // TIPOS
@@ -29,6 +30,7 @@ interface UsersResponse {
 export default function AdminUsuariosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     const [users, setUsers] = useState<User[]>([]);
     const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
@@ -64,6 +66,7 @@ export default function AdminUsuariosPage() {
             }
         } catch (error) {
             console.error("Error fetching users:", error);
+            toast.error("Error al cargar usuarios");
         } finally {
             setLoading(false);
         }
@@ -97,9 +100,11 @@ export default function AdminUsuariosPage() {
             });
             if (res.ok) {
                 setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
+                toast.success("Rol actualizado correctamente");
             }
         } catch (error) {
             console.error("Error updating role:", error);
+            toast.error("Error al actualizar rol");
         } finally {
             setActionLoading(null);
         }
@@ -117,9 +122,11 @@ export default function AdminUsuariosPage() {
             });
             if (res.ok) {
                 setUsers(users.filter((u) => u.id !== userId));
+                toast.success("Usuario eliminado correctamente");
             }
         } catch (error) {
             console.error("Error deleting user:", error);
+            toast.error("Error al eliminar usuario");
         } finally {
             setActionLoading(null);
         }
@@ -155,12 +162,13 @@ export default function AdminUsuariosPage() {
                     }
                     return u;
                 }));
+                toast.success(action === "assign" ? "Suscripción asignada" : "Suscripción cancelada");
             } else {
-                alert("Error al actualizar la suscripción");
+                toast.error("Error al actualizar la suscripción");
             }
         } catch (error) {
             console.error("Error updating subscription:", error);
-            alert("Error de conexión");
+            toast.error("Error de conexión");
         } finally {
             setActionLoading(null);
         }

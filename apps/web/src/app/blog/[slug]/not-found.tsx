@@ -1,5 +1,6 @@
 import Link from "next/link";
-import styles from "@/app/styles/post.module.css";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/post.module.css";
 
 export default function NotFound() {
   return (
@@ -8,9 +9,9 @@ export default function NotFound() {
         <h1>404</h1>
         <h2>Artículo no encontrado</h2>
         <p>El artículo que buscas no existe o ha sido eliminado.</p>
-        <Link href="/blog" className="btn btn-primary">
-          Volver al blog
-        </Link>
+        <Button asChild>
+          <Link href="/blog">Volver al blog</Link>
+        </Button>
       </div>
     </div>
   );

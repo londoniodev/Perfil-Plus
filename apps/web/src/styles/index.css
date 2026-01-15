@@ -1,0 +1,33 @@
+/* =============================================
+   MAIN STYLESHEET - Import Order Matters!
+   ============================================= */
+
+/* 1. Variables & Theme (must be first) */
+@import "./variables.css";
+
+/* 2. Reset & Base */
+@import "./reset.css";
+
+/* 3. Typography */
+@import "./typography.css";
+
+/* 4. Layout */
+@import "./layout.css";
+
+
+
+@import "./utilities.css";
+
+/* 6. Animations */
+@import "./animations.css";
+
+/* 7. Feature Components */
+@import "./carousel.css";
+@import "./blog.css";
+@import "./dashboard.css";
+
+/* 8. Responsive (must be last for proper cascade) */
+@import "./responsive.css";
+
+/* Note: header, footer, hero, and sections use CSS Modules
+   imported directly in their respective components */

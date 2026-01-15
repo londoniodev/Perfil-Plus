@@ -8,7 +8,7 @@ import {
   MetodoSection,
   TestimoniosSection,
   CTASection,
-} from "./components/sections";
+} from "@/components/sections";
 
 export default function Home() {
   return (

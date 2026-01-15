@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Sansation } from "next/font/google";
-import "./styles/index.css";
-import { NavigationWrapper } from "./components/layout/NavigationWrapper";
-import { Footer } from "./components/layout/Footer";
-import { GlobalSchemas } from "./components/seo/JsonLd";
+import "@/styles/index.css";
+import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
+import { Footer } from "@/components/layout/Footer";
+import { GlobalSchemas } from "@/components/seo/JsonLd";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const sansation = Sansation({
   variable: "--font-sans",
@@ -43,7 +44,7 @@ export const metadata: Metadata = {
     description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.",
     images: [
       {
-        url: "/mauro_hero.png",
+        url: "/images/hero/mauro_hero.png",
         width: 1200,
         height: 630,
         alt: "Mauro Mera - Psicólogo y Consultor Organizacional",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Mauro Mera | Psicología, cultura y decisiones conscientes",
     description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.",
-    images: ["/mauro_hero.png"],
+    images: ["/images/hero/mauro_hero.png"],
     creator: "@mauromera",
   },
   robots: {
@@ -92,9 +93,11 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${sansation.variable} ${geistMono.variable} antialiased`}>
         <GlobalSchemas />
-        <NavigationWrapper footer={<Footer />}>
-          {children}
-        </NavigationWrapper>
+        <ToastProvider>
+          <NavigationWrapper footer={<Footer />}>
+            {children}
+          </NavigationWrapper>
+        </ToastProvider>
       </body>
     </html>
   );

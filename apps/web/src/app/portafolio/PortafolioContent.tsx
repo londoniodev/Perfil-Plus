@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CaseVisual } from "../components/portfolio/CaseVisual";
-import { casos, Caso, CategoriaId } from "../data/casosData";
+import { Button } from "@/components/ui/Button";
+import { CaseVisual } from "@/components/portfolio/CaseVisual";
+import { casos, Caso, CategoriaId } from "@/constants/casosData";
 import {
     IconBuilding,
     IconUsers,
     IconCompass,
     IconHeart,
     IconCalendar,
-} from "../components/ui/Icons";
-import styles from "@/app/styles/portfolio.module.css";
+} from "@/components/ui/Icons";
+import styles from "@/styles/portfolio.module.css";
 // IconTrendingUp is not in Icons.tsx, we can use IconActivity or IconTrendingUp if added, or IconZap.
 // Let's use IconActivity as "Trending" or just import from Icons if available.
 // Looking at Icons.tsx, FiActivity is aliased as IconBrain.
@@ -25,7 +26,7 @@ import styles from "@/app/styles/portfolio.module.css";
 // Actually, `IconTrendingUp` was used for the category tag.
 // I'll use `IconTarget` instead for now to stay safe with existing exports.
 
-import { IconTarget as IconTrendingUp } from "../components/ui/Icons";
+import { IconTarget as IconTrendingUp } from "@/components/ui/Icons";
 
 // ============================================================================
 // DATOS DE CATEGORÍAS
@@ -199,16 +200,16 @@ function CTASection() {
                 <p className={`section-subtitle ${styles.ctaSubtitle}`}>
                     Ya sea para tu empresa, tu equipo o tu futuro profesional.
                 </p>
-                <Link
-                    href="https://wa.me/573183771838"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{ padding: "1rem 2rem", fontSize: "1.1rem" }}
-                >
-                    <IconCalendar className="w-5 h-5 mr-2" />
-                    Hablemos ahora
-                </Link>
+                <Button asChild style={{ padding: "1rem 2rem", fontSize: "1.1rem" }}>
+                    <Link
+                        href="https://wa.me/573183771838"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <IconCalendar className="w-5 h-5 mr-2" />
+                        Hablemos ahora
+                    </Link>
+                </Button>
             </div>
         </section>
     );

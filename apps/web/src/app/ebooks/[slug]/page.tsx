@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import EbookDetailClient from "./EbookDetailClient";
-import { ProductSchema, BreadcrumbSchema } from "@/app/components/seo/JsonLd";
+import { ProductSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 import { API_BASE } from "@/lib/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";

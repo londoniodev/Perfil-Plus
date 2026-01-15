@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/app/components/admin/ui/ImageUploader";
-import styles from "@/app/styles/lms.module.css";
+import ImageUploader from "@/components/admin/ui/ImageUploader";
+import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
-import { IconBack } from "@/app/components/ui/Icons";
+import { IconBack } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
 
 export default function NuevoTemaPage() {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -21,7 +22,7 @@ export default function NuevoTemaPage() {
         published: false,
     });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const toast = useToast();
 
     if (authLoading) {
         return <div className={styles.loading}>Cargando...</div>;
@@ -36,16 +37,15 @@ export default function NuevoTemaPage() {
         e.preventDefault();
 
         if (!formData.title.trim()) {
-            setError("El título es requerido");
+            toast.error("El título es requerido");
             return;
         }
 
         if (!formData.description.trim()) {
-            setError("La descripción es requerida");
+            toast.error("La descripción es requerida");
             return;
         }
 
-        setError(null);
         setLoading(true);
 
         try {
@@ -61,9 +61,10 @@ export default function NuevoTemaPage() {
                 throw new Error(data.message || "Error al crear tema");
             }
 
+            toast.success("Tema creado correctamente");
             router.push("/admin/cursos");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setLoading(false);
         }
@@ -79,7 +80,7 @@ export default function NuevoTemaPage() {
             <div className={styles.formCard}>
                 <h1 className={styles.formTitle}>Nuevo Tema</h1>
 
-                {error && <div className={styles.error}>{error}</div>}
+                <h1 className={styles.formTitle}>Nuevo Tema</h1>
 
                 <form onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>

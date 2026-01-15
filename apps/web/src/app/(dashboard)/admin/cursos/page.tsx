@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ThemeCard from "@/app/components/admin/lms/ThemeCard";
-import styles from "@/app/styles/lms.module.css";
+import ThemeCard from "@/components/admin/lms/ThemeCard";
+import styles from "@/styles/lms.module.css";
+import { useToast } from "@/components/ui/Toast";
 import { API_BASE } from "@/lib/config";
-import { IconPlus, IconBook } from "@/app/components/ui/Icons";
+import { IconPlus, IconBook } from "@/components/ui/Icons";
 
 interface Theme {
     id: string;
@@ -26,10 +27,10 @@ type FilterType = "all" | "published" | "draft";
 export default function AdminCursosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     const [themes, setThemes] = useState<Theme[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<FilterType>("all");
 
     useEffect(() => {
@@ -56,7 +57,7 @@ export default function AdminCursosPage() {
             const data = await res.json();
             setThemes(data);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Error desconocido");
+            toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
             setLoading(false);
         }
@@ -72,8 +73,9 @@ export default function AdminCursosPage() {
             if (!res.ok) throw new Error("Error al eliminar tema");
 
             setThemes((prev) => prev.filter((t) => t.id !== id));
+            toast.success("Tema eliminado correctamente");
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al eliminar");
+            toast.error(err instanceof Error ? err.message : "Error al eliminar");
         }
     };
 
@@ -121,8 +123,6 @@ export default function AdminCursosPage() {
                     Borradores ({themes.filter((t) => !t.published).length})
                 </button>
             </div>
-
-            {error && <div className={styles.error}>{error}</div>}
 
             {loading ? (
                 <div className={styles.loading}>Cargando temas...</div>

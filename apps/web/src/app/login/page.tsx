@@ -2,9 +2,18 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import styles from "@/app/styles/auth.module.css";
+import styles from "@/styles/auth.module.css";
 import { API_BASE } from "@/lib/config";
-import { AuthLayout } from "@/app/components/auth/AuthLayout";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
 
 function LoginForm() {
   const router = useRouter();
@@ -12,7 +21,7 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const toast = useToast();
 
   // Redirigir si ya está logueado (verificación rápida de cliente)
   useEffect(() => {
@@ -31,7 +40,7 @@ function LoginForm() {
       }
       // Show friendly message
       if (reasonParam === 'session_expired') {
-        setError("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
+        toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
       }
       return;
     }
@@ -44,7 +53,6 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
@@ -70,59 +78,64 @@ function LoginForm() {
       const redirect = searchParams.get("redirect");
       if (redirect) {
         router.push(redirect);
-      } else if (data.user.role === "ADMIN") {
-        router.push("/perfil");
-      } else {
         router.push("/perfil");
       }
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.loginCard}>
-      <h1 className="card-title">Iniciar Sesión</h1>
-      <p className="card-text">Bienvenido de nuevo</p>
+    <Card className="w-full max-w-md mx-auto lg:bg-transparent lg:border-none lg:shadow-none lg:p-0 bg-card/50 backdrop-blur-md border-white/10">
+      <CardHeader className="text-center px-0 pt-0">
+        <CardTitle className="text-3xl font-bold mb-2">Iniciar Sesión</CardTitle>
+        <CardDescription className="text-base">Bienvenido de nuevo</CardDescription>
+      </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="admin@mauromera.com"
-          />
-        </div>
+      <CardContent className="px-0">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="admin@mauromera.com"
+              className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label>Contraseña</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-          />
-        </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+            />
+          </div>
 
-        <div className="text-right mb-md">
-          <a href="/auth/forgot-password" className="link-accent">
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div>
+          <div className="text-right">
+            <a href="/auth/forgot-password" className="text-sm font-medium text-primary hover:text-primary-light hover:underline underline-offset-4 transition-colors">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
 
-        {error && <div className={styles.loginError}>{error}</div>}
-
-        <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-        </button>
-      </form>
-    </div>
+          <Button type="submit" fullWidth disabled={loading} size="lg" className="mt-2">
+            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

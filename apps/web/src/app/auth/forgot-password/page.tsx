@@ -6,9 +6,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
-import { toast } from 'sonner';
-import styles from "@/app/styles/auth.module.css";
-import { AuthLayout } from "@/app/components/auth/AuthLayout";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import styles from "@/styles/auth.module.css";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),
@@ -19,6 +20,7 @@ type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 export default function ForgotPasswordPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const toast = useToast();
 
     const {
         register,
@@ -85,17 +87,17 @@ export default function ForgotPasswordPage() {
                         </div>
 
                         <div className="mb-md">
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="btn btn-primary w-full"
+                                fullWidth
                             >
                                 {isLoading ? (
                                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                                 ) : (
                                     'Enviar instrucciones'
                                 )}
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 ) : (

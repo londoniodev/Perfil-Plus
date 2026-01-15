@@ -3,7 +3,7 @@ import Image from "next/image";
 import { getPosts, getCategories } from "@/lib/api";
 import { Post, Category } from "@/lib/types";
 import { Metadata } from "next";
-import { BreadcrumbSchema, CollectionPageSchema } from "../components/seo/JsonLd";
+import { BreadcrumbSchema, CollectionPageSchema } from "@/components/seo/JsonLd";
 
 import { BlogFilter } from "./BlogFilter";
 

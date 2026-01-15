@@ -2,7 +2,9 @@ import Link from "next/link";
 import { getThemes } from "@/lib/api";
 import { Theme } from "@/lib/lms-types";
 import { Metadata } from "next";
-import styles from "@/app/styles/cursos.module.css";
+import { IconBook } from "@/components/ui/Icons";
+import styles from "@/styles/cursos.module.css";
+import ClientToast from "@/components/ui/ClientToast";
 
 export const metadata: Metadata = {
     title: "Cursos | Mauro Mera",
@@ -17,11 +19,13 @@ export default async function CursosPage() {
         themes = await getThemes();
     } catch (e) {
         error = true;
-        console.error("Error fetching themes:", e);
+        // console.error logged on server, but we want toast on client
     }
 
     return (
         <div className={styles.lmsPage}>
+            {error && <ClientToast message="Error al cargar los cursos. Por favor intenta más tarde." />}
+
             <section className={styles.lmsHero}>
                 <div className="container">
                     <h1>Programa de Formación</h1>
@@ -62,7 +66,9 @@ function ThemeCard({ theme }: { theme: Theme }) {
                 {theme.coverImage ? (
                     <img src={theme.coverImage} alt={theme.title} />
                 ) : (
-                    <span className={styles.placeholderIcon}>📚</span>
+                    <span className={styles.placeholderIcon}>
+                        <IconBook size={48} />
+                    </span>
                 )}
             </div>
             <div className={styles.cardContent}>
@@ -76,3 +82,4 @@ function ThemeCard({ theme }: { theme: Theme }) {
         </Link>
     );
 }
+

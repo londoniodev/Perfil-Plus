@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { IconBack as IconArrowLeft } from "@/components/ui/Icons";
-import styles from "@/styles/BlogBackButton.module.css";
+import { Button } from "@/components/ui/Button";
 
 export function BlogBackButton() {
     return (
-        <Link href="/blog" className={styles.backButton} aria-label="Volver al blog">
-            <IconArrowLeft className={styles.icon} />
-        </Link>
+        <div className="mb-8">
+            <Button
+                variant="ghost"
+                size="sm"
+                className="pl-0 text-foreground-muted hover:text-foreground transition-colors group"
+                asChild
+            >
+                <Link href="/blog" aria-label="Volver al blog">
+                    <IconArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                    Volver al blog
+                </Link>
+            </Button>
+        </div>
     );
 }

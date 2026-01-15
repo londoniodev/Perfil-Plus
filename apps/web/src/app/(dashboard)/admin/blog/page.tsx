@@ -2,21 +2,33 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE } from "@/lib/config";
-import PostsGrid, { Post } from "@/components/admin/blog/PostsGrid";
-import FilterTabs from "@/components/ui/FilterTabs";
-import Pagination from "@/components/ui/Pagination";
-import { IconPlus } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
+import { DataTable } from "@/components/ui/data-table"; // Using the new DataTable
+import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/admin.module.css";
+import { Badge } from "@/components/ui/Badge";
+import { useToast } from "@/components/ui/Toast";
+import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@/components/ui/Icons";
+import Pagination from "@/components/ui/Pagination";
+import Link from "next/link";
 
 // ============================================================================
 // TIPOS
 // ============================================================================
 
-type FilterType = "all" | "published" | "draft";
+export interface Post {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string;
+    coverImage: string | null;
+    isPremium: boolean;
+    published: boolean;
+    publishedAt: string | null;
+    createdAt: string;
+    readingTime: number | null;
+}
 
 interface PostsResponse {
     data: Post[];
@@ -28,11 +40,7 @@ interface PostsResponse {
     };
 }
 
-const FILTER_TABS: { id: FilterType; label: string }[] = [
-    { id: "all", label: "Todos" },
-    { id: "published", label: "Publicados" },
-    { id: "draft", label: "Borradores" },
-];
+type FilterType = "all" | "published" | "draft";
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -48,6 +56,7 @@ export default function AdminBlogPage() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filter, setFilter] = useState<FilterType>("all");
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     // Redirigir si no es admin
     useEffect(() => {
@@ -87,9 +96,10 @@ export default function AdminBlogPage() {
         }
     }, [isAdmin, fetchPosts]);
 
-    // Manejadores de acciones
+    // Manejadores
     const handleDelete = async (id: string, title: string) => {
         if (!confirm(`¿Eliminar el post "${title}"?`)) return;
+        setActionLoading(id);
 
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${id}`, {
@@ -101,10 +111,13 @@ export default function AdminBlogPage() {
             toast.success("Post eliminado correctamente");
         } catch {
             toast.error("Error al eliminar el post");
+        } finally {
+            setActionLoading(null);
         }
     };
 
     const handleTogglePublish = async (post: Post) => {
+        setActionLoading(post.id);
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${post.id}`, {
                 method: "PATCH",
@@ -117,89 +130,138 @@ export default function AdminBlogPage() {
             toast.success(post.published ? "Post despublicado" : "Post publicado");
         } catch {
             toast.error("Error al actualizar el post");
+        } finally {
+            setActionLoading(null);
         }
     };
 
-    const handleFilterChange = (newFilter: FilterType) => {
-        setFilter(newFilter);
-        setPage(1);
-    };
+    // Columnas
+    const columns = useMemo<ColumnDef<Post>[]>(() => [
+        {
+            accessorKey: "title",
+            header: "Título",
+            cell: ({ row }) => {
+                const post = row.original;
+                return (
+                    <div className="flex items-center gap-3">
+                        {post.coverImage && (
+                            <img src={post.coverImage} alt="" className="w-10 h-10 object-cover rounded" />
+                        )}
+                        <div className="flex flex-col">
+                            <Link href={`/admin/blog/editar/${post.id}`} className="font-medium hover:underline">
+                                {post.title}
+                            </Link>
+                            <span className="text-xs text-muted-foreground">{post.slug}</span>
+                        </div>
+                    </div>
+                )
+            }
+        },
+        {
+            accessorKey: "status",
+            header: "Estado",
+            cell: ({ row }) => (
+                <div className="flex gap-2">
+                    <Badge variant={row.original.published ? "default" : "secondary"} className={row.original.published ? "bg-green-600 hover:bg-green-700" : ""}>
+                        {row.original.published ? "Publicado" : "Borrador"}
+                    </Badge>
+                    {row.original.isPremium && (
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">Premium</Badge>
+                    )}
+                </div>
+            )
+        },
+        {
+            accessorKey: "date",
+            header: "Fecha",
+            cell: ({ row }) => (
+                <span className="text-xs text-muted-foreground">
+                    {new Date(row.original.createdAt).toLocaleDateString()}
+                </span>
+            )
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => {
+                const post = row.original;
+                const isLoading = actionLoading === post.id;
+                return (
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isLoading}
+                            onClick={() => handleTogglePublish(post)}
+                            title={post.published ? "Despublicar" : "Publicar"}
+                        >
+                            {post.published ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                        >
+                            <Link href={`/admin/blog/editar/${post.id}`}>
+                                <IconEdit className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isLoading}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(post.id, post.title)}
+                        >
+                            <IconTrash className="h-4 w-4" />
+                        </Button>
+                    </div>
+                );
+            }
+        }
+    ], [actionLoading]);
 
-    // Estados de carga y autenticación
-    if (authLoading) {
-        return <div className="state-loading">Cargando...</div>;
-    }
-
-    if (!isAdmin) {
-        return null;
-    }
+    if (authLoading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (!isAdmin) return null;
 
     return (
-        <div className={styles.adminPageWrapper}>
-            {/* Header */}
-            <div className="page-header">
-                <h1>Gestión del Blog</h1>
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Gestión del Blog</h1>
+                    <p className="text-muted-foreground text-sm">Gestiona tus artículos y publicaciones</p>
+                </div>
                 <Button onClick={() => router.push("/admin/blog/nuevo")}>
-                    <IconPlus size={20} />
+                    <IconPlus className="mr-2 h-4 w-4" />
                     Nuevo Post
                 </Button>
             </div>
 
-            {/* Filtros */}
-            <div className="search-bar">
-                <FilterTabs
-                    tabs={FILTER_TABS}
-                    activeTab={filter}
-                    onChange={handleFilterChange}
-                />
+            {/* Filter Tabs using Buttons */}
+            <div className="flex items-center gap-2 border-b pb-2 overflow-x-auto">
+                {(["all", "published", "draft"] as FilterType[]).map((t) => (
+                    <Button
+                        key={t}
+                        variant={filter === t ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => { setFilter(t); setPage(1); }}
+                        className="capitalize"
+                    >
+                        {t === "all" ? "Todos" : t === "published" ? "Publicados" : "Borradores"}
+                    </Button>
+                ))}
             </div>
 
-            {/* Contenido */}
-            {loading ? (
-                <div className="state-loading">
-                    Cargando posts...
-                </div>
-            ) : posts.length === 0 ? (
-                <EmptyState filter={filter} onCreateNew={() => router.push("/admin/blog/nuevo")} />
-            ) : (
-                <>
-                    <PostsGrid
-                        posts={posts}
-                        onDelete={handleDelete}
-                        onTogglePublish={handleTogglePublish}
-                    />
-                    <div className={styles.paginationWrapper}>
-                        <Pagination
-                            currentPage={page}
-                            totalPages={totalPages}
-                            onPageChange={setPage}
-                        />
-                    </div>
-                </>
-            )}
-        </div>
-    );
-}
+            <div className="bg-card rounded-md border">
+                <DataTable columns={columns} data={posts} searchKey="title" />
+            </div>
 
-// ============================================================================
-// COMPONENTE AUXILIAR
-// ============================================================================
-
-interface EmptyStateProps {
-    filter: FilterType;
-    onCreateNew: () => void;
-}
-
-function EmptyState({ filter, onCreateNew }: EmptyStateProps) {
-    const filterText = filter === "published" ? " publicados" :
-        filter === "draft" ? " en borrador" : "";
-
-    return (
-        <div className={styles.emptyState}>
-            <p>No hay posts{filterText}</p>
-            <Button onClick={onCreateNew}>
-                Crear primer post
-            </Button>
+            <div className="mt-4">
+                <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
+            </div>
         </div>
     );
 }

@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
-import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
 import { IconBack } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Label } from "@/components/ui/Label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Switch } from "@/components/ui/switch";
 
 export default function NuevoTemaPage() {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -25,7 +30,7 @@ export default function NuevoTemaPage() {
     const toast = useToast();
 
     if (authLoading) {
-        return <div className={styles.loading}>Cargando...</div>;
+        return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     }
 
     if (!isAdmin) {
@@ -71,85 +76,87 @@ export default function NuevoTemaPage() {
     };
 
     return (
-        <div className={styles.formPage}>
-            <Link href="/admin/cursos" className={styles.backLink}>
+        <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">
+            <Link href="/admin/cursos" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                 <IconBack size={16} />
                 Volver a Temas
             </Link>
 
-            <div className={styles.formCard}>
-                <h1 className={styles.formTitle}>Nuevo Tema</h1>
-
-                <h1 className={styles.formTitle}>Nuevo Tema</h1>
-
-                <form onSubmit={handleSubmit}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Título *</label>
-                        <input
-                            type="text"
-                            className={styles.formInput}
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            placeholder="Ej: Liderazgo y Gestión"
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Descripción *</label>
-                        <textarea
-                            className={`${styles.formInput} ${styles.formTextarea}`}
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Describe de qué trata este tema..."
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <ImageUploader
-                            value={formData.coverImage}
-                            onChange={(url) => setFormData({ ...formData, coverImage: url })}
-                            label="Imagen de portada"
-                            folder="lms-themes"
-                        />
-                    </div>
-
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Orden</label>
-                            <input
-                                type="number"
-                                className={styles.formInput}
-                                value={formData.order}
-                                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                                min="0"
+            <Card className="border-border">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Nuevo Tema</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Título *</Label>
+                            <Input
+                                id="title"
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="Ej: Liderazgo y Gestión"
                             />
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <div className={styles.toggleGroup}>
-                                <div className={styles.toggleLabel}>
-                                    <span className={styles.toggleTitle}>Publicar</span>
-                                    <span className={styles.toggleHint}>Hacer visible para usuarios</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    className={`${styles.toggle} ${formData.published ? styles.active : ""}`}
-                                    onClick={() => setFormData({ ...formData, published: !formData.published })}
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Descripción *</Label>
+                            <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Describe de qué trata este tema..."
+                                rows={4}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Imagen de portada</Label>
+                            <ImageUploader
+                                value={formData.coverImage}
+                                onChange={(url) => setFormData({ ...formData, coverImage: url })}
+                                label="Imagen de portada"
+                                folder="lms-themes"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="order">Orden</Label>
+                                <Input
+                                    id="order"
+                                    type="number"
+                                    value={formData.order}
+                                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                                    min="0"
                                 />
                             </div>
-                        </div>
-                    </div>
 
-                    <div className={styles.formActions}>
-                        <Link href="/admin/cursos" className={styles.cancelBtn}>
-                            Cancelar
-                        </Link>
-                        <button type="submit" className={styles.submitBtn} disabled={loading}>
-                            {loading ? "Guardando..." : "Crear Tema"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+                            <div className="flex items-end h-full pb-2">
+                                <div className="flex items-center justify-between w-full p-3 bg-muted/30 rounded-lg border">
+                                    <div className="space-y-0.5">
+                                        <Label className="text-base">Publicar</Label>
+                                        <p className="text-xs text-muted-foreground">Hacer visible para usuarios</p>
+                                    </div>
+                                    <Switch
+                                        checked={formData.published}
+                                        onCheckedChange={(checked) => setFormData({ ...formData, published: checked })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6 border-t">
+                            <Button variant="outline" asChild>
+                                <Link href="/admin/cursos">Cancelar</Link>
+                            </Button>
+                            <Button type="submit" disabled={loading}>
+                                {loading ? "Guardando..." : "Crear Tema"}
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

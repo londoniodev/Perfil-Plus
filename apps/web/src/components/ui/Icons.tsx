@@ -86,4 +86,7 @@ export {
     FiBriefcase as IconBuilding, // Alias for backward compat/refactor convenience
     FiClipboard as IconClipboard,
     FiPlayCircle as IconPlayCircle,
+    FiLoader as IconLoader,
+    FiShoppingBag as IconShoppingBag,
+    FiAward as IconCrown,
 } from "react-icons/fi";

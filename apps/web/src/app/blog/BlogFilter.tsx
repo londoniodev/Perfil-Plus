@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Category } from "@/lib/types";
 import { IconChevronDown } from "@/components/ui/Icons";
-import styles from "@/styles/blog.module.css";
 
 interface BlogFilterProps {
     categories: Category[];
@@ -33,24 +32,42 @@ export function BlogFilter({ categories, activeCategory }: BlogFilterProps) {
     }, []);
 
     return (
-        <div className={styles.filterContainer} ref={dropdownRef}>
+        <div className="relative inline-block text-left mb-8 z-20" ref={dropdownRef}>
             <button
-                className={`${styles.dropdownTrigger} ${isOpen ? styles.open : ""}`}
+                className={`
+                    flex items-center justify-between gap-3 min-w-[200px]
+                    px-4 py-3 
+                    bg-card border border-border rounded-xl shadow-sm 
+                    hover:border-primary/50 hover:shadow-md transition-all duration-200
+                    active:scale-95
+                    ${isOpen ? 'ring-2 ring-primary/20 border-primary' : ''}
+                `}
                 onClick={() => setIsOpen(!isOpen)}
                 aria-haspopup="true"
                 aria-expanded={isOpen}
             >
-                <span className={styles.triggerLabel}>
-                    {activeCategory ? "Tema: " : ""}{activeLabel}
+                <span className="text-sm font-medium text-foreground truncate">
+                    {activeCategory ? <span className="text-foreground-muted font-normal">Tema: </span> : ""}{activeLabel}
                 </span>
-                <IconChevronDown className={`${styles.chevron} ${isOpen ? styles.rotate : ""}`} />
+                <IconChevronDown className={`w-4 h-4 text-foreground-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            <div className={`${styles.dropdownMenu} ${isOpen ? styles.show : ""}`}>
-                <div className={styles.dropdownContent}>
+            <div className={`
+                absolute left-0 mt-2 w-64 origin-top-left
+                bg-card border border-border rounded-xl shadow-xl
+                z-30 backdrop-blur-xl
+                transition-all duration-200 ease-in-out
+                ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}
+            `}>
+                <div className="p-2 space-y-1">
                     <Link
                         href="/blog"
-                        className={`${styles.dropdownItem} ${!activeCategory ? styles.active : ""}`}
+                        className={`
+                            block px-3 py-2.5 text-sm rounded-lg transition-colors
+                            ${!activeCategory
+                                ? 'bg-primary text-primary-foreground font-medium'
+                                : 'text-foreground hover:bg-accent hover:text-accent-foreground'}
+                        `}
                         onClick={() => setIsOpen(false)}
                     >
                         Todos los temas
@@ -59,7 +76,12 @@ export function BlogFilter({ categories, activeCategory }: BlogFilterProps) {
                         <Link
                             key={category.id}
                             href={`/blog?category=${category.slug}`}
-                            className={`${styles.dropdownItem} ${activeCategory === category.slug ? styles.active : ""}`}
+                            className={`
+                                block px-3 py-2.5 text-sm rounded-lg transition-colors
+                                ${activeCategory === category.slug
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'}
+                            `}
                             onClick={() => setIsOpen(false)}
                         >
                             {category.name}

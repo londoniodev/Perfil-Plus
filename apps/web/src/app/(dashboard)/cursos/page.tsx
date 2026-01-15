@@ -3,8 +3,9 @@ import { getThemes } from "@/lib/api";
 import { Theme } from "@/lib/lms-types";
 import { Metadata } from "next";
 import { IconBook } from "@/components/ui/Icons";
-import styles from "@/styles/cursos.module.css";
 import ClientToast from "@/components/ui/ClientToast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 export const metadata: Metadata = {
     title: "Cursos | Mauro Mera",
@@ -23,31 +24,31 @@ export default async function CursosPage() {
     }
 
     return (
-        <div className={styles.lmsPage}>
+        <div className="min-h-screen bg-background pb-12">
             {error && <ClientToast message="Error al cargar los cursos. Por favor intenta más tarde." />}
 
-            <section className={styles.lmsHero}>
-                <div className="container">
-                    <h1>Programa de Formación</h1>
-                    <p className="hero-description">
+            <section className="py-24 pt-32 text-center bg-gradient-to-b from-primary/5 to-background border-b border-border/50">
+                <div className="container px-4">
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 tracking-tight">Programa de Formación</h1>
+                    <p className="max-w-2xl mx-auto text-muted-foreground text-lg leading-relaxed">
                         Explora nuestros temas de formación en psicología, liderazgo
                         y desarrollo personal para transformar tu vida y carrera.
                     </p>
                 </div>
             </section>
 
-            <section className={styles.lmsContent}>
-                <div className="container">
+            <section className="py-16">
+                <div className="container px-4">
                     {error ? (
-                        <div className={styles.emptyState}>
+                        <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-border">
                             <p>No se pudieron cargar los cursos. Inténtalo más tarde.</p>
                         </div>
                     ) : themes.length === 0 ? (
-                        <div className={styles.emptyState}>
+                        <div className="text-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-border">
                             <p>Próximamente nuevos cursos disponibles.</p>
                         </div>
                     ) : (
-                        <div className={styles.themesGrid}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {themes.map((theme) => (
                                 <ThemeCard key={theme.id} theme={theme} />
                             ))}
@@ -61,24 +62,42 @@ export default async function CursosPage() {
 
 function ThemeCard({ theme }: { theme: Theme }) {
     return (
-        <Link href={`/cursos/${theme.slug}`} className={styles.themeCard}>
-            <div className={styles.cardImage}>
-                {theme.coverImage ? (
-                    <img src={theme.coverImage} alt={theme.title} />
-                ) : (
-                    <span className={styles.placeholderIcon}>
-                        <IconBook size={48} />
-                    </span>
-                )}
-            </div>
-            <div className={styles.cardContent}>
-                <h2>{theme.title}</h2>
-                <p>{theme.description}</p>
-                <div className={styles.cardMeta}>
-                    <span>{theme._count?.courses || 0} cursos</span>
-                    {theme.evaluation && <span>• Evaluación incluida</span>}
+        <Link href={`/cursos/${theme.slug}`} className="block group h-full">
+            <Card className="h-full overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
+                <div className="relative aspect-video overflow-hidden bg-muted">
+                    {theme.coverImage ? (
+                        <img
+                            src={theme.coverImage}
+                            alt={theme.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary/40 group-hover:text-primary/60 transition-colors">
+                            <IconBook size={48} />
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-            </div>
+                <CardHeader className="pb-3">
+                    <CardTitle className="group-hover:text-primary transition-colors">{theme.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4">
+                    <CardDescription className="line-clamp-2 text-base">
+                        {theme.description}
+                    </CardDescription>
+                </CardContent>
+                <CardFooter className="pt-0 text-sm text-muted-foreground flex gap-4 border-t border-border/50 p-6 mt-auto">
+                    <div className="flex items-center gap-1.5">
+                        <IconBook size={14} />
+                        <span>{theme._count?.courses || 0} cursos</span>
+                    </div>
+                    {theme.evaluation && (
+                        <Badge variant="outline" className="ml-auto text-xs font-normal bg-primary/5 border-primary/20 text-primary">
+                            Evaluación incluida
+                        </Badge>
+                    )}
+                </CardFooter>
+            </Card>
         </Link>
     );
 }

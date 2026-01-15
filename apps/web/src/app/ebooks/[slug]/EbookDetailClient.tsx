@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import styles from "@/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 import { useToast } from "@/components/ui/Toast";
 import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@/components/ui/Icons";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Separator } from "@/components/ui/separator";
 
 interface Ebook {
     id: string;
@@ -132,82 +135,111 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
     };
 
     return (
-        <div className={styles.ebooksPage}>
-            <section className={styles.ebookDetail}>
-                <div className="container">
-                    <div className={styles.detailGrid}>
-                        <div className={styles.coverWrapper}>
-                            <img src={ebook.coverImage} alt={ebook.title} />
-                        </div>
+        <div className="min-h-screen bg-background pt-24 pb-16">
+            <div className="container max-w-6xl">
+                <div className="mb-8">
+                    <Button variant="ghost" asChild className="pl-0 hover:pl-2 transition-all gap-2 text-muted-foreground">
+                        <Link href="/ebooks">
+                            <IconBack size={18} /> Volver a e-books
+                        </Link>
+                    </Button>
+                </div>
 
-                        <div className={styles.ebookInfo}>
-                            <Link href="/ebooks" className={styles.backLink}>
-                                <IconBack /> Volver a e-books
-                            </Link>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-start">
+                    {/* Cover Image */}
+                    <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-muted/20">
+                        <img
+                            src={ebook.coverImage}
+                            alt={ebook.title}
+                            className="w-full h-auto object-cover"
+                        />
+                    </div>
 
-                            <h1>{ebook.title}</h1>
+                    {/* Book Info */}
+                    <div className="space-y-8">
+                        <div>
+                            <Badge variant="secondary" className="mb-4 bg-primary/10 text-primary border-primary/20">
+                                E-book Digital
+                            </Badge>
+                            <h1 className="text-3xl md:text-5xl font-serif font-bold mb-6 text-foreground leading-tight">
+                                {ebook.title}
+                            </h1>
 
-                            <div className={styles.ebookMeta}>
-                                <span><IconBook /> E-book digital (PDF)</span>
-                                <span><IconZap /> Descarga inmediata</span>
+                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-8">
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted">
+                                    <IconBook size={16} /> PDF Descargable
+                                </span>
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted">
+                                    <IconZap size={16} /> Entrega Inmediata
+                                </span>
                             </div>
 
-                            <div className={styles.description}>
+                            <Separator className="mb-8" />
+
+                            <div className="prose prose-lg dark:prose-invert text-muted-foreground">
                                 {ebook.description.split("\n").map((p, i) => (
-                                    <p key={i} className={styles.descriptionParagraph}>{p}</p>
+                                    <p key={i} className="mb-4 leading-relaxed">{p}</p>
                                 ))}
                             </div>
+                        </div>
 
-                            <div className={styles.purchaseCard}>
-                                <div className={styles.price}>
-                                    ${Number(ebook.price).toLocaleString("en-US")} USD
+                        {/* Purchase Card */}
+                        <Card className="border-border shadow-lg bg-card/50 backdrop-blur-sm">
+                            <CardContent className="p-8">
+                                <div className="flex items-baseline justify-between mb-6">
+                                    <span className="text-3xl font-bold text-foreground">
+                                        ${Number(ebook.price).toLocaleString("en-US")} <span className="text-sm font-normal text-muted-foreground">USD</span>
+                                    </span>
+                                    {!hasPurchased && <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-500/5">Pago Único</Badge>}
                                 </div>
 
                                 {hasPurchased ? (
-                                    <>
-                                        <div className={styles.ownedBadge}>
-                                            <IconCheck /> Tienes acceso a este e-book
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-400">
+                                            <IconCheck className="shrink-0" />
+                                            <span className="font-medium">¡Tienes acceso a este e-book!</span>
                                         </div>
-                                        <button
+                                        <Button
                                             onClick={handleDownload}
-                                            className={`${styles.purchaseBtn} ${styles.downloadBtn}`}
                                             disabled={downloading}
-                                            style={{ marginTop: "1rem" }}
+                                            className="w-full h-12 text-base shadow-lg shadow-primary/20"
                                         >
-                                            {downloading ? "Preparando..." : <><IconDownload style={{ marginRight: "0.5rem" }} /> Descargar ahora</>}
-                                        </button>
-                                    </>
+                                            {downloading ? "Preparando..." : <><IconDownload className="mr-2" /> Descargar ahora</>}
+                                        </Button>
+                                    </div>
                                 ) : (
-                                    <>
-                                        <div className={styles.actionButtonsContainer}>
-                                            {ebook.previewUrl && (
-                                                <a
-                                                    href={ebook.previewUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={styles.previewBtn}
-                                                >
-                                                    <IconEye /> Ver Vista Previa
-                                                </a>
-                                            )}
-                                            <button
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-3">
+                                            <Button
                                                 onClick={handlePurchase}
-                                                className={styles.purchaseBtn}
                                                 disabled={processing}
+                                                className="w-full h-12 text-base shadow-lg shadow-primary/20"
                                             >
                                                 {processing ? "Procesando..." : "Comprar ahora"}
-                                            </button>
+                                            </Button>
+
+                                            {ebook.previewUrl && (
+                                                <Button asChild variant="outline" className="w-full h-12">
+                                                    <a
+                                                        href={ebook.previewUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <IconEye className="mr-2" /> Ver Vista Previa
+                                                    </a>
+                                                </Button>
+                                            )}
                                         </div>
-                                        <p className={styles.guaranteeText}>
-                                            <IconLock size={14} /> Pago seguro con Mercado Pago
+                                        <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-4">
+                                            <IconLock size={12} /> Pago 100% seguro procesado por Mercado Pago
                                         </p>
-                                    </>
+                                    </div>
                                 )}
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
     );
 }

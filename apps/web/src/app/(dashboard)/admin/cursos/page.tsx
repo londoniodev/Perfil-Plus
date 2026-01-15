@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/components/admin/lms/ThemeCard";
-import styles from "@/styles/lms.module.css";
 import { useToast } from "@/components/ui/Toast";
 import { API_BASE } from "@/lib/config";
 import { IconPlus, IconBook } from "@/components/ui/Icons";
+import { Button } from "@/components/ui/Button";
 
 interface Theme {
     id: string;
@@ -86,7 +86,7 @@ export default function AdminCursosPage() {
     });
 
     if (authLoading) {
-        return <div className={styles.loading}>Cargando...</div>;
+        return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     }
 
     if (!isAdmin) {
@@ -94,59 +94,66 @@ export default function AdminCursosPage() {
     }
 
     return (
-        <div className={styles.lmsPage}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>Gestión de Cursos</h1>
-                <Link href="/admin/cursos/temas/nuevo" className={styles.addBtn}>
-                    <IconPlus size={20} />
-                    Nuevo Tema
-                </Link>
+        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Gestión de Cursos</h1>
+                <Button asChild className="shrink-0">
+                    <Link href="/admin/cursos/temas/nuevo" className="gap-2">
+                        <IconPlus size={20} />
+                        Nuevo Tema
+                    </Link>
+                </Button>
             </div>
 
-            <div className={styles.filters}>
-                <button
-                    className={`${styles.filterBtn} ${filter === "all" ? styles.active : ""}`}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+                <Button
+                    variant={filter === "all" ? "default" : "outline"}
                     onClick={() => setFilter("all")}
+                    size="sm"
                 >
                     Todos ({themes.length})
-                </button>
-                <button
-                    className={`${styles.filterBtn} ${filter === "published" ? styles.active : ""}`}
+                </Button>
+                <Button
+                    variant={filter === "published" ? "default" : "outline"}
                     onClick={() => setFilter("published")}
+                    size="sm"
                 >
                     Publicados ({themes.filter((t) => t.published).length})
-                </button>
-                <button
-                    className={`${styles.filterBtn} ${filter === "draft" ? styles.active : ""}`}
+                </Button>
+                <Button
+                    variant={filter === "draft" ? "default" : "outline"}
                     onClick={() => setFilter("draft")}
+                    size="sm"
                 >
                     Borradores ({themes.filter((t) => !t.published).length})
-                </button>
+                </Button>
             </div>
 
             {loading ? (
-                <div className={styles.loading}>Cargando temas...</div>
+                <div className="p-8 text-center text-muted-foreground">Cargando temas...</div>
             ) : (
-                <div className={styles.themesGrid}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredThemes.length === 0 ? (
-                        <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}><IconBook size={32} /></div>
-                            <h2 className={styles.emptyTitle}>
+                        <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
+                            <div className="flex justify-center mb-4 text-muted-foreground"><IconBook size={48} /></div>
+                            <h2 className="text-xl font-semibold mb-2">
                                 {filter === "all"
                                     ? "No hay temas creados"
                                     : filter === "published"
                                         ? "No hay temas publicados"
                                         : "No hay borradores"}
                             </h2>
-                            <p className={styles.emptyText}>
+                            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                                 {filter === "all"
                                     ? "Crea tu primer tema para comenzar a organizar tus cursos."
                                     : "Cambia el filtro para ver otros temas."}
                             </p>
                             {filter === "all" && (
-                                <Link href="/admin/cursos/temas/nuevo" className={styles.addBtn}>
-                                    Crear Primer Tema
-                                </Link>
+                                <Button asChild>
+                                    <Link href="/admin/cursos/temas/nuevo">
+                                        Crear Primer Tema
+                                    </Link>
+                                </Button>
                             )}
                         </div>
                     ) : (

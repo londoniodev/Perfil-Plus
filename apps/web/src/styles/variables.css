@@ -1,73 +1,131 @@
-/* =============================================
-   VARIABLES - Design Tokens & Theme
-   ============================================= */
-
 @import "tailwindcss";
 
+/* =============================================
+   THEME CONFIGURATION (Shadcn + Premium Palette)
+   ============================================= */
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-    /* Dark professional palette with premium accents */
-    --background: #0f1419;
-    --background-secondary: #151a21;
+    /* 1. Base (Tu paleta Dark Professional) */
+    --background: 0 0% 100%;
+    /* Blanco en modo claro (fallback) */
+    --foreground: 222.2 84% 4.9%;
 
-    --foreground: #f2f5f8;
-    --foreground-muted: #94a3b8;
+    /* 2. Shadcn UI Semantics (Mapeado a tus colores) */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --primary: #5b8def;
-    --primary-light: #8cb1ff;
-    --primary-dark: #3a62b8;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --secondary: #64748b;
+    --primary: 221 83% 53%;
+    /* Tu azul aprox en HSL */
+    --primary-foreground: 210 40% 98%;
 
-    --accent: #e8a838;
-    --accent-light: #f5c46b;
-    --accent-glow: rgba(232, 168, 56, 0.4);
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --success: #4ade80;
-    --success-bg: rgba(74, 222, 128, 0.1);
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --error: #ef4444;
-    --error-bg: rgba(239, 68, 68, 0.1);
-    --error-border: rgba(239, 68, 68, 0.3);
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --warning: #eab308;
-    --warning-bg: rgba(234, 179, 8, 0.1);
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --info: #3b82f6;
-    --info-bg: rgba(59, 130, 246, 0.1);
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
+    /* Tu azul como anillo de foco */
 
-    --purple: #8b5cf6;
-    --purple-bg: rgba(139, 92, 246, 0.1);
+    --radius: 0.5rem;
+}
 
-    --border: rgba(255, 255, 255, 0.08);
-    --border-light: rgba(255, 255, 255, 0.15);
+/* MODO OSCURO (Tu diseño real) */
+.dark {
+    /* Fondo principal (#0f1419) */
+    --background: 210 25% 8%;
+    /* Texto principal (#f2f5f8) */
+    --foreground: 210 20% 96%;
 
-    --card-bg: rgba(22, 27, 34, 0.7);
-    --card-bg-hover: rgba(30, 38, 48, 0.8);
+    /* Cards (#161b22 / rgba) */
+    --card: 216 28% 11%;
+    --card-foreground: 210 20% 96%;
 
-    /* Gradients */
-    --gradient-mesh-1: radial-gradient(at 0% 0%, rgba(91, 141, 239, 0.15) 0px, transparent 50%);
-    --gradient-mesh-2: radial-gradient(at 100% 0%, rgba(232, 168, 56, 0.1) 0px, transparent 50%);
-    --gradient-mesh-3: radial-gradient(at 100% 100%, rgba(74, 222, 128, 0.05) 0px, transparent 50%);
+    --popover: 216 28% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    /* Tu Azul (#5b8def) */
+    --primary: 220 81% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Texto sobre azul */
+
+    /* Tu Secundario (#64748b) */
+    --secondary: 215 16% 47%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20% 65%;
+    /* #94a3b8 */
+
+    /* Tu Dorado para acentos (#e8a838) */
+    --accent: 38 78% 56%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Bordes sutiles (rgba -> hsl aprox) */
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 224 76% 48%;
+
+    /* Variables Custom Tuyas (Preservadas) */
+    --color-gold: #e8a838;
+    --color-gold-light: #f5c46b;
+    --color-gold-glow: rgba(232, 168, 56, 0.4);
 }
 
 @theme inline {
+    /* Mapeo estándar de Shadcn */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
     --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
     --color-accent: var(--accent);
-    --font-sans: var(--font-sans);
-    --font-serif: var(--font-sans);
-    --font-mono: var(--font-geist-mono);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
 
-    /* Custom Animations */
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+
+    /* Tus Colores Custom Específicos */
+    --color-gold: var(--color-gold);
+    --color-gold-light: var(--color-gold-light);
+
+    /* Tus Animaciones (Preservadas) */
     --animate-float: float 6s ease-in-out infinite;
     --animate-aura-pulse: aura-pulse 4s ease-in-out infinite;
-    --animate-aura-pulse-slow: aura-pulse 5s ease-in-out infinite 0.5s;
-    --animate-aura-pulse-slower: aura-pulse 6s ease-in-out infinite 1s;
 }
 
-/* Hero Animation Keyframes */
+/* Keyframes (Preservados) */
 @keyframes float {
 
     0%,
@@ -91,5 +149,16 @@
     50% {
         transform: translate(-50%, -50%) scale(1.05);
         opacity: 0.8;
+    }
+}
+
+/* Utilidades globales para compatibilidad */
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
     }
 }

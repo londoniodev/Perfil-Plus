@@ -6,10 +6,15 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import LessonItem from "@/components/admin/lms/LessonItem";
-import styles from "@/styles/lms.module.css";
 import { API_BASE } from "@/lib/config";
 import { IconBack, IconPlus } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Label } from "@/components/ui/Label";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
+import { Switch } from "@/components/ui/switch";
 
 interface EditarCursoPageProps {
     params: Promise<{ id: string; courseId: string }>;
@@ -93,7 +98,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
     };
 
     if (authLoading || loading) {
-        return <div className={styles.loading}>Cargando...</div>;
+        return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     }
 
     if (!isAdmin) {
@@ -158,131 +163,129 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
     };
 
     return (
-        <div className={styles.formPage}>
-            <Link href={`/admin/cursos/temas/${ids!.id}`} className={styles.backLink}>
+        <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">
+            <Link href={`/admin/cursos/temas/${ids!.id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                 <IconBack size={16} />
                 Volver al Tema: {course?.theme.title}
             </Link>
 
-            <div className={styles.formCard}>
-                <h1 className={styles.formTitle}>Editar Curso</h1>
+            <Card className="border-border">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Editar Curso</CardTitle>
+                </CardHeader>
 
-                <form onSubmit={handleSubmit}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Título *</label>
-                        <input
-                            type="text"
-                            className={styles.formInput}
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Descripción *</label>
-                        <textarea
-                            className={`${styles.formInput} ${styles.formTextarea}`}
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <ImageUploader
-                            value={formData.coverImage}
-                            onChange={(url) => setFormData({ ...formData, coverImage: url })}
-                            label="Imagen de portada"
-                            folder="lms-courses"
-                        />
-                    </div>
-
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Orden</label>
-                            <input
-                                type="number"
-                                className={styles.formInput}
-                                value={formData.order}
-                                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                                min="0"
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Título *</Label>
+                            <Input
+                                id="title"
+                                type="text"
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             />
                         </div>
-                    </div>
 
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <div className={styles.toggleGroup}>
-                                <div className={styles.toggleLabel}>
-                                    <span className={styles.toggleTitle}>Curso Gratuito</span>
-                                    <span className={styles.toggleHint}>Disponible para todos los usuarios</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    className={`${styles.toggle} ${formData.isFree ? styles.active : ""}`}
-                                    onClick={() => setFormData({ ...formData, isFree: !formData.isFree })}
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Descripción *</Label>
+                            <Textarea
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                rows={4}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Imagen de portada</Label>
+                            <ImageUploader
+                                value={formData.coverImage}
+                                onChange={(url) => setFormData({ ...formData, coverImage: url })}
+                                folder="lms-courses"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="order">Orden</Label>
+                                <Input
+                                    id="order"
+                                    type="number"
+                                    value={formData.order}
+                                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                                    min="0"
                                 />
                             </div>
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <div className={styles.toggleGroup}>
-                                <div className={styles.toggleLabel}>
-                                    <span className={styles.toggleTitle}>Publicar</span>
-                                    <span className={styles.toggleHint}>Hacer visible para usuarios</span>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-center justify-between w-full p-3 bg-muted/30 rounded-lg border">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Curso Gratuito</Label>
+                                    <p className="text-xs text-muted-foreground">Disponible para todos los usuarios</p>
                                 </div>
-                                <button
-                                    type="button"
-                                    className={`${styles.toggle} ${formData.published ? styles.active : ""}`}
-                                    onClick={() => setFormData({ ...formData, published: !formData.published })}
+                                <Switch
+                                    checked={formData.isFree}
+                                    onCheckedChange={(checked) => setFormData({ ...formData, isFree: checked })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between w-full p-3 bg-muted/30 rounded-lg border">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Publicar</Label>
+                                    <p className="text-xs text-muted-foreground">Hacer visible para usuarios</p>
+                                </div>
+                                <Switch
+                                    checked={formData.published}
+                                    onCheckedChange={(checked) => setFormData({ ...formData, published: checked })}
                                 />
                             </div>
                         </div>
-                    </div>
 
-                    <div className={styles.formActions}>
-                        <Link href={`/admin/cursos/temas/${ids!.id}`} className={styles.cancelBtn}>
-                            Cancelar
-                        </Link>
-                        <button type="submit" className={styles.submitBtn} disabled={saving}>
-                            {saving ? "Guardando..." : "Guardar Cambios"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+                        <div className="flex justify-end gap-3 pt-6 border-t">
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/cursos/temas/${ids!.id}`}>Cancelar</Link>
+                            </Button>
+                            <Button type="submit" disabled={saving}>
+                                {saving ? "Guardando..." : "Guardar Cambios"}
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
 
             {/* Lista de Lecciones */}
-            <div className={styles.formCard} style={{ marginTop: "2rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                    <h2 className={styles.formTitle} style={{ marginBottom: 0 }}>Lecciones</h2>
-                    <Link
-                        href={`/admin/cursos/temas/${ids!.id}/cursos/${ids!.courseId}/lecciones/nuevo`}
-                        className={styles.addBtn}
-                    >
-                        <IconPlus size={16} />
-                        Agregar Lección
-                    </Link>
-                </div>
+            <Card className="border-border">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Lecciones</CardTitle>
+                    <Button asChild size="sm" className="gap-2">
+                        <Link href={`/admin/cursos/temas/${ids!.id}/cursos/${ids!.courseId}/lecciones/nuevo`}>
+                            <IconPlus size={16} />
+                            Agregar Lección
+                        </Link>
+                    </Button>
+                </CardHeader>
 
-                {course?.lessons && course.lessons.length > 0 ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                        {course.lessons.map((lesson) => (
-                            <LessonItem
-                                key={lesson.id}
-                                lesson={lesson}
-                                courseId={ids!.courseId}
-                                themeId={ids!.id}
-                                onDelete={handleDeleteLesson} // Necesito implementar esto
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className={styles.emptyState} style={{ padding: "2rem" }}>
-                        <p className={styles.emptyText} style={{ margin: 0 }}>
+                <CardContent>
+                    {course?.lessons && course.lessons.length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                            {course.lessons.map((lesson) => (
+                                <LessonItem
+                                    key={lesson.id}
+                                    lesson={lesson}
+                                    courseId={ids!.courseId}
+                                    themeId={ids!.id}
+                                    onDelete={handleDeleteLesson}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg bg-muted/20">
                             No hay lecciones en este curso.
-                        </p>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

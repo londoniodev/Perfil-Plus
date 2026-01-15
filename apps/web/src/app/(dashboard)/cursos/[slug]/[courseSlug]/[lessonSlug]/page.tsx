@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import styles from "@/styles/lesson.module.css";
 import { API_BASE } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useToast } from "@/components/ui/Toast";
-import { IconClock, IconSuccess } from "@/components/ui/Icons";
+import { IconClock, IconSuccess, IconCheck, IconPlay, IconLock } from "@/components/ui/Icons";
 import PremiumLock from "@/components/ui/PremiumLock";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Button } from "@/components/ui/Button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 interface LessonData {
     id: string;
@@ -16,6 +19,7 @@ interface LessonData {
     content: string;
     videoUrl: string | null;
     duration: number | null;
+    slug: string;
     course: {
         id: string;
         title: string;
@@ -29,14 +33,27 @@ interface LessonData {
     userProgress: { completed: boolean; watchedTime: number };
 }
 
+interface CourseData {
+    id: string;
+    title: string;
+    lessons: {
+        id: string;
+        title: string;
+        slug: string;
+        duration: number | null;
+        completed?: boolean;
+    }[];
+}
+
 export default function LessonPage({
     params,
 }: {
     params: Promise<{ slug: string; courseSlug: string; lessonSlug: string }>;
 }) {
-    const { isAuthenticated, loading: authLoading, user } = useAuth();
+    const { isAuthenticated, loading: authLoading } = useAuth();
     const toast = useToast();
     const [lesson, setLesson] = useState<LessonData | null>(null);
+    const [course, setCourse] = useState<CourseData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [completed, setCompleted] = useState(false);
@@ -46,10 +63,8 @@ export default function LessonPage({
         params.then(setParamsData);
     }, [params]);
 
-    const fetchLesson = useCallback(async () => {
+    const fetchLessonAndCourse = useCallback(async () => {
         if (!paramsData) return;
-
-        // Wait for auth to initialize
         if (authLoading) return;
 
         if (!isAuthenticated) {
@@ -59,35 +74,46 @@ export default function LessonPage({
         }
 
         try {
-            const res = await fetch(
+            // Fetch Lesson
+            const lessonRes = await fetch(
                 `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
-                {
-                    credentials: "include" // Use cookies
-                }
+                { credentials: "include" }
             );
 
-            if (res.status === 403) {
+            if (lessonRes.status === 403) {
                 setError("premium");
                 setLoading(false);
                 return;
             }
 
-            if (!res.ok) throw new Error("Lección no encontrada");
+            if (!lessonRes.ok) throw new Error("Lección no encontrada");
 
-            const data = await res.json();
-            setLesson(data);
-            setCompleted(data.userProgress?.completed || false);
+            const lessonData = await lessonRes.json();
+            setLesson(lessonData);
+            setCompleted(lessonData.userProgress?.completed || false);
+
+            // Fetch Course (for sidebar) - only if not loaded or different course
+            if (!course || course.id !== lessonData.course.id) {
+                const courseRes = await fetch(
+                    `${API_BASE}/lms/courses/${paramsData.courseSlug}`,
+                    { credentials: "include" }
+                );
+                if (courseRes.ok) {
+                    const courseData = await courseRes.json();
+                    setCourse(courseData);
+                }
+            }
         } catch (err) {
-            console.error("Error fetching lesson:", err);
+            console.error("Error fetching data:", err);
             setError("notFound");
         } finally {
             setLoading(false);
         }
-    }, [paramsData, authLoading, isAuthenticated]);
+    }, [paramsData, authLoading, isAuthenticated, course]);
 
     useEffect(() => {
-        fetchLesson();
-    }, [fetchLesson]);
+        fetchLessonAndCourse();
+    }, [fetchLessonAndCourse]);
 
     const markAsComplete = async () => {
         if (!lesson) return;
@@ -95,14 +121,22 @@ export default function LessonPage({
         try {
             await fetch(`${API_BASE}/lms/progress/${lesson.id}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include", // Use cookies
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ completed: true }),
             });
             setCompleted(true);
             toast.success("Lección completada");
+
+            // Update local course state for sidebar
+            if (course) {
+                setCourse({
+                    ...course,
+                    lessons: course.lessons.map(l =>
+                        l.id === lesson.id ? { ...l, completed: true } : l
+                    )
+                });
+            }
         } catch (err) {
             toast.error("Error al actualizar el progreso");
         }
@@ -110,18 +144,16 @@ export default function LessonPage({
 
     if (loading || authLoading) {
         return (
-            <div className={styles.lessonPage}>
-                <div className="container state-container">
-                    Cargando...
-                </div>
+            <div className="min-h-screen pt-32 flex items-center justify-center">
+                <div className="animate-pulse text-muted-foreground">Cargando lección...</div>
             </div>
         );
     }
 
     if (error === "needsAuth" || !isAuthenticated) {
         return (
-            <div className={styles.lessonPage}>
-                <div className="container state-container">
+            <div className="min-h-screen pt-32 pb-16">
+                <div className="container max-w-4xl">
                     <PremiumLock
                         title="Inicia sesión para ver esta lección"
                         description="Necesitas una cuenta para acceder al contenido del curso."
@@ -135,8 +167,8 @@ export default function LessonPage({
 
     if (error === "premium") {
         return (
-            <div className={styles.lessonPage}>
-                <div className="container state-container">
+            <div className="min-h-screen pt-32 pb-16">
+                <div className="container max-w-4xl">
                     <PremiumLock
                         title="Contenido Premium"
                         description="Necesitas una suscripción activa para acceder a este contenido."
@@ -150,117 +182,191 @@ export default function LessonPage({
 
     if (error === "notFound" || !lesson) {
         return (
-            <div className={styles.lessonPage}>
-                <div className="container state-container">
-                    <h2>Lección no encontrada</h2>
-                    <Link href="/cursos" className="dashboard-link">
-                        Volver a cursos
-                    </Link>
+            <div className="min-h-screen pt-32 pb-24 text-center">
+                <div className="container">
+                    <h2 className="text-2xl font-bold mb-4">Lección no encontrada</h2>
+                    <Button asChild>
+                        <Link href="/cursos">Volver a cursos</Link>
+                    </Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className={styles.lessonPage}>
-            <header className={styles.lessonHeader}>
-                <div className="container">
-                    <div className={styles.breadcrumb}>
-                        <Link href="/cursos">Cursos</Link>
-                        <span>/</span>
-                        <Link href={`/cursos/${lesson.course.theme.slug}`}>{lesson.course.theme.title}</Link>
-                        <span>/</span>
-                        <Link href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}`}>
-                            {lesson.course.title}
-                        </Link>
-                    </div>
-                    <h1 className={styles.lessonTitle}>{lesson.title}</h1>
-                    <div className={styles.lessonMeta}>
-                        {lesson.duration && (
-                            <span className="flex items-center gap-1">
-                                <IconClock size={16} /> {Math.floor(lesson.duration / 60)} min
-                            </span>
-                        )}
-                        {completed && (
-                            <span className="status-completed flex items-center gap-1">
-                                <IconSuccess size={16} /> Completada
-                            </span>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            <section className={styles.lessonContent}>
-                <div className={`container ${styles.contentWrapper}`}>
-                    {lesson.videoUrl && (
-                        <div className={styles.videoContainer}>
-                            {getYouTubeEmbedUrl(lesson.videoUrl) ? (
-                                <iframe
-                                    src={getYouTubeEmbedUrl(lesson.videoUrl) || ""}
-                                    title={lesson.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    style={{
-                                        border: "none",
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        width: "100%",
-                                        height: "100%",
-                                    }}
-                                />
-                            ) : (
-                                <video controls src={lesson.videoUrl}>
-                                    Tu navegador no soporta el elemento de video.
-                                </video>
-                            )}
+        <div className="min-h-screen pt-24 pb-16 bg-background">
+            <div className="container max-w-[1600px] px-4 md:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Main Content */}
+                    <div className="lg:col-span-8 xl:col-span-9 space-y-8">
+                        {/* Breadcrumbs */}
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <Link href="/cursos" className="hover:text-primary transition-colors">Cursos</Link>
+                            <span className="opacity-50">/</span>
+                            <Link href={`/cursos/${lesson.course.theme.slug}`} className="hover:text-primary transition-colors">{lesson.course.theme.title}</Link>
+                            <span className="opacity-50">/</span>
+                            <Link href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}`} className="hover:text-primary transition-colors">
+                                {lesson.course.title}
+                            </Link>
                         </div>
-                    )}
 
-                    <div
-                        className={styles.contentText}
-                        dangerouslySetInnerHTML={{ __html: formatContent(lesson.content) }}
-                    />
+                        {/* Title & Meta */}
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-serif font-bold mb-3">{lesson.title}</h1>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                {lesson.duration && (
+                                    <span className="flex items-center gap-1.5">
+                                        <IconClock size={16} /> {Math.floor(lesson.duration / 60)} min
+                                    </span>
+                                )}
+                                {completed && (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 flex items-center gap-1 text-xs font-semibold">
+                                        <IconCheck size={12} strokeWidth={3} /> Completada
+                                    </span>
+                                )}
+                            </div>
+                        </div>
 
-                    <div className={styles.progressActions}>
-                        <button
-                            onClick={markAsComplete}
-                            className={`${styles.markComplete} ${completed ? styles.completed : ""}`}
-                            disabled={completed}
-                        >
-                            {completed ? (
-                                <>
-                                    <IconSuccess size={18} /> Completada
-                                </>
-                            ) : (
-                                "Marcar como completada"
-                            )}
-                        </button>
+                        {/* Video Player */}
+                        {lesson.videoUrl && (
+                            <div className="rounded-xl overflow-hidden bg-black border border-border shadow-lg">
+                                <AspectRatio ratio={16 / 9} className="bg-muted">
+                                    {getYouTubeEmbedUrl(lesson.videoUrl) ? (
+                                        <iframe
+                                            src={getYouTubeEmbedUrl(lesson.videoUrl) || ""}
+                                            title={lesson.title}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            className="w-full h-full border-0"
+                                        />
+                                    ) : (
+                                        <video controls src={lesson.videoUrl} className="w-full h-full object-contain">
+                                            Tu navegador no soporta el elemento de video.
+                                        </video>
+                                    )}
+                                </AspectRatio>
+                            </div>
+                        )}
+
+                        {/* Navigation Buttons (Top) */}
+                        <div className="flex justify-between gap-4">
+                            {lesson.navigation.prev ? (
+                                <Button asChild variant="secondary" className="gap-2">
+                                    <Link href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}/${lesson.navigation.prev.slug}`}>
+                                        ← Anterior
+                                    </Link>
+                                </Button>
+                            ) : <div></div>}
+
+                            {lesson.navigation.next ? (
+                                <Button asChild variant="secondary" className="gap-2">
+                                    <Link href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}/${lesson.navigation.next.slug}`}>
+                                        Siguiente →
+                                    </Link>
+                                </Button>
+                            ) : <div></div>}
+                        </div>
+
+                        {/* Content */}
+                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                            <div dangerouslySetInnerHTML={{ __html: formatContent(lesson.content) }} />
+                        </div>
+
+                        {/* Completion Action */}
+                        <div className="flex flex-col gap-6 pt-8 border-t border-border">
+                            <div className="flex justify-between items-center bg-card p-6 rounded-xl border border-border">
+                                <div>
+                                    <h3 className="font-semibold mb-1">¿Terminaste esta lección?</h3>
+                                    <p className="text-sm text-muted-foreground">Marca la lección como completada para seguir tu progreso.</p>
+                                </div>
+                                <Button
+                                    onClick={markAsComplete}
+                                    disabled={completed}
+                                    variant={completed ? "outline" : "default"}
+                                    className={completed ? "border-green-500 text-green-600 bg-green-500/5 hover:bg-green-500/10" : "bg-primary text-primary-foreground hover:bg-primary/90"}
+                                >
+                                    {completed ? (
+                                        <>
+                                            <IconSuccess size={18} className="mr-2" /> Completada
+                                        </>
+                                    ) : (
+                                        "Marcar como completada"
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className={styles.lessonNav}>
-                        {lesson.navigation.prev && (
-                            <Link
-                                href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}/${lesson.navigation.prev.slug}`}
-                                className={`${styles.navLink} ${styles.prev}`}
-                            >
-                                <span className={styles.navLabel}>← Anterior</span>
-                                <span className={styles.navTitle}>{lesson.navigation.prev.title}</span>
-                            </Link>
-                        )}
-                        {lesson.navigation.next && (
-                            <Link
-                                href={`/cursos/${lesson.course.theme.slug}/${lesson.course.slug}/${lesson.navigation.next.slug}`}
-                                className={`${styles.navLink} ${styles.next}`}
-                            >
-                                <span className={styles.navLabel}>Siguiente →</span>
-                                <span className={styles.navTitle}>{lesson.navigation.next.title}</span>
-                            </Link>
-                        )}
+                    {/* Sidebar / Curriculum */}
+                    <div className="lg:col-span-4 xl:col-span-3">
+                        <div className="sticky top-24 space-y-4">
+                            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                                <div className="p-4 border-b border-border bg-muted/30">
+                                    <h3 className="font-semibold">Temario del Curso</h3>
+                                    {course && (
+                                        <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                                            <span>{course.lessons.filter(l => l.completed).length} / {course.lessons.length} completadas</span>
+                                            <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-primary"
+                                                    style={{ width: `${(course.lessons.filter(l => l.completed).length / course.lessons.length) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="h-[calc(100vh-250px)] overflow-y-auto custom-scrollbar">
+                                    <Accordion type="single" collapsible defaultValue="all-lessons" className="w-full">
+                                        <AccordionItem value="all-lessons" className="border-0">
+                                            <AccordionTrigger className="px-4 py-3 hover:no-underline bg-muted/10">
+                                                <span className="text-sm font-medium">Módulo General</span>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="pb-0">
+                                                <div className="flex flex-col">
+                                                    {course?.lessons.map((item, index) => {
+                                                        const isActive = item.slug === lesson.slug;
+                                                        return (
+                                                            <Link
+                                                                key={item.id}
+                                                                href={isActive ? "#" : `/cursos/${lesson.course.theme.slug}/${lesson.course.slug}/${item.slug}`}
+                                                                className={cn(
+                                                                    "flex items-start gap-3 p-3 text-sm border-l-2 transition-colors hover:bg-muted/50",
+                                                                    isActive
+                                                                        ? "bg-primary/5 border-primary text-primary font-medium"
+                                                                        : "border-transparent text-muted-foreground hover:text-foreground"
+                                                                )}
+                                                            >
+                                                                <div className={cn(
+                                                                    "mt-0.5 rounded-full flex items-center justify-center w-5 h-5 shrink-0 text-[10px]",
+                                                                    item.completed
+                                                                        ? "bg-green-500 text-white"
+                                                                        : isActive
+                                                                            ? "bg-primary text-white"
+                                                                            : "bg-muted text-muted-foreground"
+                                                                )}>
+                                                                    {item.completed ? <IconCheck size={10} strokeWidth={3} /> : (isActive ? <IconPlay size={8} fill="currentColor" /> : index + 1)}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <p className="line-clamp-2 leading-snug">{item.title}</p>
+                                                                    <p className="text-xs text-muted-foreground mt-1 opacity-80">
+                                                                        {item.duration ? `${Math.floor(item.duration / 60)} min` : "0 min"}
+                                                                    </p>
+                                                                </div>
+                                                            </Link>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </div >
     );
 }
 
@@ -277,17 +383,12 @@ function getYouTubeEmbedUrl(url: string): string | null {
 
 function formatContent(content: string): string {
     if (!content) return "";
-
     let formatted = content;
-
-    // Si NO tiene HTML, convertir saltos de línea en párrafos
     if (!content.includes("<p>") && !content.includes("<div>")) {
         formatted = content
             .split(/\n\n+/)
             .map((p) => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
             .join("");
     }
-
-    // Sanitizar para prevenir XSS
     return sanitizeHtml(formatted);
 }

@@ -4,10 +4,10 @@ import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/post.module.css";
 import { BlogBreadcrumbs } from "../BlogBreadcrumbs";
 import { BlogMeta } from "../BlogMeta";
 import { BlogBackButton } from "../BlogBackButton";
+import { IconDocument, IconFile, IconImage, IconLock } from "@/components/ui/Icons";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -98,35 +98,39 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <>
-      {/* JSON-LD Script */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <article className={styles.postPage}>
-        <BlogBackButton />
+      <article className="min-h-screen pb-20 bg-background">
+        <div className="container mx-auto px-4 pt-8">
+          <BlogBackButton />
+        </div>
 
         {/* Hero */}
-        <header className={styles.postHero}>
-          <div className="container">
-            {/* Breadcrumb */}
+        <header className="container mx-auto px-4 mb-4">
+          <div className="max-w-4xl mx-auto">
             <BlogBreadcrumbs />
 
-            {/* Collapsible Meta Info */}
             <BlogMeta
               date={post.createdAt}
               readingTime={post.readingTime || undefined}
               category={post.categories[0]}
             />
 
-            <h1>{post.title}</h1>
-            <p className={styles.excerpt}>{post.excerpt}</p>
+            <h1 className="text-3xl md:text-5xl font-bold mt-6 mb-6 font-serif leading-tight">
+              {post.title}
+            </h1>
 
-            <div className={styles.author}>
-              <Link href="/about-me" className={styles.authorLink}>
-                <span className={styles.authorLabel}>Por</span>
-                <span className={styles.authorName}>{post.authorName}</span>
+            <p className="text-xl text-foreground-muted leading-relaxed mb-8 border-l-4 border-primary/30 pl-6 italic">
+              {post.excerpt}
+            </p>
+
+            <div className="flex items-center gap-3 text-sm mb-12 border-t border-border pt-6">
+              <span className="text-foreground-muted">Por</span>
+              <Link href="/about-me" className="font-semibold text-primary hover:underline">
+                {post.authorName}
               </Link>
             </div>
           </div>
@@ -134,37 +138,56 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* Cover Image */}
         {post.coverImage && (
-          <div className={styles.postCover}>
-            <div className="container">
-              <img src={post.coverImage} alt={post.title} />
+          <div className="w-full h-[300px] md:h-[500px] relative mb-16 bg-muted">
+            <div className="container mx-auto h-full px-4">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-full object-cover rounded-xl shadow-lg"
+              />
             </div>
           </div>
         )}
 
         {/* Content */}
-        <div className={styles.postContent}>
-          <div className={`container ${styles.contentContainer}`}>
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
             {post.isContentLimited && (
-              <div className={styles.premiumBanner}>
-                <div className={styles.premiumIcon}>🔒</div>
-                <h3>Contenido Premium</h3>
-                <p>Este artículo es exclusivo para suscriptores. Suscríbete para acceder al contenido completo.</p>
-                <Button asChild>
-                  <Link href="/suscripcion">Suscribirme ahora</Link>
-                </Button>
+              <div className="bg-card text-card-foreground p-8 rounded-xl border border-border shadow-lg mb-12 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <IconLock className="w-24 h-24" />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                    <IconLock className="w-5 h-5 text-primary" />
+                    Contenido Premium
+                  </h3>
+                  <p className="text-foreground-muted mb-6"> Este artículo es exclusivo para suscriptores. Suscríbete para acceder al contenido completo y desbloquear todo el potencial.</p>
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link href="/suscripcion">Suscribirme ahora</Link>
+                  </Button>
+                </div>
               </div>
             )}
 
             <div
-              className={`${styles.content} ${post.isContentLimited ? styles.limited : ""}`}
+              className={`
+                 prose prose-lg dark:prose-invert max-w-none 
+                 prose-headings:font-serif prose-headings:font-bold
+                 prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                 prose-img:rounded-xl prose-img:shadow-md
+                 ${post.isContentLimited ? "opacity-50 blur-[2px] select-none pointer-events-none h-[400px] overflow-hidden relative after:absolute after:inset-0 after:bg-gradient-to-b after:from-transparent after:to-background" : ""}
+              `}
               dangerouslySetInnerHTML={{ __html: formatContent(post.content || "") }}
             />
 
-            {/* Attachments - Only show if not content limited and has attachments */}
+            {/* Attachments */}
             {!post.isContentLimited && post.attachments && post.attachments.length > 0 && (
-              <div className={styles.attachments}>
-                <h3>📎 Archivos Adjuntos</h3>
-                <ul>
+              <div className="mt-16 pt-8 border-t border-border">
+                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  📎 Archivos Adjuntos
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {post.attachments.map((attachment: any) => (
                     <li key={attachment.id}>
                       <a
@@ -172,14 +195,15 @@ export default async function PostPage({ params }: PostPageProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         download
+                        className="flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:bg-accent hover:border-accent-glow transition-all group"
                       >
-                        <span className={styles.attachmentIcon}>
-                          {attachment.fileType.includes('pdf') ? '📄' : '📎'}
+                        <span className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                          {attachment.fileType.includes('pdf') ? <IconDocument /> : <IconFile />}
                         </span>
-                        <span className={styles.attachmentName}>{attachment.name}</span>
-                        <span className={styles.attachmentSize}>
-                          ({formatFileSize(attachment.fileSize)})
-                        </span>
+                        <div className="flex-1 min-w-0">
+                          <span className="block font-medium truncate">{attachment.name}</span>
+                          <span className="text-xs text-foreground-muted">({formatFileSize(attachment.fileSize)})</span>
+                        </div>
                       </a>
                     </li>
                   ))}
@@ -189,9 +213,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
             {/* Tags */}
             {post.tags.length > 0 && (
-              <div className={styles.postTags}>
+              <div className="mt-12 flex flex-wrap gap-2">
                 {post.tags.map((tag: { id: string; name: string }) => (
-                  <span key={tag.id} className={styles.tag}>
+                  <span key={tag.id} className="px-3 py-1 bg-muted text-foreground-muted rounded-full text-sm font-medium hover:text-primary hover:bg-primary/5 transition-colors cursor-default">
                     #{tag.name}
                   </span>
                 ))}
@@ -199,34 +223,26 @@ export default async function PostPage({ params }: PostPageProps) {
             )}
           </div>
         </div>
-
-
       </article>
     </>
   );
 }
 
-// Format file size helper
+// Format file size helper (Duplicate due to server component isolation if needed, or import)
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-// Formato básico del contenido (convertir saltos de línea en párrafos) con sanitización XSS
 function formatContent(content: string): string {
   if (!content) return "";
-
   let formatted = content;
-
-  // Si NO tiene HTML, convertir saltos de línea dobles en párrafos
   if (!content.includes("<p>") && !content.includes("<div>")) {
     formatted = content
       .split(/\n\n+/)
       .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br/>")}</p>`)
       .join("");
   }
-
-  // Sanitizar para prevenir XSS
   return sanitizeHtml(formatted);
 }

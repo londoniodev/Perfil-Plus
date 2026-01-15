@@ -4,10 +4,16 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import styles from "@/styles/ebook-form.module.css";
 
-import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconSave, IconCheck } from "@/components/ui/Icons";
+import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconSettings, IconFile, IconSave, IconLoader } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { Input, InputWithIcon } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Switch } from "@/components/ui/switch";
+import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Label } from "@/components/ui/Label";
 
 export default function EditEbookPage(props: { params: Promise<{ id: string }> }) {
     const params = use(props.params);
@@ -20,11 +26,10 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
     const [published, setPublished] = useState(false);
-    const [currentCover, setCurrentCover] = useState("");
+    const [coverUrl, setCoverUrl] = useState<string | null>(null);
     const [hasFullFile, setHasFullFile] = useState(false);
     const [hasPreviewFile, setHasPreviewFile] = useState(false);
 
-    const [coverFile, setCoverFile] = useState<File | null>(null);
     const [fullFile, setFullFile] = useState<File | null>(null);
     const [previewFile, setPreviewFile] = useState<File | null>(null);
 
@@ -39,7 +44,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             setDescription(data.description);
             setPrice(data.price);
             setPublished(data.published);
-            setCurrentCover(data.coverImage);
+            setCoverUrl(data.coverImage);
             setHasFullFile(!!data.fileUrl);
             setHasPreviewFile(!!data.previewUrl);
         } catch {
@@ -54,13 +59,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
         try {
             setSubmitting(true);
 
-            let coverUrl = undefined;
-            if (coverFile) {
-                const formData = new FormData();
-                formData.append("file", coverFile);
-                const res = await fetch(`${API_BASE}/storage/upload/image`, { method: "POST", credentials: "include", body: formData });
-                if (res.ok) coverUrl = (await res.json()).url;
-            }
+            // Cover image handled by ImageUploader
 
             let fileUrl = undefined;
             if (fullFile) {
@@ -84,7 +83,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
                 credentials: "include",
                 body: JSON.stringify({
                     title, description, price: parseFloat(price), published,
-                    ...(coverUrl && { coverImage: coverUrl }),
+                    coverImage: coverUrl,
                     ...(fileUrl && { fileUrl }),
                     ...(previewUrl && { previewUrl }),
                 }),
@@ -101,96 +100,110 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
         }
     };
 
-    if (loading) return <div className={styles.loading}>Cargando...</div>;
+    if (loading) return <div className="flex h-screen items-center justify-center"><IconLoader className="animate-spin" /></div>;
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>Editar E-book</h1>
-                <Link href="/admin/ebooks" className={styles.backBtn}>
-                    <IconBack /> Cancelar
-                </Link>
+        <div className="p-8 max-w-7xl mx-auto space-y-8">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Editar E-book</h1>
+                <Button variant="ghost" asChild>
+                    <Link href="/admin/ebooks">
+                        <IconBack className="mr-2" /> Cancelar
+                    </Link>
+                </Button>
             </div>
 
-            <form onSubmit={handleSubmit} className={styles.grid}>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* LEFT */}
-                <div className={styles.leftColumn}>
-                    <div className={styles.card}>
-                        <h2 className={styles.cardTitle}><IconEdit /> Información</h2>
-                        <div className={styles.field}>
-                            <label>Título *</label>
-                            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                        </div>
-                        <div className={styles.field}>
-                            <label>Descripción *</label>
-                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} required />
-                        </div>
-                    </div>
+                <div className="lg:col-span-2 space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><IconEdit /> Información</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label>Título</Label>
+                                <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Descripción</Label>
+                                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} required />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                    <div className={styles.card}>
-                        <h2 className={styles.cardTitle}><IconFile /> Archivos</h2>
-                        <div className={styles.filesGrid}>
-                            <label className={`${styles.fileBox} ${(fullFile || hasFullFile) ? styles.fileBoxActive : ''}`}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><IconFile /> Archivos</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label className={`relative border-2 border-dashed rounded-xl p-6 cursor-pointer hover:border-primary/50 transition-colors flex flex-col items-center justify-center text-center gap-3 ${(fullFile || hasFullFile) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                                 <input type="file" accept=".pdf,.epub" onChange={(e) => setFullFile(e.target.files?.[0] || null)} hidden />
-                                <div className={styles.fileIcon}><IconLock /></div>
-                                <div className={styles.fileName}>{fullFile ? fullFile.name : (hasFullFile ? "PDF Cargado" : "PDF Completo *")}</div>
-                                <div className={styles.fileHint}>Click para reemplazar</div>
-                                <div className={styles.fileMeta}>PDF, EPUB • Máx 50MB</div>
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${(fullFile || hasFullFile) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><IconLock /></div>
+                                <div>
+                                    <div className="font-medium text-foreground">{fullFile ? fullFile.name : (hasFullFile ? "PDF Cargado" : "PDF Completo *")}</div>
+                                    <div className="text-xs text-muted-foreground">Click para reemplazar</div>
+                                    <div className="text-[10px] text-muted-foreground mt-1 uppercase">PDF, EPUB • Máx 50MB</div>
+                                </div>
                             </label>
 
-                            <label className={`${styles.fileBox} ${(previewFile || hasPreviewFile) ? styles.fileBoxActive : ''}`}>
+                            <label className={`relative border-2 border-dashed rounded-xl p-6 cursor-pointer hover:border-primary/50 transition-colors flex flex-col items-center justify-center text-center gap-3 ${(previewFile || hasPreviewFile) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                                 <input type="file" accept=".pdf" onChange={(e) => setPreviewFile(e.target.files?.[0] || null)} hidden />
-                                <div className={styles.fileIcon}><IconEye /></div>
-                                <div className={styles.fileName}>{previewFile ? previewFile.name : (hasPreviewFile ? "Preview Cargado" : "Vista Previa")}</div>
-                                <div className={styles.fileHint}>Click para reemplazar</div>
-                                <div className={styles.fileMeta}>PDF • Máx 10MB</div>
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${(previewFile || hasPreviewFile) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}><IconEye /></div>
+                                <div>
+                                    <div className="font-medium text-foreground">{previewFile ? previewFile.name : (hasPreviewFile ? "Preview Cargado" : "Vista Previa")}</div>
+                                    <div className="text-xs text-muted-foreground">Click para reemplazar</div>
+                                    <div className="text-[10px] text-muted-foreground mt-1 uppercase">PDF • Máx 10MB</div>
+                                </div>
                             </label>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* RIGHT */}
-                <div className={styles.rightColumn}>
-                    <div className={styles.card}>
-                        <h2 className={styles.cardTitle}><IconImage /> Portada</h2>
-                        <label className={`${styles.coverBox} ${(coverFile || currentCover) ? styles.coverBoxActive : ''}`}>
-                            <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} hidden />
-                            {(coverFile || currentCover) ? (
-                                <img src={coverFile ? URL.createObjectURL(coverFile) : currentCover} alt="Preview" className={styles.coverPreview} />
-                            ) : (
-                                <>
-                                    <div className={styles.coverIcon}><IconUpload /></div>
-                                    <div className={styles.coverText}>Click para subir</div>
-                                    <div className={styles.fileMeta}>JPG, PNG, WebP • Máx 10MB</div>
-                                </>
-                            )}
-                        </label>
-                    </div>
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><IconImage /> Portada</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ImageUploader
+                                value={coverUrl}
+                                onChange={setCoverUrl}
+                                folder="ebooks-covers"
+                            />
+                        </CardContent>
+                    </Card>
 
-                    <div className={styles.card}>
-                        <h2 className={styles.cardTitle}><IconSettings /> Configuración</h2>
-                        <div className={styles.field}>
-                            <label>Precio (USD) *</label>
-                            <div className={styles.priceInput}>
-                                <span>$</span>
-                                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><IconSettings /> Configuración</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <Label>Precio (USD) *</Label>
+                                <InputWithIcon
+                                    icon="$"
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    required
+                                />
                             </div>
-                        </div>
 
-                        <label className={styles.toggleRow}>
-                            <div>
-                                <div className={styles.toggleLabel}>Estado</div>
-                                <div className={styles.toggleHint}>{published ? "Visible en tienda" : "Borrador"}</div>
+                            <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
+                                <div className="space-y-0.5">
+                                    <Label>Estado</Label>
+                                    <div className="text-xs text-muted-foreground">{published ? "Visible en tienda" : "Borrador"}</div>
+                                </div>
+                                <Switch checked={published} onCheckedChange={setPublished} />
                             </div>
-                            <div className={`${styles.toggle} ${published ? styles.toggleOn : ''}`} onClick={() => setPublished(!published)}>
-                                <div className={styles.toggleCircle}>{published && <IconCheck />}</div>
-                            </div>
-                        </label>
-                    </div>
+                        </CardContent>
+                    </Card>
 
-                    <button type="submit" disabled={submitting} className={styles.submitBtn}>
-                        <IconSave /> {submitting ? "Guardando..." : "Guardar Cambios"}
-                    </button>
+                    <Button type="submit" disabled={submitting} className="w-full h-12 text-base">
+                        {submitting ? <><IconLoader className="mr-2 animate-spin" /> Guardando...</> : <><IconSave className="mr-2" /> Guardar Cambios</>}
+                    </Button>
                 </div>
             </form>
         </div>

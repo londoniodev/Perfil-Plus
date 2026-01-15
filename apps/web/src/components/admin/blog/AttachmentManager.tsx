@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from 'react';
 import { API_BASE } from "@/lib/config";
-import styles from '@/styles/blog.module.css';
 import {
     IconUpload,
     IconDownload,
@@ -13,6 +12,7 @@ import {
     IconLock
 } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
 
 interface Attachment {
     id: string;
@@ -37,13 +37,14 @@ function formatFileSize(bytes: number): string {
 }
 
 function getFileIcon(fileType: string): React.ReactNode {
+    const baseClass = "w-10 h-10 flex items-center justify-center rounded-lg";
     if (fileType.includes('pdf')) {
-        return <div className={`${styles.fileIcon} ${styles.pdf}`}><IconDocument size={24} /></div>;
+        return <div className={`${baseClass} bg-red-100 text-red-600`}><IconDocument size={20} /></div>;
     }
     if (fileType.includes('image')) {
-        return <div className={`${styles.fileIcon} ${styles.image}`}><IconImage size={24} /></div>;
+        return <div className={`${baseClass} bg-blue-100 text-blue-600`}><IconImage size={20} /></div>;
     }
-    return <div className={styles.fileIcon}><IconFile size={24} /></div>;
+    return <div className={`${baseClass} bg-gray-100 text-gray-600`}><IconFile size={20} /></div>;
 }
 
 export default function AttachmentManager({ postId, attachments, onUpdate, isPremium }: AttachmentManagerProps) {
@@ -160,20 +161,20 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
     };
 
     return (
-        <div className={styles.attachmentManager}>
-            <div className={styles.uploadHeader}>
-                <h3 className={styles.uploadTitle}>
+        <div className="border border-border rounded-xl p-6 bg-card">
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                     Archivos Adjuntos
                 </h3>
-                <button
+                <Button
                     type="button"
                     onClick={() => inputRef.current?.click()}
                     disabled={uploading}
-                    className={styles.uploadBtn}
+                    size="sm"
                 >
-                    <IconUpload size={16} />
+                    <IconUpload className="mr-2 h-4 w-4" />
                     {uploading ? 'Subiendo...' : 'Subir archivo'}
-                </button>
+                </Button>
             </div>
 
             <input
@@ -185,50 +186,65 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
                 style={{ display: "none" }}
             />
 
-
-
             {isPremium && (
-                <div className={styles.premiumTag}>
-                    <IconLock size={16} />
+                <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-4 py-3 rounded-lg mb-4 text-sm flex items-center gap-2">
+                    <IconLock className="h-4 w-4" />
                     Los archivos se guardarán en bucket privado (solo para suscriptores)
                 </div>
             )}
 
             {attachments.length === 0 ? (
-                <p className={styles.emptyText}>
-                    No hay archivos adjuntos
-                </p>
+                <div className="text-center py-12 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                    <div className="mx-auto w-12 h-12 text-muted-foreground/50 mb-3 flex items-center justify-center">
+                        <IconFile className="w-8 h-8" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">
+                        No hay archivos adjuntos
+                    </p>
+                </div>
             ) : (
-                <div className={styles.attachmentList}>
+                <div className="space-y-3">
                     {attachments.map((attachment) => (
-                        <div key={attachment.id} className={styles.attachmentItem}>
-                            {getFileIcon(attachment.fileType)}
-                            <div className={styles.attachmentInfo}>
-                                <p className={styles.attachmentName}>
-                                    {attachment.name}
-                                </p>
-                                <p className={styles.attachmentSize}>
-                                    {formatFileSize(attachment.fileSize)}
-                                    {!attachment.isPublic && " • Privado"}
-                                </p>
+                        <div key={attachment.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border border-border/50">
+                            <div className="flex items-center gap-4">
+                                {getFileIcon(attachment.fileType)}
+                                <div>
+                                    <p className="text-sm font-medium text-foreground truncate max-w-[200px] sm:max-w-[300px]">
+                                        {attachment.name}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formatFileSize(attachment.fileSize)}
+                                        {!attachment.isPublic && " • Privado"}
+                                    </p>
+                                </div>
                             </div>
-                            <a
-                                href={attachment.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={styles.actionBtn}
-                                title="Descargar"
-                            >
-                                <IconDownload size={16} />
-                            </a>
-                            <button
-                                type="button"
-                                onClick={() => handleDelete(attachment)}
-                                className={`${styles.actionBtn} ${styles.danger}`}
-                                title="Eliminar"
-                            >
-                                <IconTrash size={16} />
-                            </button>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                >
+                                    <a
+                                        href={attachment.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Descargar"
+                                    >
+                                        <IconDownload size={16} />
+                                    </a>
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDelete(attachment)}
+                                    className="h-8 w-8 text-muted-foreground hover:text-error hover:bg-error/10"
+                                    title="Eliminar"
+                                >
+                                    <IconTrash size={16} />
+                                </Button>
+                            </div>
                         </div>
                     ))}
                 </div>

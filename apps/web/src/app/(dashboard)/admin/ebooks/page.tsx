@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE } from "@/lib/config";
-import styles from "@/styles/ebook-list.module.css";
+
+import { IconPlus, IconEdit, IconTrash, IconBook, IconLoader } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 interface Ebook {
     id: string;
@@ -18,9 +23,6 @@ interface Ebook {
     _count?: { purchases: number };
     createdAt: string;
 }
-
-import { IconPlus, IconEdit, IconTrash, IconBook } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
 
 export default function AdminEbooksPage() {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -60,56 +62,81 @@ export default function AdminEbooksPage() {
         }
     };
 
-    if (authLoading) return <div className={styles.loading}>Cargando...</div>;
+    if (authLoading) return <div className="flex h-screen items-center justify-center"><IconLoader className="animate-spin" /></div>;
     if (!isAdmin) return null;
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
+        <div className="p-8 max-w-7xl mx-auto space-y-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className={styles.title}>Biblioteca de E-books</h1>
-                    <p className={styles.subtitle}>{ebooks.length} libros en tu catálogo</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Biblioteca de E-books</h1>
+                    <p className="text-muted-foreground mt-1">{ebooks.length} libros en tu catálogo</p>
                 </div>
-                <Link href="/admin/ebooks/new" className={styles.addBtn}>
-                    <IconPlus /> Nuevo E-book
-                </Link>
+                <Button asChild>
+                    <Link href="/admin/ebooks/new">
+                        <IconPlus className="mr-2" /> Nuevo E-book
+                    </Link>
+                </Button>
             </div>
 
             {loading ? (
-                <div className={styles.loading}>Cargando e-books...</div>
-            ) : ebooks.length === 0 ? (
-                <div className={styles.empty}>
-                    <div className={styles.emptyIcon}><IconBook /></div>
-                    <h2>No hay e-books</h2>
-                    <p>Crea tu primer e-book para comenzar a vender.</p>
-                    <Link href="/admin/ebooks/new" className={styles.addBtn}>
-                        <IconPlus /> Crear E-book
-                    </Link>
+                <div className="flex justify-center py-20">
+                    <IconLoader className="animate-spin text-muted-foreground" size={32} />
                 </div>
-            ) : (
-                <div className={styles.booksGrid}>
-                    {ebooks.map((ebook) => (
-                        <div key={ebook.id} className={styles.bookCard}>
-                            <div className={styles.bookCover}>
-                                <img src={ebook.coverImage} alt={ebook.title} />
-                                {!ebook.published && <span className={styles.draftBadge}>Borrador</span>}
-                            </div>
-                            <div className={styles.bookInfo}>
-                                <h3 className={styles.bookTitle}>{ebook.title}</h3>
-                                <div className={styles.bookMeta}>
-                                    <span className={styles.bookPrice}>${Number(ebook.price).toLocaleString("es-CO")}</span>
-                                    <span className={styles.bookSales}>{ebook._count?.purchases || 0} ventas</span>
-                                </div>
-                                <div className={styles.bookActions}>
-                                    <Link href={`/admin/ebooks/${ebook.id}`} className={styles.editBtn}>
-                                        <IconEdit /> Editar
-                                    </Link>
-                                    <button onClick={() => handleDelete(ebook.id)} className={styles.deleteBtn}>
-                                        <IconTrash />
-                                    </button>
-                                </div>
-                            </div>
+            ) : ebooks.length === 0 ? (
+                <Card className="border-dashed py-12">
+                    <CardContent className="flex flex-col items-center justify-center text-center">
+                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 text-muted-foreground">
+                            <IconBook size={32} />
                         </div>
+                        <h2 className="text-xl font-semibold mb-2">No hay e-books</h2>
+                        <p className="text-muted-foreground mb-6">Crea tu primer e-book para comenzar a vender.</p>
+                        <Button asChild variant="secondary">
+                            <Link href="/admin/ebooks/new">
+                                <IconPlus className="mr-2" /> Crear E-book
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {ebooks.map((ebook) => (
+                        <Card key={ebook.id} className="overflow-hidden flex flex-col group hover:shadow-lg transition-all">
+                            <div className="relative aspect-[3/4] overflow-hidden bg-muted border-b border-border/50">
+                                <img
+                                    src={ebook.coverImage}
+                                    alt={ebook.title}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                {!ebook.published && (
+                                    <div className="absolute top-3 right-3">
+                                        <Badge variant="destructive" className="shadow-sm">Borrador</Badge>
+                                    </div>
+                                )}
+                            </div>
+                            <CardContent className="p-5 flex flex-col flex-1">
+                                <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2" title={ebook.title}>{ebook.title}</h3>
+                                <div className="flex items-center justify-between mt-auto mb-4 text-sm text-muted-foreground">
+                                    <span className="font-semibold text-foreground">${Number(ebook.price).toLocaleString("es-CO")}</span>
+                                    <span>{ebook._count?.purchases || 0} ventas</span>
+                                </div>
+                                <div className="flex items-center gap-2 mt-2 pt-4 border-t border-border/50">
+                                    <Button asChild variant="ghost" size="sm" className="flex-1 justify-start px-2 hover:bg-muted text-muted-foreground hover:text-foreground">
+                                        <Link href={`/admin/ebooks/${ebook.id}`}>
+                                            <IconEdit className="mr-2 h-4 w-4" /> Editar
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                                        onClick={() => handleDelete(ebook.id)}
+                                    >
+                                        <IconTrash className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
                     ))}
                 </div>
             )}

@@ -12,6 +12,7 @@ export interface User {
     role: UserRole;
     emailVerified: boolean;
     hasActiveSubscription: boolean;
+    avatar?: string | null;
 }
 
 interface AuthContextType {

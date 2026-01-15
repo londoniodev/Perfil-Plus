@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import styles from "@/styles/toast.module.css";
 
 // ============================================================================
 // TYPES
@@ -108,7 +107,7 @@ function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
     if (toasts.length === 0) return null;
 
     return (
-        <div className={styles.toastContainer}>
+        <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 w-full max-w-[350px] pointer-events-none pr-4 md:pr-0">
             {toasts.map((toast) => (
                 <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
             ))}
@@ -156,17 +155,36 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         ),
     };
 
+    const typeStyles = {
+        success: "border-l-success bg-background/95 text-foreground border border-border shadow-lg",
+        error: "border-l-destructive bg-destructive/10 text-destructive border-destructive/20 border shadow-lg",
+        warning: "border-l-yellow-500 bg-yellow-500/10 text-yellow-500 border-yellow-500/20 border shadow-lg",
+        info: "border-l-blue-500 bg-blue-500/10 text-blue-500 border-blue-500/20 border shadow-lg"
+    };
+
+    const iconStyles = {
+        success: "text-success",
+        error: "text-destructive",
+        warning: "text-yellow-500",
+        info: "text-blue-500"
+    };
+
     return (
-        <div className={`${styles.toast} ${styles[toast.type]}`}>
-            <div className={`${styles.toastIcon} ${styles[toast.type]}`}>
+        <div className={`
+            pointer-events-auto flex w-full items-start gap-3 rounded-lg p-4 pr-8 
+            transition-all duration-300 animate-in slide-in-from-right-full border-l-4 
+            backdrop-blur-sm
+            ${typeStyles[toast.type]}
+        `}>
+            <div className={`h-5 w-5 mt-0.5 shrink-0 ${iconStyles[toast.type]}`}>
                 {iconMap[toast.type]}
             </div>
-            <div className={styles.toastContent}>
-                {toast.title && <div className={styles.toastTitle}>{toast.title}</div>}
-                <div className={styles.toastMessage}>{toast.message}</div>
+            <div className="flex-1 grid gap-1">
+                {toast.title && <div className="font-semibold text-sm">{toast.title}</div>}
+                <div className="text-sm opacity-90">{toast.message}</div>
             </div>
             <button
-                className={styles.toastClose}
+                className="absolute right-2 top-2 rounded-md p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 onClick={() => onRemove(toast.id)}
                 aria-label="Cerrar"
             >

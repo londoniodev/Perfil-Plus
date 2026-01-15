@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import styles from '@/styles/lms.module.css';
 import { IconEdit, IconTrash } from '@/components/ui/Icons';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 
 interface Lesson {
     id: string;
@@ -29,35 +30,43 @@ export default function LessonItem({ lesson, courseId, themeId, onDelete }: Less
     };
 
     return (
-        <div className={styles.listItem}>
-            <span className={styles.itemOrder}>
+        <div className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-all duration-200 group">
+            <span className="text-muted-foreground text-sm font-medium w-8 text-center bg-muted/30 rounded py-1">
                 #{lesson.order}
             </span>
-            <div className={styles.itemContent}>
-                <div className={styles.itemTitle}>{lesson.title}</div>
-                <div className={styles.itemMeta}>
-                    {lesson.duration ? `${lesson.duration} min` : "Sin duración"}
+            <div className="flex-1 min-w-0">
+                <div className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors truncate">{lesson.title}</div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "Sin duración"}</span>
                     <span>•</span>
-                    <span className={`${styles.itemBadge} ${lesson.published ? styles.published : styles.draft}`}>
+                    <Badge variant={lesson.published ? "outline" : "secondary"} className={`font-normal ${lesson.published ? "text-green-600 border-green-200" : "text-gray-500"}`}>
                         {lesson.published ? "Publicado" : "Borrador"}
-                    </span>
+                    </Badge>
                 </div>
             </div>
-            <div className={styles.themeActions}>
-                <Link
-                    href={`/admin/cursos/temas/${themeId}/cursos/${courseId}/lecciones/${lesson.id}`}
-                    className={styles.actionBtn}
-                    title="Editar"
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
                 >
-                    <IconEdit size={16} />
-                </Link>
-                <button
+                    <Link
+                        href={`/admin/cursos/temas/${themeId}/cursos/${courseId}/lecciones/${lesson.id}`}
+                        title="Editar"
+                    >
+                        <IconEdit size={16} />
+                    </Link>
+                </Button>
+                <Button
                     onClick={handleDelete}
-                    className={`${styles.actionBtn} ${styles.danger}`}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                     title="Eliminar"
                 >
                     <IconTrash size={16} />
-                </button>
+                </Button>
             </div>
         </div>
     );

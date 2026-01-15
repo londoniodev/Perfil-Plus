@@ -1,24 +1,26 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
+import { API_BASE } from "@/lib/config";
+import { IconImage, IconTrash, IconUpload } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface ImageUploaderProps {
     value: string | null;
     onChange: (url: string | null) => void;
     label?: string;
     folder?: string;
+    className?: string;
 }
-
-import { API_BASE } from "@/lib/config";
-import styles from "@/styles/admin.module.css";
-import { IconImage, IconTrash, IconUpload } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
 
 export default function ImageUploader({
     value,
     onChange,
     label = "Imagen de portada",
-    folder = "blog-covers"
+    folder = "blog-covers",
+    className
 }: ImageUploaderProps) {
     const [uploading, setUploading] = useState(false);
     const toast = useToast();
@@ -61,31 +63,15 @@ export default function ImageUploader({
             });
 
             if (!res.ok) {
-                // Intentar parsear el error del backend
                 let errorMessage = 'Error al subir imagen';
                 try {
                     const errorData = await res.json();
                     if (errorData.message) {
-                        // Parsear mensajes específicos del backend
-                        if (errorData.message.includes('MaxFileSizeValidator') || errorData.message.includes('size')) {
-                            errorMessage = `El archivo excede el tamaño máximo permitido (${maxSizeMB}MB)`;
-                        } else if (errorData.message.includes('FileTypeValidator') || errorData.message.includes('type')) {
-                            errorMessage = `Formato no permitido. Solo se aceptan: ${allowedExtensions.join(', ').toUpperCase()}`;
-                        } else if (Array.isArray(errorData.message)) {
-                            errorMessage = errorData.message[0];
-                        } else {
-                            errorMessage = errorData.message;
-                        }
+                        if (Array.isArray(errorData.message)) errorMessage = errorData.message[0];
+                        else errorMessage = errorData.message;
                     }
                 } catch {
-                    // Si no se puede parsear, usar mensaje genérico basado en status
-                    if (res.status === 413) {
-                        errorMessage = `El archivo excede el tamaño máximo permitido (${maxSizeMB}MB)`;
-                    } else if (res.status === 400) {
-                        errorMessage = 'Archivo inválido. Verifica el formato y tamaño';
-                    } else if (res.status === 401 || res.status === 403) {
-                        errorMessage = 'No tienes permisos para subir archivos';
-                    }
+                    if (res.status === 413) errorMessage = `El archivo excede el tamaño máximo permitido`;
                 }
                 throw new Error(errorMessage);
             }
@@ -107,47 +93,53 @@ export default function ImageUploader({
     };
 
     return (
-        <div className={styles.uploaderContainer}>
-            <label className={styles.label}>
+        <div className={cn("space-y-2", className)}>
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 {label}
             </label>
 
             {value ? (
-                <div className={styles.previewContainer}>
+                <div className="relative rounded-md overflow-hidden border bg-black group max-h-[300px] w-full aspect-video">
                     <img
                         src={value}
                         alt="Preview"
-                        className={styles.previewImage}
+                        className="w-full h-full object-cover"
                     />
-                    <button
-                        type="button"
-                        onClick={handleRemove}
-                        className={styles.removeBtn}
-                        title="Eliminar imagen"
-                    >
-                        <IconTrash size={16} />
-                    </button>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={handleRemove}
+                            title="Eliminar imagen"
+                        >
+                            <IconTrash className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             ) : (
                 <div
                     onClick={() => inputRef.current?.click()}
-                    className={`${styles.uploadArea} ${uploading ? styles.uploadAreaUploading : ''}`}
+                    className={cn(
+                        "flex flex-col items-center justify-center rounded-md border-2 border-dashed p-8 text-center cursor-pointer transition-colors hover:bg-muted/50 hover:border-primary/50",
+                        uploading && "cursor-wait opacity-50"
+                    )}
                 >
                     {uploading ? (
-                        <div style={{ color: "var(--foreground-muted)" }}>
-                            <IconUpload className={`animate-bounce ${styles.uploadIcon}`} />
-                            <div>Subiendo...</div>
+                        <div className="flex flex-col items-center text-muted-foreground">
+                            <IconUpload className="h-10 w-10 animate-bounce mb-2" />
+                            <span className="text-sm">Subiendo...</span>
                         </div>
                     ) : (
-                        <>
-                            <IconImage className={styles.uploadIcon} size={48} strokeWidth={1} />
-                            <p className={styles.uploadText}>
+                        <div className="flex flex-col items-center text-muted-foreground">
+                            <IconImage className="h-10 w-10 mb-2" strokeWidth={1} />
+                            <p className="text-sm font-medium text-foreground">
                                 Haz clic para subir una imagen
                             </p>
-                            <p className={styles.uploadSubtext}>
-                                JPG, JPEG, PNG, GIF, WEBP, AVIF (max. 5MB)
+                            <p className="text-xs mt-1">
+                                JPG, PNG, WEBP, AVIF (max. 5MB)
                             </p>
-                        </>
+                        </div>
                     )}
                 </div>
             )}
@@ -157,10 +149,8 @@ export default function ImageUploader({
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                className="hidden"
             />
-
-
         </div>
     );
 }

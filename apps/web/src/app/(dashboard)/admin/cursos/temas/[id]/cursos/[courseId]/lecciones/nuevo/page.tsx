@@ -7,8 +7,12 @@ import { API_BASE } from "@/lib/config";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
 import VideoUploader from "@/components/admin/ui/VideoUploader";
 import { useToast } from "@/components/ui/Toast";
-import styles from "@/styles/lms.module.css";
-import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconSuccess, IconEyeOff, IconBack } from "@/components/ui/Icons";
+import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconBack } from "@/components/ui/Icons";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Switch } from "@/components/ui/switch";
 
 export default function NuevaLeccionPage() {
     const params = useParams();
@@ -57,149 +61,144 @@ export default function NuevaLeccionPage() {
     };
 
     return (
-        <div className={styles.formPage}>
-            <Link href={`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`} className={styles.backLink}>
+        <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">
+            <Link href={`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                 <IconBack size={16} />
-                ← Volver al curso
+                Volver al curso
             </Link>
 
-            <h1 className={styles.pageTitle}>Nueva Lección</h1>
-
-            <div className={styles.formCard}>
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Título</label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                            className={`${styles.formInput} ${styles.titleInput}`}
-                            placeholder="Escribe un título claro para la lección"
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <IconVideo size={18} />
-                            Video de la lección
-                        </label>
-
-                        <div className={styles.selectionGrid}>
-                            <button
-                                type="button"
-                                onClick={() => { setVideoType("upload"); setVideoUrl(""); }}
-                                className={`${styles.selectionCard} ${videoType === "upload" ? styles.active : ""}`}
-                            >
-                                <IconUpload size={24} />
-                                <span style={{ fontWeight: 600 }}>Subir Video</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { setVideoType("youtube"); setVideoUrl(""); }}
-                                className={`${styles.selectionCard} ${videoType === "youtube" ? styles.active : ""}`}
-                            >
-                                <IconPlay size={24} />
-                                <span style={{ fontWeight: 600 }}>YouTube</span>
-                            </button>
-                        </div>
-
-                        {videoType === "upload" ? (
-                            <VideoUploader
-                                value={videoUrl}
-                                onChange={(url) => setVideoUrl(url || "")}
-                                folder="lms-videos"
-                            />
-                        ) : (
-                            <input
+            <Card className="border-border">
+                <CardHeader>
+                    <CardTitle className="text-2xl">Nueva Lección</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="space-y-2">
+                            <Label htmlFor="title">Título</Label>
+                            <Input
+                                id="title"
                                 type="text"
-                                placeholder="https://www.youtube.com/watch?v=..."
-                                value={videoUrl}
-                                onChange={(e) => setVideoUrl(e.target.value)}
-                                className={styles.formInput}
-                            />
-                        )}
-                    </div>
-
-                    <div className={styles.formRow}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <IconClock size={18} />
-                                Duración (minutos)
-                            </label>
-                            <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => setDuration(Number(e.target.value))}
-                                min="0"
-                                className={styles.formInput}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                                placeholder="Escribe un título claro para la lección"
                             />
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <label className={styles.formLabel} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <IconList size={18} />
-                                Orden
-                            </label>
-                            <input
-                                type="number"
-                                value={order}
-                                onChange={(e) => setOrder(Number(e.target.value))}
-                                className={styles.formInput}
-                            />
-                        </div>
-                    </div>
+                        <div className="space-y-4">
+                            <Label className="flex items-center gap-2">
+                                <IconVideo size={18} />
+                                Video de la lección
+                            </Label>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <IconDocument size={18} />
-                            Contenido / Descripción
-                        </label>
-                        <BlogEditor
-                            value={content}
-                            onChange={setContent}
-                            placeholder="Escribe el contenido de la lección aquí..."
-                        />
-                    </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => { setVideoType("upload"); setVideoUrl(""); }}
+                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition-all ${videoType === "upload"
+                                        ? "bg-primary/10 border-primary text-primary"
+                                        : "bg-background hover:bg-muted"
+                                        }`}
+                                >
+                                    <IconUpload size={24} />
+                                    <span className="font-semibold">Subir Video</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setVideoType("youtube"); setVideoUrl(""); }}
+                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition-all ${videoType === "youtube"
+                                        ? "bg-primary/10 border-primary text-primary"
+                                        : "bg-background hover:bg-muted"
+                                        }`}
+                                >
+                                    <IconPlay size={24} />
+                                    <span className="font-semibold">YouTube</span>
+                                </button>
+                            </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Estado de la lección</label>
-                        <button
-                            type="button"
-                            onClick={() => setPublished(!published)}
-                            className={`${styles.statusToggle} ${published ? styles.published : ""}`}
-                        >
-                            {published ? (
-                                <>
-                                    <IconSuccess size={20} />
-                                    <span>Publicado (Visible para alumnos)</span>
-                                </>
+                            {videoType === "upload" ? (
+                                <VideoUploader
+                                    value={videoUrl}
+                                    onChange={(url) => setVideoUrl(url || "")}
+                                    folder="lms-videos"
+                                />
                             ) : (
-                                <>
-                                    <IconEyeOff size={20} />
-                                    <span>Borrador (Oculto)</span>
-                                </>
+                                <Input
+                                    type="text"
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                    value={videoUrl}
+                                    onChange={(e) => setVideoUrl(e.target.value)}
+                                />
                             )}
-                        </button>
-                    </div>
+                        </div>
 
-                    <div className={styles.formActions}>
-                        <Link
-                            href={`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`}
-                            className={styles.cancelBtn}
-                        >
-                            Cancelar
-                        </Link>
-                        <button
-                            type="submit"
-                            className={styles.submitBtn}
-                            disabled={loading}
-                        >
-                            {loading ? "Guardando..." : "Crear Lección"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <IconClock size={18} />
+                                    Duración (minutos)
+                                </Label>
+                                <Input
+                                    type="number"
+                                    value={duration}
+                                    onChange={(e) => setDuration(Number(e.target.value))}
+                                    min="0"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <IconList size={18} />
+                                    Orden
+                                </Label>
+                                <Input
+                                    type="number"
+                                    value={order}
+                                    onChange={(e) => setOrder(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <IconDocument size={18} />
+                                Contenido / Descripción
+                            </Label>
+                            <div className="prose-admin">
+                                <BlogEditor
+                                    value={content}
+                                    onChange={setContent}
+                                    placeholder="Escribe el contenido de la lección aquí..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between w-full p-4 bg-muted/30 rounded-lg border">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Estado de la lección</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    {published ? "Publicado (Visible para alumnos)" : "Borrador (Oculto)"}
+                                </p>
+                            </div>
+                            <Switch
+                                checked={published}
+                                onCheckedChange={setPublished}
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6 border-t">
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/cursos/temas/${params.id}/cursos/${params.courseId}`}>
+                                    Cancelar
+                                </Link>
+                            </Button>
+                            <Button type="submit" disabled={loading}>
+                                {loading ? "Guardando..." : "Crear Lección"}
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 }

@@ -12,159 +12,155 @@ import {
     IconArrowRight,
 } from "@/components/ui/Icons";
 import { Button } from "@/components/ui/Button";
-import styles from "@/styles/header.module.css";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const pathname = usePathname();
-
     const { isAuthenticated } = useAuth();
-
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-    const closeMenu = () => setIsMenuOpen(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
-        if (isMenuOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10);
         };
-    }, [isMenuOpen]);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     return (
-        <header className={styles.siteHeader}>
-            <div className={styles.headerContainer}>
-                {/* Mobile: Hamburger LEFT */}
-                <div className={styles.headerMobileToggle}>
-                    <button
-                        onClick={toggleMenu}
-                        className={styles.hamburgerBtn}
-                        aria-label="Toggle menu"
-                    >
-                        <IconMenu size={28} />
-                    </button>
+        <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-2" : "bg-transparent py-4"}`}>
+            <div className="container flex items-center justify-between">
+
+                {/* Mobile Trigger (Left) */}
+                <div className="lg:hidden">
+                    <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-foreground">
+                                <IconMenu size={28} />
+                                <span className="sr-only">Menú</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-border bg-background">
+                            <SheetHeader className="p-4 border-b border-border flex items-center justify-between">
+                                <SheetTitle className="text-left">Menú</SheetTitle>
+                                {/* Sheet has built-in close button usually, but we can keep explicit if needed or rely on Sheet's default */}
+                            </SheetHeader>
+                            <div className="py-2">
+                                <MobileNavLinks isLoggedIn={isAuthenticated} onClick={() => setIsMenuOpen(false)} currentPath={pathname} />
+                            </div>
+                        </SheetContent>
+                    </Sheet>
                 </div>
 
-                {/* Logo - Wide logo for both desktop and mobile */}
-                <Link href="/" className={styles.headerLogoLink} onClick={closeMenu}>
+                {/* Logo (Centered on mobile if desired, or left) */}
+                <Link href="/" className="flex items-center gap-2 z-10">
                     <img
                         src="/images/branding/menu_logo.png"
                         alt="Mauro Mera"
-                        className={styles.headerLogo}
+                        className="h-8 w-auto md:h-10"
                     />
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className={styles.navDesktop}>
+                <nav className="hidden lg:flex items-center gap-6">
                     <DesktopNavLinks isLoggedIn={isAuthenticated} currentPath={pathname} />
                 </nav>
 
-                {/* Mobile Side Drawer - From LEFT */}
-                <div
-                    className={`${styles.mobileMenuOverlay} ${isMenuOpen ? styles.mobileMenuOverlayActive : ''}`}
-                    onClick={closeMenu}
-                />
-                <div className={`${styles.mobileSideDrawer} ${isMenuOpen ? styles.mobileSideDrawerActive : ''}`}>
-                    {/* Close button only - no logo in drawer */}
-                    <div className={styles.drawerHeader}>
-                        <button onClick={closeMenu} className={styles.drawerCloseBtn} aria-label="Close menu">
-                            <IconClose size={24} />
-                        </button>
-                    </div>
-
-                    {/* Menu Items */}
-                    <nav className={styles.drawerNav}>
-                        <MobileNavLinks isLoggedIn={isAuthenticated} onClick={closeMenu} currentPath={pathname} />
-                    </nav>
-                </div>
+                {/* Mobile: Spacer or Action (optional, to balance layout) */}
+                <div className="lg:hidden w-10"></div>
             </div>
         </header>
     );
 }
 
-// Desktop NavLinks (original behavior)
+// Desktop NavLinks
 function DesktopNavLinks({ isLoggedIn, currentPath }: { isLoggedIn: boolean, currentPath?: string }) {
-    const isActive = (path: string) => currentPath === path ? styles.navLinkActive : "";
+    const linkClass = (path: string) => `text-sm font-medium transition-colors hover:text-accent ${currentPath === path ? "text-accent" : "text-foreground/80"}`;
 
     return (
         <>
-            <Link href="/" className={`${styles.navLink} ${isActive("/")}`}>Inicio</Link>
-            <Link href="/portafolio" className={`${styles.navLink} ${isActive("/portafolio")}`}>Portafolio</Link>
-            <Link href="/formacion" className={`${styles.navLink} ${isActive("/formacion")}`}>Cursos</Link>
-            <Link href="/blog" className={`${styles.navLink} ${isActive("/blog")}`}>Blog</Link>
-            <Link href="/ebooks" className={`${styles.navLink} ${isActive("/ebooks")}`}>E-books</Link>
-            <Link href="/servicios" className={`${styles.navLink} ${isActive("/servicios")}`}>Servicios</Link>
+            <Link href="/" className={linkClass("/")}>Inicio</Link>
+            <Link href="/portafolio" className={linkClass("/portafolio")}>Portafolio</Link>
+            <Link href="/formacion" className={linkClass("/formacion")}>Cursos</Link>
+            <Link href="/blog" className={linkClass("/blog")}>Blog</Link>
+            <Link href="/ebooks" className={linkClass("/ebooks")}>E-books</Link>
+            <Link href="/servicios" className={linkClass("/servicios")}>Servicios</Link>
 
-            {isLoggedIn ? (
-                <Button asChild size="sm">
-                    <Link href="/perfil">
-                        <IconUser size={18} />
-                        Mi Panel
-                    </Link>
-                </Button>
-            ) : (
-                <>
-                    <Button asChild variant="secondary" size="sm">
-                        <Link href="/registro">Registrarse</Link>
-                    </Button>
-                    <Button asChild size="sm">
-                        <Link href="/login">
-                            <IconLogin size={18} />
-                            Iniciar sesión
+            <div className="pl-4 border-l border-border flex gap-2">
+                {isLoggedIn ? (
+                    <Button asChild size="sm" className="bg-accent hover:bg-accent/90 text-white border-0">
+                        <Link href="/perfil">
+                            <IconUser size={18} className="mr-2" />
+                            Mi Panel
                         </Link>
                     </Button>
-                </>
-            )}
+                ) : (
+                    <>
+                        <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex text-foreground hover:text-accent">
+                            <Link href="/registro">Registrarse</Link>
+                        </Button>
+                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white border-0">
+                            <Link href="/login">
+                                <IconLogin size={18} className="mr-2" />
+                                Entrar
+                            </Link>
+                        </Button>
+                    </>
+                )}
+            </div>
         </>
     );
 }
 
-// Mobile NavLinks - Fivewoods style with arrow icons
+// Mobile NavLinks
 function MobileNavLinks({ onClick, isLoggedIn, currentPath }: { onClick?: () => void, isLoggedIn: boolean, currentPath?: string }) {
-    const isActive = (path: string) => currentPath === path ? styles.mobileNavItemActive : "";
+    const linkClass = (path: string) => `flex items-center justify-between w-full p-4 text-base font-medium border-b border-border/50 hover:bg-accent/5 transition-colors ${currentPath === path ? "text-accent bg-accent/5" : "text-foreground"}`;
 
     return (
-        <>
-            <Link href="/" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/")}`}>
+        <div className="flex flex-col h-full">
+            <Link href="/" onClick={onClick} className={linkClass("/")}>
                 <span>Inicio</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/portafolio" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/portafolio")}`}>
+            <Link href="/portafolio" onClick={onClick} className={linkClass("/portafolio")}>
                 <span>Portafolio</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/formacion" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/formacion")}`}>
+            <Link href="/formacion" onClick={onClick} className={linkClass("/formacion")}>
                 <span>Cursos</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/blog" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/blog")}`}>
+            <Link href="/blog" onClick={onClick} className={linkClass("/blog")}>
                 <span>Blog</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/ebooks" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/ebooks")}`}>
+            <Link href="/ebooks" onClick={onClick} className={linkClass("/ebooks")}>
                 <span>E-books</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/servicios" onClick={onClick} className={`${styles.mobileNavItem} ${isActive("/servicios")}`}>
+            <Link href="/servicios" onClick={onClick} className={linkClass("/servicios")}>
                 <span>Servicios</span>
-                <IconArrowRight className={styles.menuArrow} size={20} />
+                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
 
-            {/* Login button with accent - NO Registro button on mobile */}
-            {isLoggedIn ? (
-                <Link href="/perfil" onClick={onClick} className={styles.mobileNavCta}>
-                    <IconUser size={20} />
-                    <span>Mi Panel</span>
-                </Link>
-            ) : (
-                <Link href="/login" onClick={onClick} className={styles.mobileNavCta}>
-                    <IconLogin size={20} />
-                    <span>Iniciar sesión</span>
-                </Link>
-            )}
-        </>
+            <div className="p-4 mt-auto">
+                {isLoggedIn ? (
+                    <Button asChild className="w-full justify-start bg-accent hover:bg-accent/90 text-white" size="lg">
+                        <Link href="/perfil" onClick={onClick}>
+                            <IconUser size={20} className="mr-2" />
+                            Mi Panel
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-white" size="lg">
+                        <Link href="/login" onClick={onClick}>
+                            <IconLogin size={20} className="mr-2" />
+                            Iniciar sesión
+                        </Link>
+                    </Button>
+                )}
+            </div>
+        </div>
     );
 }

@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { API_BASE } from "@/lib/config";
-import styles from "@/styles/admin.module.css";
 import { IconPlus } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 export interface Category {
     id: string;
@@ -17,16 +18,15 @@ interface CategorySelectorProps {
     selectedId: string;
     onChange: (id: string) => void;
     onCategoryCreated?: (category: Category) => void;
+    className?: string; // Add className prop for better composition
 }
 
-/**
- * Selector de categorías con opción de crear nuevas.
- */
 export default function CategorySelector({
     categories,
     selectedId,
     onChange,
     onCategoryCreated,
+    className
 }: CategorySelectorProps) {
     const [isCreating, setIsCreating] = useState(false);
     const toast = useToast();
@@ -59,15 +59,13 @@ export default function CategorySelector({
     };
 
     return (
-        <div>
-            <label className={styles.label}>Categoría</label>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div className={cn(className)}>
+            <div className="flex gap-2">
                 <select
                     value={selectedId}
                     onChange={(e) => onChange(e.target.value)}
-                    className={styles.select}
-                    style={{ flex: 1 }}
                     disabled={isCreating}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <option value="">Sin categoría</option>
                     {categories.map((cat) => (
@@ -76,15 +74,16 @@ export default function CategorySelector({
                         </option>
                     ))}
                 </select>
-                <button
+                <Button
                     type="button"
+                    variant="outline"
+                    size="icon"
                     onClick={handleCreateCategory}
                     disabled={isCreating}
-                    className={styles.addCategoryBtn}
                     title="Crear nueva categoría"
                 >
-                    <IconPlus size={20} />
-                </button>
+                    <IconPlus className="h-4 w-4" />
+                </Button>
             </div>
         </div>
     );

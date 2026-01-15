@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import styles from "@/styles/ebooks.module.css";
 import { API_BASE } from "@/lib/config";
 import {
     IconDownload as DownloadIcon,
@@ -12,6 +11,8 @@ import {
     IconCheck as CheckIcon,
 } from "@/components/ui/Icons";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 // ============================================================================
 // METADATA Y TIPOS
@@ -92,13 +93,11 @@ const benefits = [
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
-// ... imports unchanged
-
 export default async function EbooksPage() {
     const ebooks = await getEbooks();
 
     return (
-        <div className={styles.ebooksPage}>
+        <div className="min-h-screen bg-background">
             <HeroSection />
             <BenefitsSection benefits={benefits} />
             <ValuePropositionSection />
@@ -114,26 +113,26 @@ export default async function EbooksPage() {
 
 function HeroSection() {
     return (
-        <section className={styles.ebooksHero}>
+        <section className="relative py-32 overflow-hidden bg-background">
             {/* Background gradient */}
-            <div className={styles.heroBackground} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.08)_0%,transparent_50%)]" />
 
-            <div className={`container ${styles.heroContent}`}>
-                <span className={`badge ${styles.heroBadge}`}>
+            <div className="container relative z-10 text-center">
+                <Badge variant="secondary" className="mb-6 px-4 py-1 text-sm bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-colors">
                     Biblioteca Digital
-                </span>
-                <h1 className="page-hero-title">
-                    E-books que transforman tu mentalidad
+                </Badge>
+                <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight leading-tight">
+                    E-books que transforman <br className="hidden md:block" /> tu mentalidad
                 </h1>
-                <p className="hero-description">
+                <p className="max-w-2xl mx-auto mb-10 text-muted-foreground text-lg md:text-xl leading-relaxed">
                     Recursos prácticos escritos por Mauro Mera. Herramientas de psicología aplicada,
                     liderazgo y desarrollo personal que puedes implementar hoy mismo.
                 </p>
-                <div className={styles.heroButtons}>
-                    <Button asChild>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <Button asChild size="lg" className="h-12 px-8 text-base">
                         <a href="#catalogo">Ver Catálogo</a>
                     </Button>
-                    <Button asChild variant="secondary">
+                    <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm">
                         <Link href="/formacion">Explorar Cursos</Link>
                     </Button>
                 </div>
@@ -150,18 +149,18 @@ interface Benefit {
 
 function BenefitsSection({ benefits }: { benefits: Benefit[] }) {
     return (
-        <section className={styles.benefitsSection}>
+        <section className="py-20 bg-muted/30 border-y border-border/50">
             <div className="container">
-                <div className={styles.benefitsGrid}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {benefits.map((benefit, index) => (
-                        <div key={index} className={styles.benefitCard}>
-                            <div className={styles.benefitIcon}>
+                        <div key={index} className="p-6 rounded-2xl bg-background border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 text-2xl">
                                 {benefit.icon}
                             </div>
-                            <h3 className="card-title">
+                            <h3 className="text-lg font-bold mb-2">
                                 {benefit.title}
                             </h3>
-                            <p className={styles.benefitDescription}>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
                                 {benefit.description}
                             </p>
                         </div>
@@ -180,46 +179,53 @@ function ValuePropositionSection() {
     ];
 
     return (
-        <section className={styles.valuePropSection}>
+        <section className="py-24 overflow-hidden">
             <div className="container">
-                <div className={styles.valuePropGrid}>
-                    <div>
-                        <h2 className={`${styles.sectionTitle} ${styles.valuePropTitle}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div className="order-2 lg:order-1">
+                        <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-foreground">
                             Conocimiento que puedes aplicar desde hoy
                         </h2>
-                        <p className={styles.valuePropText}>
+                        <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
                             Cada e-book está diseñado para darte herramientas prácticas y aplicables.
                             No es teoría vacía—es conocimiento basado en años de experiencia trabajando
                             con líderes, equipos y organizaciones.
                         </p>
-                        <p className={styles.valuePropText}>
+                        <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                             Ya seas un profesional buscando mejorar tu liderazgo, un emprendedor
                             construyendo su equipo, o alguien en un viaje de desarrollo personal,
                             encontrarás recursos valiosos aquí.
                         </p>
-                        <div className={styles.featureList}>
+                        <div className="space-y-4">
                             {features.map((feature, index) => (
-                                <div key={index} className={styles.featureItem}>
-                                    <span className={styles.featureIcon}><CheckIcon /></span>
-                                    <span className={styles.featureText}>{feature}</span>
+                                <div key={index} className="flex items-center gap-3">
+                                    <span className="w-6 h-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center shrink-0">
+                                        <CheckIcon size={14} />
+                                    </span>
+                                    <span className="font-medium text-foreground/80">{feature}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <div className={styles.libraryCard}>
-                        <div className={styles.libraryIcon}>
-                            <BookStackIcon />
+                    <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+                        <div className="relative p-8 md:p-12 rounded-3xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 text-center max-w-md w-full">
+                            <div className="absolute -top-6 -right-6 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
+                            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
+
+                            <div className="w-20 h-20 mx-auto rounded-2xl bg-background border border-border shadow-lg flex items-center justify-center text-primary mb-6 relative z-10">
+                                <BookStackIcon size={40} />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3 relative z-10">
+                                Biblioteca en crecimiento
+                            </h3>
+                            <p className="text-muted-foreground mb-6 relative z-10">
+                                Nuevos títulos agregados regularmente.
+                                Cada e-book es el resultado de meses de investigación y experiencia práctica.
+                            </p>
+                            <Badge variant="outline" className="relative z-10 bg-background/50 border-primary/20 text-primary py-1.5 px-3">
+                                Próximamente: Nuevos títulos 2025
+                            </Badge>
                         </div>
-                        <h3 className="card-title">
-                            Biblioteca en crecimiento
-                        </h3>
-                        <p className={styles.benefitDescription} style={{ marginBottom: "1.5rem" }}>
-                            Nuevos títulos agregados regularmente.
-                            Cada e-book es el resultado de meses de investigación y experiencia práctica.
-                        </p>
-                        <span className={styles.comingSoonBadge}>
-                            Próximamente: Nuevos títulos 2025
-                        </span>
                     </div>
                 </div>
             </div>
@@ -229,13 +235,13 @@ function ValuePropositionSection() {
 
 function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
     return (
-        <section id="catalogo" className={styles.catalogSection}>
-            <div className={`container ${styles.catalogContainer}`}>
-                <div className={styles.catalogHeader}>
-                    <h2 className={`${styles.sectionTitle} ${styles.catalogTitle}`}>
+        <section id="catalogo" className="py-24 bg-muted/10 border-t border-border/50">
+            <div className="container">
+                <div className="text-center max-w-2xl mx-auto mb-16">
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">
                         Catálogo de E-books
                     </h2>
-                    <p className={styles.catalogSubtitle}>
+                    <p className="text-lg text-muted-foreground">
                         Explora nuestra colección y encuentra el recurso perfecto para tu próximo paso.
                     </p>
                 </div>
@@ -243,7 +249,7 @@ function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
                 {ebooks.length === 0 ? (
                     <EmptyState />
                 ) : (
-                    <div className={styles.ebooksGrid}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {ebooks.map((ebook) => (
                             <EbookCard key={ebook.id} ebook={ebook} />
                         ))}
@@ -256,14 +262,14 @@ function CatalogSection({ ebooks }: { ebooks: Ebook[] }) {
 
 function EmptyState() {
     return (
-        <div className={styles.emptyState}>
-            <div className={styles.emptyStateIcon}>
-                <BookOpenIcon />
+        <div className="text-center py-20 bg-background rounded-3xl border border-dashed border-border max-w-md mx-auto">
+            <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4">
+                <BookOpenIcon size={32} />
             </div>
-            <h3 className={styles.emptyStateTitle}>
+            <h3 className="text-xl font-bold mb-2">
                 Próximamente
             </h3>
-            <p>
+            <p className="text-muted-foreground">
                 Estamos preparando nuevos e-books. ¡Vuelve pronto!
             </p>
         </div>
@@ -272,34 +278,52 @@ function EmptyState() {
 
 function EbookCard({ ebook }: { ebook: Ebook }) {
     return (
-        <Link href={`/ebooks/${ebook.slug}`} className={styles.ebookCard}>
-            <div className={styles.cardImage}>
-                <img src={ebook.coverImage} alt={ebook.title} />
-            </div>
-            <div className={styles.cardContent}>
-                <h2>{ebook.title}</h2>
-                <p>{ebook.description}</p>
-                <span className={styles.price}>
-                    ${Number(ebook.price).toLocaleString("es-CO")}
-                </span>
-            </div>
+        <Link href={`/ebooks/${ebook.slug}`} className="block group h-full">
+            <Card className="h-full overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-border/50 flex flex-col bg-background">
+                <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                    <img
+                        src={ebook.coverImage}
+                        alt={ebook.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <span className="text-white font-medium flex items-center gap-2">
+                            Ver detalles <span className="text-lg">→</span>
+                        </span>
+                    </div>
+                </div>
+                <CardContent className="flex flex-col flex-1 p-6">
+                    <h2 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{ebook.title}</h2>
+                    <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-1">{ebook.description}</p>
+                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/30">
+                        <span className="text-lg font-semibold text-primary">
+                            ${Number(ebook.price).toLocaleString("es-CO")}
+                        </span>
+                        <span className="text-xs font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                            PDF Digital
+                        </span>
+                    </div>
+                </CardContent>
+            </Card>
         </Link>
     );
 }
 
 function CTASection() {
     return (
-        <section className={styles.ctaSection}>
-            <div className="container">
-                <h2 className={`${styles.sectionTitle} ${styles.ctaTitle}`}>
-                    ¿Ya tienes e-books comprados?
-                </h2>
-                <p className={styles.ctaText}>
-                    Accede a tu biblioteca personal para leer y descargar todos tus e-books.
-                </p>
-                <Button asChild variant="accent">
-                    <Link href="/login?redirect=/ebooks/mis-compras">Ir a Mis E-books</Link>
-                </Button>
+        <section className="py-24 text-center">
+            <div className="container max-w-3xl">
+                <div className="bg-primary/5 rounded-3xl p-8 md:p-16 border border-primary/10">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
+                        ¿Ya tienes e-books comprados?
+                    </h2>
+                    <p className="text-lg text-muted-foreground mb-8 text-balance">
+                        Accede a tu biblioteca personal para leer y descargar todos tus e-books.
+                    </p>
+                    <Button asChild size="lg" className="h-12 px-8">
+                        <Link href="/login?redirect=/ebooks/mis-compras">Ir a Mis E-books</Link>
+                    </Button>
+                </div>
             </div>
         </section>
     );

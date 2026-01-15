@@ -1,48 +1,9 @@
 "use client";
 
-import "@/styles/dashboard.css";
-import { Sidebar } from "@/components/dashboard/Sidebar";
-import { BottomNav } from "@/components/dashboard/BottomNav";
-import { DashboardProvider, useDashboard } from "@/context/DashboardContext";
+import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { AuthProvider } from "@/context/AuthContext";
-
-function DashboardContent({ children }: { children: React.ReactNode }) {
-    const { isCollapsed } = useDashboard();
-
-    return (
-        <div className="dashboard-flex">
-            {/* Desktop Sidebar */}
-            <div className="desktop-sidebar-wrapper">
-                <Sidebar />
-            </div>
-
-            {/* Main Content Area */}
-            <main
-                className="dashboard-main dashboard-main-content"
-                style={{ marginLeft: isCollapsed ? "80px" : "280px" }}
-            >
-                <div className="dashboard-content-wrapper">
-                    {children}
-                </div>
-            </main>
-
-            {/* Mobile Bottom Nav */}
-            <BottomNav />
-
-            <style jsx global>{`
-                @media (max-width: 1024px) {
-                    .desktop-sidebar-wrapper {
-                        display: none;
-                    }
-                    .dashboard-main {
-                        margin-left: 0 !important;
-                        width: 100%;
-                    }
-                }
-            `}</style>
-        </div>
-    );
-}
+import { DashboardProvider } from "@/context/DashboardContext"; // Keeping for compatibility if needed, though sidebar logic changed
 
 export default function DashboardLayout({
     children,
@@ -52,9 +13,19 @@ export default function DashboardLayout({
     return (
         <AuthProvider>
             <DashboardProvider>
-                <DashboardContent>
-                    {children}
-                </DashboardContent>
+                <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+                    <div className="hidden border-r bg-muted/40 md:block h-full sticky top-0 max-h-screen">
+                        <div className="flex h-full max-h-screen flex-col gap-2">
+                            <DashboardSidebar />
+                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        <DashboardHeader />
+                        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/10">
+                            {children}
+                        </main>
+                    </div>
+                </div>
             </DashboardProvider>
         </AuthProvider>
     );

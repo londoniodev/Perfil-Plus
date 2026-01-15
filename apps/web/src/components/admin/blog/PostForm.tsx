@@ -8,10 +8,15 @@ import BlogEditor from "./BlogEditor";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import CategorySelector, { Category } from "./CategorySelector";
 import TagSelector, { Tag } from "./TagSelector";
-import ToggleButton, { PremiumIcon, PublishIcon } from "@/components/admin/ui/ToggleButton";
-import styles from "@/styles/admin.module.css";
+import ToggleButton, { PremiumIcon, PublishIcon } from "@/components/admin/ui/ToggleButton"; // Legacy toggle, might need refactor or replace with Switch
 import { IconBack } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea"; // Need to ensure Textarea exists, or use native with class
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card"; // Use shadcn Card if available or div
+import { Label } from "@/components/ui/Label";
+import { Switch } from "@/components/ui/switch"; // Recommended replacement for ToggleButton
 
 // ============================================================================
 // TIPOS
@@ -42,6 +47,7 @@ interface PostFormProps {
 export default function PostForm({ mode, postId }: PostFormProps) {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const toast = useToast();
 
     // Estado del formulario
     const [title, setTitle] = useState("");
@@ -60,7 +66,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(mode === "edit");
     const [saving, setSaving] = useState(false);
-    const toast = useToast();
 
     // Redirigir si no es admin
     useEffect(() => {
@@ -69,7 +74,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         }
     }, [isAdmin, authLoading, router]);
 
-    // Cargar datos iniciales (categorías, tags, y post si es modo edit)
+    // Cargar datos iniciales
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -78,7 +83,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                     fetch(`${API_BASE}/blog/tags`),
                 ];
 
-                // Si es modo edición, también cargar el post
                 if (mode === "edit" && postId) {
                     requests.push(
                         fetch(`${API_BASE}/admin/blog/posts/${postId}`, { credentials: "include" })
@@ -88,19 +92,11 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 const results = await Promise.all(requests);
                 const [catRes, tagRes, postRes] = results;
 
-                if (catRes.ok) {
-                    setCategories(await catRes.json());
-                }
+                if (catRes.ok) setCategories(await catRes.json());
+                if (tagRes.ok) setTags(await tagRes.json());
 
-                if (tagRes.ok) {
-                    setTags(await tagRes.json());
-                }
-
-                // Cargar datos del post existente
                 if (postRes) {
-                    if (!postRes.ok) {
-                        throw new Error("Post no encontrado");
-                    }
+                    if (!postRes.ok) throw new Error("Post no encontrado");
                     const post = await postRes.json();
                     setTitle(post.title);
                     setExcerpt(post.excerpt);
@@ -123,7 +119,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         if (isAdmin) fetchData();
     }, [isAdmin, mode, postId]);
 
-    // Manejar envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -176,64 +171,49 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         }
     };
 
-    // Estados de carga
-    if (authLoading || loading) {
-        return <div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>;
-    }
-
-    if (!isAdmin) {
-        return null;
-    }
+    if (authLoading || loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (!isAdmin) return null;
 
     return (
-        <div className={styles.pageContainer}>
-            {/* Header con botón volver */}
-            <div className={styles.pageHeader}>
-                <div className={styles.backButtonWrapper}>
-                    <button
-                        onClick={() => router.push("/admin/blog")}
-                        className={styles.btnGhost}
-                    >
-                        <IconBack />
-                        Volver al listado
-                    </button>
+        <div className="max-w-5xl mx-auto py-6 space-y-8">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" onClick={() => router.push("/admin/blog")} className="gap-2">
+                        <IconBack className="h-4 w-4" />
+                        Volver
+                    </Button>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {mode === "create" ? "Nuevo Post" : "Editar Post"}
+                    </h1>
                 </div>
-                <h1 className={styles.headerTitle}>
-                    {mode === "create" ? "Nuevo Post" : "Editar Post"}
-                </h1>
             </div>
 
-
-
-            <form onSubmit={handleSubmit}>
-                <div className={styles.gridGap}>
-                    {/* Título */}
-                    <div>
-                        <label className={styles.label}>Título *</label>
-                        <input
-                            type="text"
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="title">Título *</Label>
+                        <Input
+                            id="title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Título del artículo"
-                            className={styles.input}
                             required
                         />
                     </div>
 
-                    {/* Extracto */}
-                    <div>
-                        <label className={styles.label}>Extracto *</label>
+                    <div className="space-y-2">
+                        <Label htmlFor="excerpt">Extracto *</Label>
                         <textarea
+                            id="excerpt"
                             value={excerpt}
                             onChange={(e) => setExcerpt(e.target.value)}
-                            placeholder="Breve descripción del artículo (se muestra en listados)"
+                            placeholder="Breve descripción..."
                             rows={3}
-                            className={styles.textarea}
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             required
                         />
                     </div>
 
-                    {/* Imagen de portada */}
                     <ImageUploader
                         value={coverImage}
                         onChange={setCoverImage}
@@ -241,9 +221,8 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                         folder="blog-covers"
                     />
 
-                    {/* Editor de contenido */}
-                    <div>
-                        <label className={styles.label}>Contenido *</label>
+                    <div className="space-y-2">
+                        <Label>Contenido *</Label>
                         <BlogEditor
                             value={content}
                             onChange={setContent}
@@ -251,106 +230,78 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                         />
                     </div>
 
-                    {/* Fila de configuración: Categoría + Toggles */}
-                    <div className={styles.card}>
-                        <div className={styles.flexWrapGap}>
-                            {/* Selector de categoría */}
-                            <div className={styles.flexGrow}>
-                                <CategorySelector
-                                    categories={categories}
-                                    selectedId={categoryId}
-                                    onChange={setCategoryId}
-                                    onCategoryCreated={(cat) => setCategories((prev) => [...prev, cat])}
-                                />
-                            </div>
+                    {/* Settings Panel */}
+                    <div className="grid gap-6 md:grid-cols-2 p-6 border rounded-lg bg-card">
+                        <div className="space-y-4">
+                            <Label>Categoría</Label>
+                            <CategorySelector
+                                categories={categories}
+                                selectedId={categoryId}
+                                onChange={setCategoryId}
+                                onCategoryCreated={(cat) => setCategories(prev => [...prev, cat])}
+                            />
+                        </div>
 
-                            {/* Toggles Premium/Publicado */}
-                            <div className={styles.flexEndGap}>
-                                <ToggleButton
-                                    active={isPremium}
-                                    onClick={() => setIsPremium(!isPremium)}
-                                    label="Premium"
-                                    activeColor="#8b5cf6"
-                                    icon={<PremiumIcon />}
-                                    activeIcon={<PremiumIcon filled color="#8b5cf6" />}
-                                />
-                                <ToggleButton
-                                    active={published}
-                                    onClick={() => setPublished(!published)}
-                                    label={published ? "Publicado" : "Borrador"}
-                                    activeColor="#22c55e"
-                                    icon={<PublishIcon published={false} />}
-                                    activeIcon={<PublishIcon published />}
-                                />
+                        <div className="flex flex-col gap-4 justify-center">
+                            <div className="flex items-center justify-between p-4 border rounded-md">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Premium</Label>
+                                    <p className="text-xs text-muted-foreground">Contenido exclusivo para suscriptores</p>
+                                </div>
+                                <Switch checked={isPremium} onCheckedChange={setIsPremium} />
+                            </div>
+                            <div className="flex items-center justify-between p-4 border rounded-md">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base">Publicado</Label>
+                                    <p className="text-xs text-muted-foreground">Visible para los usuarios</p>
+                                </div>
+                                <Switch checked={published} onCheckedChange={setPublished} />
                             </div>
                         </div>
                     </div>
 
-                    {/* Selector de tags */}
                     <TagSelector
                         tags={tags}
                         selectedIds={selectedTags}
                         onChange={setSelectedTags}
                     />
 
-                    {/* Sección SEO */}
-                    <div className={styles.card}>
-                        <h3 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: "1rem", color: "var(--foreground)" }}>
-                            SEO
-                        </h3>
-                        <div className={styles.gridGap}>
-                            <div>
-                                <label className={styles.label}>Meta título (max. 70 caracteres)</label>
-                                <input
-                                    type="text"
+                    {/* SEO */}
+                    <div className="p-6 border rounded-lg bg-card space-y-4">
+                        <h3 className="font-semibold">SEO</h3>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>Meta Título</Label>
+                                <Input
                                     value={metaTitle}
                                     onChange={(e) => setMetaTitle(e.target.value)}
-                                    placeholder={title || "Título para motores de búsqueda"}
+                                    placeholder={title}
                                     maxLength={70}
-                                    className={styles.input}
                                 />
-                                <p className={styles.helperText}>
-                                    {metaTitle.length}/70
-                                </p>
+                                <p className="text-xs text-muted-foreground text-right">{metaTitle.length}/70</p>
                             </div>
-                            <div>
-                                <label className={styles.label}>Meta descripción (max. 160 caracteres)</label>
+                            <div className="space-y-2">
+                                <Label>Meta Descripción</Label>
                                 <textarea
                                     value={metaDescription}
                                     onChange={(e) => setMetaDescription(e.target.value)}
-                                    placeholder={excerpt || "Descripción para motores de búsqueda"}
+                                    placeholder={excerpt}
                                     maxLength={160}
                                     rows={2}
-                                    className={`${styles.textarea} resize-none`}
+                                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                                 />
-                                <p className={styles.helperText}>
-                                    {metaDescription.length}/160
-                                </p>
+                                <p className="text-xs text-muted-foreground text-right">{metaDescription.length}/160</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Botones de acción */}
-                    <div className={styles.flexEnd}>
-                        <button
-                            type="button"
-                            onClick={() => router.push("/admin/blog")}
-                            className={styles.btnSecondary}
-                        >
+                    <div className="flex justify-end gap-4 pt-4">
+                        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")}>
                             Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className={styles.btnPrimary}
-                            style={saving ? { opacity: 0.7, cursor: "wait" } : {}}
-                        >
-                            {saving
-                                ? "Guardando..."
-                                : mode === "create"
-                                    ? (published ? "Publicar" : "Guardar borrador")
-                                    : "Guardar cambios"}
-                        </button>
+                        </Button>
+                        <Button type="submit" disabled={saving}>
+                            {saving ? "Guardando..." : "Guardar Cambios"}
+                        </Button>
                     </div>
                 </div>
             </form>

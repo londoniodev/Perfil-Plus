@@ -4,8 +4,10 @@ import { getPosts, getCategories } from "@/lib/api";
 import { Post, Category } from "@/lib/types";
 import { Metadata } from "next";
 import { BreadcrumbSchema, CollectionPageSchema } from "@/components/seo/JsonLd";
-
 import { BlogFilter } from "./BlogFilter";
+import { Card, CardContent, CardFooter } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { IconArrowRight } from "@/components/ui/Icons";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
@@ -57,7 +59,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   return (
     <>
-      {/* Structured Data para SEO */}
       <BreadcrumbSchema items={[
         { name: "Inicio", url: SITE_URL },
         { name: "Blog", url: `${SITE_URL}/blog` },
@@ -72,57 +73,55 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         }))}
       />
 
-      <div className="blog-page">
-        <section className="blog-hero">
-          <div className="container">
-            <h1 className="page-hero-title">Blog</h1>
-            <p className="hero-description">
+      <div className="min-h-screen pb-24 pt-12 md:pt-16 bg-background">
+        <section className="mb-12">
+          <div className="container px-4 mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-serif tracking-tight">Blog</h1>
+            <p className="text-xl text-foreground-muted max-w-2xl leading-relaxed">
               Reflexiones, herramientas y estrategias para transformar
               tu vida personal y profesional.
             </p>
           </div>
         </section>
 
-        <section className="blog-content">
-          <div className="container">
-            {/* Filtros de categoría */}
+        <section>
+          <div className="container px-4 mx-auto">
             <BlogFilter categories={categories} activeCategory={category} />
 
             {error ? (
-              <div className="blog-error">
+              <div className="py-12 text-center text-error bg-error/5 rounded-xl border border-error/20">
                 <p>No se pudieron cargar los artículos. Inténtalo más tarde.</p>
               </div>
             ) : posts.length === 0 ? (
-              <div className="blog-empty">
-                <p>No hay artículos disponibles en este momento.</p>
+              <div className="py-24 text-center border-2 border-dashed border-border rounded-xl">
+                <div className="text-6xl mb-4 opacity-50">📝</div>
+                <p className="text-xl text-foreground-muted font-medium">No hay artículos disponibles en este momento.</p>
               </div>
             ) : (
               <>
-                {/* Grid de posts */}
-                <div className="blog-grid">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {posts.map((post) => (
                     <BlogCard key={post.id} post={post} />
                   ))}
                 </div>
 
-                {/* Paginación */}
                 {totalPages > 1 && (
-                  <div className="blog-pagination">
+                  <div className="mt-16 flex items-center justify-center gap-4">
                     {page > 1 && (
                       <Link
                         href={`/blog?page=${page - 1}${category ? `&category=${category}` : ""}`}
-                        className="pagination-btn"
+                        className="px-6 py-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors text-sm font-medium"
                       >
                         ← Anterior
                       </Link>
                     )}
-                    <span className="pagination-info">
+                    <span className="text-sm font-medium text-foreground-muted bg-muted py-3 px-6 rounded-lg">
                       Página {page} de {totalPages}
                     </span>
                     {page < totalPages && (
                       <Link
                         href={`/blog?page=${page + 1}${category ? `&category=${category}` : ""}`}
-                        className="pagination-btn"
+                        className="px-6 py-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors text-sm font-medium"
                       >
                         Siguiente →
                       </Link>
@@ -139,7 +138,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 }
 
 function BlogCard({ post }: { post: Post }) {
-  // Función helper para formatear fechas
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -154,70 +152,55 @@ function BlogCard({ post }: { post: Post }) {
   };
 
   return (
-    <Link href={`/blog/${post.slug}`} className="blog-card" prefetch={false}>
-      <article style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div className="card-image-container">
+    <Link href={`/blog/${post.slug}`} className="group h-full block" prefetch={false}>
+      <Card className="h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
           {post.coverImage ? (
             <Image
               src={post.coverImage}
               alt={post.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="card-img"
-              style={{ objectFit: "cover" }}
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
               unoptimized
             />
           ) : (
-            <div style={{
-              width: '100%',
-              height: '100%',
-              background: 'var(--background-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '3rem'
-            }}>
+            <div className="w-full h-full flex items-center justify-center bg-accent/20 text-accent text-5xl">
               <span>📝</span>
             </div>
           )}
-          {post.isPremium && <span className="premium-badge">PREMIUM</span>}
+          {post.isPremium && (
+            <div className="absolute top-4 right-4">
+              <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg">PREMIUM</Badge>
+            </div>
+          )}
         </div>
 
-        <div className="card-content">
-          <div className="card-meta">
+        <CardContent className="flex-1 p-6 flex flex-col">
+          <div className="flex items-center gap-3 text-xs text-foreground-muted mb-4 font-medium uppercase tracking-wider">
             {post.categories.length > 0 && (
-              <span className="card-category">{post.categories[0].name}</span>
+              <span className="text-primary">{post.categories[0].name}</span>
             )}
+            <span className="w-1 h-1 rounded-full bg-border" />
             <time dateTime={post.createdAt}>
               {formatDate(post.createdAt)}
             </time>
           </div>
 
-          <h2 className="card-title">{post.title}</h2>
+          <h2 className="text-xl md:text-2xl font-bold mb-3 font-serif leading-tight group-hover:text-primary transition-colors line-clamp-2">
+            {post.title}
+          </h2>
 
-          <p className="card-excerpt">
-            {post.excerpt || (post.content ? post.content.substring(0, 100) + '...' : '')}
+          <p className="text-foreground-muted text-sm leading-relaxed line-clamp-3 mb-4 flex-1">
+            {post.excerpt || (post.content ? post.content.substring(0, 100).replace(/<[^>]*>?/gm, '') + '...' : '')}
           </p>
-
-          <div className="card-footer">
-            <span className="read-more-text">Leer artículo</span>
-            <svg
-              className="read-more-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </div>
-        </div>
-      </article>
+        </CardContent>
+        <CardFooter className="px-6 pb-6 pt-0 mt-auto">
+          <span className="text-sm font-semibold text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
+            Leer artículo <IconArrowRight className="w-4 h-4" />
+          </span>
+        </CardFooter>
+      </Card>
     </Link>
   );
 }

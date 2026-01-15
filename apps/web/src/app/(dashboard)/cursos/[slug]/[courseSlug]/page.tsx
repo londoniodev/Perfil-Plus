@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCourseBySlug, getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import { IconCheck } from "@/components/ui/Icons";
-import styles from "@/styles/cursos.module.css";
+import { IconCheck, IconPlay, IconClock } from "@/components/ui/Icons";
 import { CourseSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
@@ -70,58 +72,87 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 { name: course.title, url: `${SITE_URL}/cursos/${slug}/${courseSlug}` },
             ]} />
 
-            <div className={styles.lmsPage}>
-                <header className={styles.courseHeader}>
-                    <div className="container">
-                        <div className={styles.breadcrumb}>
-                            <Link href="/cursos">Cursos</Link>
-                            <span>/</span>
-                            <Link href={`/cursos/${slug}`}>{course.theme?.title}</Link>
-                            <span>/</span>
-                            <span>{course.title}</span>
+            <div className="min-h-screen pb-12">
+                <header className="py-20 md:py-24 bg-gradient-to-b from-primary/5 to-background border-b border-border/50">
+                    <div className="container max-w-4xl">
+                        <div className="flex flex-wrap items-center gap-2 mb-6 text-sm text-muted-foreground">
+                            <Link href="/cursos" className="hover:text-primary transition-colors">Cursos</Link>
+                            <span className="opacity-50">/</span>
+                            <Link href={`/cursos/${slug}`} className="hover:text-primary transition-colors">{course.theme?.title}</Link>
+                            <span className="opacity-50">/</span>
+                            <span className="text-foreground">{course.title}</span>
                         </div>
-                        <h1>{course.title}</h1>
-                        <p className={styles.themeDescription}>{course.description}</p>
+                        <h1 className="text-3xl md:text-5xl font-serif font-bold mb-4 tracking-tight leading-tight">{course.title}</h1>
+                        <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">{course.description}</p>
 
                         {course.progress && (
-                            <>
-                                <div className={styles.progressBar}>
-                                    <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
+                            <div className="mt-8 p-6 bg-card/50 border border-border/60 rounded-xl backdrop-blur-sm max-w-lg">
+                                <div className="flex justify-between text-sm mb-2 font-medium">
+                                    <span>Tu progreso</span>
+                                    <span>{progressPercent}%</span>
                                 </div>
-                                <p className={styles.progressText}>
-                                    {course.progress.completed} de {course.progress.total} lecciones completadas ({progressPercent}%)
+                                <Progress value={progressPercent} className="h-2 mb-2" />
+                                <p className="text-xs text-muted-foreground">
+                                    {course.progress.completed} de {course.progress.total} lecciones completadas
                                 </p>
-                            </>
+                            </div>
                         )}
                     </div>
                 </header>
 
-                <section className={styles.coursesSection}>
-                    <div className="container">
-                        <h2 className={styles.sectionTitle}>Lecciones</h2>
+                <section className="py-16">
+                    <div className="container max-w-4xl">
+                        <h2 className="text-2xl font-serif font-bold mb-8 flex items-center gap-2">
+                            <IconPlay className="text-primary" size={24} />
+                            Lecciones del Curso
+                        </h2>
 
                         {!course.lessons || course.lessons.length === 0 ? (
-                            <div className={styles.emptyState}>
+                            <div className="text-center py-12 bg-muted/20 rounded-xl border border-dashed border-border">
                                 <p>Aún no hay lecciones disponibles para este curso.</p>
                             </div>
                         ) : (
-                            <div className={styles.lessonsList}>
+                            <div className="flex flex-col gap-3">
                                 {course.lessons.map((lesson, index) => (
                                     <Link
                                         key={lesson.id}
                                         href={`/cursos/${slug}/${courseSlug}/${lesson.slug}`}
-                                        className={`${styles.lessonItem} ${lesson.completed ? styles.completed : ""}`}
+                                        className="block group"
                                     >
-                                        <span className={`${styles.lessonStatus} ${lesson.completed ? styles.complete : styles.pending}`}>
-                                            {lesson.completed ? <IconCheck size={16} /> : index + 1}
-                                        </span>
-                                        <div className={styles.lessonInfo}>
-                                            <h4>{lesson.title}</h4>
-                                            {lesson.duration && (
-                                                <span className={styles.lessonDuration}>
-                                                    {Math.floor(lesson.duration / 60)} min
-                                                </span>
-                                            )}
+                                        <div className={`
+                                            flex items-center gap-4 p-4 rounded-xl border transition-all duration-200
+                                            ${lesson.completed
+                                                ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10'
+                                                : 'bg-card border-border hover:border-primary/50 hover:shadow-md'
+                                            }
+                                        `}>
+                                            <div className={`
+                                                w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0 transition-colors
+                                                ${lesson.completed
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                                                }
+                                            `}>
+                                                {lesson.completed ? <IconCheck size={16} /> : index + 1}
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className={`text-base font-semibold mb-0.5 truncate pr-2 ${lesson.completed ? 'text-foreground/80' : 'text-foreground'}`}>
+                                                    {lesson.title}
+                                                </h4>
+                                                {lesson.duration && (
+                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <IconClock size={12} />
+                                                        {Math.floor(lesson.duration / 60)} min
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Badge variant="secondary" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                                    Ver →
+                                                </Badge>
+                                            </div>
                                         </div>
                                     </Link>
                                 ))}

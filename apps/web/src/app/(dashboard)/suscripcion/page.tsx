@@ -135,8 +135,8 @@ export default function SuscripcionPage() {
             {/* Hero */}
             <section className="py-16 md:py-24 text-center">
                 <div className="container px-4">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6 font-serif">Suscripción Premium</h1>
-                    <p className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto leading-relaxed">
+                    <h1 className="heading-h1 mb-6">Suscripción Premium</h1>
+                    <p className="text-body text-xl max-w-2xl mx-auto">
                         Accede a todo el contenido exclusivo: cursos, lecciones en video,
                         evaluaciones y material de apoyo.
                     </p>

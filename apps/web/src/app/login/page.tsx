@@ -97,8 +97,8 @@ function LoginForm() {
   return (
     <Card className="w-full border-none shadow-none bg-transparent p-0">
       <CardHeader className="text-center px-0 pt-0">
-        <CardTitle className="text-3xl font-bold mb-2 font-serif">Iniciar Sesión</CardTitle>
-        <CardDescription className="text-base text-foreground-muted">Bienvenido de nuevo</CardDescription>
+        <CardTitle className="heading-h2 mb-2">Iniciar Sesión</CardTitle>
+        <CardDescription className="text-body">Bienvenido de nuevo</CardDescription>
       </CardHeader>
 
       <CardContent className="px-0">
@@ -154,8 +154,17 @@ function LoginForm() {
             </Button>
           </form>
         </Form>
+        <div className="mt-6 text-center text-sm">
+          <span className="text-muted-foreground">¿No tienes una cuenta? </span>
+          <a
+            href="/registro"
+            className="font-medium text-primary hover:text-primary-light hover:underline underline-offset-4 transition-colors"
+          >
+            Regístrate
+          </a>
+        </div>
       </CardContent>
-    </Card>
+    </Card >
   );
 }
 

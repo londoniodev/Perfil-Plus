@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { MobileBackButton } from "./MobileBackButton";
+import { FloatingBackButton } from "./FloatingBackButton";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -12,7 +12,6 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     return (
         <div className="grid lg:grid-cols-2 min-h-screen w-full bg-background">
-            <MobileBackButton />
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-muted items-end p-12 overflow-hidden">
                 <Image
@@ -32,6 +31,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
             {/* Right Side - Form */}
             <div className="flex flex-col items-center justify-center p-6 md:p-12 w-full h-full relative z-20">
+                <FloatingBackButton />
                 <div className="w-full max-w-[450px] space-y-6">
                     {children}
                 </div>

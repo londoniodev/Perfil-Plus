@@ -60,8 +60,8 @@ export default function ForgotPasswordPage() {
         <AuthLayout>
             <Card className="w-full border-none shadow-none bg-transparent p-0">
                 <CardHeader className="text-center px-0 pt-0">
-                    <CardTitle className="text-3xl font-bold mb-2 font-serif">Recuperar contraseña</CardTitle>
-                    <CardDescription className="text-base text-foreground-muted">
+                    <CardTitle className="heading-h2 mb-2">Recuperar contraseña</CardTitle>
+                    <CardDescription className="text-body text-base">
                         Ingresa tu email y te enviaremos las instrucciones <br className="hidden sm:block" /> para restablecer tu contraseña.
                     </CardDescription>
                 </CardHeader>

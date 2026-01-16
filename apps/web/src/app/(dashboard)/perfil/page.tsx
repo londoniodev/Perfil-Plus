@@ -89,7 +89,7 @@ export default function PerfilPage() {
                         <TabsContent value="data" className="space-y-6">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Información Personal</CardTitle>
+                                    <CardTitle className="heading-h3">Información Personal</CardTitle>
                                     <CardDescription>Gestiona tu información de perfil.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -140,7 +140,7 @@ export default function PerfilPage() {
                         <TabsContent value="purchases">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Mis Compras</CardTitle>
+                                    <CardTitle className="heading-h3">Mis Compras</CardTitle>
                                     <CardDescription>Accede a tus e-books y recursos comprados.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex flex-col items-center justify-center py-8 text-center space-y-4">

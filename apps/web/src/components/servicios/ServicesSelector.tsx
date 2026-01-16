@@ -26,8 +26,8 @@ import {
 
 const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }) => (
     <div className="text-center mb-12">
-        <h2 className="section-title mb-4">{title}</h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <h2 className="heading-h2 mb-4">{title}</h2>
+        <p className="text-body max-w-2xl mx-auto">
             {subtitle}
         </p>
     </div>
@@ -48,7 +48,7 @@ const FeatureList = ({ items, iconColor = "var(--primary)" }: { items: string[],
 
 // --- Content Components ---
 
-const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
+const ContentEmpresas = ({ color = "hsl(var(--primary))" }: { color?: string }) => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         <SectionHeading
             title="Consultoría organizacional & desarrollo"
@@ -99,7 +99,7 @@ const ContentEmpresas = ({ color = "var(--primary)" }: { color?: string }) => (
 
         {/* Process Steps */}
         <div className="bg-muted/30 rounded-2xl p-8 mb-12">
-            <h3 className="text-2xl font-bold text-center mb-10">Cómo trabajamos</h3>
+            <h3 className="heading-h2 text-center mb-10">Cómo trabajamos</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                     { step: "01", title: "Entender", desc: "Diagnóstico profundo y entrevistas." },
@@ -217,7 +217,7 @@ const ContentExplora = () => (
     </div>
 );
 
-const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
+const ContentTerapia = ({ color = "hsl(var(--success))" }: { color?: string }) => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         <SectionHeading
             title="Psicoterapia y coaching"
@@ -264,7 +264,7 @@ const ContentTerapia = ({ color = "var(--success)" }: { color?: string }) => (
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 bg-white/[0.02] border border-white/5 rounded-2xl p-8 mb-12">
             <div className="md:col-span-3">
-                <h3 className="text-2xl font-bold mb-4 text-white">
+                <h3 className="heading-h2 mb-4 text-white">
                     Mi enfoque
                 </h3>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
@@ -322,9 +322,9 @@ export function ServicesSelector() {
     }, []);
 
     const tabs = [
-        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
-        { id: "explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
-        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "var(--success)" },
+        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "hsl(var(--primary))" },
+        { id: "explora", label: "Explora", icon: <IconCompass />, color: "hsl(var(--accent))" },
+        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "hsl(var(--success))" },
     ];
 
     const currentTabColor = tabs.find(t => t.id === activeTab)?.color || "var(--primary)";
@@ -366,9 +366,9 @@ export function ServicesSelector() {
 
                 {/* Content Area */}
                 <div>
-                    {activeTab === "empresas" && <ContentEmpresas color="var(--primary)" />}
+                    {activeTab === "empresas" && <ContentEmpresas color="hsl(var(--primary))" />}
                     {activeTab === "explora" && <ContentExplora />}
-                    {activeTab === "psicoterapia" && <ContentTerapia color="var(--success)" />}
+                    {activeTab === "psicoterapia" && <ContentTerapia color="hsl(var(--success))" />}
                 </div>
             </div>
         </section>

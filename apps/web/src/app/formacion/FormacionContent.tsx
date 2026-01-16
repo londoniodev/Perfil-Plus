@@ -34,23 +34,17 @@ export default function FormacionContent() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="py-32 text-center bg-[radial-gradient(circle_at_center,rgba(91,141,239,0.08)_0%,transparent_60%)]">
+            <section className="pt-32 pb-0 flex flex-col justify-center text-center">
                 <div className="container">
-                    <span className="inline-block px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm font-semibold text-accent mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        Formación Profesional
-                    </span>
-                    <h1 className="animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100 page-hero-title">
+
+                    <h1 className="heading-h1 pb-5 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
                         Cursos que transforman carreras
                     </h1>
-                    <p className="max-w-[700px] mx-auto mb-10 text-muted-foreground text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                    <p className="max-w-[700px] mx-auto text-muted-foreground text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                         Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones
                         con enfoque en psicología aplicada y desarrollo personal.
                     </p>
-                    <div className="animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
-                        <Button asChild>
-                            <Link href="/login?redirect=/cursos">Comenzar Ahora</Link>
-                        </Button>
-                    </div>
+
                 </div>
             </section>
 
@@ -67,8 +61,8 @@ export default function FormacionContent() {
                                         </div>
                                     </div>
                                     <CardHeader className="pt-0">
-                                        <CardTitle className="text-xl mb-2">{curso.title}</CardTitle>
-                                        <CardDescription className="text-base line-clamp-3">
+                                        <CardTitle className="heading-h3 mb-2">{curso.title}</CardTitle>
+                                        <CardDescription className="text-body line-clamp-3">
                                             {curso.description}
                                         </CardDescription>
                                     </CardHeader>
@@ -95,10 +89,10 @@ export default function FormacionContent() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-24 text-center bg-gradient-to-t from-primary/5 to-transparent">
+            <section className="py-12 text-center">
                 <div className="container">
-                    <h2 className="text-3xl font-serif font-bold mb-4">¿Listo para dar el siguiente paso?</h2>
-                    <p className="max-w-[600px] mx-auto mt-4 mb-8 text-muted-foreground">
+                    <h2 className="heading-h2 mb-4">¿Listo para dar el siguiente paso?</h2>
+                    <p className="max-w-[600px] mx-auto mt-4 mb-8 text-body">
                         Únete a cientos de profesionales que ya han transformado su carrera con nuestros programas.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">

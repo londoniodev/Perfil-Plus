@@ -113,29 +113,18 @@ export default async function EbooksPage() {
 
 function HeroSection() {
     return (
-        <section className="relative py-32 overflow-hidden bg-background">
+        <section className="relative pt-32 pb-12 overflow-hidden bg-background">
             {/* Background gradient */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.08)_0%,transparent_50%)]" />
 
             <div className="container relative z-10 text-center">
-                <Badge variant="secondary" className="mb-6 px-4 py-1 text-sm bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 transition-colors">
-                    Biblioteca Digital
-                </Badge>
-                <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight leading-tight">
+                <h1 className="heading-h1 mb-6">
                     E-books que transforman <br className="hidden md:block" /> tu mentalidad
                 </h1>
-                <p className="max-w-2xl mx-auto mb-10 text-muted-foreground text-lg md:text-xl leading-relaxed">
+                <p className="max-w-2xl mx-auto text-body text-lg md:text-xl">
                     Recursos prácticos escritos por Mauro Mera. Herramientas de psicología aplicada,
                     liderazgo y desarrollo personal que puedes implementar hoy mismo.
                 </p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Button asChild size="lg" className="h-12 px-8 text-base">
-                        <a href="#catalogo">Ver Catálogo</a>
-                    </Button>
-                    <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm">
-                        <Link href="/formacion">Explorar Cursos</Link>
-                    </Button>
-                </div>
             </div>
         </section>
     );
@@ -183,10 +172,10 @@ function ValuePropositionSection() {
             <div className="container">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="order-2 lg:order-1">
-                        <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6 text-foreground">
+                        <h2 className="heading-h2 mb-6 text-foreground">
                             Conocimiento que puedes aplicar desde hoy
                         </h2>
-                        <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                        <p className="text-lg text-body mb-6">
                             Cada e-book está diseñado para darte herramientas prácticas y aplicables.
                             No es teoría vacía—es conocimiento basado en años de experiencia trabajando
                             con líderes, equipos y organizaciones.

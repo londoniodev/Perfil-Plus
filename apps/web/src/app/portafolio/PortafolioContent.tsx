@@ -140,8 +140,8 @@ function CaseSection({ caso, index }: CaseSectionProps) {
                             <IconTrendingUp className="w-3 h-3" /> {caso.categoria}
                         </div>
 
-                        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg leading-tight">{caso.titulo}</h2>
-                        <h3 className="text-lg text-muted-foreground">{caso.cliente}</h3>
+                        <h2 className="heading-h1 mb-6">{caso.titulo}</h2>
+                        <h3 className="heading-h3 text-muted-foreground">{caso.cliente}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                             <div>

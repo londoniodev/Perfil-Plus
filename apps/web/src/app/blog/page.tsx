@@ -73,11 +73,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         }))}
       />
 
-      <div className="min-h-screen pb-24 pt-12 md:pt-16 bg-background">
+      <div className="min-h-screen pb-12 pt-32 bg-background">
         <section className="mb-12">
-          <div className="container px-4 mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-serif tracking-tight">Blog</h1>
-            <p className="text-xl text-foreground-muted max-w-2xl leading-relaxed">
+          <div className="container px-4 mx-auto text-center">
+            <h1 className="heading-h1 mb-6">Blog</h1>
+            <p className="text-xl text-body max-w-2xl mx-auto">
               Reflexiones, herramientas y estrategias para transformar
               tu vida personal y profesional.
             </p>
@@ -187,7 +187,7 @@ function BlogCard({ post }: { post: Post }) {
             </time>
           </div>
 
-          <h2 className="text-xl md:text-2xl font-bold mb-3 font-serif leading-tight group-hover:text-primary transition-colors line-clamp-2">
+          <h2 className="heading-h3 mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {post.title}
           </h2>
 

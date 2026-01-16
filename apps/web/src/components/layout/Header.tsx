@@ -110,33 +110,33 @@ function MobileNavLinks({ onClick, isLoggedIn, currentPath }: { onClick?: () => 
     const linkClass = (path: string) => `flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-accent/5 transition-colors ${currentPath === path ? "text-accent bg-accent/5" : "text-foreground"}`;
 
     return (
-        <div className="flex flex-col h-full">
-            <Link href="/" onClick={onClick} className={linkClass("/")}>
+        <div className="flex flex-col h-full overflow-y-auto">
+            <Link href="/" onClick={onClick} className={`${linkClass("/")} animate-slide-in-left`} style={{ animationDelay: "100ms" }}>
                 <span>Inicio</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/portafolio" onClick={onClick} className={linkClass("/portafolio")}>
+            <Link href="/portafolio" onClick={onClick} className={`${linkClass("/portafolio")} animate-slide-in-left`} style={{ animationDelay: "150ms" }}>
                 <span>Portafolio</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/formacion" onClick={onClick} className={linkClass("/formacion")}>
+            <Link href="/formacion" onClick={onClick} className={`${linkClass("/formacion")} animate-slide-in-left`} style={{ animationDelay: "200ms" }}>
                 <span>Cursos</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/blog" onClick={onClick} className={linkClass("/blog")}>
+            <Link href="/blog" onClick={onClick} className={`${linkClass("/blog")} animate-slide-in-left`} style={{ animationDelay: "300ms" }}>
                 <span>Blog</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/ebooks" onClick={onClick} className={linkClass("/ebooks")}>
+            <Link href="/ebooks" onClick={onClick} className={`${linkClass("/ebooks")} animate-slide-in-left`} style={{ animationDelay: "500ms" }}>
                 <span>E-books</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/servicios" onClick={onClick} className={linkClass("/servicios")}>
+            <Link href="/servicios" onClick={onClick} className={`${linkClass("/servicios")} animate-slide-in-left`} style={{ animationDelay: "700ms" }}>
                 <span>Servicios</span>
                 <IconArrowRight size={20} className="text-muted-foreground opacity-50" />
             </Link>
 
-            <div className="p-4 mt-auto">
+            <div className="p-4 mt-auto animate-slide-in-left" style={{ animationDelay: "700ms" }}>
                 {isLoggedIn ? (
                     <Button asChild className="w-full justify-start bg-accent hover:bg-accent/90 text-white" size="lg">
                         <Link href="/perfil" onClick={onClick}>

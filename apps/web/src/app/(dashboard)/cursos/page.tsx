@@ -29,8 +29,8 @@ export default async function CursosPage() {
 
             <section className="py-24 pt-32 text-center bg-gradient-to-b from-primary/5 to-background border-b border-border/50">
                 <div className="container px-4">
-                    <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 tracking-tight">Programa de Formación</h1>
-                    <p className="max-w-2xl mx-auto text-muted-foreground text-lg leading-relaxed">
+                    <h1 className="heading-h1 mb-6">Programa de Formación</h1>
+                    <p className="max-w-2xl mx-auto text-body text-lg">
                         Explora nuestros temas de formación en psicología, liderazgo
                         y desarrollo personal para transformar tu vida y carrera.
                     </p>
@@ -79,10 +79,10 @@ function ThemeCard({ theme }: { theme: Theme }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 <CardHeader className="pb-3">
-                    <CardTitle className="group-hover:text-primary transition-colors">{theme.title}</CardTitle>
+                    <CardTitle className="heading-h3 group-hover:text-primary transition-colors">{theme.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="pb-4">
-                    <CardDescription className="line-clamp-2 text-base">
+                    <CardDescription className="text-body line-clamp-2 text-sm">
                         {theme.description}
                     </CardDescription>
                 </CardContent>

@@ -5,85 +5,70 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-    /* 1. Base (Tu paleta Dark Professional) */
-    --background: 0 0% 100%;
-    /* Blanco en modo claro (fallback) */
-    --foreground: 222.2 84% 4.9%;
-
-    /* 2. Shadcn UI Semantics (Mapeado a tus colores) */
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 221 83% 53%;
-    /* Tu azul aprox en HSL */
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
-    /* Tu azul como anillo de foco */
-
-    --radius: 0.5rem;
-}
-
-/* MODO OSCURO (Tu diseño real) */
-.dark {
-    /* Fondo principal (#0f1419) */
+    /* MODO OSCURO POR DEFECTO (Dark Premium) */
+    /* Fondo oscuro profundo (#0f1419) */
     --background: 210 25% 8%;
-    /* Texto principal (#f2f5f8) */
+    /* Texto claro (#f2f5f8) */
     --foreground: 210 20% 96%;
 
-    /* Cards (#161b22 / rgba) */
+    /* Cards oscuras (#161b22) */
     --card: 216 28% 11%;
     --card-foreground: 210 20% 96%;
 
     --popover: 216 28% 11%;
     --popover-foreground: 210 20% 96%;
 
-    /* Tu Azul (#5b8def) */
+    /* Azul Eléctrico (#5b8def - similar a HSL 220 81% 65%) */
     --primary: 220 81% 65%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    /* Texto sobre azul */
 
-    /* Tu Secundario (#64748b) */
+    /* Secundario (#64748b) */
     --secondary: 215 16% 47%;
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217 19% 27%;
     --muted-foreground: 215 20% 65%;
-    /* #94a3b8 */
 
-    /* Tu Dorado para acentos (#e8a838) */
+    /* Dorado para acentos (#e8a838) */
     --accent: 38 78% 56%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Bordes sutiles (rgba -> hsl aprox) */
     --border: 217 19% 27%;
     --input: 217 19% 27%;
     --ring: 224 76% 48%;
 
-    /* Variables Custom Tuyas (Preservadas) */
+    --radius: 0.5rem;
+
+    /* Variables Custom */
     --color-gold: #e8a838;
     --color-gold-light: #f5c46b;
     --color-gold-glow: rgba(232, 168, 56, 0.4);
+}
+
+.dark {
+    /* Mismos valores para asegurar consistencia */
+    --background: 210 25% 8%;
+    --foreground: 210 20% 96%;
+    --card: 216 28% 11%;
+    --card-foreground: 210 20% 96%;
+    --popover: 216 28% 11%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 220 81% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 215 16% 47%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 19% 27%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 38 78% 56%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 19% 27%;
+    --input: 217 19% 27%;
+    --ring: 224 76% 48%;
 }
 
 @theme inline {

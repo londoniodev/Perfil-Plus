@@ -5,6 +5,7 @@ import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ThemeProvider } from "./providers";
 
 const sansation = Sansation({
   variable: "--font-sans",
@@ -92,12 +93,19 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${sansation.variable} ${geistMono.variable} antialiased`}>
-        <GlobalSchemas />
-        <ToastProvider>
-          <NavigationWrapper footer={<Footer />}>
-            {children}
-          </NavigationWrapper>
-        </ToastProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          forcedTheme="dark"
+        >
+          <GlobalSchemas />
+          <ToastProvider>
+            <NavigationWrapper footer={<Footer />}>
+              {children}
+            </NavigationWrapper>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

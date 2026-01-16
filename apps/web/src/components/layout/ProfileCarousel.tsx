@@ -22,10 +22,7 @@ export default function ProfileCarousel() {
     }, []);
 
     return (
-        <div className="relative h-[400px] md:h-[600px] w-full flex items-end justify-center overflow-hidden">
-            {/* Aura background */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[500px] md:h-[500px] bg-primary/30 blur-[100px] animate-aura-pulse rounded-full pointer-events-none" />
-
+        <div className="relative h-[480px] md:h-[720px] w-full flex items-end justify-center overflow-visible">
             {images.map((src, index) => {
                 const isActive = index === currentIndex;
 
@@ -43,8 +40,8 @@ export default function ProfileCarousel() {
                             src={src}
                             alt={`Mauro Mera ${index + 1}`}
                             fill
-                            className="object-contain object-bottom"
-                            sizes="(max-width: 768px) 100vw, 500px"
+                            className="object-contain object-bottom drop-shadow-[0_0_30px_rgba(91,141,239,0.5)]"
+                            sizes="(max-width: 768px) 100vw, 600px"
                             priority={index === 0}
                         />
                     </div>

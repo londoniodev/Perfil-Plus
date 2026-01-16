@@ -28,10 +28,10 @@ interface Categoria {
 }
 
 const categorias: Categoria[] = [
-    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "var(--primary)" },
-    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "var(--accent)" },
+    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "hsl(var(--primary))" },
+    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "hsl(var(--accent))" },
     { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" },
-    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "var(--success)" },
+    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "hsl(var(--success))" },
 ];
 
 // ============================================================================
@@ -39,13 +39,15 @@ const categorias: Categoria[] = [
 // ============================================================================
 
 export default function PortafolioContent() {
-    const [activeCategory, setActiveCategory] = useState<CategoriaId>("Empresas");
+    const activeCategoryState = useState<CategoriaId>("Empresas");
+    const [activeCategory, setActiveCategory] = activeCategoryState;
     const filteredCases = casos.filter((c) => c.categoria === activeCategory);
 
     return (
         <div className="min-h-screen bg-background">
             {/* Header con Filtros */}
-            <section className="sticky top-16 z-40 bg-background/80 backdrop-blur-md border-b border-border py-4">
+            {/* Header con Filtros */}
+            <section className="pt-30 pb-[10px]">
                 <CategoryFilterBar
                     categorias={categorias}
                     activeCategory={activeCategory}
@@ -79,7 +81,7 @@ interface CategoryFilterBarProps {
 function CategoryFilterBar({ categorias, activeCategory, onCategoryChange }: CategoryFilterBarProps) {
     return (
         <div className="container flex justify-center">
-            <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border">
+            <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border backdrop-blur-md">
                 {categorias.map((cat) => {
                     const isActive = activeCategory === cat.id;
                     return (
@@ -112,9 +114,13 @@ interface CaseSectionProps {
 
 function CaseSection({ caso, index }: CaseSectionProps) {
     const isReversed = index % 2 !== 0;
+    // Resolver color desde la configuración centralizada de categorías para asegurar consistencia
+    // con el selector. Si no encuentra, usa el del caso o un fallback.
+    const categoryConfig = categorias.find(c => c.id === caso.categoria);
+    const sectionColor = categoryConfig?.color || caso.color;
 
     return (
-        <section className={cn("py-20 md:py-32", index === 0 && "pt-12")}>
+        <section className={cn("py-20 md:py-18", index === 0 && "pt-12")}>
             <div className="container">
                 <div className={cn(
                     "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center",
@@ -126,15 +132,15 @@ function CaseSection({ caso, index }: CaseSectionProps) {
                         <div
                             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium"
                             style={{
-                                border: `1px solid ${caso.color}40`,
-                                background: `${caso.color}10`,
-                                color: caso.color,
+                                border: `1px solid ${sectionColor}`,
+                                background: `color-mix(in srgb, ${sectionColor}, transparent 90%)`,
+                                color: sectionColor,
                             }}
                         >
                             <IconTrendingUp className="w-3 h-3" /> {caso.categoria}
                         </div>
 
-                        <h2 className="section-title text-3xl lg:text-4xl">{caso.titulo}</h2>
+                        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg leading-tight">{caso.titulo}</h2>
                         <h3 className="text-lg text-muted-foreground">{caso.cliente}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
@@ -152,7 +158,7 @@ function CaseSection({ caso, index }: CaseSectionProps) {
                         <div className="flex flex-wrap gap-8 pt-6">
                             {caso.resultados.map((res, i) => (
                                 <div key={i} className="text-center">
-                                    <div className="text-3xl font-bold" style={{ color: caso.color }}>{res.metric}</div>
+                                    <div className="text-3xl font-bold" style={{ color: sectionColor }}>{res.metric}</div>
                                     <div className="text-sm text-muted-foreground mt-1">{res.label}</div>
                                 </div>
                             ))}
@@ -161,13 +167,13 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
                     {/* Visual */}
                     <div className="hidden lg:block">
-                        <CaseVisual category={caso.categoria} color={caso.color} id={caso.id} />
+                        <CaseVisual category={caso.categoria} color={sectionColor} id={caso.id} />
                     </div>
                 </div>
 
                 {/* Visual - Mobile */}
                 <div className="lg:hidden mt-8">
-                    <CaseVisual category={caso.categoria} color={caso.color} id={caso.id} />
+                    <CaseVisual category={caso.categoria} color={sectionColor} id={caso.id} />
                 </div>
             </div>
         </section>

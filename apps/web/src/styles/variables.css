@@ -40,6 +40,10 @@
     --input: 217 19% 27%;
     --ring: 224 76% 48%;
 
+    /* Success (Green) */
+    --success: 142 71% 45%;
+    --success-foreground: 210 40% 98%;
+
     --radius: 0.5rem;
 
     /* Variables Custom */

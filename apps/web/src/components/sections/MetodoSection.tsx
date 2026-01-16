@@ -75,7 +75,7 @@ export function MetodoSection() {
         <section className="py-20 md:py-32 bg-background" id="metodo">
             <div className="container">
                 <div className="text-center mb-16">
-                    <h2 className="section-title">El proceso</h2>
+                    <h2 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg mb-8">El proceso</h2>
                     <p className="text-muted-foreground max-w-xl mx-auto mt-4">
                         Claridad desde el primer paso hasta el resultado.
                     </p>

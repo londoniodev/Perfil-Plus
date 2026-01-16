@@ -21,7 +21,7 @@ export function Header() {
     const isScrolled = useScroll(10);
 
     return (
-        <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-2" : "bg-transparent py-4"}`}>
+        <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "bg-transparent py-6"}`}>
             <div className="container flex items-center justify-between">
 
                 {/* Mobile Trigger (Left) */}
@@ -55,7 +55,7 @@ export function Header() {
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden lg:flex items-center gap-6">
+                <nav className="hidden lg:flex items-center gap-8">
                     <DesktopNavLinks isLoggedIn={isAuthenticated} currentPath={pathname} />
                 </nav>
 
@@ -68,7 +68,7 @@ export function Header() {
 
 // Desktop NavLinks
 function DesktopNavLinks({ isLoggedIn, currentPath }: { isLoggedIn: boolean, currentPath?: string }) {
-    const linkClass = (path: string) => `text-sm font-medium transition-colors hover:text-accent ${currentPath === path ? "text-accent" : "text-foreground/80"}`;
+    const linkClass = (path: string) => `text-base font-medium transition-colors hover:text-accent ${currentPath === path ? "text-accent" : "text-foreground/80"}`;
 
     return (
         <>
@@ -107,7 +107,7 @@ function DesktopNavLinks({ isLoggedIn, currentPath }: { isLoggedIn: boolean, cur
 
 // Mobile NavLinks
 function MobileNavLinks({ onClick, isLoggedIn, currentPath }: { onClick?: () => void, isLoggedIn: boolean, currentPath?: string }) {
-    const linkClass = (path: string) => `flex items-center justify-between w-full p-4 text-base font-medium border-b border-border/50 hover:bg-accent/5 transition-colors ${currentPath === path ? "text-accent bg-accent/5" : "text-foreground"}`;
+    const linkClass = (path: string) => `flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-accent/5 transition-colors ${currentPath === path ? "text-accent bg-accent/5" : "text-foreground"}`;
 
     return (
         <div className="flex flex-col h-full">
@@ -133,7 +133,7 @@ function MobileNavLinks({ onClick, isLoggedIn, currentPath }: { onClick?: () => 
             </Link>
             <Link href="/servicios" onClick={onClick} className={linkClass("/servicios")}>
                 <span>Servicios</span>
-                <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
+                <IconArrowRight size={20} className="text-muted-foreground opacity-50" />
             </Link>
 
             <div className="p-4 mt-auto">

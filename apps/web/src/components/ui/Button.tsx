@@ -10,83 +10,79 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
     // Base styles (from .btn)
     [
-        "inline-flex items-center justify-center gap-3",
-        "px-8 py-4 text-base font-semibold",
-        "rounded-xl transition-all duration-300 cursor-pointer",
-        "no-underline font-[family-name:var(--font-sans)] tracking-[0.01em]",
+        "inline-flex items-center justify-center gap-2",
+        "rounded-lg transition-all duration-200 cursor-pointer",
+        "no-underline font-medium font-[family-name:var(--font-sans)]",
         "disabled:pointer-events-none disabled:opacity-50",
     ],
     {
         variants: {
             variant: {
-                // .btn-primary - Gradient blue with shadow
+                // Primary: Solid flat color, subtle interaction
                 default: [
-                    "bg-gradient-to-br from-primary to-primary-dark",
-                    "text-white border border-white/10",
-                    "shadow-[0_4px_15px_rgba(58,98,184,0.3)]",
-                    "hover:brightness-110 hover:-translate-y-0.5",
-                    "hover:shadow-[0_8px_25px_rgba(58,98,184,0.5)]",
+                    "bg-primary text-white border border-transparent",
+                    "hover:bg-primary/90",
+                    "active:scale-[0.98]",
                 ],
-                // .btn-secondary - Glassmorphism
+                // Secondary: Clean border, transparent/dark background
                 secondary: [
-                    "bg-white/[0.03] text-foreground",
+                    "bg-secondary/50 text-foreground",
                     "border border-border backdrop-blur-sm",
-                    "hover:bg-white/[0.08] hover:border-foreground-muted",
-                    "hover:-translate-y-0.5",
+                    "hover:bg-secondary/80 hover:border-foreground/20",
+                    "active:scale-[0.98]",
                 ],
-                // .btn-accent - Golden gradient
+                // Accent: Solid flat accent color
                 accent: [
-                    "bg-gradient-to-br from-accent to-[#d49024]",
-                    "text-[#0f1419] font-bold",
-                    "shadow-[0_4px_15px_rgba(232,168,56,0.3)]",
-                    "hover:brightness-110 hover:-translate-y-0.5",
-                    "hover:shadow-[0_8px_25px_rgba(232,168,56,0.5)]",
+                    "bg-accent text-accent-foreground font-semibold",
+                    "hover:bg-accent/90",
+                    "active:scale-[0.98]",
                 ],
-                // .btn-ghost - Transparent
+                // Ghost: Minimalist hover effect
                 ghost: [
-                    "bg-transparent text-foreground-muted",
-                    "border border-transparent",
-                    "hover:text-foreground hover:bg-white/5",
+                    "bg-transparent text-foreground",
+                    "hover:bg-white/5",
+                    "active:scale-[0.98]",
                 ],
-                // .btn-outline-primary
+                // Outline: Clean border
                 outline: [
-                    "bg-transparent text-primary-light",
-                    "border border-primary",
-                    "hover:bg-primary/10 hover:-translate-y-0.5",
+                    "bg-transparent text-foreground",
+                    "border border-input",
+                    "hover:bg-white/5 hover:border-foreground/30",
+                    "active:scale-[0.98]",
                 ],
-                // .btn-filter - For tab filters
+                // Filter: Flat pill style
                 filter: [
                     "px-4 py-2 text-sm",
-                    "bg-card-bg text-foreground",
-                    "border border-border rounded-md",
-                    "transition-all duration-150 shrink-0",
-                    "hover:bg-card-bg-hover",
-                    "data-[active=true]:bg-accent data-[active=true]:text-white",
+                    "bg-card text-foreground",
+                    "border border-border rounded-full",
+                    "transition-colors duration-200",
+                    "hover:bg-accent/10 hover:border-accent/50 hover:text-accent-foreground",
+                    "data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:border-accent",
                 ],
-                // .btn-pagination
+                // Pagination: Simple squared
                 pagination: [
                     "px-4 py-2 text-sm",
-                    "bg-card-bg text-foreground",
+                    "bg-card text-foreground",
                     "border border-border rounded-md",
-                    "transition-all duration-150",
-                    "hover:bg-card-bg-hover",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "hover:bg-secondary/50",
+                    "disabled:opacity-40 disabled:hover:bg-card",
                 ],
-                // Link style - no background
+                // Link: Text only
                 link: [
                     "text-primary underline-offset-4",
                     "hover:underline",
+                    "p-0 h-auto",
                 ],
-                // Destructive - for dangerous actions
+                // Destructive: Flat red
                 destructive: [
-                    "bg-error text-white",
-                    "hover:bg-error/90",
+                    "bg-destructive text-destructive-foreground",
+                    "hover:bg-destructive/90",
                 ],
             },
             size: {
-                default: "px-8 py-4 text-base",
-                sm: "px-5 py-2 text-sm rounded-lg",
-                lg: "px-10 py-5 text-lg",
+                default: "px-6 py-3 text-sm font-medium",
+                sm: "px-4 py-2 text-sm rounded-lg",
+                lg: "px-8 py-4 text-base rounded-xl",
                 icon: "h-10 w-10 p-0",
             },
             fullWidth: {

@@ -91,16 +91,21 @@ export default function CourseForm({
     const onSubmit = async (values: CourseValues) => {
         try {
             const url = mode === "create"
-                ? `${API_BASE}/lms/themes/${themeId}/courses`
-                : `${API_BASE}/lms/courses/${courseId}`;
+                ? `${API_BASE}/admin/lms/courses`
+                : `${API_BASE}/admin/lms/courses/${courseId}`;
 
             const method = mode === "create" ? "POST" : "PATCH";
+
+            // For create, include themeId in the body
+            const body = mode === "create"
+                ? { ...values, themeId }
+                : values;
 
             const res = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(values),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();

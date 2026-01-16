@@ -4,6 +4,8 @@ import * as nodemailer from 'nodemailer';
 import { render } from '@react-email/render';
 import { VerificationEmail } from './emails/VerificationEmail';
 import { RecoveryEmail } from './emails/RecoveryEmail';
+import { SubscriptionSuccessEmail } from './emails/SubscriptionSuccessEmail';
+import { EbookPurchaseEmail } from './emails/EbookPurchaseEmail';
 
 interface SendEmailOptions {
     to: string;
@@ -93,6 +95,60 @@ export class EmailService {
         return this.sendEmail({
             to: email,
             subject: '🔐 Restablecer contraseña - Mauro Mera',
+            html,
+            text,
+        });
+    }
+
+    async sendSubscriptionSuccessEmail(
+        email: string,
+        name: string,
+        planName: string,
+        endDate: Date,
+    ): Promise<boolean> {
+        const formattedEndDate = new Intl.DateTimeFormat('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }).format(endDate);
+
+        const html = await render(
+            SubscriptionSuccessEmail({
+                name,
+                planName,
+                endDate: formattedEndDate,
+            }),
+        );
+
+        const text = `¡Bienvenido ${name}!\n\nTu suscripción ${planName} ha sido activada exitosamente.\nVálida hasta: ${formattedEndDate}\n\nYa puedes acceder a todos los cursos en: https://mauromera.com/cursos`;
+
+        return this.sendEmail({
+            to: email,
+            subject: '¡Tu suscripción está activa! - Mauro Mera',
+            html,
+            text,
+        });
+    }
+
+    async sendEbookPurchaseEmail(
+        email: string,
+        name: string,
+        ebookTitle: string,
+        ebookSlug: string,
+    ): Promise<boolean> {
+        const html = await render(
+            EbookPurchaseEmail({
+                name,
+                ebookTitle,
+                ebookSlug,
+            }),
+        );
+
+        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: https://mauromera.com/ebooks/${ebookSlug}`;
+
+        return this.sendEmail({
+            to: email,
+            subject: `Tu compra fue exitosa: ${ebookTitle} - Mauro Mera`,
             html,
             text,
         });

@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import * as crypto from 'crypto';
 
@@ -14,6 +15,7 @@ export class PaymentsService {
     constructor(
         private prisma: PrismaService,
         private config: ConfigService,
+        private emailService: EmailService,
     ) {
         const accessToken = this.config.get<string>('MP_ACCESS_TOKEN');
         if (accessToken) {
@@ -324,6 +326,26 @@ export class PaymentsService {
         });
 
         this.logger.log(`Subscription activated for user ${userId}`);
+
+        // Send confirmation email (non-blocking - don't fail if email fails)
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { email: true, name: true },
+            });
+
+            if (user) {
+                await this.emailService.sendSubscriptionSuccessEmail(
+                    user.email,
+                    user.name || 'Usuario',
+                    'Suscripción Premium Mensual',
+                    endDate,
+                );
+            }
+        } catch (emailError) {
+            this.logger.error('Error sending subscription email:', emailError);
+            // Continue - don't fail the transaction if email fails
+        }
     }
 
     // Admin: Assign manual subscription
@@ -370,6 +392,32 @@ export class PaymentsService {
         });
 
         this.logger.log(`Ebook purchase completed: user=${userId}, ebook=${ebookId}`);
+
+        // Send confirmation email (non-blocking - don't fail if email fails)
+        try {
+            const [user, ebook] = await Promise.all([
+                this.prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { email: true, name: true },
+                }),
+                this.prisma.ebook.findUnique({
+                    where: { id: ebookId },
+                    select: { title: true, slug: true },
+                }),
+            ]);
+
+            if (user && ebook) {
+                await this.emailService.sendEbookPurchaseEmail(
+                    user.email,
+                    user.name || 'Usuario',
+                    ebook.title,
+                    ebook.slug,
+                );
+            }
+        } catch (emailError) {
+            this.logger.error('Error sending ebook purchase email:', emailError);
+            // Continue - don't fail the transaction if email fails
+        }
     }
 
     // ==================== USER SUBSCRIPTION CHECK ====================

@@ -74,16 +74,15 @@ export {
     FiZap as IconZap,
     FiBriefcase as IconBriefcase,
     FiSend as IconRocket,
-    // Added for Refactoring
     FiCreditCard as IconCreditCard,
     FiCpu as IconCpu,
-    FiActivity as IconBrain, // Using Activity as proxy for Brain if Brain not available in fi, or check if available. FiActivity is pulse. Let's check imports.
+    FiActivity as IconBrain,
     FiAward as IconAward,
     FiShield as IconShield,
     FiArrowRight as IconArrowRight,
     FiMessageCircle as IconQuote,
     FiTarget as IconTarget,
-    FiBriefcase as IconBuilding, // Alias for backward compat/refactor convenience
+    FiBriefcase as IconBuilding,
     FiClipboard as IconClipboard,
     FiPlayCircle as IconPlayCircle,
     FiLoader as IconLoader,

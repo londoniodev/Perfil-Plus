@@ -2,10 +2,10 @@
 
 import React, { useRef, useState } from 'react';
 import { API_BASE } from "@/lib/config";
-import { IconImage, IconTrash, IconUpload } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
+import { IconImage, IconTrash, IconUpload } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 
 interface ImageUploaderProps {
     value: string | null;

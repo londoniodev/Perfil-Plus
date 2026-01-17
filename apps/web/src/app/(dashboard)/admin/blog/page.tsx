@@ -4,13 +4,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE } from "@/lib/config";
-import { DataTable } from "@/components/ui/data-table"; // Using the new DataTable
+import { DataTable } from "@mauromera/ui";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { useToast } from "@/components/ui/Toast";
-import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@/components/ui/Icons";
-import Pagination from "@/components/ui/Pagination";
+import { Button } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@mauromera/ui";
+import { Pagination } from "@mauromera/ui";
 import Link from "next/link";
 
 // ============================================================================

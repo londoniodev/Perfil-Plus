@@ -9,10 +9,10 @@ import {
     IconBook as BookStackIcon,
     IconBook as BookOpenIcon,
     IconCheck as CheckIcon,
-} from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+} from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardFooter } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 // ============================================================================
 // METADATA Y TIPOS

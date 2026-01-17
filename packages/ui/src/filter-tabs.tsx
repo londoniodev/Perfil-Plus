@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/Button";
+import * as React from "react";
+import { Button } from "./button";
 
 interface FilterTab<T extends string> {
     id: T;
@@ -40,3 +40,5 @@ export default function FilterTabs<T extends string>({
         </div>
     );
 }
+
+export { FilterTabs };

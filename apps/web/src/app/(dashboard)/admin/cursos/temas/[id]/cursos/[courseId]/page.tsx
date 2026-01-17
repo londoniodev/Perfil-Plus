@@ -7,14 +7,14 @@ import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import LessonItem from "@/components/admin/lms/LessonItem";
 import { API_BASE } from "@/lib/config";
-import { IconBack, IconPlus } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Label } from "@/components/ui/Label";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Switch } from "@/components/ui/switch";
+import { IconBack, IconPlus } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui";
 
 interface EditarCursoPageProps {
     params: Promise<{ id: string; courseId: string }>;

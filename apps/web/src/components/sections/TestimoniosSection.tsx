@@ -1,7 +1,7 @@
 "use client";
 
-import { IconQuote } from "@/components/ui/Icons";
-import { Card, CardContent } from "@/components/ui/Card";
+import { IconQuote } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 

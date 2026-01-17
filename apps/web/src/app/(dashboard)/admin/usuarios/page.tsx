@@ -4,19 +4,19 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/lib/config";
-import { useToast } from "@/components/ui/Toast";
-import { DataTable } from "@/components/ui/data-table";
+import { useToast } from "@mauromera/ui";
+import { DataTable } from "@mauromera/ui";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Badge } from "@/components/ui/Badge";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 import {
     IconSearch,
     IconTrash,
     IconEdit
-} from "@/components/ui/Icons";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Pagination from "@/components/ui/Pagination";
+} from "@mauromera/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mauromera/ui";
+import { Pagination } from "@mauromera/ui";
 
 // ============================================================================
 // TIPOS

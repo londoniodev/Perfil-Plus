@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/components/admin/lms/ThemeCard";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@mauromera/ui";
 import { API_BASE } from "@/lib/config";
-import { IconPlus, IconBook } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import { IconPlus, IconBook } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 
 interface Theme {
     id: string;

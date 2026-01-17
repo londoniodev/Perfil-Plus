@@ -6,14 +6,14 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import { API_BASE } from "@/lib/config";
-import { IconBack } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Label } from "@/components/ui/Label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Switch } from "@/components/ui/switch";
+import { IconBack } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui";
 
 export default function NuevoTemaPage() {
     const { isAdmin, loading: authLoading } = useAuth();

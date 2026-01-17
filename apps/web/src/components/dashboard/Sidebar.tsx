@@ -15,7 +15,7 @@ import {
     IconChevronLeft,
     IconChevronRight,
     IconGrid
-} from "@/components/ui/Icons";
+} from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {

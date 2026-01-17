@@ -4,7 +4,7 @@ import "@/styles/index.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider } from "@/components/ui/Toast";
+import { ToastProvider } from "@mauromera/ui";
 import { ThemeProvider } from "./providers";
 
 const sansation = Sansation({
@@ -91,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={`${sansation.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"

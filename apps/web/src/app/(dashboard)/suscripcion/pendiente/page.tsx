@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 
 export default function SuscripcionPendientePage() {
     return (

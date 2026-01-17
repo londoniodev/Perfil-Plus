@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { API_BASE } from "@/lib/config";
-import { IconPlus } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
+import { IconPlus } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 import { Category } from "@/types/blog";

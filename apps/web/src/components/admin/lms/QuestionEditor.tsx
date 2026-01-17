@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
-import { useToast } from "@/components/ui/Toast";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Label } from "@/components/ui/Label";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { Textarea } from "@/components/ui/Textarea";
+import { useToast } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
 
 interface Option {
     id: string;

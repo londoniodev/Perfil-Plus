@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "@/components/ui/Card";
+} from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 import {
@@ -20,7 +20,7 @@ import {
     IconAward as IconGraduationCap,
     IconUsers,
     IconExternalLink
-} from "@/components/ui/Icons";
+} from "@mauromera/ui";
 
 // --- Components Helpers ---
 

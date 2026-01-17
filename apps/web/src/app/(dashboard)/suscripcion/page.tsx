@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@mauromera/ui";
 import { API_BASE } from "@/lib/config";
 import ActiveSubscriptionCard from "@/components/subscription/ActiveSubscriptionCard";
 import PricingCard from "@/components/subscription/PricingCard";

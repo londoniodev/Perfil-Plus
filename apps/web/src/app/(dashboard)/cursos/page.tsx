@@ -2,10 +2,10 @@ import Link from "next/link";
 import { getThemes } from "@/lib/api";
 import { Theme } from "@/types/lms";
 import { Metadata } from "next";
-import { IconBook } from "@/components/ui/Icons";
-import ClientToast from "@/components/ui/ClientToast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { IconBook } from "@mauromera/ui";
+import { ClientToast } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 export const metadata: Metadata = {
     title: "Cursos | Mauro Mera",

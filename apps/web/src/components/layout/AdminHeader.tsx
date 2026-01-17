@@ -1,8 +1,8 @@
 "use client";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/Button";
-import { IconMenu } from "@/components/ui/Icons";
+import { Sheet, SheetContent, SheetTrigger } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { IconMenu } from "@mauromera/ui";
 import { AdminSidebar } from "./AdminSidebar";
 
 export function AdminHeader() {

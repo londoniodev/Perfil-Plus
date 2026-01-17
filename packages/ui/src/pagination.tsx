@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/Button";
+import * as React from "react";
+import { Button } from "./button";
 
 interface PaginationProps {
     currentPage: number;
@@ -40,3 +40,5 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         </div>
     );
 }
+
+export { Pagination };

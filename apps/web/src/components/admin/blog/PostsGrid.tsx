@@ -3,9 +3,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@mauromera/ui";
 import styles from "@/styles/admin.module.css";
-import { IconEye, IconEyeOff, IconEdit, IconTrash } from "@/components/ui/Icons";
+import { IconEye, IconEyeOff, IconEdit, IconTrash } from "@mauromera/ui";
 
 // Reusing the Post interface
 import { Post } from "@/types/blog";

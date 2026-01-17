@@ -4,8 +4,8 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 import {
     Card,
     CardContent,
@@ -13,7 +13,7 @@ import {
     CardHeader,
     CardTitle,
     CardFooter,
-} from "@/components/ui/Card";
+} from "@mauromera/ui";
 
 type VerificationStatus = "loading" | "success" | "error" | "expired" | "no-token";
 

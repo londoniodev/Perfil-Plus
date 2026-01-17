@@ -9,8 +9,14 @@
         "declaration": true,
         "strict": true,
         "jsx": "react-jsx",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "skipLibCheck": true,
-        "esModuleInterop": true
-    }
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "rootDir": "./src"
+    },
+    "include": [
+        "src"
+    ]
 }

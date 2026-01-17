@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { IconChevronDown } from "@/components/ui/Icons";
+import { IconChevronDown } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 const steps = [

@@ -10,9 +10,9 @@ import {
     IconImage,
     IconDocument,
     IconLock
-} from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
+} from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 
 import { Attachment } from "@/types/blog";
 

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { IconBack as IconArrowLeft } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import { IconBack as IconArrowLeft } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 
 export function BlogBackButton() {
     return (

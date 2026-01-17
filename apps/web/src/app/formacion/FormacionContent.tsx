@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { IconTarget, IconBrain, IconZap } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { IconTarget, IconBrain, IconZap } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 export default function FormacionContent() {
     const cursos = [

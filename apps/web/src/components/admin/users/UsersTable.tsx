@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@mauromera/ui";
 import styles from "@/styles/admin.module.css";
 
 // ============================================================================

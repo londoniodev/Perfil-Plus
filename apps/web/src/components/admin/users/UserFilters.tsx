@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { IconChevronDown } from "@/components/ui/Icons";
-import { IconSearch } from "@/components/ui/Icons";
+import { IconChevronDown } from "@mauromera/ui";
+import { IconSearch } from "@mauromera/ui";
 import styles from "@/styles/admin.module.css";
 
 interface UserFiltersProps {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 import { Tag } from "@/types/blog";

@@ -1,14 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-} from "@/components/ui/Card";
-import { IconCheck } from "@/components/ui/Icons";
+} from "@mauromera/ui";
+import { IconCheck } from "@mauromera/ui";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 
 interface PricingCardProps {

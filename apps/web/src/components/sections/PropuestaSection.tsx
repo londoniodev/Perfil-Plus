@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { IconBrain, IconStar, IconCpu } from "@/components/ui/Icons";
-import { Card } from "@/components/ui/Card";
+import { IconBrain, IconStar, IconCpu } from "@mauromera/ui";
+import { Card } from "@mauromera/ui";
 
 const pillars = [
     {

@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import { Button } from "@/components/ui/Button";
-import { useToast } from "@/components/ui/Toast";
-import { IconDownload, IconBook, IconLoader } from "@/components/ui/Icons";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Button } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { IconDownload, IconBook, IconLoader } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 import { Purchase } from "@/types/ecommerce";
 

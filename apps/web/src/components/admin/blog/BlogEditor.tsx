@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useCallback, useEffect } from 'react';
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@mauromera/ui";
 
 interface BlogEditorProps {
     value: string;

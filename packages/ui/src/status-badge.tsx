@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import * as React from "react";
 
 type BadgeVariant = "success" | "warning" | "info" | "purple" | "default";
 
@@ -27,3 +27,5 @@ export default function StatusBadge({ label, variant = "default" }: StatusBadgeP
         </span>
     );
 }
+
+export { StatusBadge };

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 import { CaseVisual } from "@/components/portfolio/CaseVisual";
 import { casos } from "@/constants/casosData";
 import { Caso, CategoriaId } from "@/types/marketing";
@@ -13,7 +13,7 @@ import {
     IconHeart,
     IconCalendar,
     IconTarget as IconTrendingUp,
-} from "@/components/ui/Icons";
+} from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 // ============================================================================

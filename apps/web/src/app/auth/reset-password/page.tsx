@@ -7,12 +7,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mauromera/ui";
 
 
 const resetPasswordSchema = z

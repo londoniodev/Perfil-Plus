@@ -4,17 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "@/components/ui/Card";
+} from "@mauromera/ui";
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({

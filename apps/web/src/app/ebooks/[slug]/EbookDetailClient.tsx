@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
-import { useToast } from "@/components/ui/Toast";
-import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@/components/ui/Icons";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Separator } from "@/components/ui/separator";
+import { useToast } from "@mauromera/ui";
+import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
+import { Separator } from "@mauromera/ui";
 
 import { Ebook } from "@/types/ecommerce";
 

@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { IconEdit, IconTrash } from '@/components/ui/Icons';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { IconEdit, IconTrash } from '@mauromera/ui';
+import { Badge } from '@mauromera/ui';
+import { Button } from '@mauromera/ui';
 
 interface Lesson {
     id: string;

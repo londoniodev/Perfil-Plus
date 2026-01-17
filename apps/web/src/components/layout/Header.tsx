@@ -10,9 +10,9 @@ import {
     IconUser,
     IconLogin,
     IconArrowRight,
-} from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+} from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@mauromera/ui";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);

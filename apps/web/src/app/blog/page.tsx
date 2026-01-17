@@ -5,9 +5,9 @@ import { Post, Category } from "@/types/blog";
 import { Metadata } from "next";
 import { BreadcrumbSchema, CollectionPageSchema } from "@/components/seo/JsonLd";
 import { BlogFilter } from "./BlogFilter";
-import { Card, CardContent, CardFooter } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { IconArrowRight } from "@/components/ui/Icons";
+import { Card, CardContent, CardFooter } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
+import { IconArrowRight } from "@mauromera/ui";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 

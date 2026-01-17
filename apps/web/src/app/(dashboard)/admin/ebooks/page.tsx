@@ -6,11 +6,11 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE } from "@/lib/config";
 
-import { IconPlus, IconEdit, IconTrash, IconBook, IconLoader } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { IconPlus, IconEdit, IconTrash, IconBook, IconLoader } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 import { Ebook } from "@/types/ecommerce";
 

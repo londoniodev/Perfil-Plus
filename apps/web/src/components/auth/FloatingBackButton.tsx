@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { IconBack } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import { IconBack } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 interface FloatingBackButtonProps {

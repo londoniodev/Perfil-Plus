@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import { cn } from "./lib/utils";
 
 /**
  * Button variants using class-variance-authority (cva)
@@ -108,20 +108,6 @@ export interface ButtonProps
 /**
  * Premium Button component with multiple variants and sizes.
  * Supports polymorphism via asChild prop for use with Next.js Link.
- *
- * @example
- * // Primary button
- * <Button>Click me</Button>
- *
- * // Accent button with icon
- * <Button variant="accent">
- *   <IconCalendar /> Schedule
- * </Button>
- *
- * // As a Next.js Link
- * <Button asChild variant="secondary">
- *   <Link href="/about">Learn More</Link>
- * </Button>
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, fullWidth, asChild = false, active, ...props }, ref) => {

@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { InputWithIcon } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { InputWithIcon } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mauromera/ui";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),

@@ -6,16 +6,16 @@ import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { API_BASE } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/Card";
+} from "@mauromera/ui";
 import {
   Form,
   FormControl,
@@ -23,7 +23,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@mauromera/ui";
 import { LoginSchema, type LoginValues } from "@/schemas/auth";
 
 function LoginForm() {

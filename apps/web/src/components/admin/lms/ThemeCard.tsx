@@ -2,10 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { IconEdit, IconTrash, IconBook, IconGrid } from '@/components/ui/Icons';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { IconEdit, IconTrash, IconBook, IconGrid } from '@mauromera/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@mauromera/ui';
+import { Badge } from '@mauromera/ui';
+import { Button } from '@mauromera/ui';
 
 interface Theme {
     id: string;

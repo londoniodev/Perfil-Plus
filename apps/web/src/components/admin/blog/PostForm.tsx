@@ -9,14 +9,14 @@ import ImageUploader from "@/components/admin/ui/ImageUploader";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
 import ToggleButton, { PremiumIcon, PublishIcon } from "@/components/admin/ui/ToggleButton"; // Legacy toggle, might need refactor or replace with Switch
-import { IconBack } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea"; // Need to ensure Textarea exists, or use native with class
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card"; // Use shadcn Card if available or div
-import { Label } from "@/components/ui/Label";
-import { Switch } from "@/components/ui/switch"; // Recommended replacement for ToggleButton
+import { IconBack } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui"; // Need to ensure Textarea exists, or use native with class
+import { Button } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui"; // Use shadcn Card if available or div
+import { Label } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui"; // Recommended replacement for ToggleButton
 
 // ============================================================================
 // TIPOS

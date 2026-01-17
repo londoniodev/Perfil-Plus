@@ -1,5 +1,5 @@
 import styles from "@/styles/admin.module.css";
-import { IconStar, IconCheck, IconEye, IconEyeOff } from "@/components/ui/Icons";
+import { IconStar, IconCheck, IconEye, IconEyeOff } from "@mauromera/ui";
 
 interface ToggleButtonProps {
     active: boolean;

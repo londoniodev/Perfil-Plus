@@ -2,11 +2,11 @@
 
 import { useState, FormEvent } from "react";
 import { API_BASE } from "@/lib/config";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { IconCheck } from "@/components/ui/Icons";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { IconCheck } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 interface LeadFormProps {

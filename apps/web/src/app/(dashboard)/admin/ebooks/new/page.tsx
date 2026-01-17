@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
 
-import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconCheck, IconRocket, IconLoader } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input, InputWithIcon } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Switch } from "@/components/ui/switch";
+import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconCheck, IconRocket, IconLoader } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input, InputWithIcon } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Label } from "@/components/ui/Label";
+import { Card, CardContent, CardHeader, CardTitle } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
 
 export default function NewEbookPage() {
     const router = useRouter();

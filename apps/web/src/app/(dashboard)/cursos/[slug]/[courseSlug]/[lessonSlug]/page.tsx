@@ -5,12 +5,12 @@ import { useState, useEffect, useCallback } from "react";
 import { API_BASE } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { useToast } from "@/components/ui/Toast";
-import { IconClock, IconSuccess, IconCheck, IconPlay, IconLock } from "@/components/ui/Icons";
-import PremiumLock from "@/components/ui/PremiumLock";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Button } from "@/components/ui/Button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useToast } from "@mauromera/ui";
+import { IconClock, IconSuccess, IconCheck, IconPlay, IconLock } from "@mauromera/ui";
+import { PremiumLock } from "@mauromera/ui";
+import { AspectRatio } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 interface LessonData {

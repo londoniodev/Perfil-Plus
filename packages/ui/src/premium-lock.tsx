@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { IconLock } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import * as React from "react";
+import { IconLock } from "./icons";
+import { Button } from "./button";
 
 interface PremiumLockProps {
     title: string;
@@ -27,8 +27,10 @@ export default function PremiumLock({
             <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">{description}</p>
             <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link href={actionHref}>{actionText}</Link>
+                <a href={actionHref}>{actionText}</a>
             </Button>
         </div>
     );
 }
+
+export { PremiumLock };

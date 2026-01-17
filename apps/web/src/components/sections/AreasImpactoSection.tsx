@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 const areas = [

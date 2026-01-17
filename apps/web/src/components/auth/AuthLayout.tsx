@@ -20,6 +20,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                     fill
                     style={{ objectFit: 'cover' }}
                     priority
+                    sizes="50vw"
                     className="absolute inset-0 z-0"
                 />
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-12">

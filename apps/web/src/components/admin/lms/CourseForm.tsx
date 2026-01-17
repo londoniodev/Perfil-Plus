@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { API_BASE } from "@/lib/config";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Switch } from "@/components/ui/switch";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui";
 import {
     Form,
     FormControl,
@@ -18,7 +18,7 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form";
+} from "@mauromera/ui";
 import { CourseSchema, type CourseValues } from "@/schemas/lms";
 
 // ============================================================================

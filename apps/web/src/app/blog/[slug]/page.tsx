@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 import { BlogBreadcrumbs } from "../BlogBreadcrumbs";
 import { BlogMeta } from "../BlogMeta";
 import { BlogBackButton } from "../BlogBackButton";
-import { IconDocument, IconFile, IconImage, IconLock } from "@/components/ui/Icons";
+import { IconDocument, IconFile, IconImage, IconLock } from "@mauromera/ui";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;

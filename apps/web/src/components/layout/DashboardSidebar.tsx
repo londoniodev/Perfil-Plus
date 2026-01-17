@@ -11,11 +11,11 @@ import {
     IconLogout,
     IconCreditCard,
     IconGrid
-} from "@/components/ui/Icons";
+} from "@mauromera/ui";
 import { useAuth } from "@/context/AuthContext";
 import { useDashboard } from "@/context/DashboardContext"; // Assuming we might deprecate this context later or adapt it
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@mauromera/ui";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 

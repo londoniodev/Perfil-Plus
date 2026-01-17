@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import { IconClipboard, IconBook } from "@/components/ui/Icons";
-import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent } from "@/components/ui/Card";
+import { IconClipboard, IconBook } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
 
 interface ThemePageProps {
     params: Promise<{ slug: string }>;

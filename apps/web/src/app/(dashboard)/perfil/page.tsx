@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { IconUser, IconShoppingBag, IconShield, IconLogout, IconLoader, IconCheck, IconCrown } from "@/components/ui/Icons";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@mauromera/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
+import { IconUser, IconShoppingBag, IconShield, IconLogout, IconLoader, IconCheck, IconCrown } from "@mauromera/ui";
 
 export default function PerfilPage() {
     const router = useRouter();

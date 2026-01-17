@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCourseBySlug, getThemeBySlug } from "@/lib/api";
 import { Metadata } from "next";
-import { IconCheck, IconPlay, IconClock } from "@/components/ui/Icons";
+import { IconCheck, IconPlay, IconClock } from "@mauromera/ui";
 import { CourseSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Progress } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 

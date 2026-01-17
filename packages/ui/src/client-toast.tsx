@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "./toast";
 
 interface ClientToastProps {
     message: string;
@@ -21,3 +21,5 @@ export default function ClientToast({ message, type = "error", duration }: Clien
 
     return null;
 }
+
+export { ClientToast };

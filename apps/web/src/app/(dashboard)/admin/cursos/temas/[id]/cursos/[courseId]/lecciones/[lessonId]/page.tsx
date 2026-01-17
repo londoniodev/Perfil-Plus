@@ -7,14 +7,14 @@ import { API_BASE } from "@/lib/config";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
 import VideoUploader from "@/components/admin/ui/VideoUploader";
 import LessonAttachmentManager from "@/components/admin/lms/LessonAttachmentManager";
-import { useToast } from "@/components/ui/Toast";
-import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconBack } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/Badge";
+import { useToast } from "@mauromera/ui";
+import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconBack } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@mauromera/ui";
+import { Switch } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 export default function EditarLeccionPage() {
     const params = useParams();

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { IconArrowRight } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import { IconArrowRight } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 
 export function HeroSection() {
     return (
@@ -49,6 +49,7 @@ export function HeroSection() {
                                 width={1000}
                                 height={1400}
                                 priority
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                                 className="h-full w-auto object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative z-10"
                             />
 

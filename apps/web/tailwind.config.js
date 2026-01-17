@@ -5,6 +5,8 @@ module.exports = {
         './src/components/**/*.{js,ts,jsx,tsx,mdx}',
         './src/lib/**/*.{js,ts,jsx,tsx,mdx}',
         './src/context/**/*.{js,ts,jsx,tsx,mdx}',
+        // Shared UI components from monorepo
+        '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
     ],
     theme: {
         extend: {

@@ -5,14 +5,14 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE } from "@/lib/config";
 import QuestionEditor from "@/components/admin/lms/QuestionEditor";
-import { IconEdit, IconDocument, IconCheck, IconTrash, IconPlus, IconBack } from "@/components/ui/Icons";
-import { useToast } from "@/components/ui/Toast";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Label } from "@/components/ui/Label";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { IconEdit, IconDocument, IconCheck, IconTrash, IconPlus, IconBack } from "@mauromera/ui";
+import { useToast } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Input } from "@mauromera/ui";
+import { Textarea } from "@mauromera/ui";
+import { Label } from "@mauromera/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@mauromera/ui";
+import { Badge } from "@mauromera/ui";
 
 interface Option {
     id: string;

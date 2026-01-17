@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Category } from "@/types/blog";
-import { IconChevronDown } from "@/components/ui/Icons";
+import { IconChevronDown } from "@mauromera/ui";
 
 interface BlogFilterProps {
     categories: Category[];

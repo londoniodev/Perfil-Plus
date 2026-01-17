@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { IconArrowRight } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
+import { IconArrowRight } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
 import ProfileCarousel from "../layout/ProfileCarousel";
 
 export function AboutSection() {

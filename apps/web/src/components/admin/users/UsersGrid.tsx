@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { StatusBadge } from "@mauromera/ui";
 import styles from "@/styles/admin.module.css";
 
 import { User } from "./UsersTable"; // Importing User type from existing table definition or re-define if preferred, let's re-define to be self-contained or import. 

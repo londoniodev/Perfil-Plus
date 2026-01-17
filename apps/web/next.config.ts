@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com;
@@ -7,13 +9,13 @@ const ContentSecurityPolicy = `
   img-src 'self' data: blob: https:;
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;
-  connect-src 'self' https://api.mauromera.com https://*.mauromera.com;
+  connect-src 'self' https://api.mauromera.com https://*.mauromera.com http://localhost:3001 http://localhost:3000;
   media-src 'self' https://*.mauromera.com blob:;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'self';
-  upgrade-insecure-requests;
+  ${isProd ? 'upgrade-insecure-requests;' : ''}
 `;
 
 const securityHeaders = [

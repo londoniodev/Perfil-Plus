@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from 'next/link';
-import { IconChevronDown } from "@/components/ui/Icons";
+import { IconChevronDown } from "@mauromera/ui";
 import { Category } from "@/types/blog";
 
 interface BlogMetaProps {

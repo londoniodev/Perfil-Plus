@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
-import { IconCheck, IconExternalLink } from "@/components/ui/Icons";
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent } from "@/components/ui/Card";
+import { IconCheck, IconExternalLink } from "@mauromera/ui";
+import { Button } from "@mauromera/ui";
+import { Card, CardContent } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
 

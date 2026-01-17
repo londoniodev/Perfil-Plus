@@ -1,17 +1,40 @@
 # Dependencies
 node_modules
-**/node_modules
+.pnp
+.pnp.js
 
-# Build outputs
+# Testing
+coverage
+
+# Builds
 .next
-**/dist
-**/.turbo
-build/
-out/
+out
+dist
+build
 
-# Version control
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files (never commit these to docker image)
+.env
+.env.*
+!.env.example
+
+# Turbo cache
+.turbo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
 .git
 .gitignore
+.gitattributes
 
 # IDE
 .vscode
@@ -19,38 +42,34 @@ out/
 *.swp
 *.swo
 
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# TypeScript
+*.tsbuildinfo
 
-# Testing
-coverage
-**/*.spec.ts
-**/*.test.ts
+# Temporary files
+tmp
+temp
 
-# Environment files (handled explicitly or via secrets)
-.env
-.env*
-!.env.example
-!.env.production
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Documentation
+# Documentation (optional, include if you want smaller images)
 *.md
 !README.md
 
-# Misc
-*.tsbuildinfo
-*.pem
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
 
-# Prisma
-**/prisma/migrations/*.sql.backup
+# CI/CD
+.github
+.gitlab-ci.yml
 
-# Docker local data
-postgres_data/
-minio_data/
+# Test files (optional)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+test
+tests
+__tests__
+
+# Source maps (optional, for smaller production images)
+**/*.map

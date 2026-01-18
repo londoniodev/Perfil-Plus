@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useCart } from "@/store/use-cart"
 import { Button, PageHeader } from "@mauromera/ui"
@@ -9,7 +9,8 @@ import Link from "next/link"
 
 type PaymentStatus = "approved" | "pending" | "rejected" | "unknown"
 
-export default function StatusPage() {
+// Componente interno que usa useSearchParams
+function StatusContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const cart = useCart()
@@ -75,6 +76,21 @@ export default function StatusPage() {
                 )}
             </div>
         </div>
+    )
+}
+
+// Componente exportado con Suspense boundary
+export default function StatusPage() {
+    return (
+        <Suspense fallback={
+            <div className="container py-12">
+                <div className="max-w-2xl mx-auto text-center">
+                    <p className="text-muted-foreground">Cargando...</p>
+                </div>
+            </div>
+        }>
+            <StatusContent />
+        </Suspense>
     )
 }
 

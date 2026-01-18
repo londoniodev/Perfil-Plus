@@ -1,75 +1,56 @@
-# ==============================================================================
-# STAGE 1: Builder - Install all dependencies and build
-# ==============================================================================
-FROM node:20.19-alpine AS builder
+FROM node:20-alpine AS base
+
+# 1. Prune dependencies
+FROM base AS pruner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+# Prune the workspace for the api
+RUN turbo prune --scope=@mauromera/api --docker
+
+# 2. Install dependencies & Build
+FROM base AS builder
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
 
-# Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY apps/api/package.json ./apps/api/
-COPY packages/shared/package.json ./packages/shared/
+# Copy pruned lockfile and package.json's
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Install all dependencies
+# Install dependencies (frozen lockfile for consistency)
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
-COPY . .
+COPY --from=pruner /app/out/full/ .
 
-ENV NODE_ENV=production
+# Build the project
+# This assumes the build script in apps/api/package.json is "nest build" which outputs to dist/
+RUN pnpm run build --filter=@mauromera/api...
 
-# Generate Prisma Client
-RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
-
-# Build the app
-RUN npx turbo run build --filter=@mauromera/api
-
-# ==============================================================================
-# STAGE 2: Runner - Production image
-# ==============================================================================
-FROM node:20.19-alpine AS runner
+# 3. Production Runner
+FROM base AS runner
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nestjs
-
-# Install pnpm, openssl for Prisma, and su-exec for user switching
-RUN npm install -g pnpm && apk add --no-cache openssl su-exec
-
-# Copy package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY packages/shared/package.json ./packages/shared/
-
-# Copy prisma schema and migrations for runtime migration
-COPY apps/api/prisma ./apps/api/prisma
-
-# Install ALL dependencies (including prisma CLI for migrations)
-RUN pnpm install --frozen-lockfile
-
-# Generate Prisma Client in runner
-RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
-
-# Now set production mode
 ENV NODE_ENV=production
 
-# Copy built app
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
+# Don't run as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nestjs
 
-# Copy entrypoint script (runs as root to execute migrations)
-COPY apps/api/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy built files
+# NestJS build output is usually in dist/
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+
+USER nestjs
 
 EXPOSE 3001
+
 ENV PORT=3001
+ENV HOSTNAME="0.0.0.0"
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1
-
-# Entrypoint runs migrations as root, then switches to nestjs user
-ENTRYPOINT ["/entrypoint.sh"]
-
+CMD ["node", "dist/main"]

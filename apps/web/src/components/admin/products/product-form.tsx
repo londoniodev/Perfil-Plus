@@ -100,7 +100,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     }
 
     const form = useForm<ProductFormValues>({
-        resolver: zodResolver(productSchema),
+        resolver: zodResolver(productSchema) as any,
         defaultValues,
     })
 
@@ -137,7 +137,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 variants: data.productType === "PHYSICAL" ? data.variants.map(v => ({
                     name: v.name,
                     sku: v.sku,
-                    price: v.price,
+                    price: v.price ?? undefined,
                     stock: v.stock,
                     isDefault: v.isDefault
                 })) : undefined
@@ -159,7 +159,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
         }
     }
 
-    const handleAddImage = (url: string) => {
+    const handleAddImage = (url: string | null) => {
+        if (!url) return
         const currentImages = form.getValues("images")
         form.setValue("images", [...currentImages, url])
     }

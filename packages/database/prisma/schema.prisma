@@ -351,40 +351,6 @@ model Purchase {
   @@index([status])
 }
 
-// ============ LEADS ============
-model Lead {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  message   String?  @db.Text
-  source    String   // landing, blog, servicios, lms, ebook
-  metadata  Json?    // Datos adicionales
-  createdAt DateTime @default(now())
-
-  @@index([source])
-  @@index([createdAt])
-}
-
-// ============ PAGOS ============
-model Payment {
-  id              String   @id @default(cuid())
-  userId          String?
-  mpPaymentId     String   @unique
-  type            String   // subscription, ebook
-  referenceId     String   // ID del item comprado
-  amount          Decimal  @db.Decimal(10, 2)
-  status          String   // pending, approved, rejected, refunded
-  mpStatus        String   // Estado original de Mercado Pago
-  rawData         Json?    // Respuesta completa de MP
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([type, referenceId])
-  @@index([status])
-}
-
 // ============ CONFIGURACIÓN DE TIENDA ============
 model StoreSettings {
   id            String   @id @default(cuid())
@@ -421,6 +387,7 @@ model Product {
   images      String[]    // Array de URLs de imágenes
   specs       Json?       // Especificaciones flexibles: { "pages": 300, "weight": "1.5kg", "dimensions": "20x30cm" }
   published   Boolean     @default(false)
+  deletedAt   DateTime?   // Soft delete: null = activo, fecha = borrado lógico
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -485,12 +452,14 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  variantId  String
-  quantity   Int      @default(1)
-  price      Decimal  @db.Decimal(10, 2)  // Precio al momento de la compra
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  orderId     String
+  variantId   String
+  quantity    Int      @default(1)
+  price       Decimal  @db.Decimal(10, 2)  // Precio al momento de la compra
+  productName String   // Snapshot: nombre del producto al momento de compra
+  variantName String?  // Snapshot: nombre de la variante (ej: "Rojo XL")
+  createdAt   DateTime @default(now())
 
   // Relaciones
   order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)

@@ -4,18 +4,28 @@ import { prisma } from "@mauromera/database"
 import { getSessionUser } from "@/lib/auth-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 
-interface CartItem {
-    variantId: string
-    quantity: number
-}
+// ========== SCHEMAS DE VALIDACIÓN ==========
+const cartItemSchema = z.object({
+    variantId: z.string().cuid({ message: "ID de variante inválido" }),
+    quantity: z.number().int().min(1, "La cantidad debe ser al menos 1")
+})
 
-interface ShippingData {
-    address: string
-    city: string
-    phone: string
-    name: string
-}
+const shippingDataSchema = z.object({
+    address: z.string().min(1, "La dirección es requerida"),
+    city: z.string().min(1, "La ciudad es requerida"),
+    phone: z.string().min(1, "El teléfono es requerido"),
+    name: z.string().min(1, "El nombre es requerido")
+}).optional()
+
+const placeOrderSchema = z.object({
+    cartItems: z.array(cartItemSchema).min(1, "El carrito está vacío"),
+    shippingData: shippingDataSchema
+})
+
+type CartItem = z.infer<typeof cartItemSchema>
+type ShippingData = z.infer<typeof shippingDataSchema>
 
 interface PlaceOrderResult {
     success: boolean
@@ -43,10 +53,8 @@ export async function placeOrder(
             return { success: false, error: "Usuario no autenticado" }
         }
 
-        // 2. Validar carrito
-        if (!cartItems || cartItems.length === 0) {
-            return { success: false, error: "El carrito está vacío" }
-        }
+        // 2. Validar inputs con Zod (SEGURIDAD)
+        const validated = placeOrderSchema.parse({ cartItems, shippingData })
 
         // 3. Obtener configuración de Mercado Pago desde la DB
         const storeSettings = await prisma.storeSettings.findFirst()
@@ -58,11 +66,24 @@ export async function placeOrder(
             }
         }
 
-        // 4. Validar stock y calcular total
+        // 4. Obtener TODAS las variantes en UNA sola consulta (FIX N+1)
+        const variantIds = validated.cartItems.map(item => item.variantId)
+        const variants = await prisma.productVariant.findMany({
+            where: { id: { in: variantIds } },
+            include: { product: true }
+        })
+
+        // Crear mapa para acceso rápido O(1)
+        const variantMap = new Map(variants.map(v => [v.id, v]))
+
+        // 5. Validar stock y calcular total
         interface OrderItemData {
             variantId: string
             quantity: number
             price: number
+            stock: number
+            productName: string  // Snapshot
+            variantName: string | null  // Snapshot
             mpItem: {
                 id: string
                 title: string
@@ -75,11 +96,8 @@ export async function placeOrder(
         const orderItemsData: OrderItemData[] = []
         let totalAmount = 0
 
-        for (const item of cartItems) {
-            const variant = await prisma.productVariant.findUnique({
-                where: { id: item.variantId },
-                include: { product: true }
-            })
+        for (const item of validated.cartItems) {
+            const variant = variantMap.get(item.variantId)
 
             if (!variant) {
                 return { success: false, error: `Producto no encontrado: ${item.variantId}` }
@@ -100,6 +118,9 @@ export async function placeOrder(
                 variantId: variant.id,
                 quantity: item.quantity,
                 price: Number(variant.price),
+                stock: variant.stock,
+                productName: variant.product.name,  // Snapshot del nombre
+                variantName: variant.name,  // Snapshot de la variante
                 // Datos para Mercado Pago
                 mpItem: {
                     id: variant.sku,
@@ -115,9 +136,9 @@ export async function placeOrder(
         const orderCount = await prisma.order.count()
         const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, '0')}`
 
-        // 6. Crear orden en transacción
+        // 6. Crear orden en transacción con actualización atómica de stock
         const order = await prisma.$transaction(async (tx) => {
-            // Crear orden
+            // Crear orden con snapshots de producto
             const newOrder = await tx.order.create({
                 data: {
                     userId: user.id,
@@ -130,24 +151,33 @@ export async function placeOrder(
                             data: orderItemsData.map(item => ({
                                 variantId: item.variantId,
                                 quantity: item.quantity,
-                                price: item.price
+                                price: item.price,
+                                productName: item.productName,  // Snapshot inmutable
+                                variantName: item.variantName   // Snapshot inmutable
                             }))
                         }
                     }
                 }
             })
 
-            // Descontar stock (solo para productos con stock limitado)
+            // Descontar stock con ACTUALIZACIÓN ATÓMICA (Fix Race Condition)
             for (const item of orderItemsData) {
-                const variant = await tx.productVariant.findUnique({
-                    where: { id: item.variantId }
-                })
-
-                if (variant && variant.stock !== -1) {
-                    await tx.productVariant.update({
-                        where: { id: item.variantId },
-                        data: { stock: { decrement: item.quantity } }
+                // Solo descontar si NO es stock ilimitado (-1)
+                if (item.stock !== -1) {
+                    const result = await tx.productVariant.updateMany({
+                        where: {
+                            id: item.variantId,
+                            stock: { gte: item.quantity }  // Condición atómica: solo si hay stock
+                        },
+                        data: {
+                            stock: { decrement: item.quantity }
+                        }
                     })
+
+                    // Si no se actualizó ninguna fila, significa que no hay stock suficiente
+                    if (result.count === 0) {
+                        throw new Error(`Stock insuficiente para el producto. Otro usuario compró antes.`)
+                    }
                 }
             }
 

@@ -1,4 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Basics
+.DS_Store
+Thumbs.db
+*.log
 
 # Dependencies
 node_modules/
@@ -10,91 +13,59 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# Testing
-coverage/
-*.lcov
-.nyc_output
-
-# Next.js
+# Build Artifacts
 .next/
-out/
-build/
-
-# NestJS
 dist/
-
-# Production build
 build/
+.turbo/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
 
-# Misc
-.DS_Store
-*.pem
-*.log
+# Environment & Secrets (CRITICAL)
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+.env.*.local
+!.env.example
 
-# Debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# Environment files
-.env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
-# Keep .env.example files
-!.env.example
-
-# Vercel
-.vercel
-
-# Deployment
-.serverless/
-.netlify/
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Prisma
-prisma/migrations/*.sql.backup
-
-# Turbo
-.turbo
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Docker volumes (if mapped locally)
-postgres_data/
-postgres_data_local/
-minio_data/
-
-# IDEs
+# IDE & Editor
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-.project
-.classpath
-.settings/
 *.sublime-project
 *.sublime-workspace
 
-# Temporary files
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+
+# Docker
+postgres_data/
+postgres_data_local/
+minio_data/
+
+# Temporary
 tmp/
 temp/
 *.tmp
 
-# Agent/AI tools
+# AI/Agent
 .agent/rules/
 .gemini/
 
-# Lock files (keep pnpm-lock.yaml for reproducible builds)
-package-lock.json
-yarn.lock
+# Lock files (Keep these!)
+# !package-lock.json
+# !yarn.lock
+# !pnpm-lock.yaml

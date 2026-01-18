@@ -21,7 +21,8 @@ interface User {
 interface OrderItem {
     id: string
     quantity: number
-    price: number
+    price: number | any  // Prisma returns Decimal
+    variant?: any  // Prisma relation
 }
 
 interface Order {

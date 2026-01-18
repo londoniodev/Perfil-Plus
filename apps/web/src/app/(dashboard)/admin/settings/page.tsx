@@ -27,7 +27,7 @@ export default async function SettingsPage() {
             />
 
             <div className="max-w-3xl">
-                <SettingsForm initialData={settings} />
+                <SettingsForm initialData={settings ?? undefined} />
             </div>
         </div>
     )

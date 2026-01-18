@@ -59,66 +59,66 @@ export default async function ProductsPage() {
     // 4. Definir columnas
     const columns = [
         {
-            key: "image" as const,
+            accessorKey: "image",
             header: "Imagen",
-            cell: (row: typeof tableData[0]) => (
+            cell: ({ row }: any) => (
                 <div className="h-12 w-12 overflow-hidden rounded border">
                     <AdaptiveImage
-                        src={row.image}
+                        src={row.original.image}
                         aspectRatio="square"
-                        alt={row.name}
+                        alt={row.original.name}
                     />
                 </div>
             )
         },
         {
-            key: "name" as const,
+            accessorKey: "name",
             header: "Nombre",
-            cell: (row: typeof tableData[0]) => (
-                <div className="font-medium">{row.name}</div>
+            cell: ({ row }: any) => (
+                <div className="font-medium">{row.original.name}</div>
             )
         },
         {
-            key: "type" as const,
+            accessorKey: "type",
             header: "Tipo",
-            cell: (row: typeof tableData[0]) => (
-                <Badge variant={row.type === "DIGITAL" ? "default" : "secondary"}>
-                    {row.type === "DIGITAL" ? "Digital" : "Físico"}
+            cell: ({ row }: any) => (
+                <Badge variant={row.original.type === "DIGITAL" ? "default" : "secondary"}>
+                    {row.original.type === "DIGITAL" ? "Digital" : "Físico"}
                 </Badge>
             )
         },
         {
-            key: "price" as const,
+            accessorKey: "price",
             header: "Precio",
-            cell: (row: typeof tableData[0]) => (
-                <PriceDisplay price={row.price} size="sm" />
+            cell: ({ row }: any) => (
+                <PriceDisplay price={row.original.price} size="sm" />
             )
         },
         {
-            key: "stock" as const,
+            accessorKey: "stock",
             header: "Stock",
-            cell: (row: typeof tableData[0]) => (
+            cell: ({ row }: any) => (
                 <span className="text-sm">
-                    {row.stock}
+                    {row.original.stock}
                 </span>
             )
         },
         {
-            key: "published" as const,
+            accessorKey: "published",
             header: "Estado",
-            cell: (row: typeof tableData[0]) => (
-                <Badge variant={row.published ? "default" : "outline"}>
-                    {row.published ? "Publicado" : "Borrador"}
+            cell: ({ row }: any) => (
+                <Badge variant={row.original.published ? "default" : "outline"}>
+                    {row.original.published ? "Publicado" : "Borrador"}
                 </Badge>
             )
         },
         {
-            key: "id" as const,
+            id: "actions",
             header: "Acciones",
-            cell: (row: typeof tableData[0]) => (
+            cell: ({ row }: any) => (
                 <div className="flex gap-2">
                     <Button size="sm" variant="outline" asChild>
-                        <Link href={`/admin/products/${row.id}`}>
+                        <Link href={`/admin/products/${row.original.id}`}>
                             Editar
                         </Link>
                     </Button>

@@ -13,7 +13,7 @@ const variantSchema = z.object({
     price: z.number().optional(),
     stock: z.number().int().min(-1).default(0),
     isDefault: z.boolean().default(false),
-    attributes: z.record(z.any()).optional()
+    attributes: z.record(z.string(), z.any()).optional()
 })
 
 // Schema principal de producto
@@ -23,7 +23,7 @@ const productSchema = z.object({
     productType: z.enum(["DIGITAL", "PHYSICAL"]),
     basePrice: z.number().min(0, "El precio debe ser mayor a 0"),
     images: z.array(z.string()).min(1, "Debes agregar al menos una imagen"),
-    specs: z.record(z.any()).optional(),
+    specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
     variants: z.array(variantSchema).optional()
 })
@@ -91,12 +91,12 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         if (validated.productType === "DIGITAL") {
             // Producto digital: crear 1 variante por defecto con stock ilimitado
             variantsData = [{
-                name: null,
+                name: undefined,
                 sku: undefined, // Se generará automáticamente
                 price: validated.basePrice,
                 stock: -1, // Ilimitado
                 isDefault: true,
-                attributes: null
+                attributes: undefined
             }]
         } else {
             // Producto físico: usar las variantes proporcionadas
@@ -125,25 +125,21 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
                 }
             })
 
-            // Crear variantes
-            for (let i = 0; i < variantsData.length; i++) {
-                const variant = variantsData[i]
+            // Preparar datos de variantes para inserción por lotes
+            const variantsToCreate = (variantsData ?? []).map((variant, i) => ({
+                productId: newProduct.id,
+                sku: variant.sku || `${newProduct.id.slice(0, 8).toUpperCase()}-${i + 1}`,
+                name: variant.name ?? undefined,
+                price: variant.price ?? validated.basePrice,
+                stock: variant.stock ?? 0,
+                attributes: variant.attributes ?? undefined,
+                isDefault: variant.isDefault ?? ((variantsData ?? []).length === 1)
+            }))
 
-                // Generar SKU si no se proporcionó
-                const sku = variant.sku || `${newProduct.id.slice(0, 8).toUpperCase()}-${i + 1}`
-
-                await tx.productVariant.create({
-                    data: {
-                        productId: newProduct.id,
-                        sku,
-                        name: variant.name || null,
-                        price: variant.price ?? validated.basePrice,
-                        stock: variant.stock ?? 0,
-                        attributes: variant.attributes || null,
-                        isDefault: variant.isDefault ?? (variantsData.length === 1)
-                    }
-                })
-            }
+            // Crear todas las variantes en UNA sola consulta (OPTIMIZACIÓN)
+            await tx.productVariant.createMany({
+                data: variantsToCreate
+            })
 
             return newProduct
         })
@@ -163,7 +159,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         if (error instanceof z.ZodError) {
             return {
                 success: false,
-                error: error.errors[0].message
+                error: error.issues[0].message
             }
         }
 

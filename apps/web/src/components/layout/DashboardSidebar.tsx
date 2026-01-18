@@ -34,7 +34,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
         { name: "Dashboard", href: "/perfil", icon: IconHome },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit },
         { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument },
-        { name: "Gestionar E-books", href: "/admin/ebooks", icon: IconBook },
+        { name: "Gestión de Productos", href: "/admin/productos", icon: IconGrid },
         { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers },
     ];
 

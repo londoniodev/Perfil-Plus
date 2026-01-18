@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider } from "@mauromera/ui";
 import { ThemeProvider } from "./providers";
+import { siteConfig } from "@/config/site";
 
 const sansation = Sansation({
   variable: "--font-sans",
@@ -21,16 +22,16 @@ const geistMono = Geist_Mono({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Mauro Mera | Psicología, cultura y decisiones conscientes",
-    template: "%s | Mauro Mera",
+    default: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    template: `%s | ${siteConfig.name}`,
   },
-  description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes, fortalecer su cultura y cuidar su bienestar.",
-  keywords: ["psicólogo", "consultor organizacional", "coach", "psicoterapia", "orientación vocacional", "liderazgo", "cultura organizacional", "Mauro Mera", "Colombia"],
-  authors: [{ name: "Mauricio Mera", url: SITE_URL }],
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: "Mauricio Mera", url: siteConfig.url }],
   creator: "Mauricio Mera",
-  publisher: "Mauro Mera",
+  publisher: siteConfig.name,
   formatDetection: {
     email: false,
     address: false,
@@ -39,24 +40,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_CO",
-    url: SITE_URL,
-    siteName: "Mauro Mera",
-    title: "Mauro Mera | Psicología, cultura y decisiones conscientes",
-    description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.",
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    description: siteConfig.description,
     images: [
       {
-        url: "/images/hero/mauro_hero.png",
+        url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "Mauro Mera - Psicólogo y Consultor Organizacional",
+        alt: `${siteConfig.name} - Psicólogo y Consultor Organizacional`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mauro Mera | Psicología, cultura y decisiones conscientes",
-    description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.",
-    images: ["/images/hero/mauro_hero.png"],
+    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
     creator: "@mauromera",
   },
   robots: {

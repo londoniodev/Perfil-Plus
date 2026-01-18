@@ -1,0 +1,501 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ USUARIOS Y AUTH ============
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          Role      @default(USER)
+  avatar        String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Account Lockout - Seguridad
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  // Relaciones
+  subscription            Subscription?
+  purchases               Purchase[]
+  progress                UserProgress[]
+  evaluations             EvaluationResult[]
+  refreshTokens           RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  orders                  Order[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique  // Hash del token
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique  // Hash del token
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+// ============ SUSCRIPCIONES ============
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+model Subscription {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  status            SubscriptionStatus @default(PENDING)
+  mpSubscriptionId  String?            // ID de Mercado Pago
+  mpPayerId         String?            // ID del pagador en MP
+  startDate         DateTime?
+  endDate           DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============ BLOG ============
+model Post {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String
+  content         String    @db.Text
+  coverImage      String?
+  isPremium       Boolean   @default(false)
+  published       Boolean   @default(false)
+  publishedAt     DateTime?
+  authorName      String    @default("Mauricio Mera")
+  
+  // SEO fields
+  metaTitle       String?
+  metaDescription String?   @db.VarChar(160)
+  
+  // Calculated fields
+  readingTime     Int?      // Minutos estimados de lectura
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  categories      CategoriesOnPosts[]
+  tags            TagsOnPosts[]
+  attachments     PostAttachment[]
+
+  @@index([published, isPremium])
+  @@index([slug])
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  posts CategoriesOnPosts[]
+}
+
+model CategoriesOnPosts {
+  postId     String
+  categoryId String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  posts TagsOnPosts[]
+}
+
+model TagsOnPosts {
+  postId String
+  tagId  String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model PostAttachment {
+  id        String   @id @default(cuid())
+  postId    String
+  name      String
+  fileUrl   String
+  fileType  String   // pdf, image, etc.
+  fileSize  Int      // Size in bytes
+  isPublic  Boolean  @default(true) // false = stored in private bucket
+  createdAt DateTime @default(now())
+  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@index([postId])
+}
+
+// ============ LMS ============
+model Theme {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  coverImage  String?
+  order       Int      @default(0)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses     Course[]
+  evaluation  Evaluation?
+
+  @@index([published, order])
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  themeId     String
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  coverImage  String?
+  order       Int      @default(0)
+  isFree      Boolean  @default(false)  // Cursos gratuitos vs premium
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  theme       Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+
+  @@index([themeId, order])
+  @@index([published, isFree])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  slug        String
+  content     String   @db.Text
+  videoUrl    String?  // URL de video en Minio
+  duration    Int?     // Duración en segundos
+  order       Int      @default(0)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    UserProgress[]
+  attachments LessonAttachment[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+}
+
+model LessonAttachment {
+  id        String   @id @default(cuid())
+  lessonId  String
+  name      String
+  fileUrl   String
+  fileType  String   // pdf, doc, etc.
+  fileSize  Int      // Size in bytes
+  createdAt DateTime @default(now())
+  
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  @@index([lessonId])
+}
+
+model Evaluation {
+  id           String   @id @default(cuid())
+  themeId      String   @unique
+  title        String
+  description  String?
+  passingScore Int      @default(70)  // Porcentaje mínimo para aprobar
+  timeLimit    Int?     // Tiempo límite en minutos (opcional)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  theme     Theme      @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  questions Question[]
+  results   EvaluationResult[]
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  evaluationId String
+  question     String   @db.Text
+  image        String?  // URL de imagen en Minio (opcional)
+  options      Json     // Array de opciones: [{id, text}]
+  correctId    String   // ID de la opción correcta
+  order        Int      @default(0)
+
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@index([evaluationId, order])
+}
+
+model EvaluationResult {
+  id           String   @id @default(cuid())
+  userId       String
+  evaluationId String
+  score        Int      // Porcentaje obtenido
+  passed       Boolean
+  answers      Json     // Respuestas del usuario
+  timeTaken    Int?     // Tiempo en segundos
+  completedAt  DateTime @default(now())
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, evaluationId])
+  @@index([userId])
+}
+
+model UserProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  watchedTime Int       @default(0)  // Segundos vistos
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+// ============ E-BOOKS ============
+model Ebook {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  coverImage  String
+  fileUrl     String   // PDF en Minio (protegido)
+  previewUrl  String?  // PDF/Imagen de vista previa (público)
+  price       Decimal  @db.Decimal(10, 2)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchases   Purchase[]
+
+  @@index([published])
+}
+
+model Purchase {
+  id            String   @id @default(cuid())
+  userId        String
+  ebookId       String
+  mpPaymentId   String?  // ID de pago en Mercado Pago
+  amount        Decimal  @db.Decimal(10, 2)
+  status        String   @default("pending") // pending, approved, rejected
+  purchasedAt   DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ebook         Ebook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ebookId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ============ LEADS ============
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String?  @db.Text
+  source    String   // landing, blog, servicios, lms, ebook
+  metadata  Json?    // Datos adicionales
+  createdAt DateTime @default(now())
+
+  @@index([source])
+  @@index([createdAt])
+}
+
+// ============ PAGOS ============
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String?
+  mpPaymentId     String   @unique
+  type            String   // subscription, ebook
+  referenceId     String   // ID del item comprado
+  amount          Decimal  @db.Decimal(10, 2)
+  status          String   // pending, approved, rejected, refunded
+  mpStatus        String   // Estado original de Mercado Pago
+  rawData         Json?    // Respuesta completa de MP
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type, referenceId])
+  @@index([status])
+}
+
+// ============ CONFIGURACIÓN DE TIENDA ============
+model StoreSettings {
+  id            String   @id @default(cuid())
+  
+  // Mercado Pago - Credenciales dinámicas
+  mpAccessToken String?  @db.Text  // Access Token de Mercado Pago
+  mpPublicKey   String?  @db.Text  // Public Key para el frontend
+  
+  // Configuraciones adicionales
+  storeName     String?  // Nombre de la tienda
+  storeEmail    String?  // Email de contacto
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
+// ============ E-COMMERCE: PRODUCTOS MULTI-TIPO ============
+
+// Enum: Tipo de producto
+enum ProductType {
+  DIGITAL   // E-books, cursos digitales, etc.
+  PHYSICAL  // Gafas, suplementos, obras de arte, etc.
+}
+
+// Modelo: Producto (Base)
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  productType ProductType
+  basePrice   Decimal     @db.Decimal(10, 2)  // Precio base (puede ser sobreescrito por variantes)
+  images      String[]    // Array de URLs de imágenes
+  specs       Json?       // Especificaciones flexibles: { "pages": 300, "weight": "1.5kg", "dimensions": "20x30cm" }
+  published   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relaciones
+  variants    ProductVariant[]
+  
+  @@index([published, productType])
+  @@index([slug])
+}
+
+// Modelo: Variante de Producto (Lo que realmente se compra)
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  sku         String   @unique  // Código único de inventario
+  name        String?  // Nombre descriptivo (Ej: "Gafas Rojas - Talla M")
+  price       Decimal  @db.Decimal(10, 2)  // Precio específico de esta variante
+  stock       Int      @default(0)  // Stock disponible (-1 = ilimitado para digitales)
+  attributes  Json?    // Atributos dinámicos: { "color": "red", "size": "M", "flavor": "chocolate" }
+  isDefault   Boolean  @default(false)  // TRUE para productos sin variantes (E-book)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+
+  @@index([productId])
+  @@index([sku])
+}
+
+// ============ ÓRDENES DE COMPRA ============
+
+enum OrderStatus {
+  PENDING    // Esperando pago
+  APPROVED   // Pago aprobado
+  PROCESSING // En preparación (físicos)
+  SHIPPED    // Enviado (físicos)
+  DELIVERED  // Entregado/Completado
+  CANCELLED  // Cancelado
+  REFUNDED   // Reembolsado
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  orderNumber   String      @unique  // Ej: ORD-2026-0001
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING)
+  mpPaymentId   String?     // ID de Mercado Pago
+  shippingData  Json?       // { "address": "...", "city": "...", "phone": "..." }
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relaciones
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  variantId  String
+  quantity   Int      @default(1)
+  price      Decimal  @db.Decimal(10, 2)  // Precio al momento de la compra
+  createdAt  DateTime @default(now())
+
+  // Relaciones
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+}

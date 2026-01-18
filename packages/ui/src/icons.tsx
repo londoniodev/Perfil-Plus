@@ -88,4 +88,6 @@ export {
     FiLoader as IconLoader,
     FiShoppingBag as IconShoppingBag,
     FiAward as IconCrown,
+    FiHelpCircle as IconFileDescription,
+    FiAlertTriangle as IconAlertTriangle,
 } from "react-icons/fi";

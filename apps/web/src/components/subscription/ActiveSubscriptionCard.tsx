@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@mauromera/ui";
 import { Card, CardContent } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
-import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
+import { GLASS_CARD_STYLES, GLASS_CARD_HOVER } from "@/constants/styles";
 
 interface ActiveSubscriptionCardProps {
     endDate: string | null;

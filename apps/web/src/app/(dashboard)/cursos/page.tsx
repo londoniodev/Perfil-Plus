@@ -6,6 +6,7 @@ import { IconBook } from "@mauromera/ui";
 import { ClientToast } from "@mauromera/ui";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@mauromera/ui";
 import { Badge } from "@mauromera/ui";
+import { PageHeader, AdaptiveImage } from "@mauromera/ui";
 
 export const metadata: Metadata = {
     title: "Cursos | Mauro Mera",
@@ -27,15 +28,11 @@ export default async function CursosPage() {
         <div className="min-h-screen bg-background pb-12">
             {error && <ClientToast message="Error al cargar los cursos. Por favor intenta más tarde." />}
 
-            <section className="py-24 pt-32 text-center bg-gradient-to-b from-primary/5 to-background border-b border-border/50">
-                <div className="container px-4">
-                    <h1 className="heading-h1 mb-6">Programa de Formación</h1>
-                    <p className="max-w-2xl mx-auto text-body text-lg">
-                        Explora nuestros temas de formación en psicología, liderazgo
-                        y desarrollo personal para transformar tu vida y carrera.
-                    </p>
-                </div>
-            </section>
+            <PageHeader
+                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                title="Programa de Formación"
+                description="Explora nuestros temas de formación en psicología, liderazgo y desarrollo personal para transformar tu vida y carrera."
+            />
 
             <section className="py-16">
                 <div className="container px-4">
@@ -64,19 +61,20 @@ function ThemeCard({ theme }: { theme: Theme }) {
     return (
         <Link href={`/cursos/${theme.slug}`} className="block group h-full">
             <Card className="h-full overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
-                <div className="relative aspect-video overflow-hidden bg-muted">
+                <div className="relative">
                     {theme.coverImage ? (
-                        <img
+                        <AdaptiveImage
                             src={theme.coverImage}
                             alt={theme.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            aspectRatio="video"
+                            className="transition-transform duration-500 group-hover:scale-105"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary/40 group-hover:text-primary/60 transition-colors">
+                        <div className="w-full aspect-video flex items-center justify-center bg-primary/5 text-primary/40 group-hover:text-primary/60 transition-colors">
                             <IconBook size={48} />
                         </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                 </div>
                 <CardHeader className="pb-3">
                     <CardTitle className="heading-h3 group-hover:text-primary transition-colors">{theme.title}</CardTitle>

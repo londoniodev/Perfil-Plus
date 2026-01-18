@@ -10,7 +10,7 @@ import {
     CardTitle,
 } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
-import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
+import { GLASS_CARD_STYLES, GLASS_CARD_HOVER } from "@/constants/styles";
 import {
     IconBuilding,
     IconCompass,
@@ -330,7 +330,7 @@ export function ServicesSelector() {
     const currentTabColor = tabs.find(t => t.id === activeTab)?.color || "var(--primary)";
 
     return (
-        <section className="relative py-20 md:py-32 overflow-hidden">
+        <section className="relative pb-20 pt-0 md:pb-32 md:pt-0 overflow-hidden">
             {/* Background Glows */}
             <div
                 className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[150px] opacity-20 pointer-events-none transition-colors duration-700"

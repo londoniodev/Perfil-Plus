@@ -9,6 +9,7 @@ import { useToast } from "@mauromera/ui";
 import { API_BASE } from "@/lib/config";
 import { IconPlus, IconBook } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 
 interface Theme {
     id: string;
@@ -93,17 +94,27 @@ export default function AdminCursosPage() {
         return null;
     }
 
+
+
+    // ... (code)
+
+    if (!isAdmin) {
+        return null;
+    }
+
     return (
         <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Gestión de Cursos</h1>
-                <Button asChild className="shrink-0">
-                    <Link href="/admin/cursos/temas/nuevo" className="gap-2">
-                        <IconPlus size={20} />
+            <PageHeader
+                title="Gestión de Cursos"
+                description="Administra el catálogo de cursos y lecciones"
+            >
+                <Button asChild>
+                    <Link href="/admin/cursos/temas/nuevo">
+                        <IconPlus className="mr-2 h-4 w-4" />
                         Nuevo Tema
                     </Link>
                 </Button>
-            </div>
+            </PageHeader>
 
             <div className="flex gap-2 overflow-x-auto pb-2">
                 <Button

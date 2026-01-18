@@ -17,6 +17,7 @@ import {
 } from "@mauromera/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mauromera/ui";
 import { Pagination } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 
 // ============================================================================
 // TIPOS
@@ -272,12 +273,10 @@ export default function AdminUsuariosPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Gestión de Usuarios</h1>
-                    <p className="text-muted-foreground text-sm">{meta.total} usuarios registrados</p>
-                </div>
-            </div>
+            <PageHeader
+                title="Gestión de Usuarios"
+                description={`${meta.total} usuarios registrados`}
+            />
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">

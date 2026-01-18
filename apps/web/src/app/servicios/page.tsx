@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@mauromera/ui";
 import { ServicesSelector } from "@/components/servicios/ServicesSelector";
 import { ServicesPageSchema, FAQSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 
@@ -47,6 +48,10 @@ const serviciosFAQ = [
     },
 ];
 
+
+
+// ... (code)
+
 export default function ServiciosPage() {
     return (
         <>
@@ -57,6 +62,12 @@ export default function ServiciosPage() {
                 { name: "Inicio", url: SITE_URL },
                 { name: "Servicios", url: `${SITE_URL}/servicios` },
             ]} />
+
+            <PageHeader
+                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                title="Servicios"
+                description="Soluciones integrales en consultoría, formación y bienestar para potenciar el talento humano."
+            />
 
             {/* El selector ocupa casi toda la pantalla inicial */}
             <ServicesSelector />

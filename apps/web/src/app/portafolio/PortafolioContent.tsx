@@ -14,6 +14,7 @@ import {
     IconCalendar,
     IconTarget as IconTrendingUp,
 } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -45,9 +46,14 @@ export default function PortafolioContent() {
 
     return (
         <div className="min-h-screen bg-background">
+            <PageHeader
+                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                title="Portafolio"
+                description="Explora nuestros casos de éxito y transformaciones reales en empresas y líderes."
+            />
+
             {/* Header con Filtros */}
-            {/* Header con Filtros */}
-            <section className="pt-30 pb-[10px]">
+            <section className="pb-[10px]">
                 <CategoryFilterBar
                     categorias={categorias}
                     activeCategory={activeCategory}

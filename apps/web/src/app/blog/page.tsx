@@ -8,6 +8,7 @@ import { BlogFilter } from "./BlogFilter";
 import { Card, CardContent, CardFooter } from "@mauromera/ui";
 import { Badge } from "@mauromera/ui";
 import { IconArrowRight } from "@mauromera/ui";
+import { PageHeader, AdaptiveImage } from "@mauromera/ui";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
@@ -35,6 +36,7 @@ interface BlogPageProps {
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
+  // ... (setup logic remains the same)
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const category = params.category;
@@ -73,16 +75,12 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         }))}
       />
 
-      <div className="min-h-screen pb-12 pt-32 bg-background">
-        <section className="mb-12">
-          <div className="container px-4 mx-auto text-center">
-            <h1 className="heading-h1 mb-6">Blog</h1>
-            <p className="text-xl text-body max-w-2xl mx-auto">
-              Reflexiones, herramientas y estrategias para transformar
-              tu vida personal y profesional.
-            </p>
-          </div>
-        </section>
+      <div className="min-h-screen bg-background pb-12">
+        <PageHeader
+          className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+          title="Blog"
+          description="Reflexiones, herramientas y estrategias para transformar tu vida personal y profesional."
+        />
 
         <section>
           <div className="container px-4 mx-auto">
@@ -154,23 +152,21 @@ function BlogCard({ post }: { post: Post }) {
   return (
     <Link href={`/blog/${post.slug}`} className="group h-full block" prefetch={false}>
       <Card className="h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card">
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+        <div className="relative">
           {post.coverImage ? (
-            <Image
+            <AdaptiveImage
               src={post.coverImage}
               alt={post.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              unoptimized
+              aspectRatio="video"
+              className="transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-accent/20 text-accent text-5xl">
+            <div className="aspect-video w-full flex items-center justify-center bg-accent/20 text-accent text-5xl">
               <span>📝</span>
             </div>
           )}
           {post.isPremium && (
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 z-10">
               <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg">PREMIUM</Badge>
             </div>
           )}

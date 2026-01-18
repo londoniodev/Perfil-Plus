@@ -11,14 +11,27 @@ import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import { Card, CardContent } from "@mauromera/ui";
 import { Badge } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 
-import { Ebook } from "@/types/ecommerce";
+// Tipo temporal - después conectaremos con el nuevo modelo Product
+interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    basePrice: number;
+    images: string[];
+    productType: "DIGITAL" | "PHYSICAL";
+    published: boolean;
+    _count?: {
+        variants?: number;
+    };
+}
 
-export default function AdminEbooksPage() {
+export default function AdminProductosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
-    const [ebooks, setEbooks] = useState<Ebook[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,14 +39,27 @@ export default function AdminEbooksPage() {
     }, [isAdmin, authLoading, router]);
 
     useEffect(() => {
-        if (isAdmin) fetchEbooks();
+        if (isAdmin) fetchProducts();
     }, [isAdmin]);
 
-    const fetchEbooks = async () => {
+    const fetchProducts = async () => {
         try {
+            // Por ahora usamos los ebooks del modelo antiguo
+            // TODO: Cambiar a /api/admin/products cuando tengamos el endpoint
             const res = await fetch(`${API_BASE}/admin/ebooks`, { credentials: "include" });
             if (!res.ok) throw new Error("Error");
-            setEbooks(await res.json());
+            const data = await res.json();
+            // Mapear ebooks antiguos al nuevo formato
+            setProducts(data.map((e: any) => ({
+                id: e.id,
+                name: e.title,
+                slug: e.slug,
+                basePrice: e.price,
+                images: [e.coverImage],
+                productType: "DIGITAL",
+                published: e.published,
+                _count: { variants: 1 }
+            })));
         } catch (err) {
             console.error(err);
         } finally {
@@ -42,13 +68,13 @@ export default function AdminEbooksPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("¿Eliminar este e-book?")) return;
+        if (!confirm("¿Eliminar este producto?")) return;
         try {
             await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", credentials: "include" });
-            setEbooks((prev) => prev.filter((e) => e.id !== id));
-            toast.success("E-book eliminado correctamente");
+            setProducts((prev) => prev.filter((p) => p.id !== id));
+            toast.success("Producto eliminado correctamente");
         } catch (err) {
-            toast.error("Error al eliminar el E-book");
+            toast.error("Error al eliminar el producto");
         }
     };
 
@@ -57,62 +83,72 @@ export default function AdminEbooksPage() {
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Biblioteca de E-books</h1>
-                    <p className="text-muted-foreground mt-1">{ebooks.length} libros en tu catálogo</p>
-                </div>
+            <PageHeader
+                title="Gestión de Productos"
+                description={`${products.length} productos en tu catálogo`}
+            >
                 <Button asChild>
-                    <Link href="/admin/ebooks/new">
-                        <IconPlus className="mr-2" /> Nuevo E-book
+                    <Link href="/admin/productos/new">
+                        <IconPlus className="mr-2 h-4 w-4" /> Nuevo Producto
                     </Link>
                 </Button>
-            </div>
+            </PageHeader>
 
             {loading ? (
                 <div className="flex justify-center py-20">
                     <IconLoader className="animate-spin text-muted-foreground" size={32} />
                 </div>
-            ) : ebooks.length === 0 ? (
+            ) : products.length === 0 ? (
                 <Card className="border-dashed py-12">
                     <CardContent className="flex flex-col items-center justify-center text-center">
                         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 text-muted-foreground">
                             <IconBook size={32} />
                         </div>
-                        <h2 className="text-xl font-semibold mb-2">No hay e-books</h2>
-                        <p className="text-muted-foreground mb-6">Crea tu primer e-book para comenzar a vender.</p>
+                        <h2 className="text-xl font-semibold mb-2">No hay productos</h2>
+                        <p className="text-muted-foreground mb-6">Crea tu primer producto para comenzar a vender.</p>
                         <Button asChild variant="secondary">
-                            <Link href="/admin/ebooks/new">
-                                <IconPlus className="mr-2" /> Crear E-book
+                            <Link href="/admin/productos/new">
+                                <IconPlus className="mr-2" /> Crear Producto
                             </Link>
                         </Button>
                     </CardContent>
                 </Card>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {ebooks.map((ebook) => (
-                        <Card key={ebook.id} className="overflow-hidden flex flex-col group hover:shadow-lg transition-all">
+                    {products.map((product) => (
+                        <Card key={product.id} className="overflow-hidden flex flex-col group hover:shadow-lg transition-all">
                             <div className="relative aspect-[3/4] overflow-hidden bg-muted border-b border-border/50">
                                 <img
-                                    src={ebook.coverImage}
-                                    alt={ebook.title}
+                                    src={product.images[0] || "/placeholder.jpg"}
+                                    alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                {!ebook.published && (
+                                {!product.published && (
                                     <div className="absolute top-3 right-3">
                                         <Badge variant="destructive" className="shadow-sm">Borrador</Badge>
                                     </div>
                                 )}
+                                <div className="absolute top-3 left-3">
+                                    <Badge
+                                        className={product.productType === "DIGITAL" ? "bg-blue-600" : "bg-green-600"}
+                                    >
+                                        {product.productType === "DIGITAL" ? "Digital" : "Físico"}
+                                    </Badge>
+                                </div>
                             </div>
                             <CardContent className="p-5 flex flex-col flex-1">
-                                <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2" title={ebook.title}>{ebook.title}</h3>
+                                <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2" title={product.name}>
+                                    {product.name}
+                                </h3>
                                 <div className="flex items-center justify-between mt-auto mb-4 text-sm text-muted-foreground">
-                                    <span className="font-semibold text-foreground">${Number(ebook.price).toLocaleString("es-CO")}</span>
-                                    <span>{ebook._count?.purchases || 0} ventas</span>
+                                    <span className="font-semibold text-foreground">
+                                        ${Number(product.basePrice).toLocaleString("es-CO")}
+                                    </span>
+                                    <span>{product._count?.variants || 0} variantes</span>
                                 </div>
                                 <div className="flex items-center gap-2 mt-2 pt-4 border-t border-border/50">
                                     <Button asChild variant="ghost" size="sm" className="flex-1 justify-start px-2 hover:bg-muted text-muted-foreground hover:text-foreground">
-                                        <Link href={`/admin/ebooks/${ebook.id}`}>
+                                        <Link href={`/admin/productos/${product.id}`}>
                                             <IconEdit className="mr-2 h-4 w-4" /> Editar
                                         </Link>
                                     </Button>
@@ -120,7 +156,7 @@ export default function AdminEbooksPage() {
                                         variant="ghost"
                                         size="icon"
                                         className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-                                        onClick={() => handleDelete(ebook.id)}
+                                        onClick={() => handleDelete(product.id)}
                                     >
                                         <IconTrash className="h-4 w-4" />
                                     </Button>

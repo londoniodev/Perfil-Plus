@@ -5,6 +5,7 @@ import { IconTarget, IconBrain, IconZap } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@mauromera/ui";
 import { Badge } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 
 export default function FormacionContent() {
     const cursos = [
@@ -33,20 +34,11 @@ export default function FormacionContent() {
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section */}
-            <section className="pt-32 pb-0 flex flex-col justify-center text-center">
-                <div className="container">
-
-                    <h1 className="heading-h1 pb-5 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
-                        Cursos que transforman carreras
-                    </h1>
-                    <p className="max-w-[700px] mx-auto text-muted-foreground text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-                        Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones
-                        con enfoque en psicología aplicada y desarrollo personal.
-                    </p>
-
-                </div>
-            </section>
+            <PageHeader
+                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                title="Cursos que transforman carreras"
+                description="Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones con enfoque en psicología aplicada y desarrollo personal."
+            />
 
             {/* Courses Grid */}
             <section className="py-16">

@@ -9,7 +9,7 @@ const ContentSecurityPolicy = `
   img-src 'self' data: blob: https:;
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;
-  connect-src 'self' https://api.mauromera.com https://*.mauromera.com http://localhost:3001 http://localhost:3000;
+  connect-src 'self' https://api.mauromera.com https://*.mauromera.com http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000;
   media-src 'self' https://*.mauromera.com blob:;
   object-src 'none';
   base-uri 'self';
@@ -62,6 +62,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false, // Oculta X-Powered-By: Next.js
   images: {
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
   async headers() {
     return [

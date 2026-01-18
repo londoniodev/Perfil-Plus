@@ -10,48 +10,70 @@ module.exports = {
     ],
     theme: {
         extend: {
+            keyframes: {
+                "accordion-down": {
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
+                },
+                "accordion-up": {
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
+                },
+                "scroll-left": {
+                    "0%": { transform: "translateX(0)" },
+                    "100%": { transform: "translateX(-50%)" },
+                },
+                "scroll-right": {
+                    "0%": { transform: "translateX(-50%)" },
+                    "100%": { transform: "translateX(0)" },
+                },
+            },
+            animation: {
+                "accordion-down": "accordion-down 0.2s ease-out",
+                "accordion-up": "accordion-up 0.2s ease-out",
+                "scroll-left": "scroll-left 40s linear infinite",
+                "scroll-right": "scroll-right 40s linear infinite",
+            },
             colors: {
-                // Map to CSS variables from variables.css
-                background: 'var(--background)',
-                'background-secondary': 'var(--background-secondary)',
-                foreground: 'var(--foreground)',
-                'foreground-muted': 'var(--foreground-muted)',
+                // Shadcn-style color system using HSL channels
+                border: 'hsl(var(--border) / <alpha-value>)',
+                input: 'hsl(var(--input) / <alpha-value>)',
+                ring: 'hsl(var(--ring) / <alpha-value>)',
+                background: 'hsl(var(--background) / <alpha-value>)',
+                foreground: 'hsl(var(--foreground) / <alpha-value>)',
                 primary: {
-                    DEFAULT: 'var(--primary)',
-                    light: 'var(--primary-light)',
-                    dark: 'var(--primary-dark)',
+                    DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+                    foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
                 },
-                secondary: 'var(--secondary)',
+                secondary: {
+                    DEFAULT: 'hsl(var(--secondary) / <alpha-value>)',
+                    foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
+                },
+                destructive: {
+                    DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
+                    foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
+                },
+                muted: {
+                    DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+                    foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+                },
                 accent: {
-                    DEFAULT: 'var(--accent)',
-                    light: 'var(--accent-light)',
-                    glow: 'var(--accent-glow)',
+                    DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+                    foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
                 },
+                popover: {
+                    DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
+                    foreground: 'hsl(var(--popover-foreground) / <alpha-value>)',
+                },
+                card: {
+                    DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+                    foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+                },
+                // Success color
                 success: {
-                    DEFAULT: 'var(--success)',
-                    bg: 'var(--success-bg)',
+                    DEFAULT: 'hsl(var(--success) / <alpha-value>)',
+                    foreground: 'hsl(var(--success-foreground) / <alpha-value>)',
                 },
-                error: {
-                    DEFAULT: 'var(--error)',
-                    bg: 'var(--error-bg)',
-                    border: 'var(--error-border)',
-                },
-                warning: {
-                    DEFAULT: 'var(--warning)',
-                    bg: 'var(--warning-bg)',
-                },
-                info: {
-                    DEFAULT: 'var(--info)',
-                    bg: 'var(--info-bg)',
-                },
-                purple: {
-                    DEFAULT: 'var(--purple)',
-                    bg: 'var(--purple-bg)',
-                },
-                border: 'var(--border)',
-                'border-light': 'var(--border-light)',
-                'card-bg': 'var(--card-bg)',
-                'card-bg-hover': 'var(--card-bg-hover)',
             },
             fontFamily: {
                 sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],

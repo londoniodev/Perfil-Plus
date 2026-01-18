@@ -10,6 +10,7 @@ import { Button } from "@mauromera/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mauromera/ui";
 import { Badge } from "@mauromera/ui";
 import { IconUser, IconShoppingBag, IconShield, IconLogout, IconLoader, IconCheck, IconCrown } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 
 export default function PerfilPage() {
     const router = useRouter();
@@ -39,8 +40,16 @@ export default function PerfilPage() {
         .toUpperCase()
         .substring(0, 2);
 
+
+    // ... (otros imports)
+
     return (
         <div className="container mx-auto py-12 px-4 md:px-6">
+            <PageHeader
+                title="Mi Perfil"
+                description="Gestiona tu información personal y seguridad"
+                className="mb-8"
+            />
             <div className="flex flex-col md:flex-row gap-8 items-start">
 
                 {/* Sidebar / Profile Header */}

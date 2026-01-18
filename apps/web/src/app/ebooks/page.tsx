@@ -93,12 +93,18 @@ const benefits = [
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
+import { PageHeader, AdaptiveImage } from "@mauromera/ui";
+
 export default async function EbooksPage() {
     const ebooks = await getEbooks();
 
     return (
         <div className="min-h-screen bg-background">
-            <HeroSection />
+            <PageHeader
+                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                title="E-books"
+                description="Recursos digitales para potenciar tu crecimiento profesional. Herramientas de psicología aplicada y liderazgo que puedes implementar hoy mismo."
+            />
             <BenefitsSection benefits={benefits} />
             <ValuePropositionSection />
             <CatalogSection ebooks={ebooks} />
@@ -110,25 +116,6 @@ export default async function EbooksPage() {
 // ============================================================================
 // SECCIONES
 // ============================================================================
-
-function HeroSection() {
-    return (
-        <section className="relative pt-32 pb-12 overflow-hidden bg-background">
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.08)_0%,transparent_50%)]" />
-
-            <div className="container relative z-10 text-center">
-                <h1 className="heading-h1 mb-6">
-                    E-books que transforman <br className="hidden md:block" /> tu mentalidad
-                </h1>
-                <p className="max-w-2xl mx-auto text-body text-lg md:text-xl">
-                    Recursos prácticos escritos por Mauro Mera. Herramientas de psicología aplicada,
-                    liderazgo y desarrollo personal que puedes implementar hoy mismo.
-                </p>
-            </div>
-        </section>
-    );
-}
 
 interface Benefit {
     icon: React.ReactNode;
@@ -265,23 +252,29 @@ function EmptyState() {
     );
 }
 
+// Don't import here, imports are at the top. I will do a separate replace for imports.
+// Just focusing on EbookCard here
+
 function EbookCard({ ebook }: { ebook: Ebook }) {
     return (
         <Link href={`/ebooks/${ebook.slug}`} className="block group h-full">
             <Card className="h-full overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-border/50 flex flex-col bg-background">
-                <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                    <img
+                <div className="relative">
+                    <AdaptiveImage
                         src={ebook.coverImage}
                         alt={ebook.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        aspectRatio="portrait"
+                        className="transition-transform duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 z-10">
                         <span className="text-white font-medium flex items-center gap-2">
                             Ver detalles <span className="text-lg">→</span>
                         </span>
                     </div>
                 </div>
                 <CardContent className="flex flex-col flex-1 p-6">
+// ... rest matches
+
                     <h2 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{ebook.title}</h2>
                     <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-1">{ebook.description}</p>
                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/30">

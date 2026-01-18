@@ -11,6 +11,7 @@ import { Badge } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
 import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@mauromera/ui";
 import { Pagination } from "@mauromera/ui";
+import { PageHeader } from "@mauromera/ui";
 import Link from "next/link";
 
 // ============================================================================
@@ -225,16 +226,18 @@ export default function AdminBlogPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Gestión del Blog</h1>
-                    <p className="text-muted-foreground text-sm">Gestiona tus artículos y publicaciones</p>
-                </div>
+            <PageHeader
+                title="Gestión del Blog"
+                description="Gestiona tus artículos y publicaciones"
+            >
                 <Button onClick={() => router.push("/admin/blog/nuevo")}>
                     <IconPlus className="mr-2 h-4 w-4" />
                     Nuevo Post
                 </Button>
-            </div>
+            </PageHeader>
+
+            {/* Filter Tabs using Buttons */}
+            {/* ... resto del código ... */}
 
             {/* Filter Tabs using Buttons */}
             <div className="flex items-center gap-2 border-b pb-2 overflow-x-auto">

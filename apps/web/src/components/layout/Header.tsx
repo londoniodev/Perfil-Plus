@@ -13,6 +13,9 @@ import {
 } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@mauromera/ui";
+import { CartSheet } from "@/components/shop/cart-sheet";
+import { siteConfig } from "@/config/site";
+import Image from "next/image";
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,11 +50,17 @@ export function Header() {
 
                 {/* Logo (Centered on mobile if desired, or left) */}
                 <Link href="/" className="flex items-center gap-2 z-10">
-                    <img
-                        src="/images/branding/menu_logo.png"
-                        alt="Mauro Mera"
-                        className="h-8 w-auto md:h-10"
-                    />
+                    {/* Logo (Centered on mobile if desired, or left) */}
+                    <Link href="/" className="flex items-center gap-2 z-10">
+                        <Image
+                            src={siteConfig.branding.logo}
+                            alt={siteConfig.branding.logoAlt}
+                            width={120}
+                            height={40}
+                            className="h-8 w-auto md:h-10 object-contain"
+                            priority
+                        />
+                    </Link>
                 </Link>
 
                 {/* Desktop Nav */}
@@ -59,8 +68,10 @@ export function Header() {
                     <DesktopNavLinks isLoggedIn={isAuthenticated} currentPath={pathname} />
                 </nav>
 
-                {/* Mobile: Spacer or Action (optional, to balance layout) */}
-                <div className="lg:hidden w-10"></div>
+                {/* Cart Button (Desktop & Mobile) */}
+                <div className="flex items-center gap-2">
+                    <CartSheet />
+                </div>
             </div>
         </header>
     );

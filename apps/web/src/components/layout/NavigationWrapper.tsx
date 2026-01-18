@@ -8,13 +8,10 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
 
     // Rutas que usan el Layout del Dashboard (Sidebar/BottomNav) y NO deben tener Header/Footer
     const isDashboard = pathname?.startsWith("/perfil") ||
+        pathname?.startsWith("/admin") ||
         pathname?.includes("/mis-compras") ||
-        pathname?.startsWith("/cursos") ||
+        pathname?.startsWith("/cursos") || // Mis Cursos (LMS)
         pathname?.startsWith("/suscripcion") ||
-        pathname?.startsWith("/admin/cursos") ||
-        pathname?.startsWith("/admin/blog") ||
-        pathname?.startsWith("/admin/usuarios") ||
-        pathname?.startsWith("/admin/ebooks") ||
         pathname?.startsWith("/dashboard");
 
     const isAuthPage = pathname === "/login" ||

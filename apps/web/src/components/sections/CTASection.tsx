@@ -1,4 +1,4 @@
-import LeadForm from "../LeadForm/LeadForm";
+import LeadForm from "../lead-form/LeadForm";
 
 export function CTASection() {
     return (

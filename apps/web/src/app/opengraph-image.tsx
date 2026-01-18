@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og';
+import { siteConfig } from '@/config/site';
 
 export const runtime = 'edge';
 
-export const alt = 'Mauro Mera - Psicología, Mentoría y Liderazgo';
+export const alt = `${siteConfig.name} - Open Graph Image`;
 export const size = {
     width: 1200,
     height: 630,
@@ -33,21 +34,24 @@ export default async function Image() {
                         fontWeight: 700,
                         color: 'white',
                         marginBottom: 20,
+                        textAlign: 'center',
                     }}
                 >
-                    Mauro Mera
+                    {siteConfig.name}
                 </div>
 
                 {/* Tagline */}
                 <div
                     style={{
                         display: 'flex',
-                        fontSize: 36,
+                        fontSize: 32,
                         color: 'rgba(255,255,255,0.9)',
                         fontWeight: 400,
+                        textAlign: 'center',
+                        padding: '0 40px',
                     }}
                 >
-                    Psicología • Mentoría • Liderazgo
+                    {siteConfig.description}
                 </div>
             </div>
         ),

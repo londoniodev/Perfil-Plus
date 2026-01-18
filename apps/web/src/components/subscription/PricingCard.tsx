@@ -9,7 +9,7 @@ import {
     CardTitle,
 } from "@mauromera/ui";
 import { IconCheck } from "@mauromera/ui";
-import { GLASS_CARD_STYLES } from "@/lib/constants/styles";
+import { GLASS_CARD_STYLES, GLASS_CARD_HOVER } from "@/constants/styles";
 
 interface PricingCardProps {
     onSubscribe: () => void;

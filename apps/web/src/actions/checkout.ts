@@ -1,6 +1,7 @@
 "use server"
 
-import { prisma, Prisma, ProductVariant, Product } from "@mauromera/database"
+import { prisma } from "@mauromera/database"
+import { Prisma, ProductVariant, Product } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"

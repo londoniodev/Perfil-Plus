@@ -11,7 +11,7 @@ RUN turbo prune --scope=@mauromera/api --docker
 
 # 2. Install dependencies & Build
 FROM base AS builder
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Enable pnpm
@@ -21,14 +21,16 @@ RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Install dependencies (frozen lockfile for consistency)
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY --from=pruner /app/out/full/ .
 
+# Generar Prisma Client (Importante para que el backend reconozca la DB)
+RUN pnpm run build --filter=@mauromera/database
+
 # Build the project
-# This assumes the build script in apps/api/package.json is "nest build" which outputs to dist/
 RUN pnpm run build --filter=@mauromera/api...
 
 # 3. Production Runner
@@ -41,15 +43,21 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 # Copy built files
-# NestJS build output is usually in dist/
+# Copiamos la carpeta dist compilada
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+# Copiamos las dependencias instaladas
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+# Copiamos el Schema (Por seguridad y consistencia)
+COPY --from=builder --chown=nestjs:nodejs /app/packages/database/prisma ./prisma
 
 USER nestjs
 
+# Exponemos el puerto
 EXPOSE 3001
-
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 

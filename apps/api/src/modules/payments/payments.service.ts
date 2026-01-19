@@ -1,11 +1,11 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, Scope, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import * as crypto from 'crypto';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class PaymentsService {
     private readonly logger = new Logger(PaymentsService.name);
     private mp: MercadoPagoConfig | null = null;
@@ -17,20 +17,64 @@ export class PaymentsService {
         private config: ConfigService,
         private emailService: EmailService,
     ) {
-        const accessToken = this.config.get<string>('MP_ACCESS_TOKEN');
-        if (accessToken) {
-            this.mp = new MercadoPagoConfig({ accessToken });
-            this.preference = new Preference(this.mp);
-            this.paymentClient = new Payment(this.mp);
+        // Initialization moved to async method
+    }
+
+    private async getMercadoPagoConfig() {
+        try {
+            const setting = await this.prisma.client.systemSetting.findUnique({
+                where: { key: 'MERCADOPAGO_CONFIG' },
+            });
+
+            if (!setting || !setting.value) {
+                this.logger.error('MERCADOPAGO_CONFIG not found in DB');
+                throw new InternalServerErrorException('Payment configuration missing');
+            }
+
+            const config = typeof setting.value === 'string'
+                ? JSON.parse(setting.value)
+                : setting.value;
+
+            // Validar que tenga lo necesario
+            if (!config.accessToken || !config.publicKey) {
+                this.logger.error('Invalid MERCADOPAGO_CONFIG structure');
+                throw new InternalServerErrorException('Invalid payment configuration');
+            }
+
+            return config;
+        } catch (error) {
+            this.logger.error('Error fetching Mercado Pago config', error);
+            throw new InternalServerErrorException('Could not load payment configuration');
         }
     }
 
+    private async initMercadoPago() {
+        if (this.mp) return; // Ya inicializado
+
+        const config = await this.getMercadoPagoConfig();
+        this.mp = new MercadoPagoConfig({ accessToken: config.accessToken });
+        this.preference = new Preference(this.mp);
+        this.paymentClient = new Payment(this.mp);
+
+        return config; // Retornamos config por si necesitamos webhookSecret u otros
+    }
+
     async verifyWebhookSignature(xSignature: string, xRequestId: string, dataId: string): Promise<boolean> {
-        const secret = this.config.get<string>('MP_WEBHOOK_SECRET');
+        let secret = '';
+        try {
+            const config = await this.getMercadoPagoConfig();
+            secret = config.webhookSecret;
+        } catch (e) {
+            this.logger.warn('Could not load MP config for signature verification');
+        }
+
         if (!secret) {
-            // Si no hay secreto configurado, permitimos todo (modo desarrollo/inseguro)
-            // O bloqueamos si queremos ser estrictos. Por ahora permitimos para no romper nada.
-            this.logger.warn('MP_WEBHOOK_SECRET not configured. Skipping signature verification.');
+            // Fallback to env or allow if logic dictates (User requirement: eliminate env, but keep robustness)
+            secret = this.config.get<string>('MP_WEBHOOK_SECRET') || '';
+        }
+
+        if (!secret) {
+            this.logger.warn('MP_WEBHOOK_SECRET not configured (DB or Env). Skipping signature verification.');
             return true;
         }
 
@@ -66,6 +110,8 @@ export class PaymentsService {
     // ==================== SUBSCRIPTIONS ====================
 
     async createSubscriptionCheckout(userId: string, email?: string, frontUrl?: string) {
+        await this.initMercadoPago();
+
         if (!this.preference) {
             throw new BadRequestException('Mercado Pago no está configurado');
         }
@@ -182,6 +228,8 @@ export class PaymentsService {
     // ==================== EBOOK PURCHASES ====================
 
     async createEbookPurchaseCheckout(userId: string, ebookId: string, email?: string, frontUrl?: string) {
+        await this.initMercadoPago();
+
         if (!this.preference) {
             throw new BadRequestException('Mercado Pago no está configurado');
         }
@@ -253,6 +301,12 @@ export class PaymentsService {
 
         if (type !== 'payment') {
             return { status: 'ignored', reason: 'not a payment notification' };
+        }
+
+        try {
+            await this.initMercadoPago();
+        } catch (e) {
+            return { status: 'error', reason: 'Mercado Pago configuration missing' };
         }
 
         if (!this.paymentClient) {

@@ -73,8 +73,12 @@ export async function placeOrder(
             include: { product: true }
         })
 
-        // Crear mapa para acceso rápido O(1)
-        const variantMap = new Map<string, any>(variants.map(v => [v.id, v]))
+        // Definir tipo inferido de Prisma para usarlo en el Mapa
+        type VariantWithProduct = typeof variants[number]
+
+        // Crear mapa para acceso rápido O(1) con tipado explícito
+        const variantMap = new Map<string, VariantWithProduct>()
+        variants.forEach((v) => variantMap.set(v.id, v))
 
         // 5. Validar stock y calcular total
         interface OrderItemData {

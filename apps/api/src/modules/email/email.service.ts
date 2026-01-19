@@ -42,7 +42,7 @@ export class EmailService {
             const setting = await this.prisma.client.systemSetting.findUnique({
                 where: { key: 'FRONTEND_URL' },
             });
-            if (setting?.value) {
+            if (typeof setting?.value === 'string') {
                 return setting.value;
             }
         } catch (error) {

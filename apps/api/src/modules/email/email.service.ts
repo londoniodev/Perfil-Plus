@@ -36,14 +36,26 @@ export class EmailService {
         private prisma: PrismaService,
     ) { }
 
-    private getFrontendUrl(): string {
-        // 1. Intentar obtener el Origin del request (Lo más seguro para Multi-tenant)
+    private async getFrontendUrl(): Promise<string> {
+        // 1. Intentar obtener de la configuración del Tenant (DB)
+        try {
+            const setting = await this.prisma.client.systemSetting.findUnique({
+                where: { key: 'FRONTEND_URL' },
+            });
+            if (setting?.value) {
+                return setting.value;
+            }
+        } catch (error) {
+            this.logger.warn('Error fetching FRONTEND_URL from DB', error);
+        }
+
+        // 2. Intentar obtener el Origin del request (Fallback dinámico)
         const origin = this.request.headers['origin'];
         if (origin) {
             return origin;
         }
 
-        // 2. Fallback a variable de entorno
+        // 3. Fallback a variable de entorno global
         return this.configService.get('FRONTEND_URL', 'http://localhost:3000');
     }
 
@@ -138,7 +150,7 @@ export class EmailService {
         name: string,
         verificationToken: string,
     ): Promise<boolean> {
-        const frontendUrl = this.getFrontendUrl();
+        const frontendUrl = await this.getFrontendUrl();
         const verificationUrl = `${frontendUrl}/verificar-email?token=${verificationToken}`;
 
         const html = await render(VerificationEmail({ name, url: verificationUrl }));
@@ -157,7 +169,7 @@ export class EmailService {
         name: string,
         token: string,
     ): Promise<boolean> {
-        const frontendUrl = this.getFrontendUrl();
+        const frontendUrl = await this.getFrontendUrl();
         const recoveryUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
         const html = await render(RecoveryEmail({ name, url: recoveryUrl }));
@@ -216,7 +228,7 @@ export class EmailService {
             }),
         );
 
-        const frontendUrl = this.getFrontendUrl();
+        const frontendUrl = await this.getFrontendUrl();
         const ebookUrl = `${frontendUrl}/ebooks/${ebookSlug}`;
 
         const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: ${ebookUrl}`;

@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException, Scope } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -8,7 +8,7 @@ import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
 import { randomUUID } from 'crypto';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthService {
     constructor(
         private prisma: PrismaService,

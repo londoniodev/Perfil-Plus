@@ -1,5 +1,5 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector, ModuleRef, ContextIdFactory } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -8,9 +8,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
     constructor(
-        @Inject(Reflector) private reflector: Reflector,
+        private reflector: Reflector,
         private jwtService: JwtService,
-        private prisma: PrismaService,
+        private moduleRef: ModuleRef,
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,8 +34,12 @@ export class JwtAuthGuard implements CanActivate {
         try {
             const payload = await this.jwtService.verifyAsync(token);
 
+            // Resolver PrismaService dinámicamente con el contexto de la petición
+            const contextId = ContextIdFactory.getByRequest(request);
+            const prisma = await this.moduleRef.resolve(PrismaService, contextId, { strict: false });
+
             // Cargar usuario desde la base de datos
-            const user = await this.prisma.client.user.findUnique({
+            const user = await prisma.client.user.findUnique({
                 where: { id: payload.sub },
                 select: {
                     id: true,
@@ -63,6 +67,9 @@ export class JwtAuthGuard implements CanActivate {
                     (!user.subscription?.endDate || new Date(user.subscription.endDate) > new Date()),
             };
         } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
             throw new UnauthorizedException('Token inválido o expirado');
         }
 

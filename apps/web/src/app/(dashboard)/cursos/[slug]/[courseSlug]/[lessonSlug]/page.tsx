@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useAuth } from "@/context/AuthContext";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useToast } from "@mauromera/ui";
@@ -67,7 +67,7 @@ export default function LessonPage({
             // Fetch Lesson
             const lessonRes = await fetch(
                 `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
-                { credentials: "include" }
+                { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
             );
 
             if (lessonRes.status === 403) {
@@ -86,7 +86,7 @@ export default function LessonPage({
             if (!course || course.id !== lessonData.course.id) {
                 const courseRes = await fetch(
                     `${API_BASE}/lms/courses/${paramsData.courseSlug}`,
-                    { credentials: "include" }
+                    { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
                 );
                 if (courseRes.ok) {
                     const courseData = await courseRes.json();
@@ -111,7 +111,7 @@ export default function LessonPage({
         try {
             await fetch(`${API_BASE}/lms/progress/${lesson.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({ completed: true }),
             });

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconUpload, IconSettings, IconFile, IconCheck, IconRocket, IconLoader } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
@@ -42,7 +42,7 @@ export default function NewEbookPage() {
 
             const fullFormData = new FormData();
             fullFormData.append("file", fullFile);
-            const fullRes = await fetch(`${API_BASE}/storage/upload/ebook`, { method: "POST", credentials: "include", body: fullFormData });
+            const fullRes = await fetch(`${API_BASE}/storage/upload/ebook`, { method: "POST", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", body: fullFormData });
             if (!fullRes.ok) throw new Error("Error al subir eBook");
             const fullData = await fullRes.json();
 
@@ -50,13 +50,13 @@ export default function NewEbookPage() {
             if (previewFile) {
                 const previewFormData = new FormData();
                 previewFormData.append("file", previewFile);
-                const previewRes = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, { method: "POST", credentials: "include", body: previewFormData });
+                const previewRes = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, { method: "POST", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", body: previewFormData });
                 if (previewRes.ok) previewUrl = (await previewRes.json()).url;
             }
 
             const res = await fetch(`${API_BASE}/admin/ebooks`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({ title, description, price: parseFloat(price), published, coverImage: coverUrl, fileUrl: fullData.url, previewUrl }),
             });

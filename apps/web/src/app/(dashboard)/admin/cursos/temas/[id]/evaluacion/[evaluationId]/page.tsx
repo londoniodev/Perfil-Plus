@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import QuestionEditor from "@/components/admin/lms/QuestionEditor";
 import { IconEdit, IconDocument, IconCheck, IconTrash, IconPlus, IconBack } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
@@ -56,6 +56,7 @@ export default function EditarEvaluacionPage() {
     const fetchEvaluation = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
             if (!res.ok) throw new Error("Error al cargar evaluación");
@@ -84,7 +85,7 @@ export default function EditarEvaluacionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify(basicInfo),
             });
@@ -104,7 +105,7 @@ export default function EditarEvaluacionPage() {
                 // Update existing
                 const res = await fetch(`${API_BASE}/admin/lms/questions/${q.id}`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                     credentials: "include",
                     body: JSON.stringify(q),
                 });
@@ -113,7 +114,7 @@ export default function EditarEvaluacionPage() {
                 // Create new
                 const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}/questions`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                     credentials: "include",
                     body: JSON.stringify(q),
                 });
@@ -134,6 +135,7 @@ export default function EditarEvaluacionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/questions/${id}`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include"
             });
             if (!res.ok) throw new Error("Error al eliminar");

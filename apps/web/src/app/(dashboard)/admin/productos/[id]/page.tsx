@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 import { IconBack, IconEdit, IconLock, IconEye, IconImage, IconSettings, IconFile, IconSave, IconLoader } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
@@ -37,7 +37,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
 
     const fetchEbook = async () => {
         try {
-            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, { credentials: "include" });
+            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             if (!res.ok) throw new Error("Error");
             const data = await res.json();
             setTitle(data.title);
@@ -65,7 +65,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             if (fullFile) {
                 const formData = new FormData();
                 formData.append("file", fullFile);
-                const res = await fetch(`${API_BASE}/storage/upload/ebook`, { method: "POST", credentials: "include", body: formData });
+                const res = await fetch(`${API_BASE}/storage/upload/ebook`, { method: "POST", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", body: formData });
                 if (res.ok) fileUrl = (await res.json()).url;
             }
 
@@ -73,13 +73,13 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
             if (previewFile) {
                 const formData = new FormData();
                 formData.append("file", previewFile);
-                const res = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, { method: "POST", credentials: "include", body: formData });
+                const res = await fetch(`${API_BASE}/storage/upload?folder=ebook-previews`, { method: "POST", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", body: formData });
                 if (res.ok) previewUrl = (await res.json()).url;
             }
 
             const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     title, description, price: parseFloat(price), published,

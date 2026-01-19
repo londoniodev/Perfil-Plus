@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import CourseCard from "@/components/admin/lms/CourseCard";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack, IconPlus } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
@@ -53,6 +53,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
     const fetchTheme = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${themeId}`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 
@@ -97,7 +98,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${themeId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify(formData),
             });
@@ -122,6 +123,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses/${courseId}`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 
@@ -139,7 +141,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     themeId,

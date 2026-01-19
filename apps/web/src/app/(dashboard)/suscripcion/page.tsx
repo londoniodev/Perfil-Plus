@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@mauromera/ui";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import ActiveSubscriptionCard from "@/components/subscription/ActiveSubscriptionCard";
 import PricingCard from "@/components/subscription/PricingCard";
 
@@ -41,6 +41,7 @@ export default function SuscripcionPage() {
     const fetchSubscriptionStatus = async () => {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription/status`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include", // Enviar Cookies
             });
             if (res.ok) {
@@ -69,6 +70,7 @@ export default function SuscripcionPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
                 },
                 credentials: "include",
                 body: JSON.stringify({
@@ -103,6 +105,7 @@ export default function SuscripcionPage() {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 

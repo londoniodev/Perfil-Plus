@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@mauromera/ui";
 import { DataTable } from "@mauromera/ui";
 import { ColumnDef } from "@tanstack/react-table";
@@ -85,6 +85,7 @@ export default function AdminUsuariosPage() {
             if (subscription && subscription !== "ALL") queryParams.append("subscription", subscription === "active" ? "active" : "inactive");
 
             const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 
@@ -119,7 +120,7 @@ export default function AdminUsuariosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({ role: newRole }),
             });
@@ -140,6 +141,7 @@ export default function AdminUsuariosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
             if (res.ok) {
@@ -159,7 +161,7 @@ export default function AdminUsuariosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
                 method: action === "assign" ? "POST" : "DELETE",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
             });
             if (res.ok) {

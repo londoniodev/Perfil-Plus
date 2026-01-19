@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 import { IconPlus, IconEdit, IconTrash, IconBook, IconLoader } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
@@ -46,7 +46,7 @@ export default function AdminProductosPage() {
         try {
             // Por ahora usamos los ebooks del modelo antiguo
             // TODO: Cambiar a /api/admin/products cuando tengamos el endpoint
-            const res = await fetch(`${API_BASE}/admin/ebooks`, { credentials: "include" });
+            const res = await fetch(`${API_BASE}/admin/ebooks`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             if (!res.ok) throw new Error("Error");
             const data = await res.json();
             // Mapear ebooks antiguos al nuevo formato
@@ -70,7 +70,7 @@ export default function AdminProductosPage() {
     const handleDelete = async (id: string) => {
         if (!confirm("¿Eliminar este producto?")) return;
         try {
-            await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", credentials: "include" });
+            await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             setProducts((prev) => prev.filter((p) => p.id !== id));
             toast.success("Producto eliminado correctamente");
         } catch (err) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
 import VideoUploader from "@/components/admin/ui/VideoUploader";
 import LessonAttachmentManager from "@/components/admin/lms/LessonAttachmentManager";
@@ -37,6 +37,7 @@ export default function EditarLeccionPage() {
     const fetchLesson = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${params.lessonId}`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 
@@ -77,7 +78,7 @@ export default function EditarLeccionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${params.lessonId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     title,

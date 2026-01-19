@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import BlogEditor from "./BlogEditor";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
 import CategorySelector from "./CategorySelector";
@@ -68,13 +68,13 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         const fetchData = async () => {
             try {
                 const requests: Promise<Response>[] = [
-                    fetch(`${API_BASE}/blog/categories`),
-                    fetch(`${API_BASE}/blog/tags`),
+                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': TENANT_ID } }),
+                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': TENANT_ID } }),
                 ];
 
                 if (mode === "edit" && postId) {
                     requests.push(
-                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { credentials: "include" })
+                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" })
                     );
                 }
 
@@ -130,7 +130,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
 
             const res = await fetch(url, {
                 method: mode === "create" ? "POST" : "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     title,

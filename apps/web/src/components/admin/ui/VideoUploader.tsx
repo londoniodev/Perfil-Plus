@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconVideo, IconTrash, IconUpload } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
 import { cn } from "@/lib/utils";
@@ -59,6 +59,7 @@ export default function VideoUploader({
 
             const res = await fetch(`${API_BASE}/storage/upload/video`, {
                 method: 'POST',
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: 'include',
                 body: formData,
             });

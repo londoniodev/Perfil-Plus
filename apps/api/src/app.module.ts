@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
@@ -21,6 +21,9 @@ import { EmailModule } from './modules/email/email.module';
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
 
+// Interceptors
+import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interceptor';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +34,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
 
         // Database
+        DATABASE_URL: Joi.string().required(), // Master DB for tenant lookup
         DATABASE_URL_BASE: Joi.string().required(),
 
         // JWT
@@ -101,6 +105,12 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+
+    // Global Prisma Initialization Interceptor
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PrismaInitInterceptor,
     },
   ],
 })

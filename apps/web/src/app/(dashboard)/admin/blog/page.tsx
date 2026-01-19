@@ -3,7 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { DataTable } from "@mauromera/ui";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@mauromera/ui";
@@ -76,7 +76,7 @@ export default function AdminBlogPage() {
 
             const res = await fetch(
                 `${API_BASE}/admin/blog/posts?page=${page}&limit=10${publishedParam}`,
-                { credentials: "include" }
+                { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
             );
 
             if (!res.ok) throw new Error("Error al cargar posts");
@@ -105,6 +105,7 @@ export default function AdminBlogPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${id}`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
             if (!res.ok) throw new Error("Error al eliminar");
@@ -122,7 +123,7 @@ export default function AdminBlogPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${post.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({ published: !post.published }),
             });

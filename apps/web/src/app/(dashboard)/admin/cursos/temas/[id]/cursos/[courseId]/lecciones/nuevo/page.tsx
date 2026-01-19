@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
 import VideoUploader from "@/components/admin/ui/VideoUploader";
 import { useToast } from "@mauromera/ui";
@@ -36,7 +36,7 @@ export default function NuevaLeccionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     courseId: params.courseId,

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ImageUploader from "@/components/admin/ui/ImageUploader";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
@@ -66,7 +66,7 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 body: JSON.stringify({
                     ...formData,

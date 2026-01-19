@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     IconUpload,
     IconDownload,
@@ -79,6 +79,7 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
 
                 const uploadRes = await fetch(`${API_BASE}/storage/upload`, {
                     method: 'POST',
+                    headers: { 'x-tenant-id': TENANT_ID },
                     credentials: 'include',
                     body: formData,
                 });
@@ -112,7 +113,10 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
                 // Create attachment record
                 const attachRes = await fetch(`${API_BASE}/admin/blog/posts/${postId}/attachments`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-tenant-id': TENANT_ID,
+                    },
                     credentials: 'include',
                     body: JSON.stringify({
                         name: file.name,
@@ -143,6 +147,7 @@ export default function AttachmentManager({ postId, attachments, onUpdate, isPre
         try {
             const res = await fetch(`${API_BASE}/admin/blog/attachments/${attachment.id}`, {
                 method: 'DELETE',
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: 'include',
             });
 

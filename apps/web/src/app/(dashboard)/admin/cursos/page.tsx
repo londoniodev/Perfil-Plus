@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/components/admin/lms/ThemeCard";
 import { useToast } from "@mauromera/ui";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconPlus, IconBook } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import { PageHeader } from "@mauromera/ui";
@@ -50,6 +50,7 @@ export default function AdminCursosPage() {
         try {
             setLoading(true);
             const res = await fetch(`${API_BASE}/admin/lms/themes`, {
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 
@@ -68,6 +69,7 @@ export default function AdminCursosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${id}`, {
                 method: "DELETE",
+                headers: { 'x-tenant-id': TENANT_ID },
                 credentials: "include",
             });
 

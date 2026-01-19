@@ -57,7 +57,7 @@ RUN adduser --system --uid 1001 nextjs
 RUN apk add --no-cache openssl
 
 # Copy public files
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/apps/mauromera-web/public ./apps/mauromera-web/public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -65,8 +65,8 @@ RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/static ./apps/mauromera-web/.next/static
 # Copiamos el esquema para poder correr migraciones en producción
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 
@@ -76,4 +76,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/mauromera-web/server.js"]

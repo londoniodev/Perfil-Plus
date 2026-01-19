@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma, Prisma } from "@mauromera/database"
+import { prisma, Prisma, ProductVariant, Product } from "@mauromera/database"
 import { getSessionUser } from "@/lib/auth-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"
@@ -66,17 +66,17 @@ export async function placeOrder(
             }
         }
 
-        // Definición exacta del Payload que trae el include
-        type VariantWithProduct = Prisma.ProductVariantGetPayload<{
-            include: { product: true }
-        }>
+        // Definición manual del tipo para evitar errores de Prisma en build
+        type VariantWithProduct = ProductVariant & { product: Product }
 
         // 4. Obtener TODAS las variantes en UNA sola consulta (FIX N+1)
         const variantIds = validated.cartItems.map(item => item.variantId)
-        const variants: VariantWithProduct[] = await prisma.productVariant.findMany({
+
+        // Casting explícito al tipo manual
+        const variants = (await prisma.productVariant.findMany({
             where: { id: { in: variantIds } },
             include: { product: true }
-        })
+        })) as unknown as VariantWithProduct[]
 
         // Crear mapa para acceso rápido O(1) con tipado explícito
         const variantMap = new Map<string, VariantWithProduct>()

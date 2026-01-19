@@ -57,6 +57,7 @@ export {
     // Layout
     FiGrid as IconGrid,
     FiList as IconList,
+    FiBox as IconBox,
     FiHome as IconHome,
     FiCompass as IconCompass,
     FiLayers as IconLayers,

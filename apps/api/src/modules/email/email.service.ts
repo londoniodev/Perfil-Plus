@@ -3,7 +3,7 @@ import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { render } from '@react-email/render';
 import { VerificationEmail } from './emails/VerificationEmail';
 import { RecoveryEmail } from './emails/RecoveryEmail';

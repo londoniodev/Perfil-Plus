@@ -66,19 +66,25 @@ export async function placeOrder(
             }
         }
 
+        // Definición exacta del Payload que trae el include
+        type VariantWithProduct = Prisma.ProductVariantGetPayload<{
+            include: { product: true }
+        }>
+
         // 4. Obtener TODAS las variantes en UNA sola consulta (FIX N+1)
         const variantIds = validated.cartItems.map(item => item.variantId)
-        const variants = await prisma.productVariant.findMany({
+        const variants: VariantWithProduct[] = await prisma.productVariant.findMany({
             where: { id: { in: variantIds } },
             include: { product: true }
         })
 
-        // Definir tipo inferido de Prisma para usarlo en el Mapa
-        type VariantWithProduct = typeof variants[number]
-
         // Crear mapa para acceso rápido O(1) con tipado explícito
         const variantMap = new Map<string, VariantWithProduct>()
-        variants.forEach((v) => variantMap.set(v.id, v))
+
+        // Llenar mapa usando for-of para evitar problemas de callbacks anónimos
+        for (const v of variants) {
+            variantMap.set(v.id, v)
+        }
 
         // 5. Validar stock y calcular total
         interface OrderItemData {

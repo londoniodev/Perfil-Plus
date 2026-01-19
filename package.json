@@ -1,6 +1,7 @@
 {
-  "name": "mauro-mera-web",
+  "name": "web-projects",
   "private": true,
+  "packageManager": "pnpm@9.15.1",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -16,6 +17,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "packageManager": "pnpm@9.15.1"
+  ]
 }

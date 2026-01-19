@@ -1,7 +1,9 @@
 import { Injectable, Logger, Scope, Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
+import { Request } from 'express';
 import { render } from '@react-email/render';
 import { VerificationEmail } from './emails/VerificationEmail';
 import { RecoveryEmail } from './emails/RecoveryEmail';
@@ -29,9 +31,21 @@ export class EmailService {
     private readonly logger = new Logger(EmailService.name);
 
     constructor(
+        @Inject(REQUEST) private request: Request,
         private configService: ConfigService,
         private prisma: PrismaService,
     ) { }
+
+    private getFrontendUrl(): string {
+        // 1. Intentar obtener el Origin del request (Lo más seguro para Multi-tenant)
+        const origin = this.request.headers['origin'];
+        if (origin) {
+            return origin;
+        }
+
+        // 2. Fallback a variable de entorno
+        return this.configService.get('FRONTEND_URL', 'http://localhost:3000');
+    }
 
     private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string }> {
         // 1. Intentar obtener configuración de la DB
@@ -115,7 +129,6 @@ export class EmailService {
             return true;
         } catch (error) {
             this.logger.error(`Error enviando email a ${options.to}:`, error);
-            // No relanzamos el error para no romper el flujo principal si el email falla
             return false;
         }
     }
@@ -125,10 +138,7 @@ export class EmailService {
         name: string,
         verificationToken: string,
     ): Promise<boolean> {
-        const frontendUrl = this.configService.get(
-            'FRONTEND_URL',
-            'http://localhost:3000',
-        );
+        const frontendUrl = this.getFrontendUrl();
         const verificationUrl = `${frontendUrl}/verificar-email?token=${verificationToken}`;
 
         const html = await render(VerificationEmail({ name, url: verificationUrl }));
@@ -147,10 +157,7 @@ export class EmailService {
         name: string,
         token: string,
     ): Promise<boolean> {
-        const frontendUrl = this.configService.get(
-            'FRONTEND_URL',
-            'http://localhost:3000',
-        );
+        const frontendUrl = this.getFrontendUrl();
         const recoveryUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
         const html = await render(RecoveryEmail({ name, url: recoveryUrl }));
@@ -209,7 +216,10 @@ export class EmailService {
             }),
         );
 
-        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: https://mauromera.com/ebooks/${ebookSlug}`;
+        const frontendUrl = this.getFrontendUrl();
+        const ebookUrl = `${frontendUrl}/ebooks/${ebookSlug}`;
+
+        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: ${ebookUrl}`;
 
         return this.sendEmail({
             to: email,

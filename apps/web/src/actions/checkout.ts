@@ -74,7 +74,7 @@ export async function placeOrder(
         })
 
         // Crear mapa para acceso rápido O(1)
-        const variantMap = new Map(variants.map((v: any) => [v.id, v]))
+        const variantMap = new Map<string, any>(variants.map(v => [v.id, v]))
 
         // 5. Validar stock y calcular total
         interface OrderItemData {

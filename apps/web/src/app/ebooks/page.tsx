@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     IconDownload as DownloadIcon,
     IconTarget as TargetIcon,
@@ -54,6 +54,7 @@ async function getEbooks(): Promise<Ebook[]> {
     try {
         const res = await fetch(`${API_BASE}/ebooks`, {
             next: { revalidate: 60 },
+            headers: { 'x-tenant-id': TENANT_ID },
         });
         if (!res.ok) return [];
         return res.json();

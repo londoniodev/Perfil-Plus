@@ -4,3 +4,15 @@
 export const API_BASE = process.env.NODE_ENV === 'production'
     ? "https://api.mauromera.com/api"
     : (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api");
+
+// Tenant ID para arquitectura multi-tenant
+export const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID || 'mauro';
+
+// Headers por defecto para todas las peticiones a la API
+export function getApiHeaders(additionalHeaders?: HeadersInit): HeadersInit {
+    return {
+        'Content-Type': 'application/json',
+        'x-tenant-id': TENANT_ID,
+        ...additionalHeaders,
+    };
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import { Input } from "@mauromera/ui";
@@ -49,7 +49,10 @@ export default function LeadForm({
         try {
             const res = await fetch(`${API_BASE}/leads`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
+                },
                 body: JSON.stringify({
                     name: formData.name,
                     email: formData.email,

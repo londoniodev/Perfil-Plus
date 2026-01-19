@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 import { User, AuthContextType } from "@/types/auth";
 
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             let res = await fetch(`${API_BASE}/auth/me`, {
                 credentials: 'include',
+                headers: { 'x-tenant-id': TENANT_ID },
             });
 
             // Si el token de acceso expiró (401), intentar refrescar
@@ -31,13 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 try {
                     const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
                         method: "POST",
-                        credentials: 'include'
+                        credentials: 'include',
+                        headers: { 'x-tenant-id': TENANT_ID },
                     });
 
                     if (refreshRes.ok) {
                         // Refresco exitoso, reintentar petición original
                         res = await fetch(`${API_BASE}/auth/me`, {
                             credentials: 'include',
+                            headers: { 'x-tenant-id': TENANT_ID },
                         });
                     }
                 } catch (refreshError) {
@@ -75,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await fetch(`${API_BASE}/auth/logout`, {
                 method: "POST",
                 credentials: 'include',
+                headers: { 'x-tenant-id': TENANT_ID },
             });
         } catch (error) {
             console.error("Logout API error:", error);

@@ -27,6 +27,10 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY --from=pruner /app/out/full/ .
 
+# Build-time arguments for Next.js public env vars
+ARG NEXT_PUBLIC_TENANT_ID=mauro
+ENV NEXT_PUBLIC_TENANT_ID=${NEXT_PUBLIC_TENANT_ID}
+
 # Build the project
 # This assumes the build script in apps/web/package.json is "next build"
 RUN pnpm run build --filter=@mauromera/web...
@@ -37,6 +41,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_TENANT_ID=mauro
 
 # Don't run as root
 RUN addgroup --system --gid 1001 nodejs

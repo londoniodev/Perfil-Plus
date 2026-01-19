@@ -4,7 +4,7 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
@@ -69,7 +69,10 @@ function LoginForm() {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-id": TENANT_ID,
+        },
         credentials: "include",
         body: JSON.stringify(values),
       });

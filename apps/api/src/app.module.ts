@@ -32,6 +32,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
 
         // Database
         DATABASE_URL: Joi.string().required(),
+        DATABASE_URL_BASE: Joi.string().required(),
 
         // JWT
         JWT_SECRET: Joi.string().required(),

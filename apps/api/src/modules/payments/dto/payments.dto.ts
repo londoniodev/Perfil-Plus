@@ -52,3 +52,4 @@ export class CreateEbookPurchaseDto {
     @IsString()
     frontUrl?: string;
 }
+

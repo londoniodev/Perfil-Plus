@@ -11,3 +11,4 @@ export function formatDate(date: Date): string {
         timeStyle: "short",
     }).format(date);
 }
+

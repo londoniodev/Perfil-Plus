@@ -37,3 +37,4 @@ export class LeadsController {
         return this.leadsService.delete(id);
     }
 }
+

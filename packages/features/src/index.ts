@@ -1,5 +1,5 @@
 // ============================================================================
-// @mauromera/features
+// @alvarosky/features
 // Shared business logic and utilities for the Mauro Mera platform
 // ============================================================================
 
@@ -8,3 +8,5 @@ export * from './schemas';
 
 // API Client & Configuration
 export * from './api';
+
+

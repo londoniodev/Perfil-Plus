@@ -100,9 +100,28 @@ export class PrismaService implements OnModuleDestroy {
 
     private resolveTenantId(): string {
         const tenantId = this.request.headers['x-tenant-id'] as string;
+        const path = this.request.url;
+        const method = this.request.method;
+
+        // Lista de rutas públicas que NO requieren x-tenant-id
+        // (para compatibilidad con SSR de Next.js)
+        const publicRoutes = [
+            '/api/ebooks',
+            '/api/blog',
+            '/api/lms/themes',
+        ];
+
+        const isPublicRoute = publicRoutes.some(route => path?.startsWith(route));
 
         if (!tenantId) {
-            this.logger.error(`Missing x-tenant-id header for ${this.request.method} ${this.request.url}`);
+            if (isPublicRoute && method === 'GET') {
+                // Para rutas públicas de solo lectura, usar tenant por defecto
+                const defaultTenant = this.configService.get('DEFAULT_TENANT_ID', 'mauro');
+                this.logger.debug(`Public route ${path} without tenant-id, using default: ${defaultTenant}`);
+                return defaultTenant;
+            }
+
+            this.logger.error(`Missing x-tenant-id header for ${method} ${path}`);
             throw new Error('Missing x-tenant-id header');
         }
 
@@ -226,3 +245,4 @@ export class PrismaService implements OnModuleDestroy {
         }
     }
 }
+

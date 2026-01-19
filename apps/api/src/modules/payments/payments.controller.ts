@@ -95,3 +95,4 @@ export class PaymentsController {
         return this.paymentsService.getPaymentStats();
     }
 }
+

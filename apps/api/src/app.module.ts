@@ -17,6 +17,7 @@ import { PaymentsModule } from './modules/payments';
 import { EbooksModule } from './modules/ebooks';
 import { LeadsModule } from './modules/leads';
 import { EmailModule } from './modules/email/email.module';
+import { ProductsModule } from './modules/products/products.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -72,10 +73,11 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     AuthModule,
     UsersModule,
     StorageModule,
+    EbooksModule,
+    ProductsModule,
     BlogModule,
     LmsModule,
     PaymentsModule,
-    EbooksModule,
     LeadsModule,
     EmailModule,
 
@@ -115,3 +117,4 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
   ],
 })
 export class AppModule { }
+

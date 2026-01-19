@@ -33,3 +33,5 @@ export function RelatedTopics({ topics, className }: RelatedTopicsProps) {
         </section>
     )
 }
+
+

@@ -397,3 +397,4 @@ export class BlogService {
         return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
     }
 }
+

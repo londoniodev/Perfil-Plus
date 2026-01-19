@@ -450,3 +450,4 @@ export class AuthService {
         return { message: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' };
     }
 }
+

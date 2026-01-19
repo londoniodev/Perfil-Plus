@@ -10,3 +10,4 @@ import { PaymentsModule } from '../payments/payments.module';
     exports: [UsersService],
 })
 export class UsersModule { }
+

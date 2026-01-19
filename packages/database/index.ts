@@ -15,3 +15,6 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 // Re-exportar tipos y enums de Prisma
 export { Prisma, PrismaClient } from '@prisma/client'
 export * from '@prisma/client'
+
+
+

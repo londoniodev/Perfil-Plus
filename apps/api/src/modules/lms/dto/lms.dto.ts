@@ -114,3 +114,4 @@ export class UpdateProgressDto {
     @Min(0)
     watchedTime?: number;
 }
+

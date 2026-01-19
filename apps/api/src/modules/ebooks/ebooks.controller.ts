@@ -82,3 +82,4 @@ export class AdminEbooksController {
         return this.ebooksService.delete(id);
     }
 }
+

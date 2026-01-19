@@ -8,3 +8,4 @@ export class LoginDto {
     @MinLength(1)
     password: string;
 }
+

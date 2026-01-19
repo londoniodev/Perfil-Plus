@@ -38,3 +38,5 @@ export function getApiConfig(): ApiConfig {
 export function getApiBaseUrl(): string {
     return apiConfig.baseUrl;
 }
+
+

@@ -424,3 +424,4 @@ export class LmsService {
             + '-' + Date.now().toString(36).substring(4); // Añadir sufijo único corto
     }
 }
+

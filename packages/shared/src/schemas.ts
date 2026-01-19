@@ -17,3 +17,4 @@ export const LoginSchema = z.object({
 export const RegisterSchema = LoginSchema.extend({
     name: z.string().min(2),
 });
+

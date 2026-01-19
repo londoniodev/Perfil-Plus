@@ -51,3 +51,4 @@ export class CreatePostDto {
     @Min(0)
     readingTime?: number;
 }
+

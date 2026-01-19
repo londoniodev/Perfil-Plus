@@ -23,3 +23,5 @@ export default function ClientToast({ message, type = "error", duration }: Clien
 }
 
 export { ClientToast };
+
+

@@ -36,3 +36,4 @@ export class LeadQueryDto {
     @IsString()
     endDate?: string;
 }
+

@@ -10,3 +10,4 @@ import { StorageModule } from '../storage/storage.module';
     exports: [EbooksService],
 })
 export class EbooksModule { }
+

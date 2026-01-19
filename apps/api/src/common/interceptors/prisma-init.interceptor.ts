@@ -37,3 +37,4 @@ export class PrismaInitInterceptor implements NestInterceptor {
         return next.handle();
     }
 }
+

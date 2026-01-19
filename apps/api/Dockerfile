@@ -6,8 +6,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN npm install -g turbo
 COPY . .
-# Prune the workspace for the api
-RUN turbo prune --scope=@mauromera/api --docker
+# Prune the workspace for the api app
+RUN turbo prune --scope=@alvarosky/api --docker
 
 # 2. Install dependencies & Build
 FROM base AS builder
@@ -21,20 +21,17 @@ RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Force flat node_modules to avoid symlink issues in Docker copy
-RUN echo "node-linker=hoisted" > .npmrc
-
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY --from=pruner /app/out/full/ .
 
-# Generar Prisma Client (Importante para que el backend reconozca la DB)
-RUN pnpm run build --filter=@mauromera/database
+# Generate Prisma Client
+RUN pnpm run build --filter=@alvarosky/database
 
 # Build the project
-RUN pnpm run build --filter=@mauromera/api...
+RUN pnpm run build --filter=@alvarosky/api...
 
 # Remove debug build output
 # RUN echo "Listing build output:" && ls -R /app/apps/api/dist

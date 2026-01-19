@@ -1,5 +1,5 @@
 // ============================================================================
-// @mauromera/ui
+// @alvarosky/ui
 // Shared UI components for the Mauro Mera platform
 // ============================================================================
 
@@ -61,3 +61,5 @@ export * from "./tooltip";
 export * from "./price-display";
 export * from "./product-specs";
 export * from "./product-card";
+
+

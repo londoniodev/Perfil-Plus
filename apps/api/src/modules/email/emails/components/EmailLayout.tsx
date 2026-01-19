@@ -98,3 +98,4 @@ const styles = {
 };
 
 export default EmailLayout;
+

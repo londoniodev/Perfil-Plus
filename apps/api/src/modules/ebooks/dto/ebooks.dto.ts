@@ -56,3 +56,4 @@ export class UpdateEbookDto {
     @IsBoolean()
     published?: boolean;
 }
+

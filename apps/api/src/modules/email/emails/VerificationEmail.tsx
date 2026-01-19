@@ -85,3 +85,4 @@ const styles = {
 };
 
 export default VerificationEmail;
+

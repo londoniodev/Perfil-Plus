@@ -39,3 +39,5 @@ export function ProductSpecs({ specs, className }: ProductSpecsProps) {
         </div>
     )
 }
+
+

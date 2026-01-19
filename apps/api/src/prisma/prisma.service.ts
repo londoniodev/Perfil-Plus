@@ -17,24 +17,38 @@ const prismaClientCache = new Map<string, PrismaClient>();
 @Injectable({ scope: Scope.REQUEST })
 export class PrismaService implements OnModuleDestroy {
     private readonly logger = new Logger(PrismaService.name);
-    public readonly client: PrismaClient;
+    private _client: PrismaClient | null = null;
+    private _tenantId: string | null = null;
 
     constructor(
         @Inject(REQUEST) private readonly request: Request,
         private readonly configService: ConfigService,
     ) {
-        const tenantId = this.resolveTenantId();
-        this.client = this.getOrCreateClient(tenantId);
+        // No hacemos nada en el constructor - lazy loading
+    }
+
+    /**
+     * Getter perezoso para el cliente Prisma.
+     * Solo se resuelve el tenant y se crea la conexión cuando se accede.
+     */
+    get client(): PrismaClient {
+        if (!this._client) {
+            this._tenantId = this.resolveTenantId();
+            this._client = this.getOrCreateClient(this._tenantId);
+        }
+        return this._client;
     }
 
     private resolveTenantId(): string {
         const tenantId = this.request.headers['x-tenant-id'] as string;
 
         if (!tenantId) {
+            this.logger.error(`Missing x-tenant-id header for ${this.request.method} ${this.request.url}`);
             throw new Error('Missing x-tenant-id header');
         }
 
         if (!TENANT_DATABASE_MAP[tenantId]) {
+            this.logger.error(`Unknown tenant: ${tenantId} for ${this.request.method} ${this.request.url}`);
             throw new Error(`Unknown tenant: ${tenantId}`);
         }
 

@@ -13,7 +13,7 @@ export class EbooksService {
     // ==================== PUBLIC ====================
 
     async findAllPublished() {
-        return this.prisma.ebook.findMany({
+        return this.prisma.client.ebook.findMany({
             where: { published: true },
             orderBy: { createdAt: 'desc' },
             select: {
@@ -29,7 +29,7 @@ export class EbooksService {
     }
 
     async findBySlug(slug: string) {
-        const ebook = await this.prisma.ebook.findUnique({
+        const ebook = await this.prisma.client.ebook.findUnique({
             where: { slug },
             select: {
                 id: true,
@@ -53,7 +53,7 @@ export class EbooksService {
 
     async getDownloadUrl(ebookId: string, userId: string) {
         // 1. Verificar si tiene suscripción activa
-        const subscription = await this.prisma.subscription.findUnique({
+        const subscription = await this.prisma.client.subscription.findUnique({
             where: { userId },
         });
 
@@ -61,7 +61,7 @@ export class EbooksService {
 
         // 2. Si no tiene suscripción, verificar si lo ha comprado
         if (!hasActiveSubscription) {
-            const purchase = await this.prisma.purchase.findUnique({
+            const purchase = await this.prisma.client.purchase.findUnique({
                 where: { userId_ebookId: { userId, ebookId } },
             });
 
@@ -70,7 +70,7 @@ export class EbooksService {
             }
         }
 
-        const ebook = await this.prisma.ebook.findUnique({
+        const ebook = await this.prisma.client.ebook.findUnique({
             where: { id: ebookId },
         });
 
@@ -85,7 +85,7 @@ export class EbooksService {
     }
 
     async getUserPurchases(userId: string) {
-        return this.prisma.purchase.findMany({
+        return this.prisma.client.purchase.findMany({
             where: { userId, status: 'approved' },
             include: {
                 ebook: {
@@ -103,7 +103,7 @@ export class EbooksService {
 
     async hasPurchased(ebookId: string, userId: string): Promise<boolean> {
         // Verificar suscripción primero
-        const subscription = await this.prisma.subscription.findUnique({
+        const subscription = await this.prisma.client.subscription.findUnique({
             where: { userId },
         });
 
@@ -111,7 +111,7 @@ export class EbooksService {
             return true;
         }
 
-        const purchase = await this.prisma.purchase.findUnique({
+        const purchase = await this.prisma.client.purchase.findUnique({
             where: { userId_ebookId: { userId, ebookId } },
         });
         return purchase?.status === 'approved';
@@ -120,7 +120,7 @@ export class EbooksService {
     // ==================== ADMIN ====================
 
     async findAll() {
-        return this.prisma.ebook.findMany({
+        return this.prisma.client.ebook.findMany({
             orderBy: { createdAt: 'desc' },
             include: {
                 _count: { select: { purchases: true } },
@@ -129,7 +129,7 @@ export class EbooksService {
     }
 
     async findById(id: string) {
-        const ebook = await this.prisma.ebook.findUnique({
+        const ebook = await this.prisma.client.ebook.findUnique({
             where: { id },
             include: {
                 _count: { select: { purchases: true } },
@@ -146,7 +146,7 @@ export class EbooksService {
     async create(dto: CreateEbookDto) {
         const slug = this.generateSlug(dto.title);
 
-        return this.prisma.ebook.create({
+        return this.prisma.client.ebook.create({
             data: {
                 ...dto,
                 slug,
@@ -155,7 +155,7 @@ export class EbooksService {
     }
 
     async update(id: string, dto: UpdateEbookDto) {
-        const ebook = await this.prisma.ebook.findUnique({ where: { id } });
+        const ebook = await this.prisma.client.ebook.findUnique({ where: { id } });
         if (!ebook) {
             throw new NotFoundException('E-book no encontrado');
         }
@@ -165,19 +165,19 @@ export class EbooksService {
             data.slug = this.generateSlug(dto.title);
         }
 
-        return this.prisma.ebook.update({
+        return this.prisma.client.ebook.update({
             where: { id },
             data,
         });
     }
 
     async delete(id: string) {
-        const ebook = await this.prisma.ebook.findUnique({ where: { id } });
+        const ebook = await this.prisma.client.ebook.findUnique({ where: { id } });
         if (!ebook) {
             throw new NotFoundException('E-book no encontrado');
         }
 
-        await this.prisma.ebook.delete({ where: { id } });
+        await this.prisma.client.ebook.delete({ where: { id } });
         return { message: 'E-book eliminado correctamente' };
     }
 

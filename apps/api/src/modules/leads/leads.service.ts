@@ -7,7 +7,7 @@ export class LeadsService {
     constructor(private prisma: PrismaService) { }
 
     async create(dto: CreateLeadDto) {
-        return this.prisma.lead.create({
+        return this.prisma.client.lead.create({
             data: dto,
         });
     }
@@ -29,7 +29,7 @@ export class LeadsService {
             }
         }
 
-        return this.prisma.lead.findMany({
+        return this.prisma.client.lead.findMany({
             where,
             orderBy: { createdAt: 'desc' },
         });
@@ -37,12 +37,12 @@ export class LeadsService {
 
     async getStats() {
         const [total, bySource, recentLeads] = await Promise.all([
-            this.prisma.lead.count(),
-            this.prisma.lead.groupBy({
+            this.prisma.client.lead.count(),
+            this.prisma.client.lead.groupBy({
                 by: ['source'],
                 _count: { id: true },
             }),
-            this.prisma.lead.findMany({
+            this.prisma.client.lead.findMany({
                 take: 10,
                 orderBy: { createdAt: 'desc' },
             }),
@@ -52,7 +52,7 @@ export class LeadsService {
         const lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate() - 7);
 
-        const thisWeek = await this.prisma.lead.count({
+        const thisWeek = await this.prisma.client.lead.count({
             where: { createdAt: { gte: lastWeek } },
         });
 
@@ -65,7 +65,7 @@ export class LeadsService {
     }
 
     async delete(id: string) {
-        await this.prisma.lead.delete({ where: { id } });
+        await this.prisma.client.lead.delete({ where: { id } });
         return { message: 'Lead eliminado' };
     }
 }

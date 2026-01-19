@@ -70,7 +70,7 @@ export class PaymentsService {
             throw new BadRequestException('Mercado Pago no está configurado');
         }
 
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.client.user.findUnique({
             where: { id: userId },
             include: { subscription: true },
         });
@@ -118,7 +118,7 @@ export class PaymentsService {
             const response = await this.preference.create({ body: preferenceData });
 
             // Crear o actualizar registro de suscripción como pendiente
-            await this.prisma.subscription.upsert({
+            await this.prisma.client.subscription.upsert({
                 where: { userId },
                 create: {
                     userId,
@@ -141,7 +141,7 @@ export class PaymentsService {
     }
 
     async cancelSubscription(userId: string) {
-        const subscription = await this.prisma.subscription.findUnique({
+        const subscription = await this.prisma.client.subscription.findUnique({
             where: { userId },
         });
 
@@ -154,7 +154,7 @@ export class PaymentsService {
         }
 
         // Actualizar estado a CANCELLED
-        await this.prisma.subscription.update({
+        await this.prisma.client.subscription.update({
             where: { userId },
             data: { status: 'CANCELLED' },
         });
@@ -163,7 +163,7 @@ export class PaymentsService {
     }
 
     async getSubscriptionStatus(userId: string) {
-        const subscription = await this.prisma.subscription.findUnique({
+        const subscription = await this.prisma.client.subscription.findUnique({
             where: { userId },
         });
 
@@ -186,14 +186,14 @@ export class PaymentsService {
             throw new BadRequestException('Mercado Pago no está configurado');
         }
 
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        const user = await this.prisma.client.user.findUnique({ where: { id: userId } });
         if (!user) throw new NotFoundException('Usuario no encontrado');
 
-        const ebook = await this.prisma.ebook.findUnique({ where: { id: ebookId } });
+        const ebook = await this.prisma.client.ebook.findUnique({ where: { id: ebookId } });
         if (!ebook) throw new NotFoundException('E-book no encontrado');
 
         // Verificar si ya lo compró
-        const existingPurchase = await this.prisma.purchase.findUnique({
+        const existingPurchase = await this.prisma.client.purchase.findUnique({
             where: { userId_ebookId: { userId, ebookId } },
         });
 
@@ -306,7 +306,7 @@ export class PaymentsService {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
 
-        await this.prisma.subscription.upsert({
+        await this.prisma.client.subscription.upsert({
             where: { userId },
             create: {
                 userId,
@@ -329,7 +329,7 @@ export class PaymentsService {
 
         // Send confirmation email (non-blocking - don't fail if email fails)
         try {
-            const user = await this.prisma.user.findUnique({
+            const user = await this.prisma.client.user.findUnique({
                 where: { id: userId },
                 select: { email: true, name: true },
             });
@@ -354,7 +354,7 @@ export class PaymentsService {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + months);
 
-        await this.prisma.subscription.upsert({
+        await this.prisma.client.subscription.upsert({
             where: { userId },
             create: {
                 userId,
@@ -376,7 +376,7 @@ export class PaymentsService {
     }
 
     private async completeEbookPurchase(userId: string, ebookId: string, mpPaymentId: string, amount: number) {
-        await this.prisma.purchase.upsert({
+        await this.prisma.client.purchase.upsert({
             where: { userId_ebookId: { userId, ebookId } },
             create: {
                 userId,
@@ -396,11 +396,11 @@ export class PaymentsService {
         // Send confirmation email (non-blocking - don't fail if email fails)
         try {
             const [user, ebook] = await Promise.all([
-                this.prisma.user.findUnique({
+                this.prisma.client.user.findUnique({
                     where: { id: userId },
                     select: { email: true, name: true },
                 }),
-                this.prisma.ebook.findUnique({
+                this.prisma.client.ebook.findUnique({
                     where: { id: ebookId },
                     select: { title: true, slug: true },
                 }),
@@ -423,7 +423,7 @@ export class PaymentsService {
     // ==================== USER SUBSCRIPTION CHECK ====================
 
     async hasActiveSubscription(userId: string): Promise<boolean> {
-        const subscription = await this.prisma.subscription.findUnique({
+        const subscription = await this.prisma.client.subscription.findUnique({
             where: { userId },
         });
         return subscription?.status === 'ACTIVE';
@@ -433,12 +433,12 @@ export class PaymentsService {
 
     async getPaymentStats() {
         const [activeSubscriptions, totalEbookPurchases, pendingSubscriptions] = await Promise.all([
-            this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
-            this.prisma.purchase.count({ where: { status: 'approved' } }),
-            this.prisma.subscription.count({ where: { status: 'PENDING' } }),
+            this.prisma.client.subscription.count({ where: { status: 'ACTIVE' } }),
+            this.prisma.client.purchase.count({ where: { status: 'approved' } }),
+            this.prisma.client.subscription.count({ where: { status: 'PENDING' } }),
         ]);
 
-        const recentSubscriptions = await this.prisma.subscription.findMany({
+        const recentSubscriptions = await this.prisma.client.subscription.findMany({
             where: { status: 'ACTIVE' },
             take: 10,
             orderBy: { startDate: 'desc' },

@@ -8,7 +8,7 @@ export class UsersService {
     constructor(private prisma: PrismaService) { }
 
     async getProfile(userId: string) {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.client.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
@@ -47,7 +47,7 @@ export class UsersService {
     }
 
     async updateProfile(userId: string, dto: UpdateUserDto) {
-        const user = await this.prisma.user.update({
+        const user = await this.prisma.client.user.update({
             where: { id: userId },
             data: dto,
             select: {
@@ -64,7 +64,7 @@ export class UsersService {
     }
 
     async findById(userId: string) {
-        return this.prisma.user.findUnique({
+        return this.prisma.client.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
@@ -77,7 +77,7 @@ export class UsersService {
     }
 
     async findByEmail(email: string) {
-        return this.prisma.user.findUnique({
+        return this.prisma.client.user.findUnique({
             where: { email: email.toLowerCase() },
             select: {
                 id: true,
@@ -118,7 +118,7 @@ export class UsersService {
         }
 
         const [users, total] = await Promise.all([
-            this.prisma.user.findMany({
+            this.prisma.client.user.findMany({
                 where,
                 skip,
                 take: limit,
@@ -137,7 +137,7 @@ export class UsersService {
                     },
                 },
             }),
-            this.prisma.user.count({ where }),
+            this.prisma.client.user.count({ where }),
         ]);
 
         return {
@@ -153,7 +153,7 @@ export class UsersService {
 
     // Admin: Cambiar rol de usuario
     async updateRole(userId: string, role: Role) {
-        const user = await this.prisma.user.update({
+        const user = await this.prisma.client.user.update({
             where: { id: userId },
             data: { role },
             select: {
@@ -168,7 +168,7 @@ export class UsersService {
 
     // Admin: Eliminar usuario
     async remove(userId: string) {
-        await this.prisma.user.delete({
+        await this.prisma.client.user.delete({
             where: { id: userId },
         });
         return { message: 'Usuario eliminado correctamente' };

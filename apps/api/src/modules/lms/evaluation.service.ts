@@ -10,7 +10,7 @@ export class EvaluationService {
 
     async createEvaluation(dto: CreateEvaluationDto) {
         // Verificar que el tema existe y no tiene evaluación
-        const theme = await this.prisma.theme.findUnique({
+        const theme = await this.prisma.client.theme.findUnique({
             where: { id: dto.themeId },
             include: { evaluation: true },
         });
@@ -20,7 +20,7 @@ export class EvaluationService {
 
         const { questions, ...evaluationData } = dto;
 
-        return this.prisma.evaluation.create({
+        return this.prisma.client.evaluation.create({
             data: {
                 ...evaluationData,
                 questions: questions?.length
@@ -43,10 +43,10 @@ export class EvaluationService {
     }
 
     async updateEvaluation(id: string, dto: UpdateEvaluationDto) {
-        const evaluation = await this.prisma.evaluation.findUnique({ where: { id } });
+        const evaluation = await this.prisma.client.evaluation.findUnique({ where: { id } });
         if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
-        return this.prisma.evaluation.update({
+        return this.prisma.client.evaluation.update({
             where: { id },
             data: dto,
             include: {
@@ -57,15 +57,15 @@ export class EvaluationService {
     }
 
     async deleteEvaluation(id: string) {
-        const evaluation = await this.prisma.evaluation.findUnique({ where: { id } });
+        const evaluation = await this.prisma.client.evaluation.findUnique({ where: { id } });
         if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
-        await this.prisma.evaluation.delete({ where: { id } });
+        await this.prisma.client.evaluation.delete({ where: { id } });
         return { message: 'Evaluación eliminada correctamente' };
     }
 
     async findEvaluationById(id: string) {
-        const evaluation = await this.prisma.evaluation.findUnique({
+        const evaluation = await this.prisma.client.evaluation.findUnique({
             where: { id },
             include: {
                 questions: { orderBy: { order: 'asc' } },
@@ -80,16 +80,16 @@ export class EvaluationService {
     // ==================== QUESTIONS ====================
 
     async addQuestion(evaluationId: string, dto: CreateQuestionDto) {
-        const evaluation = await this.prisma.evaluation.findUnique({ where: { id: evaluationId } });
+        const evaluation = await this.prisma.client.evaluation.findUnique({ where: { id: evaluationId } });
         if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
         // Obtener el orden máximo actual
-        const maxOrder = await this.prisma.question.aggregate({
+        const maxOrder = await this.prisma.client.question.aggregate({
             where: { evaluationId },
             _max: { order: true },
         });
 
-        return this.prisma.question.create({
+        return this.prisma.client.question.create({
             data: {
                 evaluationId,
                 question: dto.question,
@@ -102,27 +102,27 @@ export class EvaluationService {
     }
 
     async updateQuestion(id: string, dto: Partial<CreateQuestionDto>) {
-        const question = await this.prisma.question.findUnique({ where: { id } });
+        const question = await this.prisma.client.question.findUnique({ where: { id } });
         if (!question) throw new NotFoundException('Pregunta no encontrada');
 
-        return this.prisma.question.update({
+        return this.prisma.client.question.update({
             where: { id },
             data: dto.options ? { ...dto, options: dto.options as any } : dto as any,
         });
     }
 
     async deleteQuestion(id: string) {
-        const question = await this.prisma.question.findUnique({ where: { id } });
+        const question = await this.prisma.client.question.findUnique({ where: { id } });
         if (!question) throw new NotFoundException('Pregunta no encontrada');
 
-        await this.prisma.question.delete({ where: { id } });
+        await this.prisma.client.question.delete({ where: { id } });
         return { message: 'Pregunta eliminada correctamente' };
     }
 
     // ==================== TAKE EVALUATION ====================
 
     async getEvaluationForUser(evaluationId: string, userId: string) {
-        const evaluation = await this.prisma.evaluation.findUnique({
+        const evaluation = await this.prisma.client.evaluation.findUnique({
             where: { id: evaluationId },
             include: {
                 questions: {
@@ -142,7 +142,7 @@ export class EvaluationService {
         if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
         // Verificar si ya completó la evaluación
-        const existingResult = await this.prisma.evaluationResult.findUnique({
+        const existingResult = await this.prisma.client.evaluationResult.findUnique({
             where: { userId_evaluationId: { userId, evaluationId } },
         });
 
@@ -156,7 +156,7 @@ export class EvaluationService {
     }
 
     async submitEvaluation(evaluationId: string, userId: string, dto: SubmitEvaluationDto) {
-        const evaluation = await this.prisma.evaluation.findUnique({
+        const evaluation = await this.prisma.client.evaluation.findUnique({
             where: { id: evaluationId },
             include: { questions: true },
         });
@@ -164,7 +164,7 @@ export class EvaluationService {
         if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
         // Verificar si ya completó la evaluación
-        const existingResult = await this.prisma.evaluationResult.findUnique({
+        const existingResult = await this.prisma.client.evaluationResult.findUnique({
             where: { userId_evaluationId: { userId, evaluationId } },
         });
 
@@ -187,7 +187,7 @@ export class EvaluationService {
         const passed = score >= evaluation.passingScore;
 
         // Guardar resultado
-        const result = await this.prisma.evaluationResult.create({
+        const result = await this.prisma.client.evaluationResult.create({
             data: {
                 userId,
                 evaluationId,
@@ -218,7 +218,7 @@ export class EvaluationService {
     }
 
     async getUserResults(userId: string) {
-        return this.prisma.evaluationResult.findMany({
+        return this.prisma.client.evaluationResult.findMany({
             where: { userId },
             include: {
                 evaluation: {

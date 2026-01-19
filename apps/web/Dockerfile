@@ -11,7 +11,7 @@ RUN turbo prune --scope=@mauromera/web --docker
 
 # 2. Install dependencies & Build
 FROM base AS builder
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Enable pnpm
@@ -41,6 +41,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Don't run as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
 # Copy public files
 COPY --from=builder /app/apps/web/public ./apps/web/public

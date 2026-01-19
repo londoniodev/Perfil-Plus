@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Scope, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as nodemailer from 'nodemailer';
 import { render } from '@react-email/render';
 import { VerificationEmail } from './emails/VerificationEmail';
@@ -14,31 +15,95 @@ interface SendEmailOptions {
     text?: string;
 }
 
-@Injectable()
+interface SmtpConfig {
+    host: string;
+    port: number;
+    secure?: boolean;
+    user: string;
+    pass: string;
+    from: string;
+}
+
+@Injectable({ scope: Scope.REQUEST })
 export class EmailService {
     private readonly logger = new Logger(EmailService.name);
-    private transporter: nodemailer.Transporter;
 
-    constructor(private configService: ConfigService) {
-        this.transporter = nodemailer.createTransport({
-            host: this.configService.get('SMTP_HOST', 'smtp.hostinger.com'),
-            port: this.configService.get('SMTP_PORT', 465),
-            secure: true, // true for 465, false for other ports
+    constructor(
+        private configService: ConfigService,
+        private prisma: PrismaService,
+    ) { }
+
+    private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string }> {
+        // 1. Intentar obtener configuración de la DB
+        let smtpConfig: SmtpConfig | null = null;
+
+        try {
+            const setting = await this.prisma.client.systemSetting.findUnique({
+                where: { key: 'SMTP_CONFIG' },
+            });
+
+            if (setting?.value) {
+                // Validación básica del JSON
+                const value = setting.value as any;
+                if (value.host && value.user && value.pass) {
+                    smtpConfig = {
+                        host: value.host,
+                        port: Number(value.port) || 465,
+                        secure: value.secure ?? true,
+                        user: value.user,
+                        pass: value.pass,
+                        from: value.from || `No Reply <${value.user}>`,
+                    };
+                    this.logger.debug('Usando configuración SMTP de la base de datos');
+                }
+            }
+        } catch (error) {
+            this.logger.warn('Error al leer configuración SMTP de DB, usando fallback', error);
+        }
+
+        // 2. Fallback a variables de entorno
+        if (!smtpConfig) {
+            const envHost = this.configService.get('SMTP_HOST');
+            const envUser = this.configService.get('SMTP_USER');
+            const envPass = this.configService.get('SMTP_PASS');
+
+            if (envHost && envUser && envPass) {
+                smtpConfig = {
+                    host: envHost,
+                    port: this.configService.get('SMTP_PORT', 465),
+                    secure: true,
+                    user: envUser,
+                    pass: envPass,
+                    from: this.configService.get('SMTP_FROM', `Mauro Mera <${envUser}>`),
+                };
+                this.logger.debug('Usando configuración SMTP de variables de entorno');
+            }
+        }
+
+        // 3. Fallo total
+        if (!smtpConfig) {
+            throw new Error('No SMTP configuration found for this tenant');
+        }
+
+        // Crear transporter
+        const transporter = nodemailer.createTransport({
+            host: smtpConfig.host,
+            port: smtpConfig.port,
+            secure: smtpConfig.secure,
             auth: {
-                user: this.configService.get('SMTP_USER'),
-                pass: this.configService.get('SMTP_PASS'),
+                user: smtpConfig.user,
+                pass: smtpConfig.pass,
             },
         });
+
+        return { transporter, from: smtpConfig.from };
     }
 
     async sendEmail(options: SendEmailOptions): Promise<boolean> {
         try {
-            const from = this.configService.get(
-                'SMTP_FROM',
-                'Mauro Mera <noreply@mauromera.com>',
-            );
+            const { transporter, from } = await this.getTransporter();
 
-            await this.transporter.sendMail({
+            await transporter.sendMail({
                 from,
                 to: options.to,
                 subject: options.subject,
@@ -50,11 +115,10 @@ export class EmailService {
             return true;
         } catch (error) {
             this.logger.error(`Error enviando email a ${options.to}:`, error);
+            // No relanzamos el error para no romper el flujo principal si el email falla
             return false;
         }
     }
-
-
 
     async sendVerificationEmail(
         email: string,
@@ -110,7 +174,8 @@ export class EmailService {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-        }).format(endDate);
+            dayPeriod: undefined
+        } as Intl.DateTimeFormatOptions).format(endDate);
 
         const html = await render(
             SubscriptionSuccessEmail({

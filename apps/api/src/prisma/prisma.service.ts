@@ -127,7 +127,7 @@ export class PrismaService implements OnModuleDestroy {
 
         try {
             const result = await masterPool.query(
-                'SELECT "dbName" FROM "Tenant" WHERE slug = $1 AND active = true',
+                'SELECT "dbName" FROM "Tenant" WHERE slug = $1',
                 [slug]
             );
 

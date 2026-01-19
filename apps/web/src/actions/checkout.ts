@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@mauromera/database"
+import { prisma, Prisma } from "@mauromera/database"
 import { getSessionUser } from "@/lib/auth-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"
@@ -74,7 +74,7 @@ export async function placeOrder(
         })
 
         // Crear mapa para acceso rápido O(1)
-        const variantMap = new Map(variants.map(v => [v.id, v]))
+        const variantMap = new Map(variants.map((v: any) => [v.id, v]))
 
         // 5. Validar stock y calcular total
         interface OrderItemData {
@@ -137,7 +137,7 @@ export async function placeOrder(
         const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, '0')}`
 
         // 6. Crear orden en transacción con actualización atómica de stock
-        const order = await prisma.$transaction(async (tx) => {
+        const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // Crear orden con snapshots de producto
             const newOrder = await tx.order.create({
                 data: {

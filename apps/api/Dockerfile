@@ -33,8 +33,8 @@ RUN pnpm run build --filter=@mauromera/database
 # Build the project
 RUN pnpm run build --filter=@mauromera/api...
 
-# Debug build output
-RUN echo "Listing build output:" && ls -R /app/apps/api/dist
+# Remove debug build output
+# RUN echo "Listing build output:" && ls -R /app/apps/api/dist
 
 # 3. Production Runner
 FROM base AS runner
@@ -64,4 +64,4 @@ EXPOSE 3001
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

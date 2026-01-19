@@ -31,7 +31,6 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
 
         // Database
-        DATABASE_URL: Joi.string().required(),
         DATABASE_URL_BASE: Joi.string().required(),
 
         // JWT

@@ -52,11 +52,15 @@ interface Ebook {
 
 async function getEbooks(): Promise<Ebook[]> {
     try {
+        console.log(`[getEbooks] Fetching from ${API_BASE}/ebooks with x-tenant-id: ${TENANT_ID}`);
         const res = await fetch(`${API_BASE}/ebooks`, {
             next: { revalidate: 60 },
             headers: { 'x-tenant-id': TENANT_ID },
         });
-        if (!res.ok) return [];
+        if (!res.ok) {
+            console.error(`[getEbooks] Failed fetch: ${res.status} ${res.statusText}`);
+            return [];
+        }
         return res.json();
     } catch {
         return [];

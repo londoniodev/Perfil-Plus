@@ -6,6 +6,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN npm install -g turbo
 COPY . .
+# Debug: Verificar package.json
+RUN echo "--- CONTENIDO DE PACKAGE.JSON ---" && cat package.json && echo "--- FIN ---"
 # Prune the workspace for the web app
 RUN turbo prune --scope=@mauromera/web --docker
 

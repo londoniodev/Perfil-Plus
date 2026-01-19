@@ -56,7 +56,7 @@ RUN mkdir -p .next && chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 # Copiamos el esquema para poder correr migraciones en producción
-COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 
 USER nextjs
 

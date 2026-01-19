@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import EbookDetailClient from "./EbookDetailClient";
 import { ProductSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
 
@@ -16,6 +16,7 @@ async function getEbook(slug: string): Promise<Ebook | null> {
     try {
         const res = await fetch(`${API_BASE}/ebooks/${slug}`, {
             next: { revalidate: 60 },
+            headers: { 'x-tenant-id': TENANT_ID },
         });
         if (!res.ok) return null;
         return res.json();

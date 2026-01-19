@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@mauromera/ui";
 import { IconBack, IconBook, IconZap, IconCheck, IconDownload, IconEye, IconLock } from "@mauromera/ui";
 import { Card, CardContent } from "@mauromera/ui";
@@ -35,6 +35,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/check-purchase`, {
                 credentials: "include",
+                headers: { 'x-tenant-id': TENANT_ID },
             });
 
             // If token expired, clear local storage but don't redirect (just show as not purchased)
@@ -67,6 +68,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
                 },
                 credentials: "include",
                 body: JSON.stringify({
@@ -112,6 +114,7 @@ export default function EbookDetailClient({ ebook }: EbookDetailClientProps) {
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebook.id}/download`, {
                 credentials: "include",
+                headers: { 'x-tenant-id': TENANT_ID },
             });
 
             if (!res.ok) throw new Error("Error al obtener enlace");

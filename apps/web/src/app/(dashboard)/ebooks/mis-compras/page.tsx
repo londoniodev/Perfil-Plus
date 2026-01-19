@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { Button } from "@mauromera/ui";
 import { useToast } from "@mauromera/ui";
 import { IconDownload, IconBook, IconLoader } from "@mauromera/ui";
@@ -24,6 +24,7 @@ export default function MisEbooksPage() {
         try {
             const res = await fetch(`${API_BASE}/ebooks/my-purchases`, {
                 credentials: 'include', // Usar cookies HttpOnly
+                headers: { 'x-tenant-id': TENANT_ID },
             });
             if (res.ok) {
                 const data = await res.json();
@@ -45,7 +46,8 @@ export default function MisEbooksPage() {
     const handleDownload = async (ebookId: string) => {
         try {
             const res = await fetch(`${API_BASE}/ebooks/${ebookId}/download`, {
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'x-tenant-id': TENANT_ID },
             });
 
             if (!res.ok) throw new Error("Error al obtener enlace");

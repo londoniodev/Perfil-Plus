@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
 import {
@@ -36,7 +36,9 @@ function VerifyEmailContent() {
 
     const verifyEmail = async () => {
         try {
-            const res = await fetch(`${API_BASE}/auth/verify-email?token=${token}`);
+            const res = await fetch(`${API_BASE}/auth/verify-email?token=${token}`, {
+                headers: { 'x-tenant-id': TENANT_ID },
+            });
             const data = await res.json();
 
             if (res.ok) {
@@ -175,7 +177,10 @@ function ResendVerificationForm() {
         try {
             const res = await fetch(`${API_BASE}/auth/resend-verification`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
+                },
                 body: JSON.stringify({ email }),
             });
 

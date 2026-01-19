@@ -13,6 +13,7 @@ import { Input } from "@mauromera/ui";
 import { Label } from "@mauromera/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mauromera/ui";
+import { API_BASE, TENANT_ID } from '@/lib/config';
 
 
 const resetPasswordSchema = z
@@ -58,10 +59,11 @@ function ResetPasswordFormContent() {
 
         setIsLoading(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`, {
+            const response = await fetch(`${API_BASE}/auth/reset-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-tenant-id': TENANT_ID,
                 },
                 body: JSON.stringify({
                     token,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@mauromera/ui";
 import { Button } from "@mauromera/ui";
@@ -33,7 +33,10 @@ export default function RegisterPage() {
         try {
             const res = await fetch(`${API_BASE}/auth/register`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
+                },
                 credentials: "include",
                 body: JSON.stringify(formData),
             });

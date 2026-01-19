@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@mauromera/database"
+import { prisma, Prisma } from "@mauromera/database"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
@@ -110,7 +110,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         }
 
         // 6. Crear producto + variantes en transacción
-        const product = await prisma.$transaction(async (tx) => {
+        const product = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // Crear producto
             const newProduct = await tx.product.create({
                 data: {

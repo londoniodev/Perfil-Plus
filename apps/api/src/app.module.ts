@@ -67,6 +67,11 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
         SMTP_USER: Joi.string().optional(),
         SMTP_PASS: Joi.string().optional(),
         SMTP_FROM: Joi.string().optional(),
+
+        // Redis
+        REDIS_HOST: Joi.string().default('redis'),
+        REDIS_PORT: Joi.number().default(6379),
+        REDIS_PASSWORD: Joi.string().optional().allow(''),
       }),
     }),
 
@@ -99,6 +104,7 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
             host: configService.get('REDIS_HOST') || 'redis',
             port: parseInt(configService.get('REDIS_PORT') || '6379') || 6379,
           },
+          password: configService.get('REDIS_PASSWORD'), // Auth Support
           ttl: 3600 * 1000, // 1 Hora default
         }),
       }),

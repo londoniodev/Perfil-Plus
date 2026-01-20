@@ -157,26 +157,20 @@ export class AuthController {
     private setAuthCookies(res: Response, accessToken: string, refreshToken: string, hostname?: string) {
         const isProd = this.isProduction();
 
-        // Extraer dominio principal dinámicamente del hostname
-        // Ej: "www.example.com" -> ".example.com", "api.example.com" -> ".example.com"
-        let domain: string | undefined;
-        if (isProd && hostname) {
-            const parts = hostname.replace(/:\d+$/, '').split('.');
-            if (parts.length >= 2) {
-                // Obtener los últimos 2 segmentos (ej: "example.com")
-                domain = '.' + parts.slice(-2).join('.');
-            }
-        }
+        // Simplificado: No establecer dominio explícito.
+        // Esto crea una cookie "Host Only" para el dominio de la API (ej: api.xn--...).
+        // El navegador la enviará en peticiones fetch a la API siempre que credentials: 'include' esté activo.
+        // Esto evita problemas con Punycode y subdominios.
 
         // Access token cookie (7 días)
         res.cookie('accessToken', accessToken, {
-            ...getCookieOptions(isProd, domain),
+            ...getCookieOptions(isProd, undefined),
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
         });
 
         // Refresh token cookie (30 días)
         res.cookie('refreshToken', refreshToken, {
-            ...getCookieOptions(isProd, domain),
+            ...getCookieOptions(isProd, undefined),
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
         });
     }
@@ -184,17 +178,6 @@ export class AuthController {
     private clearAuthCookies(res: Response, hostname?: string) {
         const isProd = this.isProduction();
 
-        // Extraer dominio principal dinámicamente del hostname
-        let domain: string | undefined;
-        if (isProd && hostname) {
-            const parts = hostname.replace(/:\d+$/, '').split('.');
-            if (parts.length >= 2) {
-                // Obtener los últimos 2 segmentos (ej: "example.com")
-                domain = '.' + parts.slice(-2).join('.');
-            }
-        }
-
-        // Clear cookies with the domain they were set on
         const clearOptions = {
             httpOnly: true,
             secure: isProd,
@@ -202,21 +185,11 @@ export class AuthController {
             path: '/',
         };
 
-        // Clear with dynamic domain (production)
-        if (domain) {
-            res.clearCookie('accessToken', { ...clearOptions, domain });
-            res.clearCookie('refreshToken', { ...clearOptions, domain });
-
-            // Extra safety: set maxAge=0 manually
-            res.cookie('accessToken', '', { ...clearOptions, domain, maxAge: 0 });
-            res.cookie('refreshToken', '', { ...clearOptions, domain, maxAge: 0 });
-        }
-
-        // Also clear without domain (for localhost/development and as fallback)
+        // Clear without domain (Host Only match)
         res.clearCookie('accessToken', clearOptions);
         res.clearCookie('refreshToken', clearOptions);
 
-        // Extra: set expired cookies as final fallback
+        // Extra safely: set expired cookies with maxAge=0
         res.cookie('accessToken', '', { ...clearOptions, maxAge: 0 });
         res.cookie('refreshToken', '', { ...clearOptions, maxAge: 0 });
     }

@@ -2,15 +2,19 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === 'production';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const apiDomain = new URL(apiUrl).origin;
+const s3Domain = 's3.xn--alvarolondoo-khb.dev'; // From user provided info, could also be env var
+
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' data: blob: https:;
+  img-src 'self' data: blob: https: https://${s3Domain};
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;
-  connect-src 'self' https://api.mauromera.com https://*.mauromera.com http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000;
-  media-src 'self' https://*.mauromera.com blob:;
+  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000;
+  media-src 'self' https://${s3Domain} blob:;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -66,6 +70,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.xn--alvarolondoo-khb.dev",
       },
     ],
   },

@@ -2,9 +2,7 @@
 // En producción usa la URL de producción, en desarrollo usa la variable de entorno o localhost
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL
-    || (process.env.NODE_ENV === 'production'
-        ? "https://api.mauromera.com/api"
-        : "http://127.0.0.1:3001/api");
+    || "http://127.0.0.1:3001/api";
 
 // Tenant ID para arquitectura multi-tenant
 // Tenant ID para arquitectura multi-tenant

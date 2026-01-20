@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -97,7 +97,7 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
         store: await redisStore({
           socket: {
             host: configService.get('REDIS_HOST') || 'redis',
-            port: parseInt(configService.get('REDIS_PORT')) || 6379,
+            port: parseInt(configService.get('REDIS_PORT') || '6379') || 6379,
           },
           ttl: 3600 * 1000, // 1 Hora default
         }),

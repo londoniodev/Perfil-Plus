@@ -37,29 +37,28 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration - Dinámico por entorno
-  const frontendUrl = configService.get('FRONTEND_URL', 'http://localhost:3000');
+  // CORS configuration - Multi-tenant (from env var)
+  // CORS_ORIGINS should contain comma-separated list of all tenant frontend URLs
+  const corsOriginsEnv = configService.get<string>('CORS_ORIGINS', '');
+  const corsOriginsList = corsOriginsEnv
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
 
-  // En producción: solo dominios de producción
-  // En desarrollo: incluir localhost
+  // In development, always allow localhost
+  const devOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'];
   const allowedOrigins = isProduction
-    ? [
-      'https://mauromera.com',
-      'https://www.mauromera.com',
-      frontendUrl, // Por si FRONTEND_URL está configurado
-    ].filter((origin, index, arr) => arr.indexOf(origin) === index) // Eliminar duplicados
-    : [
-      frontendUrl,
-      'http://localhost:3000',
-      'http://localhost:3001',
-    ];
+    ? corsOriginsList
+    : [...corsOriginsList, ...devOrigins];
 
-  // Always log allowed origins for debugging
-  logger.log(`Active CORS Origins: ${allowedOrigins.join(', ')}`);
+  logger.log(`Active CORS Origins (${allowedOrigins.length}): ${allowedOrigins.join(', ') || 'NONE - check CORS_ORIGINS env var!'}`);
 
   app.enableCors({
     origin: (requestOrigin, callback) => {
-      if (!requestOrigin) return callback(null, true); // Allow serverside/postman
+      // Allow server-side requests (no origin) and Postman
+      if (!requestOrigin) return callback(null, true);
+
+      // Check if origin is in the allowed list
       if (allowedOrigins.includes(requestOrigin)) {
         callback(null, true);
       } else {

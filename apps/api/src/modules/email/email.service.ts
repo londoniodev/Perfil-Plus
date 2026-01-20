@@ -196,15 +196,17 @@ export class EmailService {
             dayPeriod: undefined
         } as Intl.DateTimeFormatOptions).format(endDate);
 
+        const frontendUrl = await this.getFrontendUrl();
         const html = await render(
             SubscriptionSuccessEmail({
                 name,
                 planName,
                 endDate: formattedEndDate,
+                frontendUrl,
             }),
         );
 
-        const text = `¡Bienvenido ${name}!\n\nTu suscripción ${planName} ha sido activada exitosamente.\nVálida hasta: ${formattedEndDate}\n\nYa puedes acceder a todos los cursos en: https://mauromera.com/cursos`;
+        const text = `¡Bienvenido ${name}!\n\nTu suscripción ${planName} ha sido activada exitosamente.\nVálida hasta: ${formattedEndDate}\n\nYa puedes acceder a todos los cursos en: ${frontendUrl}/cursos`;
 
         return this.sendEmail({
             to: email,
@@ -220,15 +222,16 @@ export class EmailService {
         ebookTitle: string,
         ebookSlug: string,
     ): Promise<boolean> {
+        const frontendUrl = await this.getFrontendUrl();
         const html = await render(
             EbookPurchaseEmail({
                 name,
                 ebookTitle,
                 ebookSlug,
+                frontendUrl,
             }),
         );
 
-        const frontendUrl = await this.getFrontendUrl();
         const ebookUrl = `${frontendUrl}/ebooks/${ebookSlug}`;
 
         const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: ${ebookUrl}`;

@@ -7,12 +7,14 @@ interface SubscriptionSuccessEmailProps {
     name: string;
     planName: string;
     endDate: string;
+    frontendUrl: string;
 }
 
 export const SubscriptionSuccessEmail: React.FC<SubscriptionSuccessEmailProps> = ({
     name,
     planName,
     endDate,
+    frontendUrl,
 }) => {
     return (
         <EmailLayout preview="¡Tu suscripción está activa! Bienvenido a la comunidad">
@@ -30,7 +32,7 @@ export const SubscriptionSuccessEmail: React.FC<SubscriptionSuccessEmailProps> =
             </Section>
 
             <Section style={styles.buttonContainer}>
-                <EmailButton href="https://mauromera.com/cursos">Ir a mis cursos</EmailButton>
+                <EmailButton href={`${frontendUrl}/cursos`}>Ir a mis cursos</EmailButton>
             </Section>
 
             <Hr style={styles.divider} />

@@ -7,12 +7,14 @@ interface EbookPurchaseEmailProps {
     name: string;
     ebookTitle: string;
     ebookSlug: string;
+    frontendUrl: string;
 }
 
 export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
     name,
     ebookTitle,
     ebookSlug,
+    frontendUrl,
 }) => {
     return (
         <EmailLayout preview={`Tu compra fue exitosa: ${ebookTitle}`}>
@@ -28,7 +30,7 @@ export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
             </Section>
 
             <Section style={styles.buttonContainer}>
-                <EmailButton href={`https://mauromera.com/ebooks/${ebookSlug}`}>
+                <EmailButton href={`${frontendUrl}/ebooks/${ebookSlug}`}>
                     Leer mi e-book
                 </EmailButton>
             </Section>

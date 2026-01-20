@@ -13,6 +13,7 @@ async function bootstrap() {
   app.use(helmet({
     contentSecurityPolicy: false, // Manejado por Next.js frontend
     crossOriginEmbedderPolicy: false, // Permitir embeds (videos, iframes)
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Permite cargar recursos desde otros dominios
   }));
 
   app.use(cookieParser());
@@ -63,11 +64,11 @@ async function bootstrap() {
         callback(null, true);
       } else {
         logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error(`Not allowed by CORS: ${requestOrigin}`));
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-tenant-id'],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id'],
     credentials: true,
   });
 

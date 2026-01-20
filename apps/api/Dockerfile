@@ -21,6 +21,9 @@ RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
+# Force flat node_modules to avoid symlink issues in Docker copy
+RUN echo "node-linker=hoisted" > .npmrc
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 

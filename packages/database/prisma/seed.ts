@@ -13,37 +13,42 @@ async function main() {
     console.log('🌱 Iniciando siembra de datos en LOCAL...');
 
     // 1. Asegurar Usuario Admin (Para pruebas de UI)
-    const email = 'admin@mauromera.com';
-    const hashedPassword = await bcrypt.hash('Admin123!', 10);
+    // Use env var or default to a safe example domain for seeds
+    const DOMAIN = process.env.SEED_DOMAIN || 'mauromera.com';
+    const adminEmail = `admin@${DOMAIN}`;
 
+    // Admin User
+    const adminPassword = await bcrypt.hash('Admin123!', 10);
     const adminUser = await prisma.user.upsert({
-        where: { email },
+        where: { email: adminEmail },
         update: { role: 'ADMIN' },
         create: {
-            email,
-            password: hashedPassword,
-            name: 'Admin Tester',
+            email: adminEmail,
+            name: 'Mauro Mera',
+            password: adminPassword,
             role: 'ADMIN',
             emailVerified: true,
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'
-        }
+        },
     });
     console.log('👤 Usuario Admin asegurado:', adminUser.email);
 
     // 1.5 Crear Usuario Estudiante (Rol USER por defecto)
-    const studentEmail = "alumno@mauromera.com";
+    const studentEmail = `alumno@${DOMAIN}`;
     const studentUser = await prisma.user.upsert({
         where: { email: studentEmail },
         update: {}, // Si existe, no hace nada
         create: {
             email: studentEmail,
             name: "Alumno Demo",
-            password: hashedPassword, // Reutilizamos el hash por simplicidad (Admin123!)
+            password: adminPassword, // Reutilizamos el hash por simplicidad (Admin123!)
             role: 'USER', // <--- Importante: Rol normal
             emailVerified: true,
             avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
         }
     });
+    console.log('🎓 Usuario Estudiante asegurado:', studentUser.email);
+
     console.log('🎓 Usuario Estudiante asegurado:', studentUser.email);
 
     // 2. Crear Tema con Cursos y Lecciones
@@ -305,8 +310,8 @@ async function main() {
     console.log('✅ ¡Seed completado con éxito!');
     console.log('');
     console.log('📋 Resumen:');
-    console.log('   - Usuario Admin: admin@mauromera.com (Password: Admin123!)');
-    console.log('   - Usuario Alumno: alumno@mauromera.com (Password: Admin123!)');
+    console.log(`   - Usuario Admin: ${adminEmail} (Password: Admin123!)`);
+    console.log(`   - Usuario Alumno: ${studentEmail} (Password: Admin123!)`);
     console.log('   - 1 Tema con 1 Curso y 3 Lecciones');
     console.log('   - 2 Blog Posts');
     console.log('   - 1 Ebook (modelo antiguo)');

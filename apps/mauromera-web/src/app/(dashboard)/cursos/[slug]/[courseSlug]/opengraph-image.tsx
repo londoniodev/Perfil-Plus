@@ -105,7 +105,7 @@ export default async function Image({ params }: Props) {
                             color: 'rgba(255,255,255,0.7)',
                         }}
                     >
-                        mauromera.com
+                        {new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname}
                     </div>
                 </div>
             </div>

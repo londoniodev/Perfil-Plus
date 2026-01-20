@@ -2,7 +2,7 @@ export const siteConfig = {
     name: "Mauro Mera",
     description: "Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com",
-    ogImage: "/images/hero/mauro_hero.png",
+    ogImage: "https://mauromera.com/og.jpg",
     keywords: [
         "psicólogo",
         "consultor organizacional",
@@ -15,15 +15,12 @@ export const siteConfig = {
         "bienestar"
     ],
     links: {
-        twitter: "https://twitter.com/mauromera",
-        instagram: "https://instagram.com/mauromera",
-        linkedin: "https://linkedin.com/in/mauromera",
-        github: "https://github.com/mauromera"
+        twitter: "https://twitter.com/mauromeradev",
+        github: "https://github.com/mauromera",
     },
-    contact: {
-        email: "contacto@mauromera.com",
-        phone: "+57 300 123 4567" // Placeholder
-    },
+    // Contacto
+    email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contacto@mauromera.com",
+    phone: "+57 300 123 4567", // Placeholder
     branding: {
         logo: "/images/branding/menu_logo.png",
         logoAlt: "Mauro Mera Logo"

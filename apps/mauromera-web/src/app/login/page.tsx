@@ -116,7 +116,7 @@ function LoginForm() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="admin@mauromera.com"
+                      placeholder="admin@example.com"
                       {...field}
                     />
                   </FormControl>

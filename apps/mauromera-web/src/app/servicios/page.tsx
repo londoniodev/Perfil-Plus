@@ -3,7 +3,7 @@ import { PageHeader } from "@alvarosky/ui";
 import { ServicesSelector } from "@/components/servicios/ServicesSelector";
 import { ServicesPageSchema, FAQSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
     title: "Servicios | Empresas, Explora y Psicoterapia",

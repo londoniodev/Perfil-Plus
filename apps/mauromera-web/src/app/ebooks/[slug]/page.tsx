@@ -4,7 +4,7 @@ import EbookDetailClient from "./EbookDetailClient";
 import { ProductSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 import { Ebook } from "@/types/ecommerce";
 

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { API_BASE } from '@/lib/config';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mauromera.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 interface Post {
     slug: string;

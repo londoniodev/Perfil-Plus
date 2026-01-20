@@ -10,7 +10,7 @@ import { Badge } from "@alvarosky/ui";
 import { IconArrowRight } from "@alvarosky/ui";
 import { PageHeader, AdaptiveImage } from "@alvarosky/ui";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   title: "Blog | Artículos de Psicología y Liderazgo",

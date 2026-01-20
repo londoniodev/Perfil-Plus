@@ -8,7 +8,7 @@ import { Progress } from "@alvarosky/ui";
 import { Card, CardContent } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mauromera.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 interface CoursePageProps {
     params: Promise<{ slug: string; courseSlug: string }>;

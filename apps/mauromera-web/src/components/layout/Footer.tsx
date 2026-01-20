@@ -28,7 +28,7 @@ export function Footer() {
                         <Link href="/portafolio" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Portafolio</Link>
                         <Link href="/servicios" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Servicios</Link>
                         <Link href="/blog" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Blog</Link>
-                        <Link href={`https://wa.me/${siteConfig.contact.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Contacto</Link>
+                        <Link href={`https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Contacto</Link>
                         <Link href="/politica-de-privacidad" className="text-foreground/60 hover:text-foreground transition-colors text-sm">Privacidad</Link>
                     </nav>
                 </div>

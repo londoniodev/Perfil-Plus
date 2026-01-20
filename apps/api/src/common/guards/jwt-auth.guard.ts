@@ -38,6 +38,9 @@ export class JwtAuthGuard implements CanActivate {
             const contextId = ContextIdFactory.getByRequest(request);
             const prisma = await this.moduleRef.resolve(PrismaService, contextId, { strict: false });
 
+            // Inicializar cliente Prisma (necesario porque el Guard corre antes que el Interceptor)
+            await prisma.initClient();
+
             // Cargar usuario desde la base de datos
             const user = await prisma.client.user.findUnique({
                 where: { id: payload.sub },

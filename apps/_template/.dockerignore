@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnp
+
+# Testing
+coverage
+
+# Next.js build
+.next
+out
+build
+
+# Logs
+*.log
+
+# Environment files
+.env*
+!.env.example
+
+# OS
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
+
+# Development files
+.turbo
+README.md
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Source maps
+**/*.map

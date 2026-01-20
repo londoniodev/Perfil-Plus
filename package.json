@@ -9,10 +9,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@prisma/client": "5.22.0",
+    "@types/fs-extra": "^11.0.4",
+    "fs-extra": "^11.3.3",
     "prettier": "^3.0.0",
-    "turbo": "latest",
     "prisma": "5.22.0",
-    "@prisma/client": "5.22.0"
+    "turbo": "latest"
   },
   "workspaces": [
     "apps/*",

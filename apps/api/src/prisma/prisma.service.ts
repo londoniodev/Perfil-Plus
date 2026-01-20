@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 import type { Request } from 'express';
 
 // Connection Cache global para clientes de tenant (fuera de la clase para persistir entre requests)
@@ -35,7 +35,29 @@ export class PrismaService implements OnModuleDestroy {
         this.initMasterPool();
     }
 
-    // ... (initMasterPool)
+    private initMasterPool() {
+        if (poolInitialized) return;
+
+        const databaseUrl = this.configService.get<string>('DATABASE_URL');
+        if (!databaseUrl) {
+            throw new Error('DATABASE_URL environment variable is not set');
+        }
+
+        masterPool = new Pool({
+            connectionString: databaseUrl,
+            max: 5, // Mantener pocas conexiones para el maestro
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+        });
+
+        masterPool.on('error', (err) => {
+            this.logger.error('Unexpected error on idle master client', err);
+            process.exit(-1);
+        });
+
+        poolInitialized = true;
+        this.logger.log('Master database pool initialized');
+    }
 
     /**
      * Consulta la tabla Tenant en la DB maestra para obtener el dbName.
@@ -140,6 +162,31 @@ export class PrismaService implements OnModuleDestroy {
 
         prismaClientCache.set(tenantId, newClient);
         return newClient;
+    }
+
+    /**
+     * Inicializa el cliente Prisma para el request actual basado en el tenant ID.
+     * Debe ser llamado por un interceptor o guard antes de usar el servicio.
+     */
+    async initClient() {
+        const tenantId = this.request.headers['x-tenant-id'] as string;
+        if (!tenantId) {
+            // Si no hay tenant, no inicializamos (quedará en null)
+            // Los servicios que requieran DB fallarán si intentan acceder a client
+            return;
+        }
+        this._client = await this.getOrCreateClient(tenantId);
+    }
+
+    /**
+     * Obtiene la instancia de PrismaClient inicializada para el tenant actual.
+     * Lanza error si no se ha inicializado.
+     */
+    get client(): PrismaClient {
+        if (!this._client) {
+            throw new Error('PrismaClient not initialized. Missing x-tenant-id header or initClient() not called.');
+        }
+        return this._client;
     }
 
     /**

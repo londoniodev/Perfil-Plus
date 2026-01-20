@@ -1,0 +1,41 @@
+export const siteConfig = {
+    name: "{{ title }}",
+    description: "Sitio web de {{ title }}",
+    domain: "{{ name }}.local",
+    tenantId: "{{ name }}",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:{{ port }}",
+    ogImage: "", 
+    keywords: ["{{ name }}"],
+    phone: "+00 000 000 0000",
+    email: "info@{{ name }}.local",
+    branding: {
+        logo: "/favicon.ico", 
+        logoAlt: "{{ title }} Logo"
+    },
+    features: {
+        blog: { enabled: {{#if (includes features 'blog')}}true{{else}}false{{/if}} },
+        store: { enabled: {{#if (includes features 'store')}}true{{else}}false{{/if}} },
+        lms: { enabled: {{#if (includes features 'lms')}}true{{else}}false{{/if}} },
+        portfolio: { enabled: {{#if (includes features 'portfolio')}}true{{else}}false{{/if}} },
+        ebooks: { enabled: {{#if (includes features 'ebooks')}}true{{else}}false{{/if}} },
+    },
+    mainNav: [
+        { title: "Inicio", href: "/" },
+        {{#if (includes features 'portfolio')}}
+        { title: "Portafolio", href: "/portafolio" },
+        {{/if}}
+        {{#if (includes features 'lms')}}
+        { title: "Cursos", href: "/formacion" },
+        {{/if}}
+        {{#if (includes features 'blog')}}
+        { title: "Blog", href: "/blog" },
+        {{/if}}
+        {{#if (includes features 'ebooks')}}
+        { title: "E-books", href: "/ebooks" },
+        {{/if}}
+        {{#if (includes features 'store')}}
+        { title: "Tienda", href: "/tienda" },
+        {{/if}}
+        { title: "Servicios", href: "/servicios" }
+    ]
+};

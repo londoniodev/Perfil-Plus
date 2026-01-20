@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -86,6 +88,22 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
       ttl: 60000,    // 1 minuto en milisegundos
       limit: 20,     // 20 requests por minuto (global)
     }]),
+
+    // Redis Cache
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          socket: {
+            host: configService.get('REDIS_HOST') || 'redis',
+            port: parseInt(configService.get('REDIS_PORT')) || 6379,
+          },
+          ttl: 3600 * 1000, // 1 Hora default
+        }),
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [

@@ -3,6 +3,8 @@ import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import type { Request } from 'express';
 
 // Connection Cache global para clientes de tenant (fuera de la clase para persistir entre requests)
@@ -27,119 +29,37 @@ export class PrismaService implements OnModuleDestroy {
     constructor(
         @Inject(REQUEST) private readonly request: Request,
         private readonly configService: ConfigService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) {
         // Inicializar pool maestro si no existe
         this.initMasterPool();
     }
 
-    private initMasterPool(): void {
-        if (poolInitialized) return;
-
-        const masterDbUrl = this.configService.get<string>('DATABASE_URL');
-        if (masterDbUrl && !masterPool) {
-            masterPool = new Pool({ connectionString: masterDbUrl, max: 5 });
-            this.logger.log('Master database pool initialized');
-        }
-        poolInitialized = true;
-    }
-
-    /**
-     * Getter para el cliente Prisma.
-     * Inicia la inicialización si no se ha hecho y espera a que termine.
-     * Para mantener compatibilidad con código existente que usa this.prisma.client
-     */
-    get client(): PrismaClient {
-        if (this._client) {
-            return this._client;
-        }
-
-        // Si el tenant está en cache, podemos resolver síncronamente
-        const tenantId = this.resolveTenantId();
-        const cachedDbName = tenantDbNameCache.get(tenantId);
-
-        if (cachedDbName) {
-            const existingClient = prismaClientCache.get(tenantId);
-            if (existingClient) {
-                this._client = existingClient;
-                this._tenantId = tenantId;
-                return this._client;
-            }
-        }
-
-        // Si llegamos aquí, necesitamos inicializar de forma asíncrona
-        // Lanzamos error con mensaje claro para que el desarrollador ajuste
-        throw new Error(
-            `Prisma client not ready for tenant "${tenantId}". ` +
-            `This tenant is not in cache. The first request for a new tenant may need special handling.`
-        );
-    }
-
-    /**
-     * Inicializa el cliente Prisma de forma asíncrona.
-     * Este método debe llamarse al inicio de cada request que necesite DB.
-     */
-    async initClient(): Promise<PrismaClient> {
-        if (this._client) {
-            return this._client;
-        }
-
-        // Evitar múltiples inicializaciones concurrentes
-        if (this._initPromise) {
-            return this._initPromise;
-        }
-
-        this._initPromise = this._initClientInternal();
-        return this._initPromise;
-    }
-
-    private async _initClientInternal(): Promise<PrismaClient> {
-        this._tenantId = this.resolveTenantId();
-        this._client = await this.getOrCreateClient(this._tenantId);
-        return this._client;
-    }
-
-    private resolveTenantId(): string {
-        const tenantId = this.request.headers['x-tenant-id'] as string;
-        const path = this.request.url;
-        const method = this.request.method;
-
-        // Lista de rutas públicas que NO requieren x-tenant-id
-        // (para compatibilidad con SSR de Next.js)
-        const publicRoutes = [
-            '/api/ebooks',
-            '/api/blog',
-            '/api/lms/themes',
-        ];
-
-        const isPublicRoute = publicRoutes.some(route => path?.startsWith(route));
-
-        if (!tenantId) {
-            if (isPublicRoute && method === 'GET') {
-                // Para rutas públicas de solo lectura, usar tenant por defecto
-                const defaultTenant = this.configService.get('DEFAULT_TENANT_ID', 'mauro');
-                this.logger.debug(`Public route ${path} without tenant-id, using default: ${defaultTenant}`);
-                return defaultTenant;
-            }
-
-            this.logger.error(`Missing x-tenant-id header for ${method} ${path}`);
-            throw new Error('Missing x-tenant-id header');
-        }
-
-        return tenantId;
-    }
+    // ... (initMasterPool)
 
     /**
      * Consulta la tabla Tenant en la DB maestra para obtener el dbName.
+     * Usa Redis para caching (1 hora).
      */
     private async lookupTenantDbName(slug: string): Promise<string> {
-        // Primero verificar cache en memoria
-        const cachedDbName = tenantDbNameCache.get(slug);
-        if (cachedDbName) {
-            this.logger.debug(`Tenant ${slug} found in cache → ${cachedDbName}`);
-            return cachedDbName;
+        const cacheKey = `tenant_db:${slug}`;
+
+        // 1. Buscar en Redis
+        try {
+            const cachedDbName = await this.cacheManager.get<string>(cacheKey);
+            if (cachedDbName) {
+                this.logger.debug(`Tenant ${slug} found in Redis Cache → ${cachedDbName}`);
+                return cachedDbName;
+            }
+        } catch (err) {
+            this.logger.warn(`Redis cache get failed for ${slug}: ${err}`);
         }
 
-        // Consultar base de datos maestra
+        // 2. Verificar cache en memoria (backup L1)
+        const memoryCached = tenantDbNameCache.get(slug);
+        if (memoryCached) return memoryCached;
+
+        // 3. Consultar base de datos maestra
         if (!masterPool) {
             throw new Error('Master database pool not initialized. Check DATABASE_URL env variable.');
         }
@@ -156,8 +76,16 @@ export class PrismaService implements OnModuleDestroy {
 
             const dbName = result.rows[0].dbName;
 
-            // Guardar en cache
+            // 4. Guardar en Redis (TTL 1 hora = 3600000 ms)
+            try {
+                await this.cacheManager.set(cacheKey, dbName, 3600000);
+            } catch (err) {
+                this.logger.warn(`Redis cache set failed for ${slug}: ${err}`);
+            }
+
+            // Guardar en memoria
             tenantDbNameCache.set(slug, dbName);
+
             this.logger.log(`Tenant ${slug} resolved to database: ${dbName}`);
 
             return dbName;

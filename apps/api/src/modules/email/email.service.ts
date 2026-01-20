@@ -2,13 +2,14 @@ import { Injectable, Logger, Scope, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import * as nodemailer from 'nodemailer';
+// import * as nodemailer from 'nodemailer'; // Lazy loaded
 import type { Request } from 'express';
-import { render } from '@react-email/render';
+// import { render } from '@react-email/render'; // Lazy loaded
 import { VerificationEmail } from './emails/VerificationEmail';
 import { RecoveryEmail } from './emails/RecoveryEmail';
 import { SubscriptionSuccessEmail } from './emails/SubscriptionSuccessEmail';
 import { EbookPurchaseEmail } from './emails/EbookPurchaseEmail';
+import * as React from 'react';
 
 interface SendEmailOptions {
     to: string;
@@ -59,7 +60,10 @@ export class EmailService {
         return this.configService.get('FRONTEND_URL', 'http://localhost:3000');
     }
 
-    private async getTransporter(): Promise<{ transporter: nodemailer.Transporter; from: string }> {
+    private async getTransporter(): Promise<{ transporter: any; from: string }> {
+        // Dynamic import
+        const nodemailer = await import('nodemailer');
+
         // 1. Intentar obtener configuración de la DB
         let smtpConfig: SmtpConfig | null = null;
 
@@ -153,6 +157,7 @@ export class EmailService {
         const frontendUrl = await this.getFrontendUrl();
         const verificationUrl = `${frontendUrl}/verificar-email?token=${verificationToken}`;
 
+        const { render } = await import('@react-email/render');
         const html = await render(VerificationEmail({ name, url: verificationUrl }));
         const text = `¡Hola ${name}!\n\nGracias por registrarte. Verifica tu email: ${verificationUrl}\n\nEste enlace expira en 24 horas.`;
 
@@ -172,6 +177,7 @@ export class EmailService {
         const frontendUrl = await this.getFrontendUrl();
         const recoveryUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
+        const { render } = await import('@react-email/render');
         const html = await render(RecoveryEmail({ name, url: recoveryUrl }));
         const text = `¡Hola ${name}!\n\nHemos recibido una solicitud para restablecer tu contraseña.\nVisita: ${recoveryUrl}\n\nEste enlace expira en 1 hora.`;
 
@@ -197,6 +203,7 @@ export class EmailService {
         } as Intl.DateTimeFormatOptions).format(endDate);
 
         const frontendUrl = await this.getFrontendUrl();
+        const { render } = await import('@react-email/render');
         const html = await render(
             SubscriptionSuccessEmail({
                 name,
@@ -223,6 +230,7 @@ export class EmailService {
         ebookSlug: string,
     ): Promise<boolean> {
         const frontendUrl = await this.getFrontendUrl();
+        const { render } = await import('@react-email/render');
         const html = await render(
             EbookPurchaseEmail({
                 name,

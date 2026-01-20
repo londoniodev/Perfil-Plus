@@ -2,16 +2,6 @@ import { Injectable, BadRequestException, Scope, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
-import {
-    S3Client,
-    PutObjectCommand,
-    DeleteObjectCommand,
-    GetObjectCommand,
-    CreateBucketCommand,
-    HeadBucketCommand,
-    PutBucketPolicyCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 
 export interface UploadResult {
@@ -22,7 +12,7 @@ export interface UploadResult {
 
 @Injectable({ scope: Scope.REQUEST })
 export class StorageService {
-    private s3Client: S3Client;
+    private s3Client: any = null;
     private endpoint: string;
     private publicUrl: string;
 
@@ -35,6 +25,12 @@ export class StorageService {
     ) {
         this.endpoint = this.configService.get('S3_ENDPOINT', 'http://localhost:9000');
         this.publicUrl = this.configService.get('S3_PUBLIC_URL', this.endpoint);
+    }
+
+    private async getS3Client() {
+        if (this.s3Client) return this.s3Client;
+
+        const { S3Client } = await import('@aws-sdk/client-s3');
 
         this.s3Client = new S3Client({
             endpoint: this.endpoint,
@@ -45,6 +41,8 @@ export class StorageService {
             },
             forcePathStyle: true,
         });
+
+        return this.s3Client;
     }
 
     private getTenantId(): string {
@@ -63,15 +61,18 @@ export class StorageService {
     private async ensureBucketExists(bucket: string, isPrivate: boolean): Promise<void> {
         if (StorageService.verifiedBuckets.has(bucket)) return;
 
+        const client = await this.getS3Client();
+        const { HeadBucketCommand, CreateBucketCommand } = await import('@aws-sdk/client-s3');
+
         try {
-            await this.s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+            await client.send(new HeadBucketCommand({ Bucket: bucket }));
             StorageService.verifiedBuckets.add(bucket);
         } catch (error) {
             // Si error es 404 (NotFound), creamos el bucket
             // AWS SDK v3 lanza error normal, chequeamos si es NotFound
             try {
                 console.log(`Bucket ${bucket} not found. Creating...`);
-                await this.s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
+                await client.send(new CreateBucketCommand({ Bucket: bucket }));
 
                 if (!isPrivate) {
                     await this.setPublicPolicy(bucket);
@@ -87,6 +88,9 @@ export class StorageService {
     }
 
     private async setPublicPolicy(bucket: string) {
+        const client = await this.getS3Client();
+        const { PutBucketPolicyCommand } = await import('@aws-sdk/client-s3');
+
         const policy = {
             Version: '2012-10-17',
             Statement: [
@@ -101,7 +105,7 @@ export class StorageService {
         };
 
         try {
-            await this.s3Client.send(
+            await client.send(
                 new PutBucketPolicyCommand({
                     Bucket: bucket,
                     Policy: JSON.stringify(policy),
@@ -121,11 +125,14 @@ export class StorageService {
         const bucket = this.getBucketName(isPrivate);
         await this.ensureBucketExists(bucket, isPrivate);
 
+        const client = await this.getS3Client();
+        const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+
         const extension = file.originalname.split('.').pop()?.toLowerCase();
         const key = `${folder}/${randomUUID()}.${extension}`;
 
         try {
-            await this.s3Client.send(
+            await client.send(
                 new PutObjectCommand({
                     Bucket: bucket,
                     Key: key,
@@ -155,11 +162,14 @@ export class StorageService {
         const bucket = this.getBucketName(isPrivate);
         await this.ensureBucketExists(bucket, isPrivate);
 
+        const client = await this.getS3Client();
+        const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+
         const extension = filename.split('.').pop()?.toLowerCase();
         const key = `${folder}/${randomUUID()}.${extension}`;
 
         try {
-            await this.s3Client.send(
+            await client.send(
                 new PutObjectCommand({
                     Bucket: bucket,
                     Key: key,
@@ -181,9 +191,11 @@ export class StorageService {
 
     async deleteFile(key: string, isPrivate: boolean = false): Promise<void> {
         const bucket = this.getBucketName(isPrivate);
+        const client = await this.getS3Client();
+        const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
 
         try {
-            await this.s3Client.send(
+            await client.send(
                 new DeleteObjectCommand({
                     Bucket: bucket,
                     Key: key,
@@ -196,6 +208,9 @@ export class StorageService {
 
     async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
         const bucket = this.getBucketName(true); // Siempre asumimos privado para signed URLs
+        const client = await this.getS3Client();
+        const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+        const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
 
         try {
             const command = new GetObjectCommand({
@@ -203,7 +218,7 @@ export class StorageService {
                 Key: key,
             });
 
-            return await getSignedUrl(this.s3Client, command, { expiresIn });
+            return await getSignedUrl(client, command, { expiresIn });
         } catch (error) {
             throw new BadRequestException('Error al generar URL firmada');
         }

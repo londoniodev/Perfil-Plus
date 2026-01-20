@@ -67,10 +67,11 @@ export class JwtAuthGuard implements CanActivate {
                     (!user.subscription?.endDate || new Date(user.subscription.endDate) > new Date()),
             };
         } catch (error) {
+            console.error('[JwtAuthGuard Error]:', error); // Debugging
             if (error instanceof UnauthorizedException) {
                 throw error;
             }
-            throw new UnauthorizedException('Token inválido o expirado');
+            throw new UnauthorizedException(`Token inválido o expirado: ${(error as any).message}`);
         }
 
         return true;

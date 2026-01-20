@@ -3,16 +3,69 @@ import { PaginatedResponse } from '@/types/common';
 import { API_BASE as API_BASE_URL, TENANT_ID } from './config';
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        credentials: 'include', // Importante para enviar cookies
-        headers: {
-            'Content-Type': 'application/json',
-            'x-tenant-id': TENANT_ID, // Header obligatorio para multi-tenant
-            ...options?.headers,
-        },
-        next: { revalidate: 60 }, // Revalidar cada 60 segundos
+    const isClient = typeof window !== 'undefined';
+    let token = isClient ? localStorage.getItem('token') : null;
+
+    const getHeaders = (authToken: string | null) => ({
+        'Content-Type': 'application/json',
+        'x-tenant-id': TENANT_ID,
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        ...options?.headers,
     });
+
+    let res = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        credentials: 'include',
+        headers: getHeaders(token),
+        next: { revalidate: 60 },
+    });
+
+    // Client-side 401 handling (Refresh Token Dance)
+    if (res.status === 401 && isClient) {
+        try {
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+                const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+                    method: "POST",
+                    credentials: 'include',
+                    headers: {
+                        'x-tenant-id': TENANT_ID,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refreshToken }),
+                });
+
+                if (refreshRes.ok) {
+                    const data = await refreshRes.json();
+                    if (data.accessToken) {
+                        // 1. Update Storage
+                        localStorage.setItem('token', data.accessToken);
+                        localStorage.setItem('refreshToken', data.refreshToken);
+
+                        // 2. Update Cookie (for Middleware sync)
+                        document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
+
+                        // 3. Retry original request with NEW token
+                        res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                            ...options,
+                            credentials: 'include',
+                            headers: getHeaders(data.accessToken),
+                            next: { revalidate: 60 },
+                        });
+                    }
+                } else {
+                    // Refresh failed - Logout
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('user');
+                    document.cookie = "accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+                    window.location.href = '/login?reason=session_expired';
+                }
+            }
+        } catch (error) {
+            console.error("Token refresh failed:", error);
+        }
+    }
 
     if (!res.ok) {
         throw new Error(`API Error: ${res.status}`);

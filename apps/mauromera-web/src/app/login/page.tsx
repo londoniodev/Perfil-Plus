@@ -65,6 +65,17 @@ function LoginForm() {
     }
   }, [router, searchParams]);
 
+  // Helper simple para cookies (ya que no tenemos js-cookie)
+  const setCookie = (name: string, value: string, days: number) => {
+    let expires = "";
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+  };
+
   const onSubmit = async (values: LoginValues) => {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
@@ -87,9 +98,13 @@ function LoginForm() {
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
+
+        // CRITICAL: Set cookie for Middleware (on mauromera.com)
+        setCookie("accessToken", data.accessToken, 7);
+
         window.dispatchEvent(new Event("user-login"));
       } else {
-        // Fallback for old cookie-only mode (should not happen with new backend)
+        // Fallback
         localStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("user-login"));
       }

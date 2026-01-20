@@ -7,11 +7,27 @@ import { User, AuthContextType } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to manipulate cookies
+function setCookie(name: string, value: string, days: number) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+}
+
+function deleteCookie(name: string) {
+    document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+}
+
 // Helper function to clear ALL auth data from localStorage
 function clearAllAuthData() {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
+    deleteCookie("accessToken"); // Clear middleware cookie
     // Dispatch event to notify other components
     window.dispatchEvent(new Event("user-login"));
 }
@@ -54,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         if (refreshData.accessToken) {
                             localStorage.setItem("token", refreshData.accessToken);
                             localStorage.setItem("refreshToken", refreshData.refreshToken);
+                            // Update cookie for middleware
+                            setCookie("accessToken", refreshData.accessToken, 7);
                         }
 
                         // Retry original request with NEW token

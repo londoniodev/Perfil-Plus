@@ -53,6 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (res.status === 401) {
                 try {
                     const refreshToken = localStorage.getItem("refreshToken");
+
+                    if (!refreshToken) {
+                        throw new Error("No refresh token available");
+                    }
+
                     // Refresh with Cookie (primary) OR body token (fallback)
                     const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
                         method: "POST",

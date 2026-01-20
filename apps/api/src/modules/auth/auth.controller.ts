@@ -10,10 +10,11 @@ import { Public, CurrentUser } from '../../common/decorators';
 // Cookie configuration helpers
 const getCookieOptions = (isProduction: boolean, domain?: string) => ({
     httpOnly: true,
-    secure: isProduction, // HTTPS required for Secure
-    sameSite: isProduction ? 'none' as const : 'lax' as const, // 'none' para máxima compatibilidad cross-domain
+    // Cross-site cookies (Frontend .com <-> Backend .dev) MUST be Secure and SameSite=None
+    secure: true, // Required for SameSite=None. Relies on "trust proxy" in main.ts if running behind reverse proxy
+    sameSite: 'none' as const,
     path: '/',
-    domain: domain, // Dynamic domain
+    domain: domain,
 });
 
 @Controller('auth')

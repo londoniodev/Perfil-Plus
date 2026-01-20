@@ -54,12 +54,19 @@ async function bootstrap() {
       'http://localhost:3001',
     ];
 
-  if (!isProduction) {
-    logger.debug(`CORS configured for: ${allowedOrigins.join(', ')}`);
-  }
+  // Always log allowed origins for debugging
+  logger.log(`Active CORS Origins: ${allowedOrigins.join(', ')}`);
 
   app.enableCors({
-    origin: allowedOrigins,
+    origin: (requestOrigin, callback) => {
+      if (!requestOrigin) return callback(null, true); // Allow serverside/postman
+      if (allowedOrigins.includes(requestOrigin)) {
+        callback(null, true);
+      } else {
+        logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'x-tenant-id'],
     credentials: true,

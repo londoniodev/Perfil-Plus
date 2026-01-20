@@ -22,25 +22,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const refreshUser = useCallback(async () => {
         try {
+            const token = localStorage.getItem("token");
+            const headers: HeadersInit = { 'x-tenant-id': TENANT_ID };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             let res = await fetch(`${API_BASE}/auth/me`, {
                 credentials: 'include',
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers,
             });
 
             // Si el token de acceso expiró (401), intentar refrescar
             if (res.status === 401) {
                 try {
+                    const refreshToken = localStorage.getItem("refreshToken");
+                    // Refresh with Cookie (primary) OR body token (fallback)
                     const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
                         method: "POST",
                         credentials: 'include',
-                        headers: { 'x-tenant-id': TENANT_ID },
+                        headers: {
+                            'x-tenant-id': TENANT_ID,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ refreshToken }),
                     });
 
                     if (refreshRes.ok) {
-                        // Refresco exitoso, reintentar petición original
+                        // Update tokens in localStorage if returned
+                        const refreshData = await refreshRes.json();
+                        if (refreshData.accessToken) {
+                            localStorage.setItem("token", refreshData.accessToken);
+                            localStorage.setItem("refreshToken", refreshData.refreshToken);
+                        }
+
+                        // Retry original request with NEW token
+                        const newToken = localStorage.getItem("token");
+                        const newHeaders: HeadersInit = { 'x-tenant-id': TENANT_ID };
+                        if (newToken) {
+                            newHeaders['Authorization'] = `Bearer ${newToken}`;
+                        }
+
                         res = await fetch(`${API_BASE}/auth/me`, {
                             credentials: 'include',
-                            headers: { 'x-tenant-id': TENANT_ID },
+                            headers: newHeaders,
                         });
                     }
                 } catch (refreshError) {

@@ -39,13 +39,15 @@ export class AuthController {
     ) {
         const result = await this.authService.register(dto);
 
-        // Establecer cookies
+        // Establecer cookies (Primary method for same-domain/proxied)
         const hostname = req.get('host') || req.hostname;
         this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
 
-        // Retornar usuario sin tokens en el body
+        // Retornar usuario Y tokens (Fallback for cross-domain where cookies are blocked)
         return {
             user: result.user,
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
             message: result.message,
         };
     }
@@ -73,6 +75,8 @@ export class AuthController {
 
         return {
             user: result.user,
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
         };
     }
 
@@ -82,9 +86,10 @@ export class AuthController {
     async refreshToken(
         @Req() req: Request,
         @Res({ passthrough: true }) res: Response,
+        @Body() body: { refreshToken?: string }, // Allow passing token in body too
     ) {
-        // Leer refresh token de la cookie
-        const refreshToken = req.cookies?.refreshToken;
+        // Leer refresh token de la cookie O del body (fallback)
+        const refreshToken = req.cookies?.refreshToken || body.refreshToken;
 
         if (!refreshToken) {
             res.status(401);
@@ -97,7 +102,11 @@ export class AuthController {
         const hostname = req.get('host') || req.hostname;
         this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, hostname);
 
-        return { message: 'Tokens refreshed successfully' };
+        return {
+            message: 'Tokens refreshed successfully',
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken
+        };
     }
 
     @Public() // IMPORTANT: Logout must work even with expired/invalid tokens

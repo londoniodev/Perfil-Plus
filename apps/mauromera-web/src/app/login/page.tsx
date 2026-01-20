@@ -83,8 +83,16 @@ function LoginForm() {
         throw new Error(data.message || "Credenciales inválidas");
       }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      window.dispatchEvent(new Event("user-login"));
+      if (data.accessToken) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        window.dispatchEvent(new Event("user-login"));
+      } else {
+        // Fallback for old cookie-only mode (should not happen with new backend)
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.dispatchEvent(new Event("user-login"));
+      }
 
       const redirect = searchParams.get("redirect");
       if (redirect) {

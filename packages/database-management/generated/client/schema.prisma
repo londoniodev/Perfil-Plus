@@ -1,0 +1,58 @@
+// This is the MANAGEMENT schema - separate from tenant schemas
+// Contains platform-level data: Tenants, SuperAdmin users
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ TENANT MANAGEMENT ============
+
+enum TenantStatus {
+  DEPLOYING // Database being created
+  ACTIVE // Ready to use
+  SUSPENDED // Temporarily disabled
+  DELETED // Soft deleted
+}
+
+model Tenant {
+  id     String       @id @default(cuid())
+  name   String // Display name: "Daniela Coach"
+  slug   String       @unique // Subdomain/identifier: "daniela"
+  dbName String       @unique // Database name: "tenants_daniela"
+  status TenantStatus @default(DEPLOYING)
+  plan   String       @default("free") // free, pro, enterprise
+
+  // Metadata
+  ownerEmail String? // Contact email
+  notes      String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([slug])
+}
+
+// ============ PLATFORM AUTHENTICATION ============
+
+enum PlatformRole {
+  SUPERADMIN // Full access (you)
+  SUPPORT // Read-only + limited actions
+}
+
+model PlatformUser {
+  id       String       @id @default(cuid())
+  email    String       @unique
+  password String // bcrypt hashed
+  name     String
+  role     PlatformRole @default(SUPPORT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

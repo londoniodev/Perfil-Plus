@@ -50,7 +50,6 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                     { name: "Tienda (Store)", value: "store" },
                     { name: "LMS (Cursos)", value: "lms" },
                     { name: "Portafolio", value: "portfolio" },
-                    { name: "E-books", value: "ebooks" },
                 ]
             }
         ],
@@ -74,6 +73,12 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 type: "add",
                 path: "apps/{{name}}/src/config/site.ts",
                 templateFile: "templates/site.ts.hbs",
+                force: true
+            },
+            {
+                type: "add",
+                path: "apps/{{name}}/public/manifest.json",
+                templateFile: "templates/manifest.json.hbs",
                 force: true
             },
         ],

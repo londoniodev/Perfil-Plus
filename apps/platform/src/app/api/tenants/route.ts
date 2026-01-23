@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         });
 
         // 2. Create database (async - fire and forget for now)
-        provisionDatabase(dbName, tenant.id).catch((err) => {
+        provisionDatabase(dbName, String(tenant.id)).catch((err) => {
             console.error("Provisioning failed:", err);
         });
 
@@ -110,7 +110,7 @@ async function provisionDatabase(dbName: string, tenantId: string) {
 
         // Update tenant status to ACTIVE
         await prismaManagement.tenant.update({
-            where: { id: tenantId },
+            where: { id: parseInt(tenantId) },
             data: { status: "ACTIVE" },
         });
 
@@ -119,7 +119,7 @@ async function provisionDatabase(dbName: string, tenantId: string) {
         console.error("Provisioning error:", error);
         // Update status to reflect failure
         await prismaManagement.tenant.update({
-            where: { id: tenantId },
+            where: { id: parseInt(tenantId) },
             data: { status: "SUSPENDED", notes: String(error) },
         });
         throw error;

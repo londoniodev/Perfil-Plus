@@ -23,6 +23,10 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma Generated
+packages/database/generated/
+packages/database-management/generated/
+
 # Environment & Secrets (CRITICAL)
 .env
 .env.local

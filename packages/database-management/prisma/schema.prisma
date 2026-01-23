@@ -12,28 +12,22 @@ datasource db {
 }
 
 // ============ TENANT MANAGEMENT ============
-
-enum TenantStatus {
-  DEPLOYING  // Database being created
-  ACTIVE     // Ready to use
-  SUSPENDED  // Temporarily disabled
-  DELETED    // Soft deleted
-}
+// Using String instead of enum for database compatibility
 
 model Tenant {
-  id        String       @id @default(cuid())
-  name      String       // Display name: "Daniela Coach"
-  slug      String       @unique // Subdomain/identifier: "daniela"
-  dbName    String       @unique // Database name: "tenants_daniela"
-  status    TenantStatus @default(DEPLOYING)
-  plan      String       @default("free") // free, pro, enterprise
+  id        String   @id @default(cuid())
+  name      String?  // Display name: "Daniela Coach" - optional for legacy rows
+  slug      String   @unique // Subdomain/identifier: "daniela"
+  dbName    String   // Database name: "tenants_daniela"
+  status    String   @default("ACTIVE") // DEPLOYING, ACTIVE, SUSPENDED, DELETED
+  plan      String   @default("free") // free, pro, enterprise
   
   // Metadata
   ownerEmail String?     // Contact email
   notes      String?     @db.Text
   
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  updatedAt DateTime     @default(now()) @updatedAt
 
   @@index([status])
   @@index([slug])
@@ -41,18 +35,13 @@ model Tenant {
 
 // ============ PLATFORM AUTHENTICATION ============
 
-enum PlatformRole {
-  SUPERADMIN  // Full access (you)
-  SUPPORT     // Read-only + limited actions
-}
-
 model PlatformUser {
-  id        String       @id @default(cuid())
-  email     String       @unique
-  password  String       // bcrypt hashed
-  name      String
-  role      PlatformRole @default(SUPPORT)
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hashed
+  name      String?  // optional
+  role      String   @default("SUPERADMIN") // SUPERADMIN, SUPPORT
   
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

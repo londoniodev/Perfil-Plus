@@ -90,12 +90,12 @@ export default async function TenantsPage() {
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
                                                 <span className="text-lg font-bold text-indigo-400">
-                                                    {tenant.name.charAt(0).toUpperCase()}
+                                                    {(tenant.name || tenant.slug).charAt(0).toUpperCase()}
                                                 </span>
                                             </div>
                                             <div>
                                                 <h3 className="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">
-                                                    {tenant.name}
+                                                    {tenant.name || tenant.slug}
                                                 </h3>
                                                 <p className="text-sm text-slate-400">
                                                     <span className="text-slate-500">Slug:</span> {tenant.slug}

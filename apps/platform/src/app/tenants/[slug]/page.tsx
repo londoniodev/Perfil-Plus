@@ -63,12 +63,12 @@ export default async function TenantDetailPage({ params }: Props) {
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
                         <span className="text-2xl font-bold text-indigo-400">
-                            {tenant.name.charAt(0).toUpperCase()}
+                            {(tenant.name || tenant.slug).charAt(0).toUpperCase()}
                         </span>
                     </div>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h2 className="text-3xl font-bold text-white">{tenant.name}</h2>
+                            <h2 className="text-3xl font-bold text-white">{tenant.name || tenant.slug}</h2>
                             <Badge
                                 className={
                                     tenant.status === "ACTIVE"

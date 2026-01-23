@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "main": "./tailwind.config.ts",
     "types": "./tailwind.config.ts",
-    "devDependencies": {
+    "dependencies": {
         "tailwindcss": "^3.4.1",
         "tailwindcss-animate": "^1.0.7",
         "@tailwindcss/typography": "^0.5.10",

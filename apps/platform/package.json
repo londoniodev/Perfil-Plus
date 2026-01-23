@@ -19,7 +19,8 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "next-auth": "^4.24.0",
-        "pg": "^8.17.1"
+        "pg": "^8.17.1",
+        "jose": "^6.0.14"
     },
     "devDependencies": {
         "@alvarosky/tailwind-config": "workspace:*",

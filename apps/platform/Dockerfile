@@ -1,9 +1,13 @@
 # ============================================
 # Platform Admin - Multi-stage Dockerfile
+# Using Debian-slim for Prisma compatibility
 # ============================================
 
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 RUN npm install -g pnpm@9
+
+# Install OpenSSL for Prisma
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # ============================================
 # Stage 1: Install dependencies
@@ -42,7 +46,7 @@ COPY packages/config-typescript ./packages/config-typescript
 COPY apps/platform ./apps/platform
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
-# Generate Prisma client
+# Generate Prisma client for linux target
 RUN cd packages/database-management && npx prisma generate
 
 # Build the app
@@ -52,22 +56,26 @@ RUN pnpm build --filter=@alvarosky/platform
 # ============================================
 # Stage 3: Production
 # ============================================
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
+
+# Install OpenSSL for Prisma runtime
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs
+RUN useradd --system --uid 1001 nextjs
 
-# Copy built assets
-COPY --from=builder /app/apps/platform/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/apps/platform/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/platform/.next/static ./apps/platform/.next/static
-
-# Copy Prisma generated client
-COPY --from=builder /app/packages/database-management/generated ./packages/database-management/generated
+# Copy built assets and dependencies
+COPY --from=builder /app/apps/platform/public ./apps/platform/public
+COPY --from=builder /app/apps/platform/.next ./apps/platform/.next
+COPY --from=builder /app/apps/platform/package.json ./apps/platform/package.json
+COPY --from=builder /app/apps/platform/node_modules ./apps/platform/node_modules
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
@@ -76,4 +84,5 @@ EXPOSE 4000
 ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/platform/server.js"]
+WORKDIR /app/apps/platform
+CMD ["npx", "next", "start", "-p", "4000"]

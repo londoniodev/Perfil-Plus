@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Button, Input, Label } from "@alvarosky/ui";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function NewTenantPage() {
     const router = useRouter();
@@ -52,69 +53,141 @@ export default function NewTenantPage() {
     };
 
     return (
-        <main className="container mx-auto p-8 max-w-2xl">
-            <Link href="/tenants" className="text-sm text-muted-foreground hover:underline mb-4 block">
-                ← Volver a Tenants
-            </Link>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+            {/* Background decoration */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl" />
+            </div>
 
-            <h1 className="text-3xl font-bold mb-8">Crear Nuevo Tenant</h1>
-
-            <Card className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && (
-                        <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm">
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Nombre del Cliente</Label>
-                        <Input
-                            id="name"
-                            placeholder="Ej: Daniela Coach"
-                            value={formData.name}
-                            onChange={(e) => handleSlugify(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="slug">Slug (identificador único)</Label>
-                        <Input
-                            id="slug"
-                            placeholder="ej: daniela-coach"
-                            value={formData.slug}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                            required
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Base de datos: tenants_{formData.slug || "xxx"}
-                        </p>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email del Propietario (opcional)</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="owner@example.com"
-                            value={formData.ownerEmail}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, ownerEmail: e.target.value }))}
-                        />
-                    </div>
-
-                    <div className="flex gap-4">
-                        <Button type="submit" disabled={loading}>
-                            {loading ? "Creando..." : "Crear Tenant"}
-                        </Button>
-                        <Link href="/tenants">
-                            <Button type="button" variant="outline">
-                                Cancelar
-                            </Button>
+            {/* Header */}
+            <header className="relative border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-xl">
+                <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="text-lg font-bold text-white">Platform Admin</h1>
+                                <p className="text-xs text-slate-400">Control Tower</p>
+                            </div>
                         </Link>
                     </div>
-                </form>
-            </Card>
-        </main>
+                    <LogoutButton />
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="relative container mx-auto px-6 py-12 max-w-2xl">
+                <Link href="/tenants" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Volver a Tenants
+                </Link>
+
+                <h2 className="text-3xl font-bold text-white mb-2">Crear Nuevo Tenant</h2>
+                <p className="text-slate-400 mb-8">Provisiona una nueva base de datos para un cliente.</p>
+
+                <Card className="p-8 bg-slate-900/50 backdrop-blur border-slate-800/50">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {error && (
+                            <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="name" className="text-slate-300">Nombre del Cliente</Label>
+                            <Input
+                                id="name"
+                                placeholder="Ej: Daniela Coach"
+                                value={formData.name}
+                                onChange={(e) => handleSlugify(e.target.value)}
+                                required
+                                className="bg-slate-800/50 border-slate-700 focus:border-indigo-500"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="slug" className="text-slate-300">Slug (identificador único)</Label>
+                            <Input
+                                id="slug"
+                                placeholder="ej: daniela-coach"
+                                value={formData.slug}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                                required
+                                className="bg-slate-800/50 border-slate-700 focus:border-indigo-500"
+                            />
+                            <p className="text-xs text-slate-500">
+                                Base de datos: <span className="text-indigo-400 font-mono">tenants_{formData.slug || "xxx"}</span>
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-slate-300">Email del Propietario (opcional)</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="owner@example.com"
+                                value={formData.ownerEmail}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, ownerEmail: e.target.value }))}
+                                className="bg-slate-800/50 border-slate-700 focus:border-indigo-500"
+                            />
+                        </div>
+
+                        <div className="flex gap-4 pt-4">
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        Creando...
+                                    </span>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        Crear Tenant
+                                    </>
+                                )}
+                            </Button>
+                            <Link href="/tenants">
+                                <Button type="button" variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
+                                    Cancelar
+                                </Button>
+                            </Link>
+                        </div>
+                    </form>
+                </Card>
+
+                {/* Info Card */}
+                <Card className="mt-6 p-4 bg-indigo-500/10 border-indigo-500/20">
+                    <div className="flex gap-3">
+                        <svg className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-sm text-indigo-300">
+                            <p className="font-medium mb-1">¿Qué sucede al crear un tenant?</p>
+                            <ul className="text-indigo-400/80 space-y-1">
+                                <li>• Se crea una nueva base de datos PostgreSQL</li>
+                                <li>• Se ejecutan las migraciones automáticamente</li>
+                                <li>• El estado cambiará a ACTIVE cuando esté listo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </Card>
+            </main>
+        </div>
     );
 }

@@ -21,6 +21,9 @@ export default function NewTenantPage() {
         currency: "COP",
         mpPublicKey: "",
         mpAccessToken: "",
+        mpWebhookSecret: "",
+        mpClientId: "",
+        mpClientSecret: "",
         smtpJson: "",
         // Features
         blogEnabled: true,
@@ -195,7 +198,7 @@ export default function NewTenantPage() {
                         </div>
 
                         {/* MercadoPago */}
-                        <div className="grid gap-4 sm:grid-cols-2 mb-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="mpPublicKey" className="text-slate-300">MercadoPago Public Key</Label>
                                 <Input
@@ -215,6 +218,45 @@ export default function NewTenantPage() {
                                     placeholder="APP_USR-xxxxx"
                                     value={formData.mpAccessToken}
                                     onChange={(e) => setFormData((prev) => ({ ...prev, mpAccessToken: e.target.value }))}
+                                    className="bg-slate-800/50 border-slate-700 focus:border-indigo-500 font-mono text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="mpWebhookSecret" className="text-slate-300">
+                                    Webhook Secret
+                                    <span className="ml-1 text-red-400">*</span>
+                                </Label>
+                                <Input
+                                    id="mpWebhookSecret"
+                                    type="password"
+                                    placeholder="Secreto para validar webhooks"
+                                    value={formData.mpWebhookSecret}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, mpWebhookSecret: e.target.value }))}
+                                    className="bg-slate-800/50 border-slate-700 focus:border-indigo-500 font-mono text-sm"
+                                />
+                                <p className="text-xs text-slate-500">Crítico para validar firmas de notificaciones</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="mpClientId" className="text-slate-300">Client ID</Label>
+                                <Input
+                                    id="mpClientId"
+                                    placeholder="Identificador de la aplicación"
+                                    value={formData.mpClientId}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, mpClientId: e.target.value }))}
+                                    className="bg-slate-800/50 border-slate-700 focus:border-indigo-500 font-mono text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label htmlFor="mpClientSecret" className="text-slate-300">Client Secret</Label>
+                                <Input
+                                    id="mpClientSecret"
+                                    type="password"
+                                    placeholder="Secreto de la aplicación"
+                                    value={formData.mpClientSecret}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, mpClientSecret: e.target.value }))}
                                     className="bg-slate-800/50 border-slate-700 focus:border-indigo-500 font-mono text-sm"
                                 />
                             </div>

@@ -16,6 +16,9 @@ interface CreateTenantBody {
     currency: string;
     mpPublicKey?: string;
     mpAccessToken?: string;
+    mpWebhookSecret?: string;
+    mpClientId?: string;
+    mpClientSecret?: string;
     smtpJson?: string;
     // Features
     blogEnabled?: boolean;
@@ -46,6 +49,9 @@ export async function POST(request: NextRequest) {
             currency,
             mpPublicKey,
             mpAccessToken,
+            mpWebhookSecret,
+            mpClientId,
+            mpClientSecret,
             smtpJson,
             blogEnabled,
             storeEnabled,
@@ -106,6 +112,9 @@ export async function POST(request: NextRequest) {
             mercadopago: {
                 publicKey: mpPublicKey || "",
                 accessToken: mpAccessToken || "",
+                webhookSecret: mpWebhookSecret || "",
+                clientId: mpClientId || "",
+                clientSecret: mpClientSecret || "",
             },
             smtp: smtpConfig,
             features: {
@@ -137,6 +146,9 @@ interface TenantConfigValue {
     mercadopago: {
         publicKey: string;
         accessToken: string;
+        webhookSecret: string;
+        clientId: string;
+        clientSecret: string;
     };
     smtp: object | null;
     features: {

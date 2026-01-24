@@ -48,6 +48,28 @@ export class PaymentsService {
         }
     }
 
+    private async getTenantCurrency(): Promise<string> {
+        try {
+            const setting = await this.prisma.client.systemSetting.findUnique({
+                where: { key: 'TENANT_CONFIG' },
+            });
+
+            if (!setting || !setting.value) {
+                this.logger.warn('TENANT_CONFIG not found, using default currency COP');
+                return 'COP';
+            }
+
+            const config = typeof setting.value === 'string'
+                ? JSON.parse(setting.value)
+                : setting.value;
+
+            return config.currency || 'COP';
+        } catch (error) {
+            this.logger.error('Error fetching tenant currency', error);
+            return 'COP'; // Fallback
+        }
+    }
+
     private async initMercadoPago() {
         if (this.mp) return; // Ya inicializado
 
@@ -130,6 +152,7 @@ export class PaymentsService {
 
         const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
         const subscriptionPrice = 15; // USD - Precio mensual
+        const currency = await this.getTenantCurrency();
 
         // Crear preferencia de pago en Mercado Pago
         const preferenceData = {
@@ -140,7 +163,7 @@ export class PaymentsService {
                     description: 'Acceso completo a todos los cursos, contenido premium y evaluaciones',
                     quantity: 1,
                     unit_price: subscriptionPrice,
-                    currency_id: 'USD',
+                    currency_id: currency,
                 },
             ],
             payer: {
@@ -250,6 +273,7 @@ export class PaymentsService {
         }
 
         const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+        const currency = await this.getTenantCurrency();
 
         const preferenceData = {
             items: [
@@ -259,7 +283,7 @@ export class PaymentsService {
                     description: ebook.description.substring(0, 255),
                     quantity: 1,
                     unit_price: Number(ebook.price), // Convert Decimal to number
-                    currency_id: 'USD',
+                    currency_id: currency,
                 },
             ],
             payer: {

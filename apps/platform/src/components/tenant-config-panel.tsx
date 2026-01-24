@@ -150,8 +150,8 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                     <div className="p-6">
                         {message && (
                             <div className={`mb-4 p-3 rounded-lg text-sm border ${message.type === "success"
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                    : "bg-red-500/10 text-red-400 border-red-500/20"
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                : "bg-red-500/10 text-red-400 border-red-500/20"
                                 }`}>
                                 {message.type === "success" ? "✓ " : "✗ "}{message.text}
                             </div>
@@ -207,6 +207,36 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                                             autoComplete="new-password"
                                             data-1p-ignore="true"
                                         />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Webhook Secret</Label>
+                                        <Input
+                                            type="password"
+                                            value={String(settings.mp_webhook_secret || "")}
+                                            onChange={(e) => updateSetting("mp_webhook_secret", e.target.value)}
+                                            className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                            autoComplete="new-password"
+                                        />
+                                    </div>
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-300">Client ID</Label>
+                                            <Input
+                                                value={String(settings.mp_client_id || "")}
+                                                onChange={(e) => updateSetting("mp_client_id", e.target.value)}
+                                                className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-300">Client Secret</Label>
+                                            <Input
+                                                type="password"
+                                                value={String(settings.mp_client_secret || "")}
+                                                onChange={(e) => updateSetting("mp_client_secret", e.target.value)}
+                                                className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                                autoComplete="new-password"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

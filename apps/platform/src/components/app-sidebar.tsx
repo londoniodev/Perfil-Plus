@@ -2,13 +2,16 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import {
   Home,
   Users,
   Database,
   Settings,
-  LogOut,
   ChevronsUpDown,
+  Plus,
+  Box,
+  ChevronRight,
 } from "lucide-react"
 
 import {
@@ -20,6 +23,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
 } from "@/components/ui/sidebar"
 import { LogoutButton } from "@/components/logout-button"
 import {
@@ -29,32 +38,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Platform menu items
-const navMain = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Tenants",
-    url: "/tenants",
-    icon: Users,
-  },
-  {
-    title: "Bases de Datos",
-    url: "/databases",
-    icon: Database,
-  },
-  {
-    title: "Configuración",
-    url: "/settings",
-    icon: Settings,
-  },
-]
+interface TenantItem {
+  name: string;
+  slug: string;
+}
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  tenants?: TenantItem[];
+}
+
+export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
   const pathname = usePathname()
+  // Helper to check if a main path or any of its children is active
   const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/")
 
   return (
@@ -79,27 +74,71 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navMain.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(item.url)}
-                tooltip={item.title}
-              >
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
+          {/* Dashboard */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/")} tooltip="Dashboard">
+              <Link href="/">
+                <Home />
+                <span>Dashboard</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {/* Tenants Section (Collapsible) */}
+          <Collapsible defaultOpen className="group/collapsible" asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton tooltip="Tenants" isActive={isActive("/tenants")}>
+                  <Users />
+                  <span>Tenants</span>
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuLink href="/tenants" title="Ver Todos" icon={<Box className="w-4 h-4" />} active={pathname === "/tenants"} />
+                {tenants.map(tenant => (
+                  <SidebarMenuLink
+                    key={tenant.slug}
+                    href={`/tenants/${tenant.slug}`}
+                    title={tenant.name || tenant.slug}
+                    active={pathname === `/tenants/${tenant.slug}`}
+                    className="pl-8"
+                  />
+                ))}
+                <SidebarMenuLink
+                  href="/tenants/new"
+                  title="Crear Tenant"
+                  icon={<Plus className="w-4 h-4" />}
+                  active={pathname === "/tenants/new"}
+                  className="text-primary hover:text-primary pl-8"
+                />
+              </CollapsibleContent>
             </SidebarMenuItem>
-          ))}
+          </Collapsible>
+
+          {/* Other Items */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/databases")} tooltip="Bases de Datos">
+              <Link href="/databases">
+                <Database />
+                <span>Bases de Datos</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip="Configuración">
+              <Link href="/settings">
+                <Settings />
+                <span>Configuración</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
+
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            {/* Using custom LogoutButton but wrapping it to fit sidebar style if needed, 
-                            or just using DropdownMenu for user profile like Shadcn example */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
@@ -135,5 +174,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  )
+}
+
+function SidebarMenuLink({ href, title, icon, active, className }: { href: string, title: string, icon?: React.ReactNode, active: boolean, className?: string }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild isActive={active} className={className}>
+        <Link href={href}>
+          {icon}
+          <span>{title}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   )
 }

@@ -18,6 +18,91 @@ async function getTenantPool(dbName: string) {
     });
 }
 
+// Estructura esperada del TENANT_CONFIG en la DB
+interface TenantConfigValue {
+    name?: string;
+    slug?: string;
+    currency?: string;
+    mercadopago?: {
+        publicKey?: string;
+        accessToken?: string;
+    };
+    smtp?: {
+        host?: string;
+        port?: number;
+        secure?: boolean;
+        auth?: {
+            user?: string;
+            pass?: string;
+        };
+    };
+    features?: {
+        blog?: boolean;
+        store?: boolean;
+        lms?: boolean;
+    };
+    theme?: string;
+    primary_color?: string;
+    api_key_openai?: string;
+}
+
+// Aplanar el objeto TENANT_CONFIG para el editor
+function flattenConfig(config: TenantConfigValue): Record<string, unknown> {
+    return {
+        // Básicos
+        theme: config.theme || "",
+        primary_color: config.primary_color || "#000000",
+        currency: config.currency || "COP",
+
+        // Features
+        enable_blog: config.features?.blog !== false,
+        enable_store: config.features?.store !== false,
+        enable_lms: config.features?.lms === true,
+
+        // APIs
+        api_key_openai: config.api_key_openai || "",
+
+        // MercadoPago
+        mp_public_key: config.mercadopago?.publicKey || "",
+        mp_access_token: config.mercadopago?.accessToken || "",
+
+        // SMTP
+        smtp_host: config.smtp?.host || "",
+        smtp_port: config.smtp?.port || 587,
+        smtp_secure: config.smtp?.secure || false,
+        smtp_user: config.smtp?.auth?.user || "",
+        smtp_pass: config.smtp?.auth?.pass || "",
+    };
+}
+
+// Reconstruir la estructura de TENANT_CONFIG desde los datos aplanados
+function unflattenConfig(flat: Record<string, unknown>): TenantConfigValue {
+    return {
+        theme: String(flat.theme || ""),
+        primary_color: String(flat.primary_color || "#000000"),
+        currency: String(flat.currency || "COP"),
+        api_key_openai: String(flat.api_key_openai || ""),
+        mercadopago: {
+            publicKey: String(flat.mp_public_key || ""),
+            accessToken: String(flat.mp_access_token || ""),
+        },
+        smtp: {
+            host: String(flat.smtp_host || ""),
+            port: Number(flat.smtp_port) || 587,
+            secure: Boolean(flat.smtp_secure),
+            auth: {
+                user: String(flat.smtp_user || ""),
+                pass: String(flat.smtp_pass || ""),
+            },
+        },
+        features: {
+            blog: Boolean(flat.enable_blog),
+            store: Boolean(flat.enable_store),
+            lms: Boolean(flat.enable_lms),
+        },
+    };
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
     const { slug } = await params;
 
@@ -36,17 +121,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const pool = await getTenantPool(tenant.dbName);
 
         try {
-            // Fetch all SystemSettings
+            // Fetch TENANT_CONFIG from SystemSetting
             const result = await pool.query(
-                'SELECT key, value FROM "SystemSetting"'
+                `SELECT value FROM "SystemSetting" WHERE key = 'TENANT_CONFIG' LIMIT 1`
             );
 
-            const settings: Record<string, unknown> = {};
-            for (const row of result.rows) {
-                settings[row.key] = row.value;
+            if (result.rows.length === 0) {
+                // No hay config, retornar valores por defecto
+                return NextResponse.json(flattenConfig({}));
             }
 
-            return NextResponse.json(settings);
+            // Parsear el JSON almacenado
+            let configValue: TenantConfigValue = {};
+            try {
+                const rawValue = result.rows[0].value;
+                configValue = typeof rawValue === "string"
+                    ? JSON.parse(rawValue)
+                    : rawValue;
+            } catch (parseError) {
+                console.error("Error parsing TENANT_CONFIG:", parseError);
+            }
+
+            // Aplanar y retornar
+            return NextResponse.json(flattenConfig(configValue));
         } finally {
             await pool.end();
         }
@@ -76,21 +173,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         const pool = await getTenantPool(dbName);
 
         try {
-            // Upsert each setting
-            for (const [key, value] of Object.entries(settings)) {
-                if (value === undefined || value === null || value === "") {
-                    // Delete empty settings
-                    await pool.query('DELETE FROM "SystemSetting" WHERE key = $1', [key]);
-                } else {
-                    // Upsert setting
-                    await pool.query(
-                        `INSERT INTO "SystemSetting" (id, key, value, "isPublic", "createdAt", "updatedAt")
-             VALUES (gen_random_uuid()::text, $1, $2, false, NOW(), NOW())
-             ON CONFLICT (key) DO UPDATE SET value = $2, "updatedAt" = NOW()`,
-                        [key, JSON.stringify(value)]
-                    );
-                }
-            }
+            // Reconstruir el objeto TENANT_CONFIG
+            const configValue = unflattenConfig(settings);
+
+            // Upsert TENANT_CONFIG
+            await pool.query(
+                `INSERT INTO "SystemSetting" (id, key, value, "isPublic", "createdAt", "updatedAt")
+                 VALUES (gen_random_uuid()::text, 'TENANT_CONFIG', $1, false, NOW(), NOW())
+                 ON CONFLICT (key) DO UPDATE SET value = $1, "updatedAt" = NOW()`,
+                [JSON.stringify(configValue)]
+            );
 
             return NextResponse.json({ success: true });
         } finally {

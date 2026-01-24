@@ -30,6 +30,7 @@ export * from "./tabs";
 export * from "./accordion";
 export * from "./sheet";
 export * from "./navigation";
+export * from "./sidebar";
 export * from "./table";
 
 // Feedback

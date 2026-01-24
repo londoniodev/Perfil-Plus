@@ -11,6 +11,7 @@
     "dependencies": {
         "@alvarosky/database-management": "workspace:*",
         "@alvarosky/ui": "workspace:*",
+        "@radix-ui/react-collapsible": "^1.1.12",
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-dropdown-menu": "^2.1.16",
         "@radix-ui/react-label": "^2.1.8",
@@ -25,12 +26,12 @@
         "clsx": "^2.1.1",
         "jose": "^6.0.14",
         "lucide-react": "^0.562.0",
-        "tailwind-merge": "^2.3.0",
         "next": "^15.1.0",
         "next-auth": "^4.24.0",
         "pg": "^8.17.1",
         "react": "^19.0.0",
-        "react-dom": "^19.0.0"
+        "react-dom": "^19.0.0",
+        "tailwind-merge": "^2.3.0"
     },
     "devDependencies": {
         "@alvarosky/tailwind-config": "workspace:*",

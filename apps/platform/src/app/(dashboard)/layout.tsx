@@ -12,7 +12,7 @@ export default async function DashboardLayout({
     const tenants = await prismaManagement.tenant.findMany({
         select: { name: true, slug: true },
         orderBy: { name: 'asc' }
-    });
+    }).then(items => items.map(t => ({ ...t, name: t.name ?? t.slug })));
 
     return (
         <SidebarProvider>

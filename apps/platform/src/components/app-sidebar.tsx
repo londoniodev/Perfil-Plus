@@ -26,10 +26,12 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+} from "@/components/ui/sidebar"
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/collapsible"
 import { LogoutButton } from "@/components/logout-button"
 import {
   DropdownMenu,

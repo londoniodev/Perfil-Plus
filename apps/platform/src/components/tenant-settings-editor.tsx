@@ -1,7 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Input, Label, Switch } from "@alvarosky/ui";
+import {
+    Button,
+    Input,
+    Label,
+    Switch,
+    Alert,
+    AlertDescription,
+    AlertTitle,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Separator,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle
+} from "@alvarosky/ui";
+import { Info, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface Props {
     tenantSlug: string;
@@ -101,11 +120,8 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
 
     if (loading) {
         return (
-            <div className="flex items-center gap-2 text-slate-400">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
+            <div className="flex items-center justify-center p-8 text-muted-foreground">
+                <Loader2 className="animate-spin h-6 w-6 mr-2" />
                 Cargando configuración...
             </div>
         );
@@ -118,7 +134,7 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
         if (schema.type === "boolean") {
             return (
                 <div className="flex items-center justify-between py-2">
-                    <Label htmlFor={key} className="text-slate-300 cursor-pointer">
+                    <Label htmlFor={key} className="cursor-pointer">
                         {schema.label}
                     </Label>
                     <Switch
@@ -132,42 +148,44 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
 
         if (schema.type === "select") {
             return (
-                <div className="space-y-1">
-                    <Label htmlFor={key} className="text-slate-300">{schema.label}</Label>
-                    <select
-                        id={key}
+                <div className="space-y-2">
+                    <Label htmlFor={key}>{schema.label}</Label>
+                    <Select
                         value={String(value || "")}
-                        onChange={(e) => updateSetting(key, e.target.value)}
-                        className="w-full p-2 rounded-md bg-slate-800/50 border border-slate-700 text-white focus:border-indigo-500 focus:outline-none"
+                        onValueChange={(val) => updateSetting(key, val)}
                     >
-                        <option value="">Seleccionar...</option>
-                        {schema.options.map((opt) => (
-                            <option key={opt} value={opt}>
-                                {opt}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {schema.options.map((opt) => (
+                                <SelectItem key={opt} value={opt}>
+                                    {opt}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             );
         }
 
         if (schema.type === "color") {
             return (
-                <div className="space-y-1">
-                    <Label htmlFor={key} className="text-slate-300">{schema.label}</Label>
+                <div className="space-y-2">
+                    <Label htmlFor={key}>{schema.label}</Label>
                     <div className="flex gap-2">
                         <Input
                             id={key}
                             type="color"
                             value={String(value || "#000000")}
                             onChange={(e) => updateSetting(key, e.target.value)}
-                            className="w-16 h-10 p-1 bg-slate-800/50 border-slate-700"
+                            className="w-16 h-10 p-1 cursor-pointer"
                         />
                         <Input
                             value={String(value || "")}
                             onChange={(e) => updateSetting(key, e.target.value)}
                             placeholder="#000000"
-                            className="flex-1 bg-slate-800/50 border-slate-700"
+                            className="flex-1 font-mono"
                             autoComplete="off"
                         />
                     </div>
@@ -177,14 +195,13 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
 
         if (schema.type === "number") {
             return (
-                <div className="space-y-1">
-                    <Label htmlFor={key} className="text-slate-300">{schema.label}</Label>
+                <div className="space-y-2">
+                    <Label htmlFor={key}>{schema.label}</Label>
                     <Input
                         id={key}
                         type="number"
                         value={String(value || "")}
                         onChange={(e) => updateSetting(key, parseInt(e.target.value) || 0)}
-                        className="bg-slate-800/50 border-slate-700"
                         autoComplete="off"
                     />
                 </div>
@@ -193,15 +210,15 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
 
         // text or secret
         return (
-            <div className="space-y-1">
-                <Label htmlFor={key} className="text-slate-300">{schema.label}</Label>
+            <div className="space-y-2">
+                <Label htmlFor={key}>{schema.label}</Label>
                 <Input
                     id={key}
                     type={schema.type === "secret" ? "password" : "text"}
                     value={String(value || "")}
                     onChange={(e) => updateSetting(key, e.target.value)}
                     placeholder={`Ingresa ${schema.label.toLowerCase()}`}
-                    className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                    className="font-mono text-sm"
                     autoComplete="new-password"
                     data-1p-ignore="true"
                     data-lpignore="true"
@@ -211,63 +228,75 @@ export function TenantSettingsEditor({ tenantSlug, tenantDbName }: Props) {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-4xl mx-auto">
             {/* Formulario oculto para evitar autocomplete */}
             <form style={{ display: "none" }} autoComplete="off">
                 <input type="text" name="fakeusernameremembered" />
                 <input type="password" name="fakepasswordremembered" />
             </form>
 
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Configuración del Tenant</h2>
+                    <p className="text-muted-foreground">Administra las variables de entorno y características.</p>
+                </div>
+                <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                    {saving ? (
+                        <>
+                            <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                            Guardando...
+                        </>
+                    ) : (
+                        "Guardar Cambios"
+                    )}
+                </Button>
+            </div>
+
             {error && (
-                <div className="bg-red-500/10 text-red-400 p-3 rounded-lg text-sm border border-red-500/20">
-                    {error}
-                </div>
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             )}
+
             {success && (
-                <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg text-sm border border-emerald-500/20">
-                    ✓ Configuración guardada correctamente
-                </div>
+                <Alert className="border-emerald-500/50 text-emerald-500 bg-emerald-500/10">
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertTitle>Éxito</AlertTitle>
+                    <AlertDescription>La configuración se ha guardado correctamente.</AlertDescription>
+                </Alert>
             )}
 
-            {sections.map((section) => {
-                const sectionKeys = (Object.keys(settingsSchema) as SettingsKey[]).filter(
-                    (k) => settingsSchema[k].section === section.key
-                );
+            <div className="grid gap-6">
+                {sections.map((section) => {
+                    const sectionKeys = (Object.keys(settingsSchema) as SettingsKey[]).filter(
+                        (k) => settingsSchema[k].section === section.key
+                    );
 
-                if (sectionKeys.length === 0) return null;
+                    if (sectionKeys.length === 0) return null;
 
-                return (
-                    <div key={section.key} className="space-y-3">
-                        <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wide flex items-center gap-2">
-                            <span>{section.icon}</span>
-                            {section.label}
-                        </h4>
-                        <div className="grid gap-3 pl-6 border-l-2 border-slate-800">
-                            {sectionKeys.map((key) => (
-                                <div key={key}>{renderField(key)}</div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            })}
-
-            <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
-            >
-                {saving ? (
-                    <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        Guardando...
-                    </span>
-                ) : (
-                    "Guardar Configuración"
-                )}
-            </Button>
+                    return (
+                        <Card key={section.key}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <span>{section.icon}</span>
+                                    {section.label}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {sectionKeys.map((key) => (
+                                    <div key={key}>{renderField(key)}</div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
         </div>
     );
 }

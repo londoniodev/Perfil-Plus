@@ -31,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@alvarosky/ui"
+import { LogoutButton } from "@/components/logout-button"
 
 // Define the shape of a tenant item
 export interface TenantItem {

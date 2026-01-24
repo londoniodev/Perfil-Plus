@@ -12,6 +12,7 @@ import {
     BreadcrumbSeparator
 } from "@alvarosky/ui";
 import { LogoutButton } from "@/components/logout-button";
+import { TenantsTable } from "@/components/tenants-table";
 
 export const dynamic = "force-dynamic";
 
@@ -81,73 +82,8 @@ export default async function TenantsPage() {
                     </Link>
                 </div>
 
-                {/* Tenants List */}
-                {tenants.length === 0 ? (
-                    <Card className="p-12 bg-slate-900/50 backdrop-blur border-slate-800/50 text-center">
-                        <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                        </div>
-                        <p className="text-slate-400 mb-4">No hay tenants creados aún</p>
-                        <Link href="/tenants/new">
-                            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600">
-                                Crear primer tenant
-                            </Button>
-                        </Link>
-                    </Card>
-                ) : (
-                    <div className="grid gap-4">
-                        {tenants.map((tenant) => (
-                            <Link key={tenant.id} href={`/tenants/${tenant.slug}`} className="group">
-                                <Card className="p-5 bg-slate-900/50 backdrop-blur border-slate-800/50 hover:border-indigo-500/50 hover:bg-slate-800/50 transition-all">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                                                <span className="text-lg font-bold text-indigo-400">
-                                                    {(tenant.name || tenant.slug).charAt(0).toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-semibold text-white group-hover:text-indigo-300 transition-colors">
-                                                    {tenant.name || tenant.slug}
-                                                </h3>
-                                                <p className="text-sm text-slate-400">
-                                                    <span className="text-slate-500">Slug:</span> {tenant.slug}
-                                                    <span className="mx-2 text-slate-700">•</span>
-                                                    <span className="text-slate-500">DB:</span> {tenant.dbName}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <Badge
-                                                variant={
-                                                    tenant.status === "ACTIVE"
-                                                        ? "default"
-                                                        : tenant.status === "DEPLOYING"
-                                                            ? "secondary"
-                                                            : "destructive"
-                                                }
-                                                className={
-                                                    tenant.status === "ACTIVE"
-                                                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                                                        : tenant.status === "DEPLOYING"
-                                                            ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                                                            : "bg-red-500/20 text-red-400 border-red-500/30"
-                                                }
-                                            >
-                                                {tenant.status}
-                                            </Badge>
-                                            <svg className="w-5 h-5 text-slate-600 group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                {/* Tenants Table */}
+                <TenantsTable data={tenants} />
             </main>
         </div>
     );

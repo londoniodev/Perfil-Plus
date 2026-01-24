@@ -2,8 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@alvarosky/ui";
+import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
 
-export function LogoutButton() {
+interface LogoutButtonProps extends React.ComponentProps<typeof Button> { }
+
+export function LogoutButton({ className, variant = "ghost", ...props }: LogoutButtonProps) {
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -14,13 +18,12 @@ export function LogoutButton() {
 
     return (
         <Button
-            variant="ghost"
+            variant={variant}
             onClick={handleLogout}
-            className="text-slate-400 hover:text-white hover:bg-slate-800"
+            className={cn("gap-2", className)}
+            {...props}
         >
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <LogOut className="h-4 w-4" />
             Cerrar Sesión
         </Button>
     );

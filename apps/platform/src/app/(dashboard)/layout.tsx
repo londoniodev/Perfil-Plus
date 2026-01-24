@@ -3,16 +3,25 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { prismaManagement } from "@alvarosky/database-management";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     // Basic caching/optimization could be added here if needed, but for now direct fetch
-    const tenants = await prismaManagement.tenant.findMany({
-        select: { name: true, slug: true },
-        orderBy: { name: 'asc' }
-    }).then(items => items.map(t => ({ ...t, name: t.name ?? t.slug })));
+    let tenants: { name: string; slug: string }[] = [];
+    try {
+        tenants = await prismaManagement.tenant.findMany({
+            select: { name: true, slug: true },
+            orderBy: { name: 'asc' }
+        }).then(items => items.map(t => ({ ...t, name: t.name ?? t.slug })));
+    } catch (error) {
+        console.warn("Could not fetch tenants during render/build:", error);
+        // Fallback for build time or DB connection failure
+        tenants = [];
+    }
 
     return (
         <SidebarProvider>

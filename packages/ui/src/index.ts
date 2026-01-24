@@ -29,6 +29,7 @@ export * from "./switch";
 export * from "./tabs";
 export * from "./accordion";
 export * from "./sheet";
+export * from "./navigation";
 export * from "./table";
 
 // Feedback

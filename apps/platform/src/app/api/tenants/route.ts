@@ -6,6 +6,23 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
+// Interface para el body del POST
+interface CreateTenantBody {
+    name: string;
+    slug: string;
+    ownerEmail?: string;
+    plan?: string;
+    // Configuración técnica
+    currency: string;
+    mpPublicKey?: string;
+    mpAccessToken?: string;
+    smtpJson?: string;
+    // Features
+    blogEnabled?: boolean;
+    storeEnabled?: boolean;
+    lmsEnabled?: boolean;
+}
+
 export async function GET() {
     try {
         const tenants = await prismaManagement.tenant.findMany({
@@ -20,8 +37,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-        const { name, slug, ownerEmail, plan } = body;
+        const body: CreateTenantBody = await request.json();
+        const {
+            name,
+            slug,
+            ownerEmail,
+            plan,
+            currency,
+            mpPublicKey,
+            mpAccessToken,
+            smtpJson,
+            blogEnabled,
+            storeEnabled,
+            lmsEnabled,
+        } = body;
 
         // Validate slug
         if (!slug || !/^[a-z0-9-]+$/.test(slug)) {
@@ -42,6 +71,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Validar SMTP JSON si se proporciona
+        let smtpConfig = null;
+        if (smtpJson && smtpJson.trim()) {
+            try {
+                smtpConfig = JSON.parse(smtpJson);
+            } catch {
+                return NextResponse.json(
+                    { error: "El JSON de SMTP no es válido" },
+                    { status: 400 }
+                );
+            }
+        }
+
         const dbName = `tenants_${slug.replace(/-/g, "_")}`;
 
         // 1. Create tenant record (DEPLOYING status)
@@ -56,8 +98,25 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // Construir objeto de configuración inicial para SystemSetting
+        const tenantConfig = {
+            name,
+            slug,
+            currency: currency || "COP",
+            mercadopago: {
+                publicKey: mpPublicKey || "",
+                accessToken: mpAccessToken || "",
+            },
+            smtp: smtpConfig,
+            features: {
+                blog: blogEnabled !== false,
+                store: storeEnabled !== false,
+                lms: lmsEnabled === true,
+            },
+        };
+
         // 2. Create database (async - fire and forget for now)
-        provisionDatabase(dbName, String(tenant.id)).catch((err) => {
+        provisionDatabase(dbName, String(tenant.id), slug, tenantConfig).catch((err) => {
             console.error("Provisioning failed:", err);
         });
 
@@ -71,7 +130,28 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function provisionDatabase(dbName: string, tenantId: string) {
+interface TenantConfigValue {
+    name: string;
+    slug: string;
+    currency: string;
+    mercadopago: {
+        publicKey: string;
+        accessToken: string;
+    };
+    smtp: object | null;
+    features: {
+        blog: boolean;
+        store: boolean;
+        lms: boolean;
+    };
+}
+
+async function provisionDatabase(
+    dbName: string,
+    tenantId: string,
+    tenantSlug: string,
+    configValue: TenantConfigValue
+) {
     const masterUrl = process.env.DATABASE_URL;
     if (!masterUrl) throw new Error("DATABASE_URL not set");
 
@@ -107,6 +187,35 @@ async function provisionDatabase(dbName: string, tenantId: string) {
 
         console.log("Migration stdout:", stdout);
         if (stderr) console.warn("Migration stderr:", stderr);
+
+        // ========================================
+        // NUEVO: Insertar SystemSetting inicial
+        // ========================================
+        const tenantPool = new Pool({
+            host,
+            port: parseInt(port),
+            user,
+            password,
+            database: dbName,
+        });
+
+        try {
+            // Insertar configuración inicial en la tabla SystemSetting
+            const insertQuery = `
+                INSERT INTO "SystemSetting" ("id", "key", "value", "createdAt", "updatedAt")
+                VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())
+                ON CONFLICT ("key") DO UPDATE SET "value" = $2, "updatedAt" = NOW()
+            `;
+
+            await tenantPool.query(insertQuery, [
+                "TENANT_CONFIG",
+                JSON.stringify(configValue),
+            ]);
+
+            console.log(`SystemSetting TENANT_CONFIG inserted for ${tenantSlug}`);
+        } finally {
+            await tenantPool.end();
+        }
 
         // Update tenant status to ACTIVE
         await prismaManagement.tenant.update({

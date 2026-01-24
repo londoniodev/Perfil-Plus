@@ -38,18 +38,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface TenantItem {
+// Define the shape of a tenant item
+export interface TenantItem {
   name: string;
   slug: string;
 }
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+// Explicitly define validation props by intersecting with Sidebar props
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   tenants?: TenantItem[];
 }
 
 export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
   const pathname = usePathname()
-  // Helper to check if a main path or any of its children is active
   const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/")
 
   return (
@@ -96,7 +97,7 @@ export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuLink href="/tenants" title="Ver Todos" icon={<Box className="w-4 h-4" />} active={pathname === "/tenants"} />
-                {tenants.map(tenant => (
+                {tenants.map((tenant) => (
                   <SidebarMenuLink
                     key={tenant.slug}
                     href={`/tenants/${tenant.slug}`}

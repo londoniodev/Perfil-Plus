@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prismaManagement } from "@alvarosky/database-management";
 import { Badge } from "@alvarosky/ui";
 import { TenantConfigPanel } from "@/components/tenant-config-panel";
+import { TenantHeaderActions } from "@/components/tenant-header-actions";
 import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -63,12 +64,17 @@ export default async function TenantDetailPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
-                    <LogoutButton />
+
+                    <div className="flex items-center gap-4">
+                        <TenantHeaderActions tenantSlug={tenant.slug} />
+                        <div className="h-6 w-px bg-slate-800" />
+                        <LogoutButton />
+                    </div>
                 </div>
             </header>
 
-            {/* Main Content - Full height config panel */}
-            <main className="flex-1 flex min-h-0">
+            {/* Main Content */}
+            <main className="flex-1 p-4 lg:p-8">
                 <TenantConfigPanel tenantSlug={tenant.slug} tenantDbName={tenant.dbName} />
             </main>
         </div>

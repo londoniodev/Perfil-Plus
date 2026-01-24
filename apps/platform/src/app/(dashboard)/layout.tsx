@@ -1,6 +1,5 @@
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger, Separator } from "@alvarosky/ui";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Separator } from "@/components/ui/separator";
 import { prismaManagement } from "@alvarosky/database-management";
 
 export const dynamic = "force-dynamic";

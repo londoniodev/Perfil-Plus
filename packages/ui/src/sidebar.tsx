@@ -4,8 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "./lib/utils"
-IconLogout,
-} from "./icons"
+import { IconLogout } from "./icons"
 
 // Fallback icons if not imported from icons.tsx correctly
 const ChevronRightIcon = ({ size = 24, className }: { size?: number, className?: string }) => (

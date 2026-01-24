@@ -4,10 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "./lib/utils"
-import {
-    IconChevronLeft,
-    IconTopRightArrow, // Reemplazo de IconChevronRight si no existe, o usar svg directo
-    IconLogout,
+IconLogout,
 } from "./icons"
 
 // Fallback icons if not imported from icons.tsx correctly

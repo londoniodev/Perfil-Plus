@@ -3,7 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, Button, Input, Label } from "@alvarosky/ui";
+import {
+    Card,
+    Button,
+    Input,
+    Label,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Checkbox,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator
+} from "@alvarosky/ui";
 import { LogoutButton } from "@/components/logout-button";
 
 export default function NewTenantPage() {
@@ -104,12 +121,21 @@ export default function NewTenantPage() {
 
             {/* Main Content */}
             <main className="relative container mx-auto px-6 py-12 max-w-3xl">
-                <Link href="/tenants" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Volver a Tenants
-                </Link>
+                <Breadcrumb className="mb-4">
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink href="/tenants">Tenants</BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage className="text-indigo-400">Nuevo Tenant</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
 
                 <h2 className="text-3xl font-bold text-white mb-2">Crear Nuevo Tenant</h2>
                 <p className="text-slate-400 mb-8">Provisiona una nueva base de datos y configura el cliente.</p>
@@ -184,17 +210,20 @@ export default function NewTenantPage() {
                         {/* Moneda */}
                         <div className="space-y-2 mb-4">
                             <Label htmlFor="currency" className="text-slate-300">Moneda</Label>
-                            <select
-                                id="currency"
+                            <Select
                                 value={formData.currency}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, currency: e.target.value }))}
-                                className="w-full px-3 py-2 rounded-md bg-slate-800/50 border border-slate-700 text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
                             >
-                                <option value="COP">COP - Peso Colombiano</option>
-                                <option value="USD">USD - Dólar Estadounidense</option>
-                                <option value="MXN">MXN - Peso Mexicano</option>
-                                <option value="EUR">EUR - Euro</option>
-                            </select>
+                                <SelectTrigger className="w-full bg-slate-800/50 border-slate-700 text-white focus:ring-indigo-500">
+                                    <SelectValue placeholder="Selecciona moneda" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="COP">COP - Peso Colombiano</SelectItem>
+                                    <SelectItem value="USD">USD - Dólar Estadounidense</SelectItem>
+                                    <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
+                                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         {/* MercadoPago */}
@@ -293,34 +322,32 @@ export default function NewTenantPage() {
                             </svg>
                             Features Habilitados
                         </h3>
-                        <div className="flex flex-wrap gap-4">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.blogEnabled}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, blogEnabled: e.target.checked }))}
-                                    className="rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"
-                                />
-                                <span className="text-slate-300">Blog</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.storeEnabled}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, storeEnabled: e.target.checked }))}
-                                    className="rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"
-                                />
-                                <span className="text-slate-300">Tienda</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.lmsEnabled}
-                                    onChange={(e) => setFormData((prev) => ({ ...prev, lmsEnabled: e.target.checked }))}
-                                    className="rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-indigo-500"
-                                />
-                                <span className="text-slate-300">LMS (Formación)</span>
-                            </label>
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="blog"
+                                checked={formData.blogEnabled}
+                                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, blogEnabled: checked as boolean }))}
+                                className="border-slate-600 bg-slate-800 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                            />
+                            <Label htmlFor="blog" className="text-slate-300 cursor-pointer">Blog</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="store"
+                                checked={formData.storeEnabled}
+                                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, storeEnabled: checked as boolean }))}
+                                className="border-slate-600 bg-slate-800 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                            />
+                            <Label htmlFor="store" className="text-slate-300 cursor-pointer">Tienda</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="lms"
+                                checked={formData.lmsEnabled}
+                                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, lmsEnabled: checked as boolean }))}
+                                className="border-slate-600 bg-slate-800 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                            />
+                            <Label htmlFor="lms" className="text-slate-300 cursor-pointer">LMS (Formación)</Label>
                         </div>
                     </Card>
 

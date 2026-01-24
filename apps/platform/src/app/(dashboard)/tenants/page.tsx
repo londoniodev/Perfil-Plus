@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { prismaManagement } from "@alvarosky/database-management";
-import { Card, Button, Badge } from "@alvarosky/ui";
+import {
+    Card,
+    Button,
+    Badge,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator
+} from "@alvarosky/ui";
 import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
@@ -45,12 +55,17 @@ export default async function TenantsPage() {
                 {/* Page Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
-                        <Link href="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-2 inline-flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Volver al Dashboard
-                        </Link>
+                        <Breadcrumb className="mb-2">
+                            <BreadcrumbList>
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+                                </BreadcrumbItem>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage className="text-indigo-400">Tenants</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </BreadcrumbList>
+                        </Breadcrumb>
                         <h2 className="text-3xl font-bold text-white">Tenants</h2>
                         <p className="text-slate-400 mt-1">
                             {activeCount} activo{activeCount !== 1 ? "s" : ""} de {tenants.length} total

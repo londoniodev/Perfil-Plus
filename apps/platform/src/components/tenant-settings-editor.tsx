@@ -22,6 +22,9 @@ const settingsSchema = {
 
     mp_public_key: { type: "text", label: "MercadoPago Public Key", section: "payments" },
     mp_access_token: { type: "secret", label: "MercadoPago Access Token", section: "payments" },
+    mp_webhook_secret: { type: "secret", label: "Webhook Secret", section: "payments" },
+    mp_client_id: { type: "text", label: "Client ID", section: "payments" },
+    mp_client_secret: { type: "secret", label: "Client Secret", section: "payments" },
 
     smtp_host: { type: "text", label: "SMTP Host", section: "email" },
     smtp_port: { type: "number", label: "SMTP Puerto", section: "email" },

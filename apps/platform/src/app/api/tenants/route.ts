@@ -191,9 +191,29 @@ async function provisionDatabase(
         // Run migrations on the new database
         const tenantDbUrl = `postgresql://${user}:${password}@${host}:${port}/${dbName}?schema=public`;
 
-        // Use prisma db push for the tenant schema
+        // Resolve absolute path to schema
+        const path = require("path");
+        const fs = require("fs");
+
+        // Try multiple potential paths to be robust (local vs docker)
+        const possiblePaths = [
+            path.resolve(process.cwd(), "../../packages/database/prisma/schema.prisma"), // Local dev
+            path.resolve(process.cwd(), "packages/database/prisma/schema.prisma"),       // Docker flattened?
+            "/app/packages/database/prisma/schema.prisma"                                // Docker static
+        ];
+
+        let schemaPath = possiblePaths.find(p => fs.existsSync(p));
+
+        if (!schemaPath) {
+            console.error("Schema not found in paths:", possiblePaths);
+            throw new Error(`Schema file not found. CWD: ${process.cwd()}`);
+        }
+
+        console.log("Using schema path:", schemaPath);
+
+        // Run prisma db push with absolute schema path
         const { stdout, stderr } = await execAsync(
-            `cd ../../packages/database && DATABASE_URL="${tenantDbUrl}" npx prisma db push --skip-generate`,
+            `npx prisma db push --schema="${schemaPath}" --skip-generate --accept-data-loss`,
             { env: { ...process.env, DATABASE_URL: tenantDbUrl } }
         );
 

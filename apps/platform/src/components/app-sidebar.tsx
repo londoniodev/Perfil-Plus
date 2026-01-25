@@ -22,7 +22,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarRail,
+  SidebarGroup,
+  SidebarGroupLabel,
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -74,62 +79,78 @@ export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/")} tooltip="Dashboard">
               <Link href="/">
-                <Home />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-
-          {/* Tenants Section (Collapsible) */}
-          <Collapsible defaultOpen className="group/collapsible" asChild>
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip="Tenants" isActive={isActive("/tenants")}>
-                  <Users />
-                  <span>Tenants</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuLink href="/tenants" title="Ver Todos" icon={<Box className="w-4 h-4" />} active={pathname === "/tenants"} />
-                {tenants.map((tenant) => (
-                  <SidebarMenuLink
-                    key={tenant.slug}
-                    href={`/tenants/${tenant.slug}`}
-                    title={tenant.name || tenant.slug}
-                    active={pathname === `/tenants/${tenant.slug}`}
-                    className="pl-8"
-                  />
-                ))}
-                <SidebarMenuLink
-                  href="/tenants/new"
-                  title="Crear Tenant"
-                  icon={<Plus className="w-4 h-4" />}
-                  active={pathname === "/tenants/new"}
-                  className="text-primary hover:text-primary pl-8"
-                />
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-
-          {/* Other Items */}
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive("/databases")} tooltip="Bases de Datos">
-              <Link href="/databases">
-                <Database />
-                <span>Bases de Datos</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip="Configuración">
-              <Link href="/settings">
-                <Settings />
-                <span>Configuración</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
+      </SidebarContent>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarMenu>
+            {/* Tenants Section (Collapsible) */}
+            <Collapsible defaultOpen className="group/collapsible" asChild>
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip="Tenants" isActive={isActive("/tenants")}>
+                    <Users />
+                    <span>Tenants</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild isActive={pathname === "/tenants"}>
+                        <Link href="/tenants">Ver Todos</Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    {tenants.map((tenant) => (
+                      <SidebarMenuSubItem key={tenant.slug}>
+                        <SidebarMenuSubButton asChild isActive={pathname === `/tenants/${tenant.slug}`}>
+                          <Link href={`/tenants/${tenant.slug}`}>
+                            <span>{tenant.name || tenant.slug}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild isActive={pathname === "/tenants/new"}>
+                        <Link href="/tenants/new" className="text-primary hover:text-primary">
+                          <Plus className="mr-2 h-4 w-4" /> Crear Tenant
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/databases")} tooltip="Bases de Datos">
+                <Link href="/databases">
+                  <Database />
+                  <span>Bases de Datos</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip="Configuración">
+                <Link href="/settings">
+                  <Settings />
+                  <span>Configuración</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
@@ -173,15 +194,4 @@ export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
   )
 }
 
-function SidebarMenuLink({ href, title, icon, active, className }: { href: string, title: string, icon?: React.ReactNode, active: boolean, className?: string }) {
-  return (
-    <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} className={className}>
-        <Link href={href}>
-          {icon}
-          <span>{title}</span>
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  )
-}
+

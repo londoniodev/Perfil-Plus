@@ -121,27 +121,27 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
     }
 
     return (
-        <Card className="bg-slate-900/50 border-slate-800/50 backdrop-blur w-full max-w-5xl mx-auto">
+        <Card className="w-full max-w-5xl mx-auto">
             <div className="p-1">
                 <Tabs defaultValue="info" className="w-full">
-                    <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/50">
-                        <TabsList className="bg-slate-800/50 p-1">
-                            <TabsTrigger value="info" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                    <div className="flex items-center justify-between px-6 py-4 border-b">
+                        <TabsList>
+                            <TabsTrigger value="info">
                                 <InfoIcon /> Información
                             </TabsTrigger>
-                            <TabsTrigger value="finance" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <TabsTrigger value="finance">
                                 <FinanceIcon /> Finanzas
                             </TabsTrigger>
-                            <TabsTrigger value="appearance" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <TabsTrigger value="appearance">
                                 <AppearanceIcon /> Apariencia
                             </TabsTrigger>
-                            <TabsTrigger value="features" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <TabsTrigger value="features">
                                 <FeaturesIcon /> Features
                             </TabsTrigger>
-                            <TabsTrigger value="email" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <TabsTrigger value="email">
                                 <EmailIcon /> Email
                             </TabsTrigger>
-                            <TabsTrigger value="apis" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <TabsTrigger value="apis">
                                 <ApiIcon /> API's
                             </TabsTrigger>
                         </TabsList>

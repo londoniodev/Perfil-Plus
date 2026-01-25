@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prismaManagement } from "@alvarosky/database-management";
 import { Badge } from "@alvarosky/ui";
@@ -23,38 +24,48 @@ export default async function TenantDetailPage({ params }: Props) {
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Minimal Content Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-sidebar-primary/20 flex items-center justify-center border border-sidebar-primary/30">
-                        <span className="text-sm font-bold text-sidebar-primary-foreground">
-                            {(tenant.name || tenant.slug).charAt(0).toUpperCase()}
-                        </span>
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-semibold text-foreground tracking-tight">
-                            {tenant.name || tenant.slug}
-                        </h1>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <Badge
-                                className={`text-[10px] px-1.5 py-0 border ${tenant.status === "ACTIVE"
-                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                        : tenant.status === "DEPLOYING"
-                                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                            : "bg-red-500/10 text-red-400 border-red-500/20"
-                                    }`}
-                            >
-                                {tenant.status}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground font-mono">
-                                {tenant.dbName}
-                            </span>
-                        </div>
-                    </div>
+            {/* Header Area */}
+            <div className="space-y-4">
+                <div className="flex items-center text-sm text-muted-foreground">
+                    <Link href="/" className="hover:text-foreground transition-colors">Dashboard</Link>
+                    <span className="mx-2">/</span>
+                    <Link href="/tenants" className="hover:text-foreground transition-colors">Tenants</Link>
+                    <span className="mx-2">/</span>
+                    <span className="text-foreground font-medium">{tenant.name || tenant.slug}</span>
                 </div>
 
-                {/* Specific Actions */}
-                <TenantHeaderActions tenantSlug={tenant.slug} />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                            <span className="text-lg font-bold">
+                                {(tenant.name || tenant.slug).charAt(0).toUpperCase()}
+                            </span>
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                                {tenant.name || tenant.slug}
+                            </h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <Badge variant={tenant.status === "ACTIVE" ? "default" : "secondary"} className={
+                                    tenant.status === "ACTIVE"
+                                        ? "bg-emerald-500/15 text-emerald-500 hover:bg-emerald-500/25 border-emerald-500/20"
+                                        : ""
+                                }>
+                                    {tenant.status}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground font-mono flex items-center gap-1">
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                    </svg>
+                                    {tenant.dbName}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Specific Actions */}
+                    <TenantHeaderActions tenantSlug={tenant.slug} />
+                </div>
             </div>
 
             {/* Main Content */}

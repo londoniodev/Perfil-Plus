@@ -4,7 +4,8 @@ import "@/styles/index.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
+import { ToastProvider } from "@alvarosky/ui";
+import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
 import { ThemeProvider } from "./providers";
 import { siteConfig } from "@/config/site";
 

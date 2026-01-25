@@ -71,6 +71,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["jsdom", "isomorphic-dompurify"],
   poweredByHeader: false,
   images: {
     formats: ["image/avif", "image/webp"],

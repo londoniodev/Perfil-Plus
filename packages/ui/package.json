@@ -5,7 +5,9 @@
     "types": "./src/index.ts",
     "exports": {
         ".": "./src/index.ts",
-        "./lib/utils": "./src/lib/utils.ts"
+        "./lib/utils": "./src/lib/utils.ts",
+        "./secure-pdf-viewer": "./src/secure-pdf-viewer.tsx",
+        "./pwa-install-prompt": "./src/pwa-install-prompt.tsx"
     },
     "scripts": {
         "lint": "eslint \"**/*.ts*\""

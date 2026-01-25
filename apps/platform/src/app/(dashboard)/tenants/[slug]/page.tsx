@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prismaManagement } from "@alvarosky/database-management";
-import { Badge } from "@alvarosky/ui";
+import {
+    Badge,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator
+} from "@alvarosky/ui";
 import { TenantConfigPanel } from "@/components/tenant-config-panel";
 import { TenantHeaderActions } from "@/components/tenant-header-actions";
 
@@ -26,12 +34,22 @@ export default async function TenantDetailPage({ params }: Props) {
         <div className="flex flex-col gap-6">
             {/* Header Area */}
             <div className="space-y-4">
-                <div className="flex items-center text-sm text-muted-foreground">
-                    <Link href="/" className="hover:text-foreground transition-colors">Dashboard</Link>
-                    <span className="mx-2">/</span>
-                    <Link href="/tenants" className="hover:text-foreground transition-colors">Tenants</Link>
-                    <span className="mx-2">/</span>
-                    <span className="text-foreground font-medium">{tenant.name || tenant.slug}</span>
+                <div className="flex items-center justify-between">
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/tenants">Tenants</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>{tenant.name || tenant.slug}</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
                 </div>
 
                 <div className="flex items-center justify-between">

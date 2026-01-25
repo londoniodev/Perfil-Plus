@@ -75,18 +75,16 @@ export function AppSidebar({ tenants = [], ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {/* Dashboard */}
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/")} tooltip="Dashboard">
               <Link href="/">
+                <Home />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarContent>
 
-      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarMenu>

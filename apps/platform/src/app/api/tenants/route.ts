@@ -209,16 +209,40 @@ async function provisionDatabase(
             throw new Error(`Schema file not found. CWD: ${process.cwd()}`);
         }
 
-        console.log("Using schema path:", schemaPath);
+        console.log("Found schema at:", schemaPath);
 
-        // Run prisma db push with absolute schema path
-        const { stdout, stderr } = await execAsync(
-            `npx prisma db push --schema="${schemaPath}" --skip-generate --accept-data-loss`,
-            { env: { ...process.env, DATABASE_URL: tenantDbUrl } }
-        );
+        // Copy schema to a temp location to avoid permission/path issues with Prisma CLI
+        // The /tmp directory is usually writable in Docker containers
+        const tempSchemaPath = `/tmp/schema-${tenantSlug}-${Date.now()}.prisma`;
 
-        console.log("Migration stdout:", stdout);
-        if (stderr) console.warn("Migration stderr:", stderr);
+        try {
+            // Read and write to ensure the node process (user nextjs) owns the file
+            const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
+            fs.writeFileSync(tempSchemaPath, schemaContent);
+            console.log("Copied schema to:", tempSchemaPath);
+
+            // Run prisma db push with the temp schema file
+            const { stdout, stderr } = await execAsync(
+                `npx prisma db push --schema="${tempSchemaPath}" --skip-generate --accept-data-loss`,
+                { env: { ...process.env, DATABASE_URL: tenantDbUrl } }
+            );
+
+            console.log("Migration stdout:", stdout);
+            if (stderr) console.warn("Migration stderr:", stderr);
+
+        } catch (err) {
+            console.error("Migration/Copy failed:", err);
+            throw err;
+        } finally {
+            // Clean up temp file
+            if (fs.existsSync(tempSchemaPath)) {
+                try {
+                    fs.unlinkSync(tempSchemaPath);
+                } catch (e) {
+                    console.error("Failed to cleanup temp schema:", e);
+                }
+            }
+        }
 
         // ========================================
         // NUEVO: Insertar SystemSetting inicial

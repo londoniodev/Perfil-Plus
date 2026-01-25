@@ -9,7 +9,7 @@ export interface CartItem {
     imageSrc: string
     price: number
     quantity: number
-    productType: "DIGITAL" | "PHYSICAL"
+    productType: "DIGITAL" | "PHYSICAL" | "SERVICE"
 }
 
 interface CartStore {

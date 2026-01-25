@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
 import { ThemeProvider } from "./providers";
+import { BrandProvider } from "@/components/providers/brand-provider";
 import { siteConfig } from "@/config/site";
 
 const sansation = Sansation({
@@ -102,13 +103,15 @@ export default function RootLayout({
           enableSystem={false}
           forcedTheme="dark"
         >
-          <GlobalSchemas />
-          <ToastProvider>
-            <NavigationWrapper footer={<Footer />}>
-              {children}
-            </NavigationWrapper>
-            <PwaInstallPrompt />
-          </ToastProvider>
+          <BrandProvider>
+            <GlobalSchemas />
+            <ToastProvider>
+              <NavigationWrapper footer={<Footer />}>
+                {children}
+              </NavigationWrapper>
+              <PwaInstallPrompt />
+            </ToastProvider>
+          </BrandProvider>
         </ThemeProvider>
       </body>
     </html>

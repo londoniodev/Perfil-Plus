@@ -4,7 +4,7 @@ import { AdaptiveImage } from "./adaptive-image"
 import { Badge } from "./badge"
 import { PriceDisplay } from "./price-display"
 import { Button } from "./button"
-import { ShoppingCart, Download } from "lucide-react"
+import { ShoppingCart, Download, Briefcase } from "lucide-react"
 
 // Tipo local para no depender directamente de Prisma en la UI pura
 interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -12,7 +12,7 @@ interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
     category?: string
     imageSrc: string
     price: number | string
-    productType: "DIGITAL" | "PHYSICAL"
+    productType: "DIGITAL" | "PHYSICAL" | "SERVICE"
     slug: string
 }
 
@@ -28,6 +28,7 @@ export function ProductCard({
 }: ProductCardProps) {
 
     const isDigital = productType === "DIGITAL"
+    const isService = productType === "SERVICE"
 
     return (
         <div
@@ -57,6 +58,11 @@ export function ProductCard({
                     {isDigital && (
                         <Badge className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
                             <Download className="h-3 w-3 mr-1" /> Digital
+                        </Badge>
+                    )}
+                    {isService && (
+                        <Badge className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm">
+                            <Briefcase className="h-3 w-3 mr-1" /> Servicio
                         </Badge>
                     )}
                 </div>

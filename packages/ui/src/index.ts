@@ -48,6 +48,8 @@ export * from "./filter-tabs";
 // Client Utilities
 export * from "./client-toast";
 export * from "./premium-lock";
+export * from "./secure-pdf-viewer";
+export * from "./pwa-install-prompt";
 
 // Blog Components
 export * from "./page-header";

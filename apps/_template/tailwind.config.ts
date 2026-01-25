@@ -9,6 +9,14 @@ const config: Config = {
         "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/context/**/*.{js,ts,jsx,tsx,mdx}",
     ],
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ["var(--font-body)"],
+                heading: ["var(--font-heading)"],
+            },
+        },
+    },
 };
 
 export default config;

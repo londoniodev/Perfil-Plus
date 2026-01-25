@@ -53,6 +53,7 @@
         "react-day-picker": "^9.13.0",
         "react-hook-form": "^7.71.0",
         "react-icons": "^5.5.0",
+        "react-pdf": "^10.3.0",
         "react-resizable-panels": "^4.5.1",
         "recharts": "2.15.4",
         "sonner": "^2.0.7",

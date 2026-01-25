@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Sansation } from "next/font/google";
 import "@/styles/index.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
@@ -80,10 +80,12 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false, // App-like feel, no zoom
+  themeColor: "#09090b", // Dark theme match
 };
 
 export default function RootLayout({

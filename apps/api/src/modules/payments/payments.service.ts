@@ -250,74 +250,6 @@ export class PaymentsService {
 
     // ==================== EBOOK PURCHASES ====================
 
-    async createEbookPurchaseCheckout(userId: string, ebookId: string, email?: string, frontUrl?: string) {
-        await this.initMercadoPago();
-
-        if (!this.preference) {
-            throw new BadRequestException('Mercado Pago no está configurado');
-        }
-
-        const user = await this.prisma.client.user.findUnique({ where: { id: userId } });
-        if (!user) throw new NotFoundException('Usuario no encontrado');
-
-        const ebook = await this.prisma.client.ebook.findUnique({ where: { id: ebookId } });
-        if (!ebook) throw new NotFoundException('E-book no encontrado');
-
-        // Verificar si ya lo compró
-        const existingPurchase = await this.prisma.client.purchase.findUnique({
-            where: { userId_ebookId: { userId, ebookId } },
-        });
-
-        if (existingPurchase && existingPurchase.status === 'approved') {
-            throw new BadRequestException('Ya has comprado este e-book');
-        }
-
-        const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-        const currency = await this.getTenantCurrency();
-
-        const preferenceData = {
-            items: [
-                {
-                    id: `ebook-${ebookId}`,
-                    title: ebook.title,
-                    description: ebook.description.substring(0, 255),
-                    quantity: 1,
-                    unit_price: Number(ebook.price), // Convert Decimal to number
-                    currency_id: currency,
-                },
-            ],
-            payer: {
-                email: email || user.email,
-            },
-            back_urls: {
-                success: `${frontendUrl}/ebooks/${ebook.slug}/exito`,
-                failure: `${frontendUrl}/ebooks/${ebook.slug}/error`,
-                pending: `${frontendUrl}/ebooks/${ebook.slug}/pendiente`,
-            },
-            auto_return: 'approved' as const,
-            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook`,
-            external_reference: `${userId}|${ebookId}`,
-            metadata: {
-                userId,
-                ebookId,
-                type: 'ebook',
-            },
-        };
-
-        try {
-            const response = await this.preference.create({ body: preferenceData });
-
-            return {
-                preferenceId: response.id,
-                initPoint: response.init_point,
-                sandboxInitPoint: response.sandbox_init_point,
-            };
-        } catch (error) {
-            this.logger.error('Error creating ebook purchase preference', error);
-            throw new BadRequestException('Error al crear la preferencia de pago');
-        }
-    }
-
     // ==================== WEBHOOKS ====================
 
     async handleWebhook(type: string, dataId: string) {
@@ -362,12 +294,6 @@ export class PaymentsService {
                     const userId = externalRef || metadata?.userId;
                     if (userId) {
                         await this.activateSubscription(userId, dataId, payment.payer?.id?.toString());
-                    }
-                } else if (paymentType === 'ebook' || (externalRef && externalRef.includes('|'))) {
-                    // Es una compra de ebook
-                    const [userId, ebookId] = (externalRef || '').split('|');
-                    if (userId && ebookId) {
-                        await this.completeEbookPurchase(userId, ebookId, dataId, Number(payment.transaction_amount) || 0);
                     }
                 }
             }
@@ -451,51 +377,6 @@ export class PaymentsService {
 
         this.logger.log(`Manual subscription assigned to user ${userId} for ${months} months`);
         return { message: 'Suscripción asignada correctamente' };
-    }
-
-    private async completeEbookPurchase(userId: string, ebookId: string, mpPaymentId: string, amount: number) {
-        await this.prisma.client.purchase.upsert({
-            where: { userId_ebookId: { userId, ebookId } },
-            create: {
-                userId,
-                ebookId,
-                mpPaymentId,
-                amount,
-                status: 'approved',
-            },
-            update: {
-                mpPaymentId,
-                status: 'approved',
-            },
-        });
-
-        this.logger.log(`Ebook purchase completed: user=${userId}, ebook=${ebookId}`);
-
-        // Send confirmation email (non-blocking - don't fail if email fails)
-        try {
-            const [user, ebook] = await Promise.all([
-                this.prisma.client.user.findUnique({
-                    where: { id: userId },
-                    select: { email: true, name: true },
-                }),
-                this.prisma.client.ebook.findUnique({
-                    where: { id: ebookId },
-                    select: { title: true, slug: true },
-                }),
-            ]);
-
-            if (user && ebook) {
-                await this.emailService.sendEbookPurchaseEmail(
-                    user.email,
-                    user.name || 'Usuario',
-                    ebook.title,
-                    ebook.slug,
-                );
-            }
-        } catch (emailError) {
-            this.logger.error('Error sending ebook purchase email:', emailError);
-            // Continue - don't fail the transaction if email fails
-        }
     }
 
     // ==================== USER SUBSCRIPTION CHECK ====================

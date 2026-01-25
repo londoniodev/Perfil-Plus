@@ -159,22 +159,7 @@ async function main() {
     }
     console.log('📰 Blog posts creados:', posts.length);
 
-    // 6. Crear un Ebook de prueba
-    const ebook = await prisma.ebook.upsert({
-        where: { slug: 'guia-liderazgo-test' },
-        update: {},
-        create: {
-            title: 'Guía Completa de Liderazgo Consciente',
-            slug: 'guia-liderazgo-test',
-            description: 'Una guía práctica con ejercicios y reflexiones para desarrollar tu potencial como líder consciente. Incluye casos de estudio reales y herramientas aplicables.',
-            coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80',
-            fileUrl: '/ebooks/guia-liderazgo.pdf',
-            previewUrl: '/ebooks/guia-liderazgo-preview.pdf',
-            price: 29.99,
-            published: true
-        }
-    });
-    console.log('📕 Ebook creado:', ebook.title);
+
 
     // 7. Crear Productos de E-commerce (Nuevos Modelos Product/ProductVariant)
     console.log('\n🛒 Creando productos de e-commerce...');
@@ -314,7 +299,7 @@ async function main() {
     console.log(`   - Usuario Alumno: ${studentEmail} (Password: Admin123!)`);
     console.log('   - 1 Tema con 1 Curso y 3 Lecciones');
     console.log('   - 2 Blog Posts');
-    console.log('   - 1 Ebook (modelo antiguo)');
+
     console.log('   - 3 Productos E-commerce (1 E-book digital, 2 físicos con variantes)');
 }
 

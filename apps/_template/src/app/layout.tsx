@@ -79,6 +79,11 @@ export const metadata: Metadata = {
     // Agregar cuando estén disponibles:
     // google: 'google-site-verification-code',
   },
+  icons: {
+    icon: "/images/branding/icon.png",
+    shortcut: "/images/branding/icon.png",
+    apple: "/images/branding/icon.png",
+  },
 };
 
 export const viewport: Viewport = {

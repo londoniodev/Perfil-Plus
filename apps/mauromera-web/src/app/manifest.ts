@@ -8,13 +8,13 @@ export default function manifest(): MetadataRoute.Manifest {
         description: siteConfig.description,
         start_url: '/',
         display: 'standalone',
-        background_color: '#ffffff',
-        theme_color: '#000000',
+        background_color: '#0f172a', // Azul oscuro (Slate 900)
+        theme_color: '#0f172a',
         icons: [
             {
-                src: '/icon.ico',
+                src: '/images/branding/icon.png',
                 sizes: 'any',
-                type: 'image/x-icon',
+                type: 'image/png',
             },
         ],
     }

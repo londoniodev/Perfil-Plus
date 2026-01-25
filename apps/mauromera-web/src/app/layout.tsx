@@ -79,6 +79,11 @@ export const metadata: Metadata = {
     // Agregar cuando estén disponibles:
     // google: 'google-site-verification-code',
   },
+  icons: {
+    icon: "/images/branding/icon.png",
+    shortcut: "/images/branding/icon.png",
+    apple: "/images/branding/icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -86,7 +91,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false, // App-like feel, no zoom
-  themeColor: "#09090b", // Dark theme match
+  themeColor: "#0f172a", // Dark Blue match
 };
 
 export default function RootLayout({

@@ -4,7 +4,7 @@ import "@/styles/index.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider } from "@alvarosky/ui";
+import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
 import { ThemeProvider } from "./providers";
 import { siteConfig } from "@/config/site";
 
@@ -107,6 +107,7 @@ export default function RootLayout({
             <NavigationWrapper footer={<Footer />}>
               {children}
             </NavigationWrapper>
+            <PwaInstallPrompt />
           </ToastProvider>
         </ThemeProvider>
       </body>

@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Sansation } from "next/font/google";
 import "@/styles/index.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider } from "@alvarosky/ui";
+import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
 import { ThemeProvider } from "./providers";
 import { siteConfig } from "@/config/site";
 
@@ -80,10 +80,12 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false, // App-like feel, no zoom
+  themeColor: "#09090b", // Dark theme match
 };
 
 export default function RootLayout({
@@ -105,6 +107,7 @@ export default function RootLayout({
             <NavigationWrapper footer={<Footer />}>
               {children}
             </NavigationWrapper>
+            <PwaInstallPrompt />
           </ToastProvider>
         </ThemeProvider>
       </body>

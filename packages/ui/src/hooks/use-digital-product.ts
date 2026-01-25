@@ -61,8 +61,53 @@ export function useDigitalProduct({ apiUrl, token }: UseDigitalProductProps = {}
         }
     };
 
+    const getProductUrl = async (productId: string): Promise<string | null> => {
+        setIsLoading(true);
+        try {
+            const baseUrl = apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json',
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            } else {
+                const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+                if (storedToken) {
+                    headers['Authorization'] = `Bearer ${storedToken}`;
+                }
+            }
+
+            const tenantId = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
+            if (tenantId) headers['x-tenant-id'] = tenantId;
+
+            const response = await fetch(`${baseUrl}/products/${productId}/download`, {
+                method: 'GET',
+                headers,
+            });
+
+            if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error('No tienes acceso a este producto. Debes comprarlo primero.');
+                }
+                throw new Error('Error al obtener el enlace del producto');
+            }
+
+            const data: DownloadResponse = await response.json();
+            return data.downloadUrl;
+
+        } catch (error: any) {
+            console.error('URL Fetch error:', error);
+            toast.error(error.message || 'Error al cargar el producto');
+            return null;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return {
         downloadProduct,
+        getProductUrl,
         isLoading
     };
 }

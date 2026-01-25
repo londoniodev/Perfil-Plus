@@ -25,6 +25,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/perfil', request.url));
     }
 
+    // 3. Redirigir Root (/) a Dashboard si tiene sesión (App-like behavior)
+    if (pathname === '/' && token) {
+        return NextResponse.redirect(new URL('/perfil', request.url));
+    }
+
     return NextResponse.next();
 }
 

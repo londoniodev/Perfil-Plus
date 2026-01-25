@@ -135,7 +135,11 @@ export default function NewTenantPage() {
                                 Cancelar
                             </Link>
                         </Button>
-                        <Button onClick={onSave} disabled={loading} className="min-w-[140px]">
+                        <Button
+                            onClick={onSave}
+                            disabled={loading}
+                            className="min-w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20"
+                        >
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

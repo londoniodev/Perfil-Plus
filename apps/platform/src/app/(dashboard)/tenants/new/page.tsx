@@ -168,16 +168,16 @@ export default function NewTenantPage() {
                         <div className="px-6 py-4 border-b">
                             <TabsList>
                                 <TabsTrigger value="info">
-                                    <Info className="w-4 h-4 mr-2" /> Información
+                                    <Info className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Información</span>
                                 </TabsTrigger>
                                 <TabsTrigger value="finance">
-                                    <CreditCard className="w-4 h-4 mr-2" /> Finanzas
+                                    <CreditCard className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Finanzas</span>
                                 </TabsTrigger>
                                 <TabsTrigger value="features">
-                                    <Box className="w-4 h-4 mr-2" /> Features
+                                    <Box className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Features</span>
                                 </TabsTrigger>
                                 <TabsTrigger value="email">
-                                    <Mail className="w-4 h-4 mr-2" /> Email
+                                    <Mail className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Email</span>
                                 </TabsTrigger>
                             </TabsList>
                         </div>

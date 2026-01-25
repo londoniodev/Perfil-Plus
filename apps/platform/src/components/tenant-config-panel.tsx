@@ -124,25 +124,25 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
         <Card className="w-full max-w-5xl mx-auto">
             <div className="p-1">
                 <Tabs defaultValue="info" className="w-full">
-                    <div className="flex items-center justify-between px-6 py-4 border-b">
+                    <div className="flex items-center justify-between px-6 py-4 border-b overflow-x-auto">
                         <TabsList>
                             <TabsTrigger value="info">
-                                <InfoIcon /> Información
+                                <InfoIcon /> <span className="hidden sm:inline">Información</span>
                             </TabsTrigger>
                             <TabsTrigger value="finance">
-                                <FinanceIcon /> Finanzas
+                                <FinanceIcon /> <span className="hidden sm:inline">Finanzas</span>
                             </TabsTrigger>
                             <TabsTrigger value="appearance">
-                                <AppearanceIcon /> Apariencia
+                                <AppearanceIcon /> <span className="hidden sm:inline">Apariencia</span>
                             </TabsTrigger>
                             <TabsTrigger value="features">
-                                <FeaturesIcon /> Features
+                                <FeaturesIcon /> <span className="hidden sm:inline">Features</span>
                             </TabsTrigger>
                             <TabsTrigger value="email">
-                                <EmailIcon /> Email
+                                <EmailIcon /> <span className="hidden sm:inline">Email</span>
                             </TabsTrigger>
                             <TabsTrigger value="apis">
-                                <ApiIcon /> API's
+                                <ApiIcon /> <span className="hidden sm:inline">API's</span>
                             </TabsTrigger>
                         </TabsList>
                     </div>

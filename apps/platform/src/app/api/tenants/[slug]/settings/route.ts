@@ -26,6 +26,9 @@ interface TenantConfigValue {
     mercadopago?: {
         publicKey?: string;
         accessToken?: string;
+        webhookSecret?: string;
+        clientId?: string;
+        clientSecret?: string;
     };
     smtp?: {
         host?: string;
@@ -65,6 +68,9 @@ function flattenConfig(config: TenantConfigValue): Record<string, unknown> {
         // MercadoPago
         mp_public_key: config.mercadopago?.publicKey || "",
         mp_access_token: config.mercadopago?.accessToken || "",
+        mp_webhook_secret: config.mercadopago?.webhookSecret || "",
+        mp_client_id: config.mercadopago?.clientId || "",
+        mp_client_secret: config.mercadopago?.clientSecret || "",
 
         // SMTP
         smtp_host: config.smtp?.host || "",
@@ -85,6 +91,9 @@ function unflattenConfig(flat: Record<string, unknown>): TenantConfigValue {
         mercadopago: {
             publicKey: String(flat.mp_public_key || ""),
             accessToken: String(flat.mp_access_token || ""),
+            webhookSecret: String(flat.mp_webhook_secret || ""),
+            clientId: String(flat.mp_client_id || ""),
+            clientSecret: String(flat.mp_client_secret || ""),
         },
         smtp: {
             host: String(flat.smtp_host || ""),

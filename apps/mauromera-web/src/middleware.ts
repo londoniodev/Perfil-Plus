@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-    const token = request.cookies.get('accessToken');
+    const token = request.cookies.get('accessToken') || request.cookies.get('Authentication');
     const { pathname } = request.nextUrl;
 
     // 1. Proteger rutas privadas
@@ -44,7 +44,8 @@ export const config = {
         '/admin/usuarios/:path*',
         '/admin/ebooks/:path*',
         '/login',
-        '/registro'
+        '/registro',
+        '/'
     ],
 };
 

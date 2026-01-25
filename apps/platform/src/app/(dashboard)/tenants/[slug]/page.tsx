@@ -31,7 +31,6 @@ export default async function TenantDetailPage({ params }: Props) {
     }
 
     return (
-    return (
         <div className="container max-w-5xl py-6 space-y-8">
             {/* Header Area */}
             <div className="space-y-4">
@@ -90,6 +89,5 @@ export default async function TenantDetailPage({ params }: Props) {
                 <TenantConfigPanel tenantSlug={tenant.slug} tenantDbName={tenant.dbName} />
             </div>
         </div>
-    );
     );
 }

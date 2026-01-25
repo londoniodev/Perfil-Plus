@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentsService } from './payments.service';
-import { CreateSubscriptionDto, CreateEbookPurchaseDto } from './dto';
+import { CreateSubscriptionDto } from './dto';
 import { Public, CurrentUser, Roles } from '../../common/decorators';
 
 @Controller('payments')
@@ -40,20 +40,7 @@ export class PaymentsController {
         return this.paymentsService.cancelSubscription(userId);
     }
 
-    // ==================== EBOOK PURCHASES ====================
 
-    @Post('ebook/checkout')
-    async createEbookPurchaseCheckout(
-        @CurrentUser('id') userId: string,
-        @Body() dto: CreateEbookPurchaseDto,
-    ) {
-        return this.paymentsService.createEbookPurchaseCheckout(
-            userId,
-            dto.ebookId,
-            dto.email,
-            dto.frontUrl,
-        );
-    }
 
     // ==================== WEBHOOKS ====================
 

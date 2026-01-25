@@ -164,8 +164,8 @@ async function main() {
     // 7. Crear Productos de E-commerce (Nuevos Modelos Product/ProductVariant)
     console.log('\n🛒 Creando productos de e-commerce...');
 
-    // 7.1 E-book Digital
-    const productEbook = await prisma.product.upsert({
+    // 7.1 Digital Product (Guide)
+    const productDigital = await prisma.product.upsert({
         where: { slug: 'guia-liderazgo-consciente' },
         update: {},
         create: {
@@ -184,7 +184,7 @@ async function main() {
             },
             variants: {
                 create: {
-                    sku: 'EBOOK-LID-001',
+                    sku: 'LID-DIGITAL-001',
                     name: 'Descarga Digital',
                     price: 29.99,
                     stock: -1, // Ilimitado
@@ -194,7 +194,7 @@ async function main() {
             }
         }
     });
-    console.log('   ✓ E-book creado:', productEbook.name);
+    console.log('   ✓ Producto Digital creado:', productDigital.name);
 
     // 7.2 Gafas Físicas con Variantes
     const productGafas = await prisma.product.upsert({
@@ -300,7 +300,7 @@ async function main() {
     console.log('   - 1 Tema con 1 Curso y 3 Lecciones');
     console.log('   - 2 Blog Posts');
 
-    console.log('   - 3 Productos E-commerce (1 E-book digital, 2 físicos con variantes)');
+    console.log('   - 3 Productos E-commerce (1 Digital, 2 físicos con variantes)');
 }
 
 main()

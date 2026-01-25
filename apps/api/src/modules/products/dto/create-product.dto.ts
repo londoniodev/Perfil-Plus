@@ -22,6 +22,14 @@ export class CreateProductDto {
     @IsString({ each: true })
     images: string[];
 
+    @IsString()
+    @IsOptional()
+    digitalFileUrl?: string;
+
+    @IsString()
+    @IsOptional()
+    previewUrl?: string;
+
     @IsOptional()
     specs: any; // JSONB flexible
 

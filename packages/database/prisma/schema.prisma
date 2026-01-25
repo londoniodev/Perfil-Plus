@@ -316,37 +316,23 @@ model UserProgress {
 }
 
 // ============ E-BOOKS ============
-model Ebook {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String   @db.Text
-  coverImage  String
-  fileUrl     String   // PDF en Minio (protegido)
-  previewUrl  String?  // PDF/Imagen de vista previa (público)
-  price       Decimal  @db.Decimal(10, 2)
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  purchases   Purchase[]
-
-  @@index([published])
-}
+// ============ E-BOOK/PURCHASE DEPRECATION NOTES ============
+// Ebook model deleted. Purchase model deprecated in favor of Order system.
+// Keeping Purchase tentatively if needed for easy migration, but removing Ebook relation.
 
 model Purchase {
   id            String   @id @default(cuid())
   userId        String
-  ebookId       String
-  mpPaymentId   String?  // ID de pago en Mercado Pago
+  // ebookId removed - legacy
+  productId     String?  // Optional migration field
+  mpPaymentId   String?
   amount        Decimal  @db.Decimal(10, 2)
-  status        String   @default("pending") // pending, approved, rejected
+  status        String   @default("pending")
   purchasedAt   DateTime @default(now())
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ebook         Ebook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  // No relation to deleted Ebook model
 
-  @@unique([userId, ebookId])
   @@index([userId])
   @@index([status])
 }
@@ -356,12 +342,12 @@ model StoreSettings {
   id            String   @id @default(cuid())
   
   // Mercado Pago - Credenciales dinámicas
-  mpAccessToken String?  @db.Text  // Access Token de Mercado Pago
-  mpPublicKey   String?  @db.Text  // Public Key para el frontend
+  mpAccessToken String?  @db.Text
+  mpPublicKey   String?  @db.Text
   
   // Configuraciones adicionales
-  storeName     String?  // Nombre de la tienda
-  storeEmail    String?  // Email de contacto
+  storeName     String?
+  storeEmail    String?
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -374,25 +360,31 @@ model StoreSettings {
 enum ProductType {
   DIGITAL   // E-books, cursos digitales, etc.
   PHYSICAL  // Gafas, suplementos, obras de arte, etc.
+  SERVICE   // Consultorías, mentorías
 }
 
 // Modelo: Producto (Base)
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String      @db.Text
-  productType ProductType
-  basePrice   Decimal     @db.Decimal(10, 2)  // Precio base (puede ser sobreescrito por variantes)
-  images      String[]    // Array de URLs de imágenes
-  specs       Json?       // Especificaciones flexibles: { "pages": 300, "weight": "1.5kg", "dimensions": "20x30cm" }
-  published   Boolean     @default(false)
-  deletedAt   DateTime?   // Soft delete: null = activo, fecha = borrado lógico
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+  description    String      @db.Text
+  productType    ProductType
+  basePrice      Decimal     @db.Decimal(10, 2)
+  images         String[]
+  specs          Json?
+  
+  // Digital Product Fields
+  digitalFileUrl String?     // Privado (Minio)
+  previewUrl     String?     // Público (Minio)
+
+  published      Boolean     @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   // Relaciones
-  variants    ProductVariant[]
+  variants       ProductVariant[]
   
   @@index([published, productType])
   @@index([slug])
@@ -402,12 +394,12 @@ model Product {
 model ProductVariant {
   id          String   @id @default(cuid())
   productId   String
-  sku         String   @unique  // Código único de inventario
-  name        String?  // Nombre descriptivo (Ej: "Gafas Rojas - Talla M")
-  price       Decimal  @db.Decimal(10, 2)  // Precio específico de esta variante
-  stock       Int      @default(0)  // Stock disponible (-1 = ilimitado para digitales)
-  attributes  Json?    // Atributos dinámicos: { "color": "red", "size": "M", "flavor": "chocolate" }
-  isDefault   Boolean  @default(false)  // TRUE para productos sin variantes (E-book)
+  sku         String   @unique
+  name        String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  attributes  Json?
+  isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

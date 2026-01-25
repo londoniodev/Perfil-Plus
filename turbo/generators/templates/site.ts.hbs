@@ -17,7 +17,6 @@ export const siteConfig = {
         store: { enabled: {{#if (includes features 'store')}}true{{else}}false{{/if}} },
         lms: { enabled: {{#if (includes features 'lms')}}true{{else}}false{{/if}} },
         portfolio: { enabled: {{#if (includes features 'portfolio')}}true{{else}}false{{/if}} },
-        ebooks: { enabled: {{#if (includes features 'ebooks')}}true{{else}}false{{/if}} },
     },
     mainNav: [
         { title: "Inicio", href: "/" },
@@ -29,9 +28,6 @@ export const siteConfig = {
         {{/if}}
         {{#if (includes features 'blog')}}
         { title: "Blog", href: "/blog" },
-        {{/if}}
-        {{#if (includes features 'ebooks')}}
-        { title: "E-books", href: "/ebooks" },
         {{/if}}
         {{#if (includes features 'store')}}
         { title: "Tienda", href: "/tienda" },

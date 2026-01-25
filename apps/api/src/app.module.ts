@@ -16,7 +16,6 @@ import { StorageModule } from './modules/storage';
 import { BlogModule } from './modules/blog';
 import { LmsModule } from './modules/lms';
 import { PaymentsModule } from './modules/payments';
-import { EbooksModule } from './modules/ebooks';
 import { LeadsModule } from './modules/leads';
 import { EmailModule } from './modules/email/email.module';
 import { ProductsModule } from './modules/products/products.module';
@@ -80,7 +79,6 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     AuthModule,
     UsersModule,
     StorageModule,
-    EbooksModule,
     ProductsModule,
     BlogModule,
     LmsModule,

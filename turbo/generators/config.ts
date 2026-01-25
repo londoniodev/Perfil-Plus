@@ -58,6 +58,14 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 type: "copy-template",
             },
             {
+                type: "add",
+                path: "apps/{{name}}/.env.local",
+                template: "NEXT_PUBLIC_API_URL=http://localhost:3000/api\nNEXT_PUBLIC_TENANT_SLUG={{name}}",
+            },
+            {
+                type: "cleanup-features",
+            },
+            {
                 type: "modify",
                 path: "apps/{{name}}/package.json",
                 pattern: /"name": "_template"/,
@@ -91,7 +99,6 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         const destDir = path.join(process.cwd(), "apps", name);
 
         try {
-            // Copia recursiva filtrando carpetas pesadas
             await fs.copy(srcDir, destDir, {
                 filter: (src) => {
                     const basename = path.basename(src);
@@ -99,6 +106,62 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 }
             });
             return `Template clonado exitosamente en apps/${name}`;
+        } catch (err) {
+            throw err;
+        }
+    });
+
+    // Custom Action: cleanup-features
+    plop.setActionType("cleanup-features", async (answers, config, plop) => {
+        const name = answers.name as string;
+        const features = answers.features as string[];
+        const appDir = path.join(process.cwd(), "apps", name, "src", "app");
+        const adminDir = path.join(appDir, "(dashboard)", "admin");
+
+        const removals: string[] = [];
+
+        // Helper to remove if feature not present
+        const removeIfMissing = async (featureKey: string, pathsToRemove: string[]) => {
+            if (!features.includes(featureKey)) {
+                for (const p of pathsToRemove) {
+                    const fullPath = path.join(p);
+                    if (fs.existsSync(fullPath)) {
+                        await fs.remove(fullPath);
+                        removals.push(p);
+                    }
+                }
+            }
+        };
+
+        try {
+            // LMS Cleanup
+            await removeIfMissing("lms", [
+                path.join(appDir, "cursos"), // src/app/cursos
+                path.join(adminDir, "cursos") // src/app/(dashboard)/admin/cursos
+            ]);
+
+            // Store Cleanup
+            await removeIfMissing("store", [
+                path.join(appDir, "tienda"),
+                path.join(adminDir, "productos"),
+                path.join(appDir, "checkout")
+            ]);
+
+            // Blog Cleanup
+            await removeIfMissing("blog", [
+                path.join(appDir, "blog"),
+                path.join(adminDir, "blog")
+            ]);
+
+            // Portfolio Cleanup
+            await removeIfMissing("portfolio", [
+                path.join(appDir, "portafolio"),
+            ]);
+
+
+            if (removals.length === 0) return "No se requirió limpieza de features.";
+            return `Features limpiadas: ${removals.map(p => path.basename(p)).join(", ")}`;
+
         } catch (err) {
             throw err;
         }

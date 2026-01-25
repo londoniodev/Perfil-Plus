@@ -9,3 +9,20 @@ export interface User {
     updatedAt: Date;
 }
 
+export type ProductType = "DIGITAL" | "PHYSICAL" | "SERVICE";
+
+export interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    basePrice: number | string; // Handle decimal from DB
+    images: string[];
+    productType: ProductType;
+    // Digital fields
+    digitalFileUrl?: string;
+    previewUrl?: string;
+    published: boolean;
+    createdAt?: Date;
+}
+

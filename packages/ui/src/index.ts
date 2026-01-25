@@ -79,5 +79,12 @@ export * from "./scroll-area";
 export * from "./price-display";
 export * from "./product-specs";
 export * from "./product-card";
+export * from "./components/product-action-button";
+
+// Hooks
+export * from "./hooks/use-digital-product";
+
+// Layouts
+export * from "./layouts/dashboard-layout";
 
 

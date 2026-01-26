@@ -65,6 +65,7 @@ export {
     // Communication
     FiMail as IconMail,
     FiMessageSquare as IconMessage,
+    FiMessageCircle as IconMessageCircle,
     FiSend as IconSend,
 
     // Misc

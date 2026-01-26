@@ -12,39 +12,30 @@ import {
     IconLogout,
     IconCreditCard,
     IconGrid,
-    IconMenu
+    IconMenu,
+    IconMessageCircle
 } from "../icons";
 import { Button } from "../button";
 import { cn } from "../lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "../sheet";
 
-// Definition of navigation items
-const USER_MENU_ITEMS = [
-    { name: "Mi Panel", href: "/perfil", icon: IconHome, feature: "all" },
-    { name: "Mis Cursos", href: "/cursos", icon: IconBook, feature: "lms" },
-    { name: "Suscripción", href: "/suscripcion", icon: IconCreditCard, feature: "all" },
-];
-
-const ADMIN_MENU_ITEMS = [
-    { name: "Dashboard", href: "/perfil", icon: IconHome, feature: "all" },
-    { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit, feature: "lms" },
-    { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument, feature: "blog" },
-    { name: "Gestión de Productos", href: "/admin/productos", icon: IconGrid, feature: "store" },
-    { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers, feature: "all" },
-];
+// Define the shape of a navigation item
+// We reuse the shape from the config, but we define it here as a generic interface for the UI component
+export interface DashboardNavItem {
+    title: string;
+    href: string;
+    icon: any;
+    allowedRoles: string[];
+    requiredFeature?: string; // 'all' or specific feature key
+}
 
 interface DashboardSharedProps {
-    features?: {
-        blog?: boolean;
-        store?: boolean;
-        lms?: boolean;
-        ebooks?: boolean;
-        portfolio?: boolean;
-    };
+    features: string[]; // Changed to array of strings
+    userRole: string; // Changed to string role
+    navItems: DashboardNavItem[]; // Injected items
     user?: {
         name: string;
         avatar?: string;
-        isAdmin?: boolean;
     };
     onLogout?: () => void;
     logo?: React.ReactNode;
@@ -57,7 +48,9 @@ interface DashboardLayoutProps extends DashboardSharedProps {
 
 export function DashboardLayout({
     children,
-    features = { blog: true, store: true, lms: true, ebooks: true },
+    features = [],
+    userRole = 'user',
+    navItems = [],
     user,
     onLogout,
     logo,
@@ -69,6 +62,8 @@ export function DashboardLayout({
                 <div className="flex h-full max-h-screen flex-col gap-2">
                     <Sidebar
                         features={features}
+                        userRole={userRole}
+                        navItems={navItems}
                         user={user}
                         onLogout={onLogout}
                         logo={logo}
@@ -79,6 +74,8 @@ export function DashboardLayout({
             <div className="flex flex-col">
                 <Header
                     features={features}
+                    userRole={userRole}
+                    navItems={navItems}
                     user={user}
                     onLogout={onLogout}
                     logo={logo}
@@ -92,17 +89,19 @@ export function DashboardLayout({
     );
 }
 
-function Sidebar({ features, user, onLogout, logo, appTitle }: DashboardSharedProps) {
+function Sidebar({ features, userRole, navItems, onLogout, logo, appTitle }: DashboardSharedProps) {
     const pathname = usePathname();
-    const isAdmin = user?.isAdmin;
+    const isAdmin = userRole === 'admin';
 
-    const items = isAdmin ? ADMIN_MENU_ITEMS : USER_MENU_ITEMS;
+    // Filter items based on Role AND Features
+    const filteredItems = navItems.filter(item => {
+        // 1. Role Check
+        const hasRole = item.allowedRoles.includes(userRole);
+        if (!hasRole) return false;
 
-    // Filter items based on enabled features
-    const filteredItems = items.filter(item => {
-        if (item.feature === 'all') return true;
-        // @ts-ignore
-        return features?.[item.feature as keyof typeof features] !== false;
+        // 2. Feature Check
+        if (!item.requiredFeature || item.requiredFeature === 'all') return true;
+        return features.includes(item.requiredFeature);
     });
 
     return (
@@ -139,7 +138,7 @@ function Sidebar({ features, user, onLogout, logo, appTitle }: DashboardSharedPr
                                 >
                                     <Link href={item.href}>
                                         <Icon className="mr-2 h-4 w-4" />
-                                        {item.name}
+                                        {item.title}
                                     </Link>
                                 </Button>
                             );
@@ -164,7 +163,7 @@ function Sidebar({ features, user, onLogout, logo, appTitle }: DashboardSharedPr
     );
 }
 
-function Header({ features, user, onLogout, logo, appTitle }: DashboardSharedProps) {
+function Header({ features, userRole, navItems, user, onLogout, logo, appTitle }: DashboardSharedProps) {
     return (
         <header className="flex h-14 items-center gap-4 border-b bg-background px-6 lg:h-[60px] sticky top-0 z-10 w-full">
             <Sheet>
@@ -177,7 +176,8 @@ function Header({ features, user, onLogout, logo, appTitle }: DashboardSharedPro
                 <SheetContent side="left" className="flex flex-col p-0 w-[240px]">
                     <Sidebar
                         features={features}
-                        user={user}
+                        userRole={userRole}
+                        navItems={navItems}
                         onLogout={onLogout}
                         logo={logo}
                         appTitle={appTitle}

@@ -2,6 +2,15 @@ import { PlopTypes } from "@turbo/gen";
 import fs from "fs-extra";
 import path from "path";
 
+// TAREA 1: Definición Centralizada
+const AVAILABLE_FEATURES = [
+    { name: 'Tienda (E-commerce)', value: 'shop' },
+    { name: 'Blog / Noticias', value: 'blog' },
+    { name: 'LMS (Cursos)', value: 'lms' },
+    { name: 'Portafolio', value: 'portfolio' },
+    { name: 'Bot WhatsApp (CRM)', value: 'bot-whatsapp' }, // Nueva feature piloto
+];
+
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
 
     // Helper para arrays (Handlebars)
@@ -12,6 +21,9 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         return false;
     });
 
+    // ==========================================
+    // TAREA 2: Actualizar Generador `new-tenant`
+    // ==========================================
     plop.setGenerator("new-tenant", {
         description: "Genera un nuevo tenant clonando apps/_template",
         prompts: [
@@ -45,12 +57,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 type: "checkbox",
                 name: "features",
                 message: "Selecciona las features a activar:",
-                choices: [
-                    { name: "Blog", value: "blog" },
-                    { name: "Tienda (Store)", value: "store" },
-                    { name: "LMS (Cursos)", value: "lms" },
-                    { name: "Portafolio", value: "portfolio" },
-                ]
+                choices: AVAILABLE_FEATURES
             }
         ],
         actions: [
@@ -92,6 +99,35 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         ],
     });
 
+    // ==========================================
+    // TAREA 3: Crear Generador `add-feature`
+    // ==========================================
+    plop.setGenerator("add-feature", {
+        description: "Agrega una feature a un tenant existente",
+        prompts: [
+            {
+                type: "input",
+                name: "tenant",
+                message: "Slug del tenant destino (ej: mauromera-web)",
+                validate: (input) => {
+                    if (!fs.existsSync(path.join(process.cwd(), "apps", input))) return "Este tenant no existe";
+                    return true;
+                }
+            },
+            {
+                type: "list", // O checkbox si queremos múltiples
+                name: "feature",
+                message: "Selecciona la feature a instalar:",
+                choices: AVAILABLE_FEATURES
+            }
+        ],
+        actions: [
+            {
+                type: "install-feature-files"
+            }
+        ]
+    });
+
     // Custom Action: copy-template
     plop.setActionType("copy-template", async (answers, config, plop) => {
         const name = answers.name as string;
@@ -116,7 +152,9 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         const name = answers.name as string;
         const features = answers.features as string[];
         const appDir = path.join(process.cwd(), "apps", name, "src", "app");
+        const libDir = path.join(process.cwd(), "apps", name, "src", "lib");
         const adminDir = path.join(appDir, "(dashboard)", "admin");
+        const dashboardDir = path.join(appDir, "(dashboard)");
 
         const removals: string[] = [];
 
@@ -136,12 +174,12 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         try {
             // LMS Cleanup
             await removeIfMissing("lms", [
-                path.join(appDir, "cursos"), // src/app/cursos
-                path.join(adminDir, "cursos") // src/app/(dashboard)/admin/cursos
+                path.join(appDir, "cursos"),
+                path.join(adminDir, "cursos")
             ]);
 
             // Store Cleanup
-            await removeIfMissing("store", [
+            await removeIfMissing("shop", [
                 path.join(appDir, "tienda"),
                 path.join(adminDir, "productos"),
                 path.join(appDir, "checkout")
@@ -158,9 +196,79 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 path.join(appDir, "portafolio"),
             ]);
 
+            // WhatsApp Cleanup
+            await removeIfMissing("bot-whatsapp", [
+                path.join(dashboardDir, "whatsapp"),
+                path.join(libDir, "whatsapp"),
+            ]);
+
 
             if (removals.length === 0) return "No se requirió limpieza de features.";
             return `Features limpiadas: ${removals.map(p => path.basename(p)).join(", ")}`;
+
+        } catch (err) {
+            throw err;
+        }
+    });
+
+    // Custom Action: install-feature-files
+    plop.setActionType("install-feature-files", async (answers, config, plop) => {
+        const tenant = answers.tenant as string;
+        const feature = answers.feature as string;
+
+        const templateDir = path.join(process.cwd(), "apps/_template");
+        const targetDir = path.join(process.cwd(), "apps", tenant);
+
+        // Feature Mapping: Define where files come from for each feature
+        // Esto podría ser más dinámico, pero por ahora mapeamos las rutas conocidas.
+        // Si la estructura siempre es src/app/(dashboard)/[feature], podemos generalizar.
+
+        let pathsToCopy: string[] = [];
+
+        switch (feature) {
+            case 'bot-whatsapp':
+                pathsToCopy = [
+                    "src/app/(dashboard)/whatsapp",
+                    "src/lib/whatsapp"
+                ];
+                break;
+            case 'shop':
+                pathsToCopy = [
+                    "src/app/tienda",
+                    "src/app/(dashboard)/admin/productos",
+                    "src/app/checkout"
+                ];
+                break;
+            case 'blog':
+                pathsToCopy = [
+                    "src/app/blog",
+                    "src/app/(dashboard)/admin/blog"
+                ];
+                break;
+            // Add other cases as needed
+            default:
+                // Try Generic Logic: src/app/(dashboard)/[feature]
+                // But since prompts use 'bot-whatsapp' and folder is 'whatsapp', mapping is better.
+                return `No hay definición de rutas para la feature: ${feature}`;
+        }
+
+        let copiedCount = 0;
+
+        try {
+            for (const relativePath of pathsToCopy) {
+                const sourcePath = path.join(templateDir, relativePath);
+                const destPath = path.join(targetDir, relativePath);
+
+                if (fs.existsSync(sourcePath)) {
+                    await fs.copy(sourcePath, destPath);
+                    copiedCount++;
+                } else {
+                    console.warn(`Feature source not found: ${sourcePath}`);
+                }
+            }
+
+            if (copiedCount === 0) return "No se encontraron archivos para copiar.";
+            return `Feature '${feature}' instalada exitosamente en ${tenant}`;
 
         } catch (err) {
             throw err;

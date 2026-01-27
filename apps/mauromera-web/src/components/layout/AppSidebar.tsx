@@ -25,7 +25,11 @@ import {
 } from "@alvarosky/ui"
 import { useAuth } from "@/context/AuthContext"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+    features?: string[];
+}
+
+export function AppSidebar({ features = [], ...props }: AppSidebarProps) {
     const pathname = usePathname()
     const { logout, isAdmin, user } = useAuth()
 

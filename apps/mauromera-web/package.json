@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@alvarosky/database": "workspace:*",
+    "@alvarosky/database-management": "workspace:*",
     "@alvarosky/eslint-config": "workspace:*",
     "@alvarosky/features": "workspace:*",
     "@alvarosky/tailwind-config": "workspace:*",

@@ -409,6 +409,9 @@ importers:
       '@alvarosky/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@alvarosky/database-management':
+        specifier: workspace:*
+        version: link:../../packages/database-management
       '@alvarosky/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config-eslint

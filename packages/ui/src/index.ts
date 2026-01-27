@@ -24,6 +24,7 @@ export * from "./progress";
 export * from "./form";
 export * from "./select";
 export * from "./switch";
+export * from "./slider";
 
 // Navigation & Layout
 export * from "./tabs";

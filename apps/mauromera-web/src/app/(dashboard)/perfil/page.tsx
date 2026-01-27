@@ -176,12 +176,12 @@ export default function PerfilPage() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* Placeholder for change password - assuming not ready yet based on context */}
-                                    <div className="p-4 border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10 dark:border-yellow-900/30 rounded-lg">
-                                        <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Contraseña</h4>
-                                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                                    {/* Placeholder for change password */}
+                                    <div className="p-4 border border-warning/30 bg-warning/10 rounded-lg">
+                                        <h4 className="font-semibold text-warning mb-2">Contraseña</h4>
+                                        <p className="text-sm text-muted-foreground mb-4">
                                             Si necesitas cambiar tu contraseña, por favor utiliza la opción de "Olvidé mi contraseña" en el login por el momento.
                                         </p>
-                                        {/* Future implementation: Change Password Form */}
                                     </div>
                                 </CardContent>
                             </Card>

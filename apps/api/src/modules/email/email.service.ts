@@ -8,7 +8,7 @@ import type { Request } from 'express';
 import { VerificationEmail } from './emails/VerificationEmail';
 import { RecoveryEmail } from './emails/RecoveryEmail';
 import { SubscriptionSuccessEmail } from './emails/SubscriptionSuccessEmail';
-import { EbookPurchaseEmail } from './emails/EbookPurchaseEmail';
+import { DigitalPurchaseEmail } from './emails/DigitalPurchaseEmail';
 import * as React from 'react';
 
 interface SendEmailOptions {
@@ -223,30 +223,30 @@ export class EmailService {
         });
     }
 
-    async sendEbookPurchaseEmail(
+    async sendDigitalPurchaseEmail(
         email: string,
         name: string,
-        ebookTitle: string,
-        ebookSlug: string,
+        productTitle: string,
+        productSlug: string,
     ): Promise<boolean> {
         const frontendUrl = await this.getFrontendUrl();
         const { render } = await import('@react-email/render');
         const html = await render(
-            EbookPurchaseEmail({
+            DigitalPurchaseEmail({
                 name,
-                ebookTitle,
-                ebookSlug,
+                ebookTitle: productTitle,
+                ebookSlug: productSlug,
                 frontendUrl,
             }),
         );
 
-        const ebookUrl = `${frontendUrl}/ebooks/${ebookSlug}`;
+        const productUrl = `${frontendUrl}/compras`;
 
-        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu e-book: ${ebookTitle}\n\nLeer ahora: ${ebookUrl}`;
+        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tu producto digital: ${productTitle}\n\nVer ahora: ${productUrl}`;
 
         return this.sendEmail({
             to: email,
-            subject: `Tu compra fue exitosa: ${ebookTitle} - Mauro Mera`,
+            subject: `Tu compra fue exitosa: ${productTitle} - Mauro Mera`,
             html,
             text,
         });

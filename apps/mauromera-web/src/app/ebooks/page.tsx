@@ -52,8 +52,8 @@ interface Ebook {
 
 async function getEbooks(): Promise<Ebook[]> {
     try {
-        console.log(`[getEbooks] Fetching from ${API_BASE}/ebooks with x-tenant-id: ${TENANT_ID}`);
-        const res = await fetch(`${API_BASE}/ebooks`, {
+        console.log(`[getEbooks] Fetching from ${API_BASE}/store/products?type=DIGITAL with x-tenant-id: ${TENANT_ID}`);
+        const res = await fetch(`${API_BASE}/store/products?type=DIGITAL`, {
             next: { revalidate: 60 },
             headers: getApiHeaders(),
         });
@@ -61,8 +61,17 @@ async function getEbooks(): Promise<Ebook[]> {
             console.error(`[getEbooks] Failed fetch: ${res.status} ${res.statusText}`);
             return [];
         }
-        return res.json();
-    } catch {
+        const products = await res.json();
+        return products.map((p: any) => ({
+            id: p.id,
+            title: p.name,
+            slug: p.slug,
+            description: p.description,
+            coverImage: p.images?.[0] || '/images/placeholder-ebook.jpg',
+            price: Number(p.basePrice)
+        }));
+    } catch (error) {
+        console.error('[getEbooks] Error:', error);
         return [];
     }
 }

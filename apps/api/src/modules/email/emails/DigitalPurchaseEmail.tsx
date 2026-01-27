@@ -10,7 +10,7 @@ interface EbookPurchaseEmailProps {
     frontendUrl: string;
 }
 
-export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
+export const DigitalPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
     name,
     ebookTitle,
     ebookSlug,
@@ -21,7 +21,7 @@ export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
             <Text style={styles.greeting}>¡Gracias por tu compra, {name}!</Text>
 
             <Text style={styles.paragraph}>
-                Tu pago ha sido procesado exitosamente. Ya puedes acceder a tu e-book:
+                Tu pago ha sido procesado exitosamente. Ya puedes acceder a tu producto digital:
             </Text>
 
             <Section style={styles.ebookBox}>
@@ -30,8 +30,8 @@ export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
             </Section>
 
             <Section style={styles.buttonContainer}>
-                <EmailButton href={`${frontendUrl}/ebooks/${ebookSlug}`}>
-                    Leer mi e-book
+                <EmailButton href={`${frontendUrl}/compras`}>
+                    Ver en Mis Compras
                 </EmailButton>
             </Section>
 
@@ -42,7 +42,7 @@ export const EbookPurchaseEmail: React.FC<EbookPurchaseEmailProps> = ({
             <Hr style={styles.divider} />
 
             <Text style={styles.notice}>
-                Nota: Tu e-book estará disponible para siempre en tu cuenta.
+                Nota: Tu producto estará disponible para siempre en tu cuenta.
                 <br />
                 Si tienes alguna duda o problema para acceder, contáctanos y te ayudaremos.
             </Text>
@@ -105,5 +105,5 @@ const styles = {
     },
 };
 
-export default EbookPurchaseEmail;
+export default DigitalPurchaseEmail;
 

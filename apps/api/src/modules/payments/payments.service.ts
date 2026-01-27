@@ -248,7 +248,107 @@ export class PaymentsService {
         };
     }
 
-    // ==================== EBOOK PURCHASES ====================
+    // ==================== PRODUCT PURCHASES ====================
+
+    async createProductCheckout(userId: string, items: { variantId: string; quantity: number }[], frontUrl?: string) {
+        await this.initMercadoPago();
+
+        if (!this.preference) throw new BadRequestException('Mercado Pago no configurado');
+
+        const user = await this.prisma.client.user.findUnique({ where: { id: userId } });
+        if (!user) throw new NotFoundException('Usuario no encontrado');
+
+        const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+        const currency = await this.getTenantCurrency();
+
+        // 1. Fetch Variants & Validate Stock/Price
+        const orderItemsData: any[] = [];
+        let totalAmount = 0;
+        const preferenceItems: any[] = [];
+
+        for (const item of items) {
+            const variant = await this.prisma.client.productVariant.findUnique({
+                where: { id: item.variantId },
+                include: { product: true }
+            });
+
+            if (!variant) throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
+            if (!variant.product.published) throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
+
+            // Stock check (if not infinite/digital)
+            if (variant.stock !== -1 && variant.stock < item.quantity) {
+                throw new BadRequestException(`Sin stock suficiente para: ${variant.product.name}`);
+            }
+
+            const price = Number(variant.price);
+            const subtotal = price * item.quantity;
+            totalAmount += subtotal;
+
+            orderItemsData.push({
+                variantId: variant.id,
+                quantity: item.quantity,
+                price: price, // Snapshot price
+                productName: variant.product.name,
+                variantName: variant.name !== 'Standard' ? variant.name : undefined
+            });
+
+            preferenceItems.push({
+                id: variant.id,
+                title: variant.product.name,
+                description: variant.name !== 'Standard' ? variant.name : undefined,
+                quantity: item.quantity,
+                unit_price: price,
+                currency_id: currency,
+                picture_url: variant.product.images?.[0]
+            });
+        }
+
+        // 2. Create Order (PENDING)
+        const order = await this.prisma.client.order.create({
+            data: {
+                userId,
+                orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Simple generator
+                totalAmount,
+                status: 'PENDING',
+                items: {
+                    create: orderItemsData
+                }
+            }
+        });
+
+        // 3. Create MP Preference
+        const preferenceData = {
+            items: preferenceItems,
+            payer: { email: user.email, name: user.name },
+            back_urls: {
+                success: `${frontendUrl}/compras?status=success&orderId=${order.id}`,
+                failure: `${frontendUrl}/checkout?status=failure`,
+                pending: `${frontendUrl}/checkout?status=pending`,
+            },
+            auto_return: 'approved' as const,
+            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook`,
+            external_reference: order.id,
+            metadata: {
+                userId,
+                type: 'order', // Critical for webhook handler
+            },
+        };
+
+        try {
+            const response = await this.preference.create({ body: preferenceData });
+            return {
+                orderId: order.id,
+                totalAmount,
+                preferenceId: response.id,
+                initPoint: response.init_point,
+                sandboxInitPoint: response.sandbox_init_point,
+            };
+        } catch (error) {
+            this.logger.error('Error creating product preference', error);
+            // Optional: Delete pending order if preference fails? Or keep as abandoned cart.
+            throw new BadRequestException('Error al iniciar el pago');
+        }
+    }
 
     // ==================== WEBHOOKS ====================
 
@@ -289,11 +389,18 @@ export class PaymentsService {
             if (status === 'approved') {
                 const paymentType = metadata?.type;
 
-                if (paymentType === 'subscription' || (externalRef && !externalRef.includes('|'))) {
-                    // Es una suscripción
+                if (paymentType === 'subscription' || (externalRef && !externalRef.includes('|') && !externalRef.startsWith('cm'))) {
+                    // Es una suscripción (legacy check)
+                    // NOTE: 'cm' check is hypothetical, purely relying on metadata.type is safer
                     const userId = externalRef || metadata?.userId;
-                    if (userId) {
+                    if (userId && paymentType === 'subscription') {
                         await this.activateSubscription(userId, dataId, payment.payer?.id?.toString());
+                    }
+                } else if (paymentType === 'order') {
+                    // Es una Orden de Compra de Productos
+                    const orderId = externalRef;
+                    if (orderId) {
+                        await this.approveOrder(orderId, dataId);
                     }
                 }
             }
@@ -349,6 +456,67 @@ export class PaymentsService {
         } catch (emailError) {
             this.logger.error('Error sending subscription email:', emailError);
             // Continue - don't fail the transaction if email fails
+        }
+    }
+
+    private async approveOrder(orderId: string, mpPaymentId: string) {
+        // 1. Update Order Status
+        const order = await this.prisma.client.order.findUnique({
+            where: { id: orderId },
+            include: { user: true, items: true }
+        });
+
+        if (!order || order.status === 'APPROVED' || order.status === 'DELIVERED') {
+            this.logger.warn(`Order ${orderId} already approved or not found.`);
+            return;
+        }
+
+        await this.prisma.client.order.update({
+            where: { id: orderId },
+            data: {
+                status: 'APPROVED',
+                mpPaymentId
+            }
+        });
+
+        this.logger.log(`Order ${orderId} approved.`);
+
+        // 2. Reduce Stock (if physical/tracked)
+        // Note: For now we are focusing on digital flow, but good to add TODO for stock management
+        // await this.reduceStock(order.items);
+
+        // 3. Send Confirmation Email
+        try {
+            // We can send a generic summary email, or 1 email per digital item if needed.
+            // For now, let's send 1 email per digital item to match legacy behavior, or a new summary email.
+            // Let's stick to the plan: DigitalPurchaseEmail (generic).
+
+            // If order has multiple digital items, we might spam user. Ideally create OrderConfirmationEmail.
+            // But to minimize scope creep, let's send DigitalPurchaseEmail for the first item found or loop.
+            // Let's loop for now to ensure delivery of all links.
+
+            for (const item of order.items) {
+                // Check if product is digital (simplification: assume yes for this module scope or fetch product)
+                // Ideally we should include productType in OrderItem snapshot or fetch variant again.
+
+                // Fetch variant to get slug/type
+                const variant = await this.prisma.client.productVariant.findUnique({
+                    where: { id: item.variantId },
+                    include: { product: true }
+                });
+
+                if (variant && variant.product.productType === 'DIGITAL') {
+                    await this.emailService.sendDigitalPurchaseEmail(
+                        order.user.email,
+                        order.user.name || 'Cliente',
+                        item.productName, // e.g. "Ebook: Como programar"
+                        variant.product.slug
+                    );
+                }
+            }
+
+        } catch (e) {
+            this.logger.error(`Error sending order email for ${orderId}`, e);
         }
     }
 

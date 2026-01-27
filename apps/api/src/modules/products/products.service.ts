@@ -126,6 +126,34 @@ export class ProductsService {
         });
     }
 
+    async findAllPublished(type?: ProductType) {
+        return await this.prisma.client.product.findMany({
+            where: {
+                published: true,
+                ...(type ? { productType: type } : {}),
+            },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                variants: {
+                    where: { isDefault: true } // Only show default variant for listing
+                }
+            },
+        });
+    }
+
+    async findOnePublished(slug: string) {
+        const product = await this.prisma.client.product.findUnique({
+            where: { slug },
+            include: { variants: true },
+        });
+
+        if (!product || !product.published) {
+            throw new NotFoundException('Producto no encontrado');
+        }
+
+        return product;
+    }
+
     async findOne(id: string) {
         const product = await this.prisma.client.product.findUnique({
             where: { id },

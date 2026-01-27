@@ -1,9 +1,6 @@
 "use client";
 
-import { Sheet, SheetContent, SheetTrigger } from "@alvarosky/ui";
-import { Button } from "@alvarosky/ui";
-import { IconMenu } from "@alvarosky/ui";
-import { DashboardSidebar } from "./DashboardSidebar";
+import { SidebarTrigger, Separator } from "@alvarosky/ui";
 import { useAuth } from "@/context/AuthContext";
 
 export function DashboardHeader() {
@@ -11,17 +8,10 @@ export function DashboardHeader() {
 
     return (
         <header className="flex h-14 items-center gap-4 border-b bg-background px-6 lg:h-[60px] sticky top-0 z-10 w-full">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="shrink-0 md:hidden">
-                        <IconMenu className="h-5 w-5" />
-                        <span className="sr-only">Toggle navigation menu</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="flex flex-col p-0 w-[240px]">
-                    <DashboardSidebar className="mt-4" />
-                </SheetContent>
-            </Sheet>
+            <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+            </div>
             <div className="w-full flex-1">
                 {/* Search or Breadcrumbs could go here */}
             </div>

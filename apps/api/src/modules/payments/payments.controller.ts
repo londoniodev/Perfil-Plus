@@ -42,6 +42,14 @@ export class PaymentsController {
 
 
 
+    @Post('product/checkout')
+    async createProductCheckout(
+        @CurrentUser('id') userId: string,
+        @Body() body: { items: { variantId: string; quantity: number }[], frontUrl?: string },
+    ) {
+        return this.paymentsService.createProductCheckout(userId, body.items, body.frontUrl);
+    }
+
     // ==================== WEBHOOKS ====================
 
     @Post('webhook')

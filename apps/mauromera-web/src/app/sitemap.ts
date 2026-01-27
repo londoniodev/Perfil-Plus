@@ -33,7 +33,7 @@ async function getPosts(): Promise<Post[]> {
 
 async function getEbooks(): Promise<Ebook[]> {
     try {
-        const res = await fetch(`${API_BASE}/ebooks`, {
+        const res = await fetch(`${API_BASE}/store/products?type=DIGITAL`, {
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];

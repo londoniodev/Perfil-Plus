@@ -19,6 +19,7 @@ import { PaymentsModule } from './modules/payments';
 import { LeadsModule } from './modules/leads';
 import { EmailModule } from './modules/email/email.module';
 import { ProductsModule } from './modules/products/products.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -80,6 +81,7 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     UsersModule,
     StorageModule,
     ProductsModule,
+    OrdersModule,
     BlogModule,
     LmsModule,
     PaymentsModule,

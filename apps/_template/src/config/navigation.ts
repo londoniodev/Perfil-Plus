@@ -5,86 +5,32 @@ import {
     IconDocument,
     IconUsers,
     IconCreditCard,
-    IconGrid,
-    IconMessageCircle // Assuming we have this, or use fallback
+    IconGrid
 } from "@alvarosky/ui";
-import { FeatureKey } from "@alvarosky/types/config/features";
 
-export interface NavItem {
-    title: string;
+export type NavItem = {
+    name: string;
     href: string;
-    icon: any; // Lucide icon type
-    allowedRoles: ('admin' | 'user')[];
-    requiredFeature?: FeatureKey | 'all';
-}
+    icon: any;
+    feature?: string; // Feature required (e.g., 'lms', 'blog', 'shop')
+    role?: 'ADMIN' | 'USER'; // Role required (if not specified, available to all or handled by filtered lists)
+};
 
-export const NAVIGATION_CONFIG: NavItem[] = [
-    // === USER ===
-    {
-        title: "Mi Panel",
-        href: "/perfil",
-        icon: IconHome,
-        allowedRoles: ['admin', 'user'],
-        requiredFeature: 'all'
-    },
-    {
-        title: "Mis Cursos",
-        href: "/cursos",
-        icon: IconBook,
-        allowedRoles: ['user'],
-        requiredFeature: 'lms'
-    },
-    {
-        title: "Ebooks / Compras",
-        href: "/ebooks/mis-compras",
-        icon: IconGrid,
-        allowedRoles: ['user'],
-        requiredFeature: 'shop' // Assuming shop covers ebooks
-    },
-    {
-        title: "Suscripción",
-        href: "/suscripcion",
-        icon: IconCreditCard,
-        allowedRoles: ['user'],
-        requiredFeature: 'all'
-    },
-
-    // === ADMIN ===
-    {
-        title: "Gestionar Cursos",
-        href: "/admin/cursos",
-        icon: IconEdit,
-        allowedRoles: ['admin'],
-        requiredFeature: 'lms'
-    },
-    {
-        title: "Gestionar Blog",
-        href: "/admin/blog",
-        icon: IconDocument,
-        allowedRoles: ['admin'],
-        requiredFeature: 'blog'
-    },
-    {
-        title: "Gestión de Productos",
-        href: "/admin/productos",
-        icon: IconGrid,
-        allowedRoles: ['admin'],
-        requiredFeature: 'shop'
-    },
-    {
-        title: "Usuarios",
-        href: "/admin/usuarios",
-        icon: IconUsers,
-        allowedRoles: ['admin'],
-        requiredFeature: 'all'
-    },
-
-    // === PILOT FEATURE ===
-    {
-        title: "Bot WhatsApp",
-        href: "/whatsapp",
-        icon: IconMessageCircle, // Need to make sure this exists or use generic
-        allowedRoles: ['admin'],
-        requiredFeature: 'bot-whatsapp'
-    }
-];
+export const NAVIGATION_CONFIG: {
+    user: NavItem[];
+    admin: NavItem[];
+} = {
+    user: [
+        { name: "Mi Panel", href: "/perfil", icon: IconHome },
+        { name: "Mis Cursos", href: "/cursos", icon: IconBook, feature: 'lms' },
+        { name: "Mis Compras", href: "/compras", icon: IconGrid, feature: 'shop' },
+        { name: "Suscripción", href: "/suscripcion", icon: IconCreditCard }, // Core feature? Or 'subscription'?
+    ],
+    admin: [
+        { name: "Dashboard", href: "/perfil", icon: IconHome },
+        { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit, feature: 'lms' },
+        { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument, feature: 'blog' },
+        { name: "Gestión de Productos", href: "/admin/productos", icon: IconGrid, feature: 'shop' },
+        { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers }, // Core admin feature
+    ]
+};

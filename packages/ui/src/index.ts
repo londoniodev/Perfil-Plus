@@ -88,3 +88,7 @@ export * from "./hooks/use-digital-product";
 export * from "./layouts/dashboard-layout";
 
 
+
+// Providers
+export * from "./providers/brand-provider";
+export * from "./lib/themes";

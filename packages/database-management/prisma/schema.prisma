@@ -26,6 +26,7 @@ model Tenant {
   ownerEmail String?     // Contact email
   notes      String?     @db.Text
   features   String[]    @default([]) // Array de features activas: ['shop', 'blog']
+  design     Json?       @default("{\"primary\": \"zinc\", \"radius\": 0.5, \"density\": \"default\"}") // Branding config
   
   createdAt DateTime     @default(now())
   updatedAt DateTime     @default(now()) @updatedAt

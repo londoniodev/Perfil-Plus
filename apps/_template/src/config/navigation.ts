@@ -14,6 +14,7 @@ export type NavItem = {
     icon: any;
     feature?: string; // Feature required (e.g., 'lms', 'blog', 'shop')
     role?: 'ADMIN' | 'USER'; // Role required (if not specified, available to all or handled by filtered lists)
+    items?: NavItem[]; // Nested items support
 };
 
 export const NAVIGATION_CONFIG: {

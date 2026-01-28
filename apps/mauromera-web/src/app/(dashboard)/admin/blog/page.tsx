@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { DataTable } from "@alvarosky/ui";
+import { Tabs, TabsList, TabsTrigger } from "@alvarosky/ui";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
@@ -241,19 +242,14 @@ export default function AdminBlogPage() {
             {/* ... resto del código ... */}
 
             {/* Filter Tabs using Buttons */}
-            <div className="flex items-center gap-2 border-b pb-2 overflow-x-auto">
-                {(["all", "published", "draft"] as FilterType[]).map((t) => (
-                    <Button
-                        key={t}
-                        variant={filter === t ? "secondary" : "ghost"}
-                        size="sm"
-                        onClick={() => { setFilter(t); setPage(1); }}
-                        className="capitalize"
-                    >
-                        {t === "all" ? "Todos" : t === "published" ? "Publicados" : "Borradores"}
-                    </Button>
-                ))}
-            </div>
+            {/* Filter Tabs */}
+            <Tabs defaultValue="all" value={filter} onValueChange={(v) => { setFilter(v as FilterType); setPage(1); }} className="w-full">
+                <TabsList>
+                    <TabsTrigger value="all">Todos</TabsTrigger>
+                    <TabsTrigger value="published">Publicados</TabsTrigger>
+                    <TabsTrigger value="draft">Borradores</TabsTrigger>
+                </TabsList>
+            </Tabs>
 
             <div className="bg-card rounded-md border">
                 <DataTable columns={columns} data={posts} searchKey="title" />

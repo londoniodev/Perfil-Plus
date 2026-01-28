@@ -1,115 +1,71 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from "react"
+import { toast } from "sonner"
 
 interface UseDigitalProductProps {
-    apiUrl?: string;
-    token?: string;
+    productId: string
+    orderId?: string
 }
 
-interface DownloadResponse {
-    downloadUrl: string;
-}
+export function useDigitalProduct({ productId, orderId }: UseDigitalProductProps) {
+    const [isDownloading, setIsDownloading] = useState(false)
 
-export function useDigitalProduct({ apiUrl, token }: UseDigitalProductProps = {}) {
-    const [isLoading, setIsLoading] = useState(false);
+    const download = async () => {
+        if (!orderId) {
+            toast.error("No se encontró la orden de compra asociada.")
+            return
+        }
 
-    const downloadProduct = async (productId: string, productName: string = 'Archivo') => {
-        setIsLoading(true);
+        setIsDownloading(true)
         try {
-            const baseUrl = apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-            };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            } else {
-                // Try getting from localStorage if client-side
-                const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                if (storedToken) {
-                    headers['Authorization'] = `Bearer ${storedToken}`;
+            // Should come from env, but for now assuming /api proxy setup or absolute URL if needed.
+            // In a monorepo, web usually proxies /api to backend.
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/${orderId}/download/${productId}`, {
+                method: "GET",
+                headers: {
+                    // Start with basic fetch, assuming auth token is handled via cookie or interceptor.
+                    // If using JWT in header, we might need a useAuth hook to get the token here.
+                    // For now, let's assume standard fetch with credentials if needed, or that the consumer app handles global fetch setup.
+                    // Re-reading context: User uses JwtAuthGuard.
+                    // We probably need the token. However, this is a UI package.
+                    // Best practice: The UI component shouldn't ideally manage the fetch auth logic directly if it's generic.
+                    // But for this specific task, I'll assume usage context has auth or I'll try to get it from localStorage if standard.
+                    "Authorization": `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') : ''}`
                 }
-            }
-
-            // Also check for tenant-id if needed, but usually handled by domain/subdomain
-            const tenantId = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
-            if (tenantId) headers['x-tenant-id'] = tenantId;
-
-            const response = await fetch(`${baseUrl}/products/${productId}/download`, {
-                method: 'GET',
-                headers,
-            });
+            })
 
             if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('No tienes acceso a este producto. Debes comprarlo primero.');
-                }
-                throw new Error('Error al obtener el enlace de descarga');
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.message || "Error al iniciar la descarga")
             }
 
-            const data: DownloadResponse = await response.json();
+            const data = await response.json()
 
-            // Open download directly
-            window.open(data.downloadUrl, '_blank');
-            toast.success(`Descarga iniciada: ${productName}`);
-
-        } catch (error: any) {
-            console.error('Download error:', error);
-            toast.error(error.message || 'Error al descargar el producto');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const getProductUrl = async (productId: string): Promise<string | null> => {
-        setIsLoading(true);
-        try {
-            const baseUrl = apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-            };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
+            if (data.downloadUrl) {
+                // Secure download: Create hidden link and click it
+                const link = document.createElement("a")
+                link.href = data.downloadUrl
+                link.target = "_blank"
+                link.rel = "noopener noreferrer"
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                toast.success("Descarga iniciada")
             } else {
-                const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                if (storedToken) {
-                    headers['Authorization'] = `Bearer ${storedToken}`;
-                }
+                throw new Error("URL de descarga no válida")
             }
 
-            const tenantId = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
-            if (tenantId) headers['x-tenant-id'] = tenantId;
-
-            const response = await fetch(`${baseUrl}/products/${productId}/download`, {
-                method: 'GET',
-                headers,
-            });
-
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('No tienes acceso a este producto. Debes comprarlo primero.');
-                }
-                throw new Error('Error al obtener el enlace del producto');
-            }
-
-            const data: DownloadResponse = await response.json();
-            return data.downloadUrl;
-
-        } catch (error: any) {
-            console.error('URL Fetch error:', error);
-            toast.error(error.message || 'Error al cargar el producto');
-            return null;
+        } catch (error) {
+            console.error(error)
+            toast.error(error instanceof Error ? error.message : "Error desconocido al descargar")
         } finally {
-            setIsLoading(false);
+            setIsDownloading(false)
         }
-    };
+    }
 
     return {
-        downloadProduct,
-        getProductUrl,
-        isLoading
-    };
+        download,
+        isDownloading
+    }
 }

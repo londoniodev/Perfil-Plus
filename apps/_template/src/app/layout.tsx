@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
 import { ThemeProvider } from "./providers";
-import { BrandProvider } from "@/components/providers/brand-provider";
+import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 
 const sansation = Sansation({

@@ -80,7 +80,7 @@ export * from "./scroll-area";
 export * from "./price-display";
 export * from "./product-specs";
 export * from "./product-card";
-export * from "./components/product-action-button";
+export * from "./components/commerce/product-action-button";
 
 // Hooks
 export * from "./hooks/use-digital-product";

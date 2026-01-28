@@ -205,15 +205,19 @@ export default function AdminUsuariosPage() {
                 const user = row.original;
                 const isItemLoading = actionLoading === user.id;
                 return (
-                    <select
-                        className="text-xs border rounded px-2 py-1 bg-background text-foreground"
-                        value={user.role}
+                    <Select
                         disabled={isItemLoading}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as "USER" | "ADMIN")}
+                        value={user.role}
+                        onValueChange={(val) => handleRoleChange(user.id, val as "USER" | "ADMIN")}
                     >
-                        <option value="USER">User</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
+                        <SelectTrigger className="h-8 w-[100px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="USER">User</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
                 );
             }
         },
@@ -256,15 +260,17 @@ export default function AdminUsuariosPage() {
             cell: ({ row }) => {
                 const isItemLoading = actionLoading === row.original.id;
                 return (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={isItemLoading}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
-                        onClick={() => handleDelete(row.original.id)}
-                    >
-                        <IconTrash className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isItemLoading}
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(row.original.id)}
+                        >
+                            <IconTrash className="h-4 w-4" />
+                        </Button>
+                    </div>
                 )
             }
         }

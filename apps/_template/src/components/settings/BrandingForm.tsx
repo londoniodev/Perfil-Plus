@@ -12,9 +12,13 @@ import {
     Input,
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
     Slider,
+    Switch,
+    Label,
     Separator,
+    cn,
     themes // Imported from shared UI
 } from "@alvarosky/ui";
+import { Check } from "lucide-react";
 import { updateTenantBranding } from "@/actions/branding-actions";
 
 const brandingSchema = z.object({
@@ -78,21 +82,22 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                         <FormItem>
                                             <FormLabel>Color Principal</FormLabel>
                                             <FormControl>
-                                                <div className="grid grid-cols-4 gap-2">
+                                                <div className="flex flex-wrap gap-3">
                                                     {Object.keys(themes).map((themeKey) => (
-                                                        <Button
+                                                        <div
                                                             key={themeKey}
-                                                            type="button"
-                                                            variant={field.value === themeKey ? "default" : "outline"}
-                                                            className="w-full capitalize justify-start px-3"
+                                                            className={cn(
+                                                                "h-10 w-10 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
+                                                                field.value === themeKey ? "ring-2 ring-offset-2 ring-primary" : "ring-1 ring-border"
+                                                            )}
+                                                            style={{ backgroundColor: getThemeColor(themeKey) }}
                                                             onClick={() => field.onChange(themeKey)}
+                                                            title={themeKey}
                                                         >
-                                                            <div
-                                                                className={`mr-2 h-4 w-4 rounded-full`}
-                                                                style={{ backgroundColor: getThemeColor(themeKey) }}
-                                                            />
-                                                            {themeKey}
-                                                        </Button>
+                                                            {field.value === themeKey && (
+                                                                <Check className="h-4 w-4 text-white drop-shadow-md" />
+                                                            )}
+                                                        </div>
                                                     ))}
                                                 </div>
                                             </FormControl>
@@ -100,6 +105,8 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                         </FormItem>
                                     )}
                                 />
+
+                                <Separator />
 
                                 <FormField
                                     control={form.control}
@@ -110,18 +117,48 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                             <FormControl>
                                                 <Slider
                                                     min={0}
-                                                    max={1.5}
-                                                    step={0.1}
+                                                    max={1}
+                                                    step={0.25} // 0, 0.25, 0.5, 0.75, 1
                                                     defaultValue={[field.value]}
+                                                    value={[field.value]}
                                                     onValueChange={(vals) => field.onChange(vals[0])}
+                                                    className="py-4"
                                                 />
                                             </FormControl>
+                                            <FormDescription className="flex justify-between text-xs text-muted-foreground">
+                                                <span>0</span>
+                                                <span>0.5</span>
+                                                <span>1.0</span>
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
 
-                                <Button type="submit" disabled={isSaving}>
+                                <Separator />
+
+                                <FormField
+                                    control={form.control}
+                                    name="density"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                            <div className="space-y-0.5">
+                                                <FormLabel>Modo Espacioso</FormLabel>
+                                                <FormDescription>
+                                                    Aumenta el espacio entre elementos (Density).
+                                                </FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch
+                                                    checked={field.value === "spacious"}
+                                                    onCheckedChange={(checked) => field.onChange(checked ? "spacious" : "default")}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <Button type="submit" disabled={isSaving} className="w-full">
                                     {isSaving ? "Guardando..." : "Guardar Cambios"}
                                 </Button>
                             </CardContent>
@@ -132,28 +169,47 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
 
             {/* Preview Section */}
             <div className="space-y-6">
-                <Card className="border-2 border-dashed">
+                <Card className="border-2 border-dashed bg-muted/50 hidden md:block">
                     <CardHeader>
                         <CardTitle>Vista Previa</CardTitle>
-                        <CardDescription>Así se verán tus componentes</CardDescription>
+                        <CardDescription>Simulación en tiempo real</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="flex flex-col gap-4 p-4 rounded-lg bg-background border"
+                        <div
+                            className="flex flex-col gap-4 p-6 rounded-lg bg-background border shadow-sm transition-all duration-300"
                             style={{
-                                // Simulation of styles for preview
-                                borderRadius: `${watchedRadius}rem`
-                            }}>
-                            <div className="flex gap-2">
-                                <Button>Primary Button</Button>
-                                <Button variant="secondary">Secondary</Button>
-                                <Button variant="outline">Outline</Button>
+                                borderRadius: `${watchedRadius}rem`,
+                                // Note: Colors are hard to preview exactly without a provider wrapper,
+                                // but we simulate spacing and radius.
+                            }}
+                        >
+                            <div className="space-y-2">
+                                <h3 className="text-lg font-semibold">Título de Ejemplo</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Así se verán los textos y contenedores con el radio seleccionado.
+                                </p>
                             </div>
-                            <div className="flex gap-2">
-                                <Button size="sm">Small</Button>
-                                <Button size="lg">Large</Button>
+
+                            <div className="flex flex-wrap gap-2">
+                                <Button>Primary Action</Button>
+                                <Button variant="secondary">Secondary</Button>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                                <Button variant="outline" size="sm">Small</Button>
+                                <Button variant="ghost" size="icon"><span className="text-lg">👻</span></Button>
                                 <Button variant="destructive">Destructive</Button>
                             </div>
-                            <Input placeholder="Input de texto" />
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="preview-input">Input de Texto</Label>
+                                <Input id="preview-input" placeholder="Escribe algo..." />
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <Switch id="preview-switch" />
+                                <Label htmlFor="preview-switch">Toggle de ejemplo</Label>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

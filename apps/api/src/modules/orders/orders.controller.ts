@@ -13,6 +13,14 @@ export class OrdersController {
         return this.ordersService.findMyOrders(userId);
     }
 
+    @Get('product/:productId/download')
+    async downloadByProduct(
+        @CurrentUser('id') userId: string,
+        @Param('productId') productId: string
+    ) {
+        return this.ordersService.getDownloadUrl(userId, null, productId);
+    }
+
     @Get(':id/download/:productId')
     async downloadItem(
         @CurrentUser('id') userId: string,

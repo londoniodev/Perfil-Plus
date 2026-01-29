@@ -6,6 +6,7 @@ import { DashboardProvider } from "@/context/DashboardContext";
 import { SidebarInset, SidebarProvider, BrandProvider } from "@alvarosky/ui";
 import { PrismaClient } from "@alvarosky/database-management"; // Direct DB Access
 import { TENANT_ID } from "@/lib/config";
+import { cookies } from "next/headers";
 
 // --- Server Side Data Fetching ---
 const prisma = new PrismaClient();
@@ -31,13 +32,15 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const cookieStore = await cookies();
+    const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
     const { features, design } = await getTenantData();
 
     return (
         <AuthProvider>
             <DashboardProvider>
                 <BrandProvider settings={design as any}>
-                    <SidebarProvider>
+                    <SidebarProvider defaultOpen={defaultOpen}>
                         <AppSidebar features={features} />
                         <SidebarInset>
                             <DashboardHeader />

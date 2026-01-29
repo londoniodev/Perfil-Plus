@@ -4,46 +4,89 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 interface UseDigitalProductProps {
-    productId: string
+    productId?: string
     orderId?: string
 }
 
-export function useDigitalProduct({ productId, orderId }: UseDigitalProductProps) {
+export function useDigitalProduct(props?: UseDigitalProductProps) {
     const [isDownloading, setIsDownloading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false) // Alias for compatibility
+
+    // Helper to get token
+    const getToken = () => typeof window !== 'undefined' ? localStorage.getItem('token') : ''
+
+
+
+
+    const getProductUrl = async (productId?: string, orderId?: string) => {
+        const targetProductId = productId || props?.productId
+        const targetOrderId = orderId || props?.orderId
+
+        if (!targetProductId) throw new Error("Product ID required")
+
+        setIsLoading(true)
+        try {
+            // New Logic: If no Order ID, try the smart access endpoint
+            let url = "";
+            if (targetOrderId) {
+                url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/${targetOrderId}/download/${targetProductId}`
+            } else {
+                url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/product/${targetProductId}/download`
+            }
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`
+                }
+            })
+
+            if (!response.ok) {
+                // handle error...
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.message || "Error al obtener URL")
+            }
+
+            const data = await response.json()
+            return data.downloadUrl
+        } catch (error) {
+            console.error(error)
+            // toast.error(error instanceof Error ? error.message : "Error") // Optional: maybe silent in hook? 
+            return null
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const download = async () => {
-        if (!orderId) {
-            toast.error("No se encontró la orden de compra asociada.")
+        const targetProductId = props?.productId
+        const targetOrderId = props?.orderId
+
+        if (!targetProductId) {
+            toast.error("Datos de producto incompletos.")
             return
         }
 
         setIsDownloading(true)
         try {
-            // Should come from env, but for now assuming /api proxy setup or absolute URL if needed.
-            // In a monorepo, web usually proxies /api to backend.
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/${orderId}/download/${productId}`, {
+            let urlEndpoint = "";
+            if (targetOrderId) {
+                urlEndpoint = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/${targetOrderId}/download/${targetProductId}`
+            } else {
+                urlEndpoint = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/orders/product/${targetProductId}/download`
+            }
+
+            const response = await fetch(urlEndpoint, {
                 method: "GET",
                 headers: {
-                    // Start with basic fetch, assuming auth token is handled via cookie or interceptor.
-                    // If using JWT in header, we might need a useAuth hook to get the token here.
-                    // For now, let's assume standard fetch with credentials if needed, or that the consumer app handles global fetch setup.
-                    // Re-reading context: User uses JwtAuthGuard.
-                    // We probably need the token. However, this is a UI package.
-                    // Best practice: The UI component shouldn't ideally manage the fetch auth logic directly if it's generic.
-                    // But for this specific task, I'll assume usage context has auth or I'll try to get it from localStorage if standard.
-                    "Authorization": `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') : ''}`
+                    "Authorization": `Bearer ${getToken()}`
                 }
             })
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.message || "Error al iniciar la descarga")
-            }
-
-            const data = await response.json()
+            if (!response.ok) throw new Error("Error de descarga");
+            const data = await response.json();
 
             if (data.downloadUrl) {
-                // Secure download: Create hidden link and click it
                 const link = document.createElement("a")
                 link.href = data.downloadUrl
                 link.target = "_blank"
@@ -53,12 +96,12 @@ export function useDigitalProduct({ productId, orderId }: UseDigitalProductProps
                 document.body.removeChild(link)
                 toast.success("Descarga iniciada")
             } else {
-                throw new Error("URL de descarga no válida")
+                throw new Error("URL inválida")
             }
 
         } catch (error) {
             console.error(error)
-            toast.error(error instanceof Error ? error.message : "Error desconocido al descargar")
+            toast.error(error instanceof Error ? error.message : "Error al descargar")
         } finally {
             setIsDownloading(false)
         }
@@ -66,6 +109,8 @@ export function useDigitalProduct({ productId, orderId }: UseDigitalProductProps
 
     return {
         download,
-        isDownloading
+        getProductUrl,
+        isDownloading,
+        isLoading
     }
 }

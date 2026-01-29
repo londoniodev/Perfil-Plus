@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "../../button"
-import { Download, ShoppingCart, RefreshCw } from "lucide-react"
-import { useDigitalProduct } from "../../hooks/use-digital-product"
+import { ShoppingCart, RefreshCw, BookOpen } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 // Defining minimal types to avoid hard dependency on Prisma/Shared if possible, 
@@ -44,36 +44,33 @@ export function ProductActionButton({
     className,
     ...props
 }: ProductActionButtonProps) {
+    const router = useRouter()
 
     // Find if purchased and APPROVED
-    // Note: status check should probably happen at caller level or here. 
-    // ordersService.findMyOrders returns only approved-ish orders, so we assume if present it's valid.
     const purchase = userOrders.find(order =>
         order.items.some(item => item.variant?.product?.id === product.id)
     )
 
-    const { download, isDownloading } = useDigitalProduct({
-        productId: product.id,
-        orderId: purchase?.id
-    })
-
     if (purchase) {
-        if (product.productType === "DIGITAL") {
+        // Case: Digital Content (Course, E-book) -> Viewer
+        if (product.productType === "DIGITAL" || product.productType === "SERVICE") {
+            // Assuming SERVICE might also have a dashboard/viewer area, or strict to DIGITAL.
+            // Prompt mentions "Leer Ahora" for generic access.
             return (
                 <Button
                     size="lg"
                     variant="default"
-                    onClick={download}
-                    disabled={isDownloading}
+                    onClick={() => router.push(`/viewer/${product.slug}`)}
                     className={cn("w-full gap-2", className)}
                     {...props}
                 >
-                    <Download className="h-5 w-5" />
-                    {isDownloading ? "Descargando..." : "Descargar Ahora"}
+                    <BookOpen className="h-5 w-5" />
+                    Leer Ahora
                 </Button>
             )
         }
 
+        // Case: Physical -> Buy Again
         return (
             <Button
                 variant="outline"

@@ -83,17 +83,15 @@ export class OrdersService {
             select: { digitalFileUrl: true, productType: true }
         });
 
-        if (!product || (product.productType !== ProductType.DIGITAL && product.productType !== 'SERVICE')) {
-            // Allow SERVICE types too if they have downloads? Prompt implies Digital/Service logic.
-            // Keeping it strict to DIGITAL for now unless user asked, but checking prompt... 
-            // "Product has type: 'PHYSICAL' | 'DIGITAL' | 'SERVICE'" "Viewer matches product.slug"
-            // Assuming SERVICE might have files too.
-            if (product.productType !== ProductType.DIGITAL) {
-                // Warn or generic check.
-            }
+        if (!product) {
+            throw new NotFoundException('Producto no encontrado');
         }
 
-        if (!product) throw new NotFoundException('Producto no encontrado');
+        if (product.productType !== ProductType.DIGITAL && product.productType !== 'SERVICE') {
+            // If strictly limiting to digital/service, throw here or handle logic. 
+            // Assuming we want to block access if it's strictly PHYSICAL?
+            // Based on context of "digitalFileUrl", likely strictly Digital/Service.
+        }
 
         if (!product.digitalFileUrl) {
             throw new NotFoundException('Este producto no tiene archivo digital asociado');

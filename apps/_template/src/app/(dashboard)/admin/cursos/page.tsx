@@ -5,11 +5,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/components/admin/lms/ThemeCard";
-import { useToast } from "@alvarosky/ui";
+import { toast } from "sonner";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { IconPlus, IconBook } from "@alvarosky/ui";
-import { Button } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
+import {
+    Button,
+    Separator,
+    SidebarTrigger,
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbSeparator,
+    BreadcrumbPage,
+    Tabs,
+    TabsList,
+    TabsTrigger,
+} from "@alvarosky/ui";
+import { Plus, BookOpen, Loader2 } from "lucide-react";
 
 interface Theme {
     id: string;
@@ -28,7 +40,6 @@ type FilterType = "all" | "published" | "draft";
 export default function AdminCursosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
-    const toast = useToast();
 
     const [themes, setThemes] = useState<Theme[]>([]);
     const [loading, setLoading] = useState(true);
@@ -88,99 +99,147 @@ export default function AdminCursosPage() {
         return true;
     });
 
+    const stats = {
+        total: themes.length,
+        published: themes.filter((t) => t.published).length,
+        draft: themes.filter((t) => !t.published).length,
+    };
+
     if (authLoading) {
-        return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
     }
 
-    if (!isAdmin) {
-        return null;
-    }
-
-
-
-    // ... (code)
-
-    if (!isAdmin) {
-        return null;
-    }
+    if (!isAdmin) return null;
 
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-            <PageHeader
-                title="Gestión de Cursos"
-                description="Administra el catálogo de cursos y lecciones"
-            >
-                <Button asChild>
-                    <Link href="/admin/cursos/temas/nuevo">
-                        <IconPlus className="mr-2 h-4 w-4" />
-                        Nuevo Tema
-                    </Link>
-                </Button>
-            </PageHeader>
+        <div className="flex flex-col min-h-screen">
+            {/* Header with Breadcrumbs */}
+            <header className="flex h-14 lg:h-[60px] shrink-0 items-center gap-2 border-b bg-background px-4 lg:px-6 sticky top-0 z-10">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink asChild>
+                                <Link href="/perfil">Dashboard</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink asChild>
+                                <Link href="/admin">Admin</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>Cursos</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </header>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
-                <Button
-                    variant={filter === "all" ? "default" : "outline"}
-                    onClick={() => setFilter("all")}
-                    size="sm"
-                >
-                    Todos ({themes.length})
-                </Button>
-                <Button
-                    variant={filter === "published" ? "default" : "outline"}
-                    onClick={() => setFilter("published")}
-                    size="sm"
-                >
-                    Publicados ({themes.filter((t) => t.published).length})
-                </Button>
-                <Button
-                    variant={filter === "draft" ? "default" : "outline"}
-                    onClick={() => setFilter("draft")}
-                    size="sm"
-                >
-                    Borradores ({themes.filter((t) => !t.published).length})
-                </Button>
-            </div>
-
-            {loading ? (
-                <div className="p-8 text-center text-muted-foreground">Cargando temas...</div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredThemes.length === 0 ? (
-                        <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
-                            <div className="flex justify-center mb-4 text-muted-foreground"><IconBook size={48} /></div>
-                            <h2 className="text-xl font-semibold mb-2">
-                                {filter === "all"
-                                    ? "No hay temas creados"
-                                    : filter === "published"
-                                        ? "No hay temas publicados"
-                                        : "No hay borradores"}
-                            </h2>
-                            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                                {filter === "all"
-                                    ? "Crea tu primer tema para comenzar a organizar tus cursos."
-                                    : "Cambia el filtro para ver otros temas."}
+            {/* Content */}
+            <div className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+                <div className="max-w-7xl space-y-8">
+                    {/* Page Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="space-y-1">
+                            <h1 className="text-2xl font-bold tracking-tight">Gestión de Cursos</h1>
+                            <p className="text-muted-foreground">
+                                Administra el catálogo de cursos y lecciones
                             </p>
-                            {filter === "all" && (
-                                <Button asChild>
-                                    <Link href="/admin/cursos/temas/nuevo">
-                                        Crear Primer Tema
-                                    </Link>
-                                </Button>
-                            )}
+                        </div>
+                        <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
+                            <Link href="/admin/cursos/temas/nuevo">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo Tema
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <Separator />
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="rounded-lg border bg-card p-4">
+                            <p className="text-sm text-muted-foreground">Total Temas</p>
+                            <p className="text-2xl font-bold">{stats.total}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card p-4">
+                            <p className="text-sm text-muted-foreground">Publicados</p>
+                            <p className="text-2xl font-bold text-green-600">{stats.published}</p>
+                        </div>
+                        <div className="rounded-lg border bg-card p-4">
+                            <p className="text-sm text-muted-foreground">Borradores</p>
+                            <p className="text-2xl font-bold text-yellow-600">{stats.draft}</p>
+                        </div>
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)} className="w-full">
+                        <TabsList>
+                            <TabsTrigger value="all">
+                                Todos ({stats.total})
+                            </TabsTrigger>
+                            <TabsTrigger value="published">
+                                Publicados ({stats.published})
+                            </TabsTrigger>
+                            <TabsTrigger value="draft">
+                                Borradores ({stats.draft})
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
+                    {/* Content Grid */}
+                    {loading ? (
+                        <div className="flex h-48 items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     ) : (
-                        filteredThemes.map((theme) => (
-                            <ThemeCard
-                                key={theme.id}
-                                theme={theme}
-                                onDelete={handleDelete}
-                            />
-                        ))
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredThemes.length === 0 ? (
+                                <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
+                                    <div className="flex justify-center mb-4 text-muted-foreground">
+                                        <BookOpen className="h-12 w-12" />
+                                    </div>
+                                    <h2 className="text-xl font-semibold mb-2">
+                                        {filter === "all"
+                                            ? "No hay temas creados"
+                                            : filter === "published"
+                                                ? "No hay temas publicados"
+                                                : "No hay borradores"}
+                                    </h2>
+                                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                                        {filter === "all"
+                                            ? "Crea tu primer tema para comenzar a organizar tus cursos."
+                                            : "Cambia el filtro para ver otros temas."}
+                                    </p>
+                                    {filter === "all" && (
+                                        <Button asChild>
+                                            <Link href="/admin/cursos/temas/nuevo">
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Crear Primer Tema
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                filteredThemes.map((theme) => (
+                                    <ThemeCard
+                                        key={theme.id}
+                                        theme={theme}
+                                        onDelete={handleDelete}
+                                    />
+                                ))
+                            )}
+                        </div>
                     )}
                 </div>
-            )}
+            </div>
         </div>
     );
 }
-

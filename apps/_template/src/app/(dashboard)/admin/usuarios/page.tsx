@@ -4,26 +4,49 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { useToast } from "@alvarosky/ui";
-import { DataTable } from "@alvarosky/ui";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
-import { Badge } from "@alvarosky/ui";
+import { toast } from "sonner";
 import {
-    IconSearch,
-    IconTrash,
-    IconEdit
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    Button,
+    Input,
+    Badge,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Pagination,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    Avatar,
+    AvatarFallback,
+    Separator,
+    SidebarTrigger,
+    Breadcrumb,
+    BreadcrumbList,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbSeparator,
+    BreadcrumbPage,
 } from "@alvarosky/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
-import { Pagination } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
+import { Search, MoreHorizontal, UserCog, Trash2, Crown, CrownOff, Shield, User, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@alvarosky/ui/lib/utils";
 
 // ============================================================================
-// TIPOS
+// TYPES
 // ============================================================================
 
-export interface User {
+interface UserData {
     id: string;
     email: string;
     name: string;
@@ -36,7 +59,7 @@ export interface User {
 }
 
 interface UsersResponse {
-    data: User[];
+    data: UserData[];
     meta: {
         total: number;
         page: number;
@@ -46,22 +69,21 @@ interface UsersResponse {
 }
 
 // ============================================================================
-// COMPONENTE PRINCIPAL
+// MAIN COMPONENT
 // ============================================================================
 
 export default function AdminUsuariosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
-    const toast = useToast();
 
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<UserData[]>([]);
     const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    // Filtros
+    // Filters
     const [search, setSearch] = useState("");
-    const [role, setRole] = useState("ALL"); // "ALL" instead of "" for better Select handling
+    const [role, setRole] = useState("ALL");
     const [subscription, setSubscription] = useState("ALL");
 
     // Debounce search
@@ -71,7 +93,7 @@ export default function AdminUsuariosPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    // Cargar usuarios
+    // Fetch users
     const fetchUsers = useCallback(async (pageParam = 1) => {
         setLoading(true);
         try {
@@ -183,154 +205,234 @@ export default function AdminUsuariosPage() {
         }
     };
 
-    // Columns Definition
-    const columns = useMemo<ColumnDef<User>[]>(() => [
-        {
-            accessorKey: "name",
-            header: "Usuario",
-            cell: ({ row }) => {
-                const user = row.original;
-                return (
-                    <div className="flex flex-col">
-                        <span className="font-medium text-foreground">{user.name || "Sin nombre"}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                    </div>
-                );
-            }
-        },
-        {
-            accessorKey: "role",
-            header: "Rol",
-            cell: ({ row }) => {
-                const user = row.original;
-                const isItemLoading = actionLoading === user.id;
-                return (
-                    <select
-                        className="text-xs border rounded px-2 py-1 bg-background text-foreground"
-                        value={user.role}
-                        disabled={isItemLoading}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as "USER" | "ADMIN")}
-                    >
-                        <option value="USER">User</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
-                );
-            }
-        },
-        {
-            accessorKey: "subscription",
-            header: "Suscripción",
-            cell: ({ row }) => {
-                const user = row.original;
-                const isActive = user.subscription?.status === "ACTIVE";
-                const isItemLoading = actionLoading === user.id;
-                return (
-                    <div className="flex items-center gap-2">
-                        <Badge variant={isActive ? "default" : "secondary"} className={isActive ? "bg-green-500 hover:bg-green-600" : ""}>
-                            {isActive ? "Premium" : "Gratis"}
-                        </Badge>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={isItemLoading}
-                            className="h-6 px-2 text-xs"
-                            onClick={() => handleSubscription(user.id, isActive ? "cancel" : "assign")}
-                        >
-                            {isActive ? "Cancelar" : "Asignar"}
-                        </Button>
-                    </div>
-                )
-            }
-        },
-        {
-            accessorKey: "date",
-            header: "Fecha",
-            cell: ({ row }) => {
-                return <span className="text-xs whitespace-nowrap">
-                    {new Date(row.original.createdAt).toLocaleDateString()}
-                </span>
-            }
-        },
-        {
-            id: "actions",
-            cell: ({ row }) => {
-                const isItemLoading = actionLoading === row.original.id;
-                return (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={isItemLoading}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
-                        onClick={() => handleDelete(row.original.id)}
-                    >
-                        <IconTrash className="h-4 w-4" />
-                    </Button>
-                )
-            }
-        }
-    ], [actionLoading]);
+    // Get initials
+    const getInitials = (name: string) => {
+        return name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
+    };
 
-    if (authLoading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (authLoading) {
+        return (
+            <div className="flex h-[50vh] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Gestión de Usuarios"
-                description={`${meta.total} usuarios registrados`}
-            />
+        <div className="flex flex-col min-h-screen">
+            {/* Header with Breadcrumbs */}
+            <header className="flex h-14 lg:h-[60px] shrink-0 items-center gap-2 border-b bg-background px-4 lg:px-6 sticky top-0 z-10">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink asChild>
+                                <Link href="/perfil">Dashboard</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem className="hidden md:block">
+                            <BreadcrumbLink asChild>
+                                <Link href="/admin">Admin</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block" />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage>Usuarios</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </header>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por nombre o email..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
-                    />
-                </div>
-                <div className="w-full sm:w-[180px]">
-                    <Select value={role} onValueChange={setRole}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Todos los Roles</SelectItem>
-                            <SelectItem value="USER">Usuarios</SelectItem>
-                            <SelectItem value="ADMIN">Admins</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="w-full sm:w-[180px]">
-                    <Select value={subscription} onValueChange={setSubscription}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Suscripción" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Todas</SelectItem>
-                            <SelectItem value="active">Activas</SelectItem>
-                            <SelectItem value="inactive">Inactivas</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+            {/* Content */}
+            <div className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
+                <div className="max-w-7xl space-y-8">
+                    {/* Page Header */}
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-bold tracking-tight">Gestión de Usuarios</h1>
+                        <p className="text-muted-foreground">
+                            {meta.total} usuarios registrados en la plataforma
+                        </p>
+                    </div>
 
-            {/* Table */}
-            <div className="bg-card rounded-md border">
-                <DataTable columns={columns} data={users} />
-            </div>
+                    <Separator />
 
-            {/* Pagination */}
-            <div className="mt-4">
-                <Pagination
-                    currentPage={meta.page}
-                    totalPages={meta.totalPages}
-                    onPageChange={(page) => fetchUsers(page)}
-                />
+                    {/* Filters */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="relative flex-1 max-w-sm">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Buscar por nombre o email..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
+                        <Select value={role} onValueChange={setRole}>
+                            <SelectTrigger className="w-full sm:w-[160px]">
+                                <SelectValue placeholder="Rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">Todos los Roles</SelectItem>
+                                <SelectItem value="USER">Usuarios</SelectItem>
+                                <SelectItem value="ADMIN">Admins</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select value={subscription} onValueChange={setSubscription}>
+                            <SelectTrigger className="w-full sm:w-[160px]">
+                                <SelectValue placeholder="Suscripción" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">Todas</SelectItem>
+                                <SelectItem value="active">Premium</SelectItem>
+                                <SelectItem value="inactive">Gratis</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Table */}
+                    <div className="rounded-lg border bg-card overflow-hidden">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent">
+                                    <TableHead className="w-[300px]">Usuario</TableHead>
+                                    <TableHead>Rol</TableHead>
+                                    <TableHead>Suscripción</TableHead>
+                                    <TableHead>Registrado</TableHead>
+                                    <TableHead className="w-[70px]">
+                                        <span className="sr-only">Acciones</span>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-24 text-center">
+                                            <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : users.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                            No se encontraron usuarios.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    users.map((user) => {
+                                        const isActive = user.subscription?.status === "ACTIVE";
+                                        const isItemLoading = actionLoading === user.id;
+
+                                        return (
+                                            <TableRow key={user.id} className="transition-colors">
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-9 w-9">
+                                                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                                                {getInitials(user.name)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium">{user.name || "Sin nombre"}</span>
+                                                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={user.role === "ADMIN" ? "default" : "secondary"} className="gap-1">
+                                                        {user.role === "ADMIN" ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
+                                                        {user.role}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        variant={isActive ? "default" : "outline"}
+                                                        className={cn(isActive && "bg-gradient-to-r from-amber-400 to-yellow-500 text-yellow-900 border-0")}
+                                                    >
+                                                        {isActive ? (
+                                                            <><Crown className="h-3 w-3 mr-1" /> Premium</>
+                                                        ) : (
+                                                            "Gratis"
+                                                        )}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">
+                                                    {new Date(user.createdAt).toLocaleDateString("es-ES", {
+                                                        day: "numeric",
+                                                        month: "short",
+                                                        year: "numeric"
+                                                    })}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                className="h-8 w-8 p-0"
+                                                                disabled={isItemLoading}
+                                                            >
+                                                                {isItemLoading ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                )}
+                                                                <span className="sr-only">Acciones</span>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-[180px]">
+                                                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleRoleChange(user.id, user.role === "ADMIN" ? "USER" : "ADMIN")}
+                                                            >
+                                                                <UserCog className="mr-2 h-4 w-4" />
+                                                                {user.role === "ADMIN" ? "Quitar Admin" : "Hacer Admin"}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleSubscription(user.id, isActive ? "cancel" : "assign")}
+                                                            >
+                                                                {isActive ? (
+                                                                    <><CrownOff className="mr-2 h-4 w-4" /> Quitar Premium</>
+                                                                ) : (
+                                                                    <><Crown className="mr-2 h-4 w-4" /> Dar Premium</>
+                                                                )}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleDelete(user.id)}
+                                                                className="text-destructive focus:text-destructive"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Eliminar
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Pagination */}
+                    {meta.totalPages > 1 && (
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">
+                                Página {meta.page} de {meta.totalPages}
+                            </p>
+                            <Pagination
+                                currentPage={meta.page}
+                                totalPages={meta.totalPages}
+                                onPageChange={(page) => fetchUsers(page)}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
 }
-

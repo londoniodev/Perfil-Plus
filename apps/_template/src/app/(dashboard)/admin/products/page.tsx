@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader, Button, Badge, DataTable, PriceDisplay, AdaptiveImage } from "@alvarosky/ui"
+import { Button } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
-import Link from "next/link"
+import { PageWrapper } from "@/components/layout/PageWrapper"
+import { ProductsTableClient } from "./products-table-client"
 
+// Server Component - Fetches data
 export default async function ProductsPage() {
     // 1. Verificar autenticación y rol
     const user = await getSessionUser()
@@ -30,7 +33,7 @@ export default async function ProductsPage() {
         orderBy: { createdAt: "desc" }
     })
 
-    // 3. Transformar datos para DataTable
+    // 3. Transformar datos para la tabla
     const tableData = products.map((product) => {
         // Calcular stock total
         const totalStock = product.variants.reduce((sum, variant) => {
@@ -48,7 +51,7 @@ export default async function ProductsPage() {
             id: product.id,
             name: product.name,
             image: product.images[0] || "/placeholder.jpg",
-            type: product.productType,
+            type: product.productType as "PHYSICAL" | "DIGITAL" | "SERVICE",
             price: minPrice,
             stock: totalStock === Infinity ? "Ilimitado" : totalStock,
             published: product.published,
@@ -56,85 +59,24 @@ export default async function ProductsPage() {
         }
     })
 
-    // 4. Definir columnas
-    const columns = [
-        {
-            accessorKey: "image",
-            header: "Imagen",
-            cell: ({ row }: any) => (
-                <div className="h-12 w-12 overflow-hidden rounded border">
-                    <AdaptiveImage
-                        src={row.original.image}
-                        aspectRatio="square"
-                        alt={row.original.name}
-                    />
-                </div>
-            )
-        },
-        {
-            accessorKey: "name",
-            header: "Nombre",
-            cell: ({ row }: any) => (
-                <div className="font-medium">{row.original.name}</div>
-            )
-        },
-        {
-            accessorKey: "type",
-            header: "Tipo",
-            cell: ({ row }: any) => (
-                <Badge variant={row.original.type === "DIGITAL" ? "default" : "secondary"}>
-                    {row.original.type === "DIGITAL" ? "Digital" : "Físico"}
-                </Badge>
-            )
-        },
-        {
-            accessorKey: "price",
-            header: "Precio",
-            cell: ({ row }: any) => (
-                <PriceDisplay price={row.original.price} size="sm" />
-            )
-        },
-        {
-            accessorKey: "stock",
-            header: "Stock",
-            cell: ({ row }: any) => (
-                <span className="text-sm">
-                    {row.original.stock}
-                </span>
-            )
-        },
-        {
-            accessorKey: "published",
-            header: "Estado",
-            cell: ({ row }: any) => (
-                <Badge variant={row.original.published ? "default" : "outline"}>
-                    {row.original.published ? "Publicado" : "Borrador"}
-                </Badge>
-            )
-        },
-        {
-            id: "actions",
-            header: "Acciones",
-            cell: ({ row }: any) => (
-                <div className="flex gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                        <Link href={`/admin/products/${row.original.id}`}>
-                            Editar
-                        </Link>
-                    </Button>
-                </div>
-            )
-        }
-    ]
-
     return (
-        <div className="space-y-6">
+        <PageWrapper
+            title="Productos"
+            description="Gestiona el catálogo de tu tienda"
+            breadcrumbs={[
+                { label: "Admin", href: "/admin" },
+                { label: "Productos" }
+            ]}
+            maxWidth="full"
+        >
+            {/* Action Header */}
             <div className="flex items-center justify-between">
-                <PageHeader
-                    title="Productos"
-                    description="Gestiona el catálogo de tu tienda"
-                />
-                <Button asChild>
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                        {tableData.length} producto(s) en tu catálogo
+                    </p>
+                </div>
+                <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
                     <Link href="/admin/products/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Producto
@@ -142,11 +84,8 @@ export default async function ProductsPage() {
                 </Button>
             </div>
 
-            <DataTable
-                data={tableData}
-                columns={columns}
-            />
-        </div>
+            {/* Products Table (Client Component) */}
+            <ProductsTableClient data={tableData} />
+        </PageWrapper>
     )
 }
-

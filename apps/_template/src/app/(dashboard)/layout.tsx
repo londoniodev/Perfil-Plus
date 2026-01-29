@@ -1,6 +1,5 @@
 
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { AuthProvider } from "@/context/AuthContext";
 import { DashboardProvider } from "@/context/DashboardContext";
 import { SidebarInset, SidebarProvider, BrandProvider } from "@alvarosky/ui";
@@ -43,8 +42,7 @@ export default async function DashboardLayout({
                     <SidebarProvider defaultOpen={defaultOpen}>
                         <AppSidebar features={features} />
                         <SidebarInset>
-                            <DashboardHeader />
-                            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/10">
+                            <main className="flex flex-1 flex-col min-h-screen bg-background">
                                 {children}
                             </main>
                         </SidebarInset>

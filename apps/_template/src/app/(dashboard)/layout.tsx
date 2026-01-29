@@ -4,16 +4,16 @@ import { AuthProvider } from "@/context/AuthContext";
 import { DashboardProvider } from "@/context/DashboardContext";
 import { SidebarInset, SidebarProvider, BrandProvider } from "@alvarosky/ui";
 import { PrismaClient } from "@alvarosky/database-management"; // Direct DB Access
-import { TENANT_ID } from "@/lib/config";
+import { getTenantId } from "@/lib/config-server";
 import { cookies } from "next/headers";
 
 // --- Server Side Data Fetching ---
 const prisma = new PrismaClient();
 
-async function getTenantData() {
+async function getTenantData(tenantId: string) {
     try {
         const tenant = await prisma.tenant.findUnique({
-            where: { slug: TENANT_ID },
+            where: { slug: tenantId },
             select: {
                 features: true,
                 design: true
@@ -33,7 +33,10 @@ export default async function DashboardLayout({
 }) {
     const cookieStore = await cookies();
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
-    const { features, design } = await getTenantData();
+
+    // Resolve Tenant ID
+    const tenantId = await getTenantId();
+    const { features, design } = await getTenantData(tenantId);
 
     return (
         <AuthProvider>

@@ -7,7 +7,8 @@
         ".": "./src/index.ts",
         "./lib/utils": "./src/lib/utils.ts",
         "./secure-pdf-viewer": "./src/secure-pdf-viewer.tsx",
-        "./pwa-install-prompt": "./src/pwa-install-prompt.tsx"
+        "./pwa-install-prompt": "./src/pwa-install-prompt.tsx",
+        "./globals.css": "./src/globals.css"
     },
     "scripts": {
         "lint": "eslint \"**/*.ts*\""

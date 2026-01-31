@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Sansation } from "next/font/google";
-import "@/styles/index.css";
+import "@alvarosky/ui/globals.css"; // ✅ Direct from UI package
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";

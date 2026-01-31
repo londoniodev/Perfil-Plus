@@ -89,7 +89,10 @@ export * from "./hooks/use-digital-product";
 export * from "./layouts/dashboard-layout";
 
 
-
 // Providers
 export * from "./providers/brand-provider";
 export * from "./lib/themes";
+
+// CSS Styles (import in app layout)
+// import "@alvarosky/ui/globals.css";
+

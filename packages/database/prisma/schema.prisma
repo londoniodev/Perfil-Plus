@@ -476,16 +476,21 @@ model Lead {
 
 // ============ TENANT CONFIGURATION ============
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  dbName     String
+  name       String?
+  status     String   @default("ACTIVE")
+  plan       String   @default("free")
+  ownerEmail String?
+  notes      String?
+
   // Configuration
-  features  Json     // ["shop", "blog", "lms"]
-  design    Json?    // Branding settings
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  design     Json?    // jsonb matches Json
+  features   String[] // text[] matches String[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 // ============ CONFIGURACIÓN DEL SISTEMA (MULTI-TENANT) ============

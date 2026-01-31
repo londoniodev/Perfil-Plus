@@ -90,4 +90,4 @@ ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
 WORKDIR /app/apps/platform
-CMD ["sh", "-c", "cd /app/packages/database-management && npx prisma db push && cd /app/apps/platform && npx next start -p 4000"]
+CMD ["sh", "-c", "cd /app/packages/database-management && npx prisma db push --accept-data-loss && cd /app/apps/platform && npx next start -p 4000"]

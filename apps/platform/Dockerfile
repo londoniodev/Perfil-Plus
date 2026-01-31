@@ -19,6 +19,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/database-management/package.json ./packages/database-management/
 COPY packages/database/package.json ./packages/database/
+COPY packages/types/package.json ./packages/types/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/config-tailwind/package.json ./packages/config-tailwind/
 COPY packages/config-typescript/package.json ./packages/config-typescript/
@@ -36,6 +37,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/database-management/node_modules ./packages/database-management/node_modules
 COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules 2>/dev/null || true
 COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=deps /app/packages/config-tailwind/node_modules ./packages/config-tailwind/node_modules
 COPY --from=deps /app/apps/platform/node_modules ./apps/platform/node_modules
@@ -43,6 +45,7 @@ COPY --from=deps /app/apps/platform/node_modules ./apps/platform/node_modules
 # Copy source code
 COPY packages/database-management ./packages/database-management
 COPY packages/database ./packages/database
+COPY packages/types ./packages/types
 COPY packages/ui ./packages/ui
 COPY packages/config-tailwind ./packages/config-tailwind
 COPY packages/config-typescript ./packages/config-typescript

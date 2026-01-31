@@ -290,6 +290,39 @@ async function main() {
     });
     console.log('   ✓ Suplemento creado:', productSuplemento.name);
 
+    // 8. Crear Tenants (Multi-tenant config)
+    console.log('\n🏢 Creando tenants...');
+
+    // 8.1 Tenant Principal (Mauro Mera)
+    const tenantMauro = await prisma.tenant.upsert({
+        where: { slug: 'mauro' },
+        update: {},
+        create: {
+            name: 'Mauro Mera',
+            slug: 'mauro',
+            features: ["shop", "blog", "lms"],
+            design: {
+                colors: { primary: "#000000" }
+            }
+        }
+    });
+    console.log('   ✓ Tenant Principal creado:', tenantMauro.name);
+
+    // 8.2 Tenant Default (Template)
+    const tenantDefault = await prisma.tenant.upsert({
+        where: { slug: 'default' },
+        update: {},
+        create: {
+            name: 'Template Admin',
+            slug: 'default',
+            features: ["shop", "blog", "lms"],
+            design: {
+                colors: { primary: "#4f46e5" }
+            }
+        }
+    });
+    console.log('   ✓ Tenant Default creado:', tenantDefault.name);
+
 
     console.log('');
     console.log('✅ ¡Seed completado con éxito!');
@@ -299,7 +332,7 @@ async function main() {
     console.log(`   - Usuario Alumno: ${studentEmail} (Password: Admin123!)`);
     console.log('   - 1 Tema con 1 Curso y 3 Lecciones');
     console.log('   - 2 Blog Posts');
-
+    console.log('   - 2 Tenants (mauro, default)');
     console.log('   - 3 Productos E-commerce (1 Digital, 2 físicos con variantes)');
 }
 

@@ -112,6 +112,18 @@ const nextConfig: NextConfig = {
         destination: '/compras',
         permanent: true,
       },
+      // Redirect potentially broken auth link
+      {
+        source: '/auth/login',
+        destination: '/login',
+        permanent: true,
+      },
+      // Redirect malformed login attempts
+      {
+        source: '/login/undefined',
+        destination: '/login',
+        permanent: false, // Temporary redirect as this is likely a bug
+      },
     ];
   },
 };

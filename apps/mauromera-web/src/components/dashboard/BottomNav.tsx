@@ -28,7 +28,7 @@ export function BottomNav() {
     const userNavItems = [
         { name: "Inicio", href: "/perfil", icon: <IconHome size={24} /> },
         { name: "Cursos", href: "/cursos", icon: <IconBook size={24} /> },
-        { name: "Ebooks", href: "/ebooks/mis-compras", icon: <IconGrid size={24} /> },
+        { name: "Compras", href: "/compras", icon: <IconGrid size={24} /> },
         { name: "Más", href: "#", icon: <IconMenu size={24} />, action: () => setIsMenuOpen(!isMenuOpen) },
     ];
 

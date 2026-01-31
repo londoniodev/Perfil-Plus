@@ -37,7 +37,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
 
     const fetchEbook = async () => {
         try {
-            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
+            const res = await fetch(`${API_BASE}/admin/products/${params.id}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             if (!res.ok) throw new Error("Error");
             const data = await res.json();
             setTitle(data.title);
@@ -77,7 +77,7 @@ export default function EditEbookPage(props: { params: Promise<{ id: string }> }
                 if (res.ok) previewUrl = (await res.json()).url;
             }
 
-            const res = await fetch(`${API_BASE}/admin/ebooks/${params.id}`, {
+            const res = await fetch(`${API_BASE}/admin/products/${params.id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",

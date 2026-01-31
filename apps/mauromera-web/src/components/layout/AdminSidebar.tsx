@@ -24,7 +24,7 @@ export function AdminSidebar({ className }: SidebarProps) {
         { name: "Dashboard", href: "/perfil", icon: IconHome },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit },
         { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument },
-        { name: "Gestionar E-books", href: "/admin/ebooks", icon: IconBook },
+        { name: "Gestionar Productos", href: "/admin/productos", icon: IconBook },
         { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers },
     ];
 

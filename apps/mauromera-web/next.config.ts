@@ -13,7 +13,7 @@ const ContentSecurityPolicy = `
   img-src 'self' data: blob: https: https://${s3Domain};
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;
-  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000;
+  connect-src 'self' ${apiDomain} https://${s3Domain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000;
   media-src 'self' https://${s3Domain} blob:;
   object-src 'none';
   base-uri 'self';
@@ -91,6 +91,26 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // Legacy ebooks → tienda redirects
+      {
+        source: '/ebooks',
+        destination: '/tienda',
+        permanent: true,
+      },
+      {
+        source: '/ebooks/:slug',
+        destination: '/tienda/:slug',
+        permanent: true,
+      },
+      {
+        source: '/ebooks/mis-compras',
+        destination: '/compras',
+        permanent: true,
       },
     ];
   },

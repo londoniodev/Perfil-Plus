@@ -26,7 +26,7 @@ export function Sidebar() {
     const userMenuItems = [
         { name: "Mi Panel", href: "/perfil", icon: <IconHome size={20} /> },
         { name: "Mis Cursos", href: "/cursos", icon: <IconBook size={20} /> },
-        { name: "Ebooks", href: "/ebooks/mis-compras", icon: <IconGrid size={20} /> },
+        { name: "Mis Compras", href: "/compras", icon: <IconGrid size={20} /> },
         { name: "Suscripción", href: "/suscripcion", icon: <IconCreditCard size={20} /> },
     ];
 
@@ -34,7 +34,7 @@ export function Sidebar() {
         { name: "Dashboard", href: "/perfil", icon: <IconHome size={20} /> },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: <IconEdit size={20} /> },
         { name: "Gestionar Blog", href: "/admin/blog", icon: <IconDocument size={20} /> },
-        { name: "Gestionar E-books", href: "/admin/ebooks", icon: <IconBook size={20} /> },
+        { name: "Gestionar Productos", href: "/admin/productos", icon: <IconBook size={20} /> },
         { name: "Usuarios", href: "/admin/usuarios", icon: <IconUsers size={20} /> },
     ];
 

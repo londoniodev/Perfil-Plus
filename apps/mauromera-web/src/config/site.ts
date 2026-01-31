@@ -30,7 +30,7 @@ export const siteConfig = {
         { title: "Portafolio", href: "/portafolio" },
         { title: "Cursos", href: "/formacion" },
         { title: "Blog", href: "/blog" },
-        { title: "E-books", href: "/ebooks" },
+        { title: "Tienda", href: "/tienda" },
         { title: "Servicios", href: "/servicios" }
     ]
 }

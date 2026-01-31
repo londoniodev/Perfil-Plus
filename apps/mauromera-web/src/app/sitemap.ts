@@ -9,7 +9,7 @@ interface Post {
     createdAt: string;
 }
 
-interface Ebook {
+interface Product {
     slug: string;
 }
 
@@ -31,9 +31,9 @@ async function getPosts(): Promise<Post[]> {
     }
 }
 
-async function getEbooks(): Promise<Ebook[]> {
+async function getProducts(): Promise<Product[]> {
     try {
-        const res = await fetch(`${API_BASE}/store/products?type=DIGITAL`, {
+        const res = await fetch(`${API_BASE}/store/products`, {
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
@@ -77,7 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.9,
         },
         {
-            url: `${SITE_URL}/ebooks`,
+            url: `${SITE_URL}/tienda`,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.8,
@@ -111,10 +111,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
     }));
 
-    // Ebooks
-    const ebooks = await getEbooks();
-    const ebookPages: MetadataRoute.Sitemap = ebooks.map((ebook) => ({
-        url: `${SITE_URL}/ebooks/${ebook.slug}`,
+    // Productos de la tienda
+    const products = await getProducts();
+    const productPages: MetadataRoute.Sitemap = products.map((product) => ({
+        url: `${SITE_URL}/tienda/${product.slug}`,
         lastModified: new Date(),
         changeFrequency: 'monthly' as const,
         priority: 0.6,
@@ -142,6 +142,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
     });
 
-    return [...staticPages, ...postPages, ...ebookPages, ...coursePages];
+    return [...staticPages, ...postPages, ...productPages, ...coursePages];
 }
 

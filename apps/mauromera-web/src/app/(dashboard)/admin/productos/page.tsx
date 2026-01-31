@@ -44,21 +44,20 @@ export default function AdminProductosPage() {
 
     const fetchProducts = async () => {
         try {
-            // Por ahora usamos los ebooks del modelo antiguo
-            // TODO: Cambiar a /api/admin/products cuando tengamos el endpoint
-            const res = await fetch(`${API_BASE}/admin/ebooks`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
+            // Usar el nuevo endpoint de productos
+            const res = await fetch(`${API_BASE}/admin/products`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             if (!res.ok) throw new Error("Error");
             const data = await res.json();
-            // Mapear ebooks antiguos al nuevo formato
-            setProducts(data.map((e: any) => ({
-                id: e.id,
-                name: e.title,
-                slug: e.slug,
-                basePrice: e.price,
-                images: [e.coverImage],
-                productType: "DIGITAL",
-                published: e.published,
-                _count: { variants: 1 }
+            // Los productos ya vienen en el formato correcto
+            setProducts(data.map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                basePrice: p.basePrice || 0,
+                images: p.images || [],
+                productType: p.productType || "DIGITAL",
+                published: p.published,
+                _count: p._count
             })));
         } catch (err) {
             console.error(err);
@@ -70,7 +69,7 @@ export default function AdminProductosPage() {
     const handleDelete = async (id: string) => {
         if (!confirm("¿Eliminar este producto?")) return;
         try {
-            await fetch(`${API_BASE}/admin/ebooks/${id}`, { method: "DELETE", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
+            await fetch(`${API_BASE}/admin/products/${id}`, { method: "DELETE", headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" });
             setProducts((prev) => prev.filter((p) => p.id !== id));
             toast.success("Producto eliminado correctamente");
         } catch (err) {

@@ -26,7 +26,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
     const userMenuItems = [
         { name: "Mi Panel", href: "/perfil", icon: IconHome },
         { name: "Mis Cursos", href: "/cursos", icon: IconBook },
-        { name: "Ebooks", href: "/ebooks/mis-compras", icon: IconGrid },
+        { name: "Mis Compras", href: "/compras", icon: IconGrid },
         { name: "Suscripción", href: "/suscripcion", icon: IconCreditCard },
     ];
 

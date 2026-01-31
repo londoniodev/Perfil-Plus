@@ -4,36 +4,23 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { useToast } from "@alvarosky/ui";
-import { DataTable } from "@alvarosky/ui";
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
-import { Badge } from "@alvarosky/ui";
 import {
-    IconSearch,
-    IconTrash,
-    IconEdit
+    useToast,
+    AdminPageWrapper,
+    DataTable,
+    DataTableViewOptions,
+    Input,
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    Badge,
 } from "@alvarosky/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
-import { Pagination } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
+import { Search } from "lucide-react";
+import { createUserColumns, User, UserTableActions } from "@/components/users/columns";
 
 // ============================================================================
-// TIPOS
+// TYPES
 // ============================================================================
-
-export interface User {
-    id: string;
-    email: string;
-    name: string;
-    role: "USER" | "ADMIN";
-    emailVerified: boolean;
-    createdAt: string;
-    subscription?: {
-        status: string;
-    };
-}
 
 interface UsersResponse {
     data: User[];
@@ -46,7 +33,61 @@ interface UsersResponse {
 }
 
 // ============================================================================
-// COMPONENTE PRINCIPAL
+// TOOLBAR COMPONENT
+// ============================================================================
+
+interface UsersToolbarProps {
+    data: User[];
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+    globalFilter: string;
+    setGlobalFilter: (filter: string) => void;
+}
+
+function UsersToolbar({
+    data,
+    activeTab,
+    setActiveTab,
+    globalFilter,
+    setGlobalFilter,
+}: UsersToolbarProps) {
+    return (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="bg-muted/50">
+                    <TabsTrigger value="all" className="text-xs sm:text-sm">
+                        Todos
+                        <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                            {data.length}
+                        </Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="admins" className="text-xs sm:text-sm">
+                        Admins
+                    </TabsTrigger>
+                    <TabsTrigger value="premium" className="text-xs sm:text-sm">
+                        Premium
+                    </TabsTrigger>
+                    <TabsTrigger value="free" className="text-xs sm:text-sm">
+                        Gratis
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+
+            <div className="relative w-full sm:w-72">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Buscar por nombre o email..."
+                    value={globalFilter}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    className="pl-8"
+                />
+            </div>
+        </div>
+    );
+}
+
+// ============================================================================
+// MAIN PAGE COMPONENT
 // ============================================================================
 
 export default function AdminUsuariosPage() {
@@ -59,33 +100,23 @@ export default function AdminUsuariosPage() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    // Filtros
-    const [search, setSearch] = useState("");
-    const [role, setRole] = useState("ALL"); // "ALL" instead of "" for better Select handling
-    const [subscription, setSubscription] = useState("ALL");
+    // Filter state
+    const [activeTab, setActiveTab] = useState("all");
+    const [globalFilter, setGlobalFilter] = useState("");
 
-    // Debounce search
-    const [debouncedSearch, setDebouncedSearch] = useState("");
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 300);
-        return () => clearTimeout(timer);
-    }, [search]);
+    // ========================================================================
+    // DATA FETCHING
+    // ========================================================================
 
-    // Cargar usuarios
-    const fetchUsers = useCallback(async (pageParam = 1) => {
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
             const queryParams = new URLSearchParams({
-                page: pageParam.toString(),
-                limit: "20",
+                limit: "100",
             });
 
-            if (debouncedSearch) queryParams.append("search", debouncedSearch);
-            if (role && role !== "ALL") queryParams.append("role", role);
-            if (subscription && subscription !== "ALL") queryParams.append("subscription", subscription === "active" ? "active" : "inactive");
-
             const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: { "x-tenant-id": TENANT_ID },
                 credentials: "include",
             });
 
@@ -100,11 +131,11 @@ export default function AdminUsuariosPage() {
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, role, subscription]);
+    }, [toast]);
 
     useEffect(() => {
         if (!authLoading && isAdmin) {
-            fetchUsers(1);
+            fetchUsers();
         }
     }, [fetchUsers, authLoading, isAdmin]);
 
@@ -114,7 +145,43 @@ export default function AdminUsuariosPage() {
         }
     }, [isAdmin, authLoading, router]);
 
-    // Handlers
+    // ========================================================================
+    // FILTER DATA BY TAB
+    // ========================================================================
+
+    const filteredData = useMemo(() => {
+        let filtered = users;
+
+        // Apply tab filter
+        switch (activeTab) {
+            case "admins":
+                filtered = filtered.filter((u) => u.role === "ADMIN");
+                break;
+            case "premium":
+                filtered = filtered.filter((u) => u.subscription?.status === "ACTIVE");
+                break;
+            case "free":
+                filtered = filtered.filter((u) => u.subscription?.status !== "ACTIVE");
+                break;
+        }
+
+        // Apply global filter (name or email)
+        if (globalFilter) {
+            const lowerFilter = globalFilter.toLowerCase();
+            filtered = filtered.filter(
+                (u) =>
+                    u.name?.toLowerCase().includes(lowerFilter) ||
+                    u.email?.toLowerCase().includes(lowerFilter)
+            );
+        }
+
+        return filtered;
+    }, [users, activeTab, globalFilter]);
+
+    // ========================================================================
+    // ACTION HANDLERS
+    // ========================================================================
+
     const handleRoleChange = async (userId: string, newRole: "USER" | "ADMIN") => {
         setActionLoading(userId);
         try {
@@ -126,7 +193,9 @@ export default function AdminUsuariosPage() {
             });
             if (res.ok) {
                 setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-                toast.success("Rol actualizado");
+                toast.success(`Rol cambiado a ${newRole === "ADMIN" ? "Administrador" : "Usuario"}`);
+            } else {
+                toast.error("Error al actualizar rol");
             }
         } catch {
             toast.error("Error al actualizar rol");
@@ -141,12 +210,14 @@ export default function AdminUsuariosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: { "x-tenant-id": TENANT_ID },
                 credentials: "include",
             });
             if (res.ok) {
                 setUsers(users.filter((u) => u.id !== userId));
                 toast.success("Usuario eliminado");
+            } else {
+                toast.error("Error al eliminar");
             }
         } catch {
             toast.error("Error al eliminar");
@@ -155,7 +226,7 @@ export default function AdminUsuariosPage() {
         }
     };
 
-    const handleSubscription = async (userId: string, action: "assign" | "cancel") => {
+    const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel") => {
         if (!confirm(action === "assign" ? "¿Asignar Premium?" : "¿Cancelar Premium?")) return;
         setActionLoading(userId);
         try {
@@ -165,16 +236,20 @@ export default function AdminUsuariosPage() {
                 credentials: "include",
             });
             if (res.ok) {
-                setUsers(users.map((u) => {
-                    if (u.id === userId) {
-                        return {
-                            ...u,
-                            subscription: { status: action === "assign" ? "ACTIVE" : "CANCELLED" }
-                        };
-                    }
-                    return u;
-                }));
+                setUsers(
+                    users.map((u) => {
+                        if (u.id === userId) {
+                            return {
+                                ...u,
+                                subscription: { status: action === "assign" ? "ACTIVE" : "CANCELLED" },
+                            };
+                        }
+                        return u;
+                    })
+                );
                 toast.success(action === "assign" ? "Premium asignado" : "Premium cancelado");
+            } else {
+                toast.error("Error en suscripción");
             }
         } catch {
             toast.error("Error en suscripción");
@@ -183,160 +258,59 @@ export default function AdminUsuariosPage() {
         }
     };
 
-    // Columns Definition
-    const columns = useMemo<ColumnDef<User>[]>(() => [
-        {
-            accessorKey: "name",
-            header: "Usuario",
-            cell: ({ row }) => {
-                const user = row.original;
-                return (
-                    <div className="flex flex-col">
-                        <span className="font-medium text-foreground">{user.name || "Sin nombre"}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                    </div>
-                );
-            }
-        },
-        {
-            accessorKey: "role",
-            header: "Rol",
-            cell: ({ row }) => {
-                const user = row.original;
-                const isItemLoading = actionLoading === user.id;
-                return (
-                    <Select
-                        disabled={isItemLoading}
-                        value={user.role}
-                        onValueChange={(val) => handleRoleChange(user.id, val as "USER" | "ADMIN")}
-                    >
-                        <SelectTrigger className="h-8 w-[100px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="USER">User</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                        </SelectContent>
-                    </Select>
-                );
-            }
-        },
-        {
-            accessorKey: "subscription",
-            header: "Suscripción",
-            cell: ({ row }) => {
-                const user = row.original;
-                const isActive = user.subscription?.status === "ACTIVE";
-                const isItemLoading = actionLoading === user.id;
-                return (
-                    <div className="flex items-center gap-2">
-                        <Badge variant={isActive ? "default" : "secondary"} className={isActive ? "bg-green-500 hover:bg-green-600" : ""}>
-                            {isActive ? "Premium" : "Gratis"}
-                        </Badge>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={isItemLoading}
-                            className="h-6 px-2 text-xs"
-                            onClick={() => handleSubscription(user.id, isActive ? "cancel" : "assign")}
-                        >
-                            {isActive ? "Cancelar" : "Asignar"}
-                        </Button>
-                    </div>
-                )
-            }
-        },
-        {
-            accessorKey: "date",
-            header: "Fecha",
-            cell: ({ row }) => {
-                return <span className="text-xs whitespace-nowrap">
-                    {new Date(row.original.createdAt).toLocaleDateString()}
-                </span>
-            }
-        },
-        {
-            id: "actions",
-            cell: ({ row }) => {
-                const isItemLoading = actionLoading === row.original.id;
-                return (
-                    <div className="flex justify-end">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isItemLoading}
-                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDelete(row.original.id)}
-                        >
-                            <IconTrash className="h-4 w-4" />
-                        </Button>
-                    </div>
-                )
-            }
-        }
-    ], [actionLoading]);
+    // ========================================================================
+    // COLUMNS WITH ACTIONS
+    // ========================================================================
 
-    if (authLoading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    const actions: UserTableActions = {
+        onRoleChange: handleRoleChange,
+        onDelete: handleDelete,
+        onSubscriptionChange: handleSubscriptionChange,
+        actionLoading,
+    };
+
+    const columns = useMemo(() => createUserColumns(actions), [actionLoading]);
+
+    // ========================================================================
+    // RENDER
+    // ========================================================================
+
+    if (authLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-pulse text-muted-foreground">Cargando...</div>
+            </div>
+        );
+    }
+
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Gestión de Usuarios"
-                description={`${meta.total} usuarios registrados`}
-            />
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por nombre o email..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
-                    />
-                </div>
-                <div className="w-full sm:w-[180px]">
-                    <Select value={role} onValueChange={setRole}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Rol" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Todos los Roles</SelectItem>
-                            <SelectItem value="USER">Usuarios</SelectItem>
-                            <SelectItem value="ADMIN">Admins</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="w-full sm:w-[180px]">
-                    <Select value={subscription} onValueChange={setSubscription}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Suscripción" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">Todas</SelectItem>
-                            <SelectItem value="active">Activas</SelectItem>
-                            <SelectItem value="inactive">Inactivas</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {/* Table */}
-            <div className="bg-card rounded-md border">
-                <DataTable columns={columns} data={users} />
-            </div>
-
-            {/* Pagination */}
-            <div className="mt-4">
-                <Pagination
-                    currentPage={meta.page}
-                    totalPages={meta.totalPages}
-                    onPageChange={(page) => fetchUsers(page)}
+        <AdminPageWrapper
+            title="Gestión de Usuarios"
+            description={`${meta.total} usuarios registrados en la plataforma`}
+            breadcrumbs={[
+                { label: "Dashboard", href: "/admin" },
+                { label: "Usuarios" }
+            ]}
+        >
+            <div className="space-y-6">
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    isLoading={loading}
+                    enableRowSelection={true}
+                    toolbar={
+                        <UsersToolbar
+                            data={users}
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            globalFilter={globalFilter}
+                            setGlobalFilter={setGlobalFilter}
+                        />
+                    }
                 />
             </div>
-        </div>
+        </AdminPageWrapper>
     );
 }
-

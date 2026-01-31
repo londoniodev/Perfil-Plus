@@ -41,7 +41,23 @@ export * from "./toast";
 export * from "./icons";
 
 // Data Display
-export * from "./data-table";
+// Legacy DataTable (basic)
+export { DataTable as DataTableSimple } from "./data-table";
+// Enhanced DataTable components with pagination, sorting, etc.
+export {
+    DataTable,
+    DataTablePagination,
+    DataTableColumnHeader,
+    DataTableViewOptions,
+    DataTableRowActions,
+    type ColumnDef,
+    type ColumnFiltersState,
+    type SortingState,
+    type VisibilityState,
+    type Row,
+    type Column,
+    type RowSelectionState,
+} from "./components/data-table";
 export * from "./pagination";
 export * from "./status-badge";
 export * from "./filter-tabs";
@@ -85,8 +101,8 @@ export * from "./components/commerce/product-action-button";
 // Hooks
 export * from "./hooks/use-digital-product";
 
-// Layouts
-export * from "./layouts/dashboard-layout";
+// Layouts (Admin Panel Components)
+export * from "./layouts";
 
 // Providers
 export * from "./providers/brand-provider";

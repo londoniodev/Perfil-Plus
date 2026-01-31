@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@alvarosky/database-management": "workspace:*",
+        "@alvarosky/types": "workspace:^",
         "@alvarosky/ui": "workspace:*",
         "@radix-ui/react-collapsible": "^1.1.12",
         "@radix-ui/react-dialog": "^1.1.15",
@@ -31,6 +32,7 @@
         "pg": "^8.17.1",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-hook-form": "^7.71.0",
         "tailwind-merge": "^2.3.0"
     },
     "devDependencies": {

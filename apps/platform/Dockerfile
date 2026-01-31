@@ -37,7 +37,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/database-management/node_modules ./packages/database-management/node_modules
 COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
-COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules 2>/dev/null || true
 COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY --from=deps /app/packages/config-tailwind/node_modules ./packages/config-tailwind/node_modules
 COPY --from=deps /app/apps/platform/node_modules ./apps/platform/node_modules

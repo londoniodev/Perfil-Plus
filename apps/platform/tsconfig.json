@@ -9,6 +9,9 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "@alvarosky/types/*": [
+                "../../packages/types/src/*"
             ]
         }
     },

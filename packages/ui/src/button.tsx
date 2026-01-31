@@ -20,7 +20,7 @@ const buttonVariants = cva(
             variant: {
                 // Primary: Solid flat color, subtle interaction
                 default: [
-                    "bg-primary text-white border border-transparent",
+                    "bg-primary text-primary-foreground border border-transparent",
                     "hover:bg-primary/90",
                     "active:scale-[0.98]",
                 ],

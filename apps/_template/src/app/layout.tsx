@@ -1,24 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Sansation } from "next/font/google";
-import "@alvarosky/ui/globals.css"; // ✅ Direct from UI package
+import "@alvarosky/ui/globals.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider, PwaInstallPrompt } from "@alvarosky/ui";
+import { ToastProvider, getFontVariables } from "@alvarosky/ui";
+import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
 import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
-
-const sansation = Sansation({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "700"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -101,7 +90,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${sansation.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${getFontVariables()} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

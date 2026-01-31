@@ -38,7 +38,7 @@ import {
     BreadcrumbSeparator,
     BreadcrumbPage,
 } from "@alvarosky/ui";
-import { Search, MoreHorizontal, UserCog, Trash2, Crown, CrownOff, Shield, User, Loader2 } from "lucide-react";
+import { Search, MoreHorizontal, UserCog, Trash2, Crown, UserMinus, Shield, User, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@alvarosky/ui/lib/utils";
 
@@ -394,7 +394,7 @@ export default function AdminUsuariosPage() {
                                                                 onClick={() => handleSubscription(user.id, isActive ? "cancel" : "assign")}
                                                             >
                                                                 {isActive ? (
-                                                                    <><CrownOff className="mr-2 h-4 w-4" /> Quitar Premium</>
+                                                                    <><UserMinus className="mr-2 h-4 w-4" /> Quitar Premium</>
                                                                 ) : (
                                                                     <><Crown className="mr-2 h-4 w-4" /> Dar Premium</>
                                                                 )}

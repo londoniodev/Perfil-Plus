@@ -51,8 +51,8 @@ export default async function OrdersPage() {
         customerName: order.user.name || "Sin nombre",
         customerEmail: order.user.email,
         status: order.status,
-        paymentStatus: order.paymentStatus,
-        total: Number(order.total),
+        paymentStatus: order.status,
+        total: Number(order.totalAmount),
         itemCount: order.items.length,
         items: order.items.map(item => ({
             name: item.variant.product.name,
@@ -89,13 +89,13 @@ export default async function OrdersPage() {
                 <div className="rounded-lg border bg-card p-4">
                     <p className="text-sm text-muted-foreground">Completadas</p>
                     <p className="text-2xl font-bold text-green-600">
-                        {orders.filter(o => o.status === "COMPLETED" || o.status === "DELIVERED").length}
+                        {orders.filter(o => o.status === "DELIVERED").length}
                     </p>
                 </div>
                 <div className="rounded-lg border bg-card p-4">
                     <p className="text-sm text-muted-foreground">Ingresos</p>
                     <p className="text-2xl font-bold">
-                        ${orders.reduce((sum, o) => sum + Number(o.total), 0).toLocaleString()}
+                        ${orders.reduce((sum, o) => sum + Number(o.totalAmount), 0).toLocaleString()}
                     </p>
                 </div>
             </div>

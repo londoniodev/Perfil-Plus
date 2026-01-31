@@ -88,11 +88,14 @@ export * from "./hooks/use-digital-product";
 // Layouts
 export * from "./layouts/dashboard-layout";
 
-
 // Providers
 export * from "./providers/brand-provider";
 export * from "./lib/themes";
 
+// Fonts (for app layouts)
+export * from "./lib/fonts";
+
 // CSS Styles (import in app layout)
 // import "@alvarosky/ui/globals.css";
+
 

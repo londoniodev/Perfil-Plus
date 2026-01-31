@@ -2,7 +2,8 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { Button, SecurePdfViewer, useDigitalProduct } from "@alvarosky/ui";
+import { Button, useDigitalProduct } from "@alvarosky/ui";
+import { SecurePdfViewer } from "@alvarosky/ui/secure-pdf-viewer";
 import { X, Loader2, AlertCircle } from "lucide-react";
 
 interface ViewerPageProps {

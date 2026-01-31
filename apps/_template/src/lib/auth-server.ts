@@ -6,6 +6,7 @@ interface DecodedToken {
     sub: string // ID del usuario
     email: string
     role?: string
+    name?: string
     iat: number
     exp: number
 }
@@ -40,7 +41,8 @@ export async function getSessionUser() {
         return {
             id: decoded.sub,
             email: decoded.email,
-            role: decoded.role
+            role: decoded.role,
+            name: decoded.name
         }
     } catch (error) {
         console.error("Error decodificando token:", error)

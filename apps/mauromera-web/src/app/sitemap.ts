@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { API_BASE } from '@/lib/config';
+import { API_BASE, TENANT_ID } from '@/lib/config';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -21,6 +21,7 @@ interface Theme {
 async function getPosts(): Promise<Post[]> {
     try {
         const res = await fetch(`${API_BASE}/posts?limit=100`, {
+            headers: { 'x-tenant-id': TENANT_ID },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
@@ -34,6 +35,7 @@ async function getPosts(): Promise<Post[]> {
 async function getProducts(): Promise<Product[]> {
     try {
         const res = await fetch(`${API_BASE}/store/products`, {
+            headers: { 'x-tenant-id': TENANT_ID },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
@@ -46,6 +48,7 @@ async function getProducts(): Promise<Product[]> {
 async function getThemes(): Promise<Theme[]> {
     try {
         const res = await fetch(`${API_BASE}/themes`, {
+            headers: { 'x-tenant-id': TENANT_ID },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];

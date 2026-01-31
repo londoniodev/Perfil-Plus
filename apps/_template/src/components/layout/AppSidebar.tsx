@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
     IconUsers,
-    IconLogout,
     Avatar,
     AvatarFallback,
     AvatarImage,
@@ -36,27 +35,35 @@ import {
 } from "@alvarosky/ui"
 import { ChevronRight, ChevronsUpDown, LogOut, Settings, Sparkles, Bell } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
+import {
+    getSidebarSections,
+    type FeatureKey,
+    type SidebarFeatureSection,
+    type SidebarNavGroup
+} from "@/config/sidebar.config"
 import { NAVIGATION_CONFIG, NavItem } from "@/config/navigation"
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-    features?: string[];
+    features?: FeatureKey[];
 }
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
 export function AppSidebar({ features = [], ...props }: AppSidebarProps) {
     const pathname = usePathname()
     const { logout, isAdmin, user } = useAuth()
     const { isMobile } = useSidebar()
 
-    // Filter menu items based on Role and Features
-    const rawItems = isAdmin ? NAVIGATION_CONFIG.admin : NAVIGATION_CONFIG.user
+    // Helper to check if a path is active
+    const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/")
 
-    const menuItems = rawItems.filter((item: NavItem) => {
-        if (item.feature && !features.includes(item.feature)) return false;
-        if (item.role && item.role === 'ADMIN' && !isAdmin) return false;
-        if (item.role && item.role === 'USER' && isAdmin) return false;
-        return true;
-    })
-
+    // Get user initials for avatar fallback
     const userInitials = user?.name
         ?.split(" ")
         .map((n) => n[0])
@@ -64,11 +71,136 @@ export function AppSidebar({ features = [], ...props }: AppSidebarProps) {
         .toUpperCase()
         .substring(0, 2) || "U"
 
+    // ========================================================================
+    // ADMIN SIDEBAR: Uses sidebar.config.ts (feature-based sections)
+    // ========================================================================
+    const renderAdminSidebar = () => {
+        const sections = getSidebarSections(features)
+
+        return sections.map((section: SidebarFeatureSection, sectionIndex: number) => (
+            <SidebarGroup key={section.label}>
+                <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2">
+                    {section.label}
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                    {section.groups.map((group: SidebarNavGroup) => {
+                        const Icon = group.icon
+                        const hasSubItems = group.items && group.items.length > 0
+                        const isGroupActive = group.href
+                            ? isActive(group.href)
+                            : group.items?.some(item => isActive(item.href))
+
+                        // Collapsible group with sub-items
+                        if (hasSubItems) {
+                            return (
+                                <Collapsible
+                                    key={group.title}
+                                    asChild
+                                    defaultOpen={isGroupActive}
+                                    className="group/collapsible"
+                                >
+                                    <SidebarMenuItem>
+                                        <CollapsibleTrigger asChild>
+                                            <SidebarMenuButton
+                                                tooltip={group.title}
+                                                isActive={isGroupActive}
+                                                className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
+                                            >
+                                                {Icon && <Icon className="size-4" />}
+                                                <span>{group.title}</span>
+                                                <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                            </SidebarMenuButton>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            <SidebarMenuSub>
+                                                {group.items!.map((subItem) => (
+                                                    <SidebarMenuSubItem key={subItem.href}>
+                                                        <SidebarMenuSubButton
+                                                            asChild
+                                                            isActive={pathname === subItem.href}
+                                                            className="transition-colors duration-150"
+                                                        >
+                                                            <Link href={subItem.href}>
+                                                                <span>{subItem.title}</span>
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    </SidebarMenuSubItem>
+                                                ))}
+                                            </SidebarMenuSub>
+                                        </CollapsibleContent>
+                                    </SidebarMenuItem>
+                                </Collapsible>
+                            )
+                        }
+
+                        // Simple link (no sub-items)
+                        return (
+                            <SidebarMenuItem key={group.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isActive(group.href!)}
+                                    tooltip={group.title}
+                                    className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
+                                >
+                                    <Link href={group.href!}>
+                                        {Icon && <Icon className="size-4" />}
+                                        <span>{group.title}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )
+                    })}
+                </SidebarMenu>
+            </SidebarGroup>
+        ))
+    }
+
+    // ========================================================================
+    // USER SIDEBAR: Uses navigation.ts (legacy, simpler)
+    // ========================================================================
+    const renderUserSidebar = () => {
+        const menuItems = NAVIGATION_CONFIG.user.filter((item: NavItem) => {
+            if (item.feature && !features.includes(item.feature as FeatureKey)) return false
+            return true
+        })
+
+        return (
+            <SidebarGroup>
+                <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2">
+                    Mi Panel
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                    {menuItems.map((item) => {
+                        const Icon = item.icon
+                        const active = isActive(item.href)
+
+                        return (
+                            <SidebarMenuItem key={item.href}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={active}
+                                    tooltip={item.name}
+                                    className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
+                                >
+                                    <Link href={item.href}>
+                                        <Icon className="size-4" />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )
+                    })}
+                </SidebarMenu>
+            </SidebarGroup>
+        )
+    }
+
+    // ========================================================================
+    // RENDER
+    // ========================================================================
     return (
         <Sidebar collapsible="icon" {...props}>
-            {/* ============================================= */}
-            {/* HEADER: Team Switcher Pattern */}
-            {/* ============================================= */}
+            {/* HEADER: Branding */}
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -122,79 +254,12 @@ export function AppSidebar({ features = [], ...props }: AppSidebarProps) {
                 </SidebarMenu>
             </SidebarHeader>
 
-            {/* ============================================= */}
-            {/* CONTENT: Navigation with Motion */}
-            {/* ============================================= */}
+            {/* CONTENT: Navigation */}
             <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2">
-                        Plataforma
-                    </SidebarGroupLabel>
-                    <SidebarMenu>
-                        {menuItems.map((item) => {
-                            const Icon = item.icon
-                            const isActive = pathname?.startsWith(item.href)
-
-                            if (item.items && item.items.length > 0) {
-                                return (
-                                    <Collapsible key={item.href} asChild defaultOpen={isActive} className="group/collapsible">
-                                        <SidebarMenuItem>
-                                            <CollapsibleTrigger asChild>
-                                                <SidebarMenuButton
-                                                    tooltip={item.name}
-                                                    isActive={isActive}
-                                                    className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
-                                                >
-                                                    <Icon className="size-4" />
-                                                    <span>{item.name}</span>
-                                                    <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                                                </SidebarMenuButton>
-                                            </CollapsibleTrigger>
-                                            <CollapsibleContent>
-                                                <SidebarMenuSub>
-                                                    {item.items.map((subItem) => (
-                                                        <SidebarMenuSubItem key={subItem.href}>
-                                                            <SidebarMenuSubButton
-                                                                asChild
-                                                                isActive={pathname === subItem.href}
-                                                                className="transition-colors duration-150"
-                                                            >
-                                                                <Link href={subItem.href}>
-                                                                    <span>{subItem.name}</span>
-                                                                </Link>
-                                                            </SidebarMenuSubButton>
-                                                        </SidebarMenuSubItem>
-                                                    ))}
-                                                </SidebarMenuSub>
-                                            </CollapsibleContent>
-                                        </SidebarMenuItem>
-                                    </Collapsible>
-                                )
-                            }
-
-                            return (
-                                <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        isActive={isActive}
-                                        tooltip={item.name}
-                                        className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
-                                    >
-                                        <Link href={item.href}>
-                                            <Icon className="size-4" />
-                                            <span>{item.name}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )
-                        })}
-                    </SidebarMenu>
-                </SidebarGroup>
+                {isAdmin ? renderAdminSidebar() : renderUserSidebar()}
             </SidebarContent>
 
-            {/* ============================================= */}
-            {/* FOOTER: NavUser Dropdown (Enterprise Pattern) */}
-            {/* ============================================= */}
+            {/* FOOTER: User Menu */}
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>

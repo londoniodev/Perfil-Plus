@@ -43,7 +43,7 @@ export default async function DashboardLayout({
             <DashboardProvider>
                 <BrandProvider settings={design as any}>
                     <SidebarProvider defaultOpen={defaultOpen}>
-                        <AppSidebar features={features} />
+                        <AppSidebar features={features as import("@/config/sidebar.config").FeatureKey[]} />
                         <SidebarInset>
                             <main className="flex flex-1 flex-col min-h-screen bg-background">
                                 {children}

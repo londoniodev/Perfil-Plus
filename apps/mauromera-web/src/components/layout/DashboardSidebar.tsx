@@ -31,7 +31,7 @@ export function DashboardSidebar({ className }: SidebarProps) {
     ];
 
     const adminMenuItems = [
-        { name: "Dashboard", href: "/perfil", icon: IconHome },
+        { name: "Dashboard", href: "/admin", icon: IconHome },
         { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit },
         { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument },
         { name: "Gestión de Productos", href: "/admin/productos", icon: IconGrid },

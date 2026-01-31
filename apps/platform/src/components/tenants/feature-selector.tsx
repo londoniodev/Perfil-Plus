@@ -2,7 +2,7 @@
 
 import { Control, Controller } from "react-hook-form";
 import { Checkbox, Label, Card } from "@alvarosky/ui";
-import { AVAILABLE_FEATURES } from "@alvarosky/types/config/features";
+import { AVAILABLE_FEATURES } from "@alvarosky/types";
 import { Box } from "lucide-react";
 
 interface FeatureSelectorProps {

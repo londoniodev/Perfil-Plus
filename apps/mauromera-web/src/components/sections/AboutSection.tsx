@@ -65,7 +65,7 @@ export function AboutSection() {
                             </Button>
 
                             <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg text-foreground border-foreground/20 hover:bg-foreground/5 bg-transparent hover:scale-105 transition-all duration-300 rounded-full mt-6">
-                                <Link href={`https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                <Link href={`https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                                     Conversemos
                                 </Link>
                             </Button>

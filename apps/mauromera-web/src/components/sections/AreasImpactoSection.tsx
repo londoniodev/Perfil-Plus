@@ -7,7 +7,7 @@ import { Button } from "@alvarosky/ui";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 
-const whatsappUrl = `https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`;
+const whatsappUrl = `https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`;
 
 const areas = [
     {

@@ -20,7 +20,8 @@ export const siteConfig = {
     },
     // Contacto
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contacto@mauromera.com",
-    phone: "+57 300 123 4567", // Placeholder
+    phone: "+57 318 377 1838",
+    whatsappMessage: "Hola Mauro, me gustaría conocer más de tus servicios",
     branding: {
         logo: "/images/branding/menu_logo.png",
         logoAlt: "Mauro Mera Logo"

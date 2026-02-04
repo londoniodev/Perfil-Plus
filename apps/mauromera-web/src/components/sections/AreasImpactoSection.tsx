@@ -5,6 +5,9 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@alvarosky/ui";
 import { cn } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
+
+const whatsappUrl = `https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`;
 
 const areas = [
     {
@@ -14,6 +17,10 @@ const areas = [
         imageDesktop: "/areas_impacto/cultura_organizacional_desktop.avif",
         href: "/servicios#empresas",
         accentColor: "rgba(91, 141, 239, 0.8)",
+        secondaryButton: {
+            label: "Conversemos",
+            href: whatsappUrl
+        }
     },
     {
         name: "Liderazgo Consciente",
@@ -22,6 +29,10 @@ const areas = [
         imageDesktop: "/areas_impacto/liderazgo_consciente_desktop.avif",
         href: "/servicios#empresas",
         accentColor: "rgba(232, 168, 56, 0.8)",
+        secondaryButton: {
+            label: "Conversemos",
+            href: whatsappUrl
+        }
     },
     {
         name: "Orientación Vocacional y Profesional",
@@ -30,6 +41,10 @@ const areas = [
         imageDesktop: "/areas_impacto/orientacion_vocacional_desktop.avif",
         href: "/servicios#explora",
         accentColor: "rgba(56, 189, 189, 0.8)",
+        secondaryButton: {
+            label: "Prueba el Método",
+            href: siteConfig.salesPageUrl || "/metodo"
+        }
     },
     {
         name: "Psicoterapia Clínica",
@@ -38,6 +53,10 @@ const areas = [
         imageDesktop: "/areas_impacto/psicoterapia_clinica_desktop.avif",
         href: "/servicios#psicoterapia",
         accentColor: "rgba(76, 175, 80, 0.8)",
+        secondaryButton: {
+            label: "Conversemos",
+            href: whatsappUrl
+        }
     },
     {
         name: "Talleres Experienciales",
@@ -46,6 +65,10 @@ const areas = [
         imageDesktop: "/areas_impacto/talleres_experienciales_desktop.avif",
         href: "/servicios#empresas",
         accentColor: "rgba(156, 39, 176, 0.8)",
+        secondaryButton: {
+            label: "Diagnóstico de Equipo",
+            href: whatsappUrl
+        }
     },
 ];
 
@@ -149,9 +172,19 @@ export function AreasImpactoSection() {
                                     {area.description}
                                 </p>
 
-                                <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-2xl bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full">
-                                    <Link href={area.href}>Ver más</Link>
-                                </Button>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-2xl bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full">
+                                        <Link href={area.href}>Ver más</Link>
+                                    </Button>
+
+                                    {area.secondaryButton && (
+                                        <Button asChild variant="outline" size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-2xl text-white border-white/50 hover:bg-white/10 hover:border-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full bg-transparent">
+                                            <Link href={area.secondaryButton.href} target="_blank" rel="noopener noreferrer">
+                                                {area.secondaryButton.label}
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

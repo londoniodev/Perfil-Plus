@@ -32,7 +32,8 @@ export const siteConfig = {
         { title: "Blog", href: "/blog" },
         { title: "Tienda", href: "/tienda" },
         { title: "Servicios", href: "/servicios" }
-    ]
+    ],
+    salesPageUrl: "https://mauromera.com/metodo" // Placeholder, update if needed
 }
 
 export type SiteConfig = typeof siteConfig

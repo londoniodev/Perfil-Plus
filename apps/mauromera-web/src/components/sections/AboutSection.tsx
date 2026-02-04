@@ -2,6 +2,7 @@ import Link from "next/link";
 import { IconArrowRight } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
 import ProfileCarousel from "../layout/ProfileCarousel";
+import { siteConfig } from "@/config/site";
 
 export function AboutSection() {
     return (
@@ -55,12 +56,20 @@ export function AboutSection() {
                             </p>
                         </div>
 
-                        <Button asChild size="lg" className="h-14 px-8 text-lg bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full mt-6">
-                            <Link href="#metodo" className="flex items-center gap-2">
-                                Conocer mi enfoque
-                                <IconArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button asChild size="lg" className="h-14 px-8 text-lg bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full mt-6">
+                                <Link href="#metodo" className="flex items-center gap-2">
+                                    Conocer mi enfoque
+                                    <IconArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </Button>
+
+                            <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg text-foreground border-foreground/20 hover:bg-foreground/5 bg-transparent hover:scale-105 transition-all duration-300 rounded-full mt-6">
+                                <Link href={`https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                    Conversemos
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

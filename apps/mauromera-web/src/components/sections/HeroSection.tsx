@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { IconArrowRight } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
+import { siteConfig } from "@/config/site";
 
 export function HeroSection() {
     return (
@@ -28,8 +29,8 @@ export function HeroSection() {
                                 <Link href="#quien-soy">Conoce más</Link>
                             </Button>
                             <Button asChild variant="outline" size="lg" className="text-base font-medium h-14 flex-1 sm:flex-none border-white/20 hover:border-white/40 text-foreground bg-black/40 lg:bg-transparent hover:bg-white/5 backdrop-blur-sm">
-                                <Link href="/servicios">
-                                    Servicios
+                                <Link href={`https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">
+                                    Contacto
                                     <IconArrowRight className="ml-2 w-5 h-5" />
                                 </Link>
                             </Button>

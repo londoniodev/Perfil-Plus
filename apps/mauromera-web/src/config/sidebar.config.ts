@@ -13,39 +13,25 @@ import {
     ClipboardList,
     FileText,
     GraduationCap,
-    Palette,
-    type LucideIcon,
 } from "lucide-react";
+import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
 
 // ============================================================================
-// TYPES
+// TYPES (Re-export for convenience)
 // ============================================================================
 
-export interface SidebarNavItem {
-    title: string;
-    href: string;
-    icon?: LucideIcon;
-}
-
-export interface SidebarNavGroup {
-    title: string;
-    icon?: LucideIcon;
-    items?: SidebarNavItem[];  // Sub-items (collapsible)
-    href?: string;             // Direct link (no sub-items)
-}
-
-export interface SidebarFeatureSection {
-    label: string;             // Section label (e.g., "Tienda")
-    groups: SidebarNavGroup[];
-}
+export type SidebarNavItem = AdminSidebarNavItem;
+export type SidebarNavGroup = AdminSidebarNavGroup;
+export type SidebarFeatureSection = AdminSidebarSection;
 
 export type FeatureKey = "shop" | "blog" | "lms";
 
 export type SidebarConfig = {
-    core: SidebarFeatureSection;
+    core: AdminSidebarSection;
 } & {
-    [key in FeatureKey]?: SidebarFeatureSection;
+    [key in FeatureKey]?: AdminSidebarSection;
 };
+
 
 // ============================================================================
 // CONFIGURATION

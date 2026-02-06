@@ -7,6 +7,7 @@ import {
     IconCreditCard,
     IconGrid
 } from "@alvarosky/ui";
+import type { AdminSidebarSection } from "@alvarosky/ui";
 
 export type NavItem = {
     name: string;
@@ -35,3 +36,31 @@ export const NAVIGATION_CONFIG: {
         { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers }, // Core admin feature
     ]
 };
+
+// ============================================================================
+// USER SECTIONS HELPER
+// Converts user navigation items to AdminSidebarSection[] format
+// ============================================================================
+
+type FeatureKey = "shop" | "blog" | "lms";
+
+export function getUserSections(features: FeatureKey[]): AdminSidebarSection[] {
+    // Filter user items based on enabled features
+    const filteredItems = NAVIGATION_CONFIG.user.filter((item) => {
+        if (item.feature && !features.includes(item.feature as FeatureKey)) {
+            return false;
+        }
+        return true;
+    });
+
+    // Convert to AdminSidebarSection format
+    return [{
+        label: "Mi Panel",
+        groups: filteredItems.map((item) => ({
+            title: item.name,
+            href: item.href,
+            icon: item.icon,
+        })),
+    }];
+}
+

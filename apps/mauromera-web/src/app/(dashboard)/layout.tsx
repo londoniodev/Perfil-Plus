@@ -45,6 +45,9 @@ export default async function DashboardLayout({
     const { name, features, design } = await getTenantData(tenantId);
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
+    // DEBUG: Log features being passed to sidebar
+    console.log("[DashboardLayout] tenantId:", tenantId, "features:", features);
+
     return (
         <AuthProvider>
             <DashboardProvider>

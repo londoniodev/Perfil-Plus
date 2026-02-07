@@ -53,6 +53,7 @@ interface TenantConfigValue {
 function flattenConfig(config: TenantConfigValue): Record<string, unknown> {
     return {
         // Básicos
+        tenant_name: config.name || "",
         theme: config.theme || "",
         primary_color: config.primary_color || "#000000",
         currency: config.currency || "COP",
@@ -84,6 +85,7 @@ function flattenConfig(config: TenantConfigValue): Record<string, unknown> {
 // Reconstruir la estructura de TENANT_CONFIG desde los datos aplanados
 function unflattenConfig(flat: Record<string, unknown>): TenantConfigValue {
     return {
+        name: String(flat.tenant_name || ""),
         theme: String(flat.theme || ""),
         primary_color: String(flat.primary_color || "#000000"),
         currency: String(flat.currency || "COP"),

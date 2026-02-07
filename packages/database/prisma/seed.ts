@@ -300,6 +300,7 @@ async function main() {
         create: {
             name: 'Mauro Mera',
             slug: 'mauro',
+            dbName: 'db_mauromera',
             features: ["shop", "blog", "lms"],
             design: {
                 colors: { primary: "#000000" }
@@ -315,6 +316,7 @@ async function main() {
         create: {
             name: 'Template Admin',
             slug: 'default',
+            dbName: 'db_default',
             features: ["shop", "blog", "lms"],
             design: {
                 colors: { primary: "#4f46e5" }

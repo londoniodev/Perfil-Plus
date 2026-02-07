@@ -18,7 +18,7 @@ model Tenant {
   id        Int      @id @default(autoincrement())
   name      String?  // Display name: "Daniela Coach" - optional for legacy rows
   slug      String   @unique // Subdomain/identifier: "daniela"
-  dbName    String   // Database name: "tenants_daniela"
+  dbName    String   // Database name: "db_daniela"
   status    String   @default("ACTIVE") // DEPLOYING, ACTIVE, SUSPENDED, DELETED
   plan      String   @default("free") // free, pro, enterprise
   

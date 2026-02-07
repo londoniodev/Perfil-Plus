@@ -206,7 +206,7 @@ export default function NewTenantPage() {
                                             required
                                         />
                                         <p className="text-xs text-muted-foreground">
-                                            Base de datos: <span className="font-mono text-primary">tenants_{formData.slug || "xxx"}</span>
+                                            Base de datos: <span className="font-mono text-primary">db_{formData.slug || "xxx"}</span>
                                         </p>
                                     </div>
 

@@ -14,7 +14,7 @@ async function main() {
         create: {
             name: 'Mauro Mera',
             slug: 'mauro',
-            dbName: 'tenants_mauro',
+            dbName: 'db_mauromera',
             status: 'ACTIVE',
             plan: 'pro',
             features: ['shop', 'blog', 'lms'],

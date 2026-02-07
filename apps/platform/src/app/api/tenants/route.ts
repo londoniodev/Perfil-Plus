@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const dbName = `tenants_${slug.replace(/-/g, "_")}`;
+        const dbName = `db_${slug.replace(/-/g, "_")}`;
 
         // 1. Create tenant record (DEPLOYING status)
         const tenant = await prismaManagement.tenant.create({

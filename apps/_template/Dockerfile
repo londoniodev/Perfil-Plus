@@ -82,4 +82,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "npx prisma@5.22.0 db push --accept-data-loss && node apps/mauromera-web/server.js"]
+CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/mauromera-web/server.js"]

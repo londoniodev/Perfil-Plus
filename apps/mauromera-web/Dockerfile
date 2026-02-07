@@ -82,4 +82,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "apps/mauromera-web/server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node apps/mauromera-web/server.js"]

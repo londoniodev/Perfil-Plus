@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/layout/AppSidebar";
+import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import { DashboardProvider } from "@/context/DashboardContext";
 import {
@@ -10,6 +10,7 @@ import {
 import { PrismaClient } from "@alvarosky/database-management";
 import { getTenantId } from "@/lib/config-server";
 import { cookies } from "next/headers";
+import type { FeatureKey } from "@/config/sidebar.config";
 
 // --- Server Side Data Fetching ---
 const prisma = new PrismaClient();
@@ -49,7 +50,7 @@ export default async function DashboardLayout({
             <DashboardProvider>
                 <BrandProvider settings={design as any}>
                     <SidebarProvider defaultOpen={defaultOpen}>
-                        <AppSidebar features={features as import("@/config/sidebar.config").FeatureKey[]} />
+                        <DashboardSidebar features={features as FeatureKey[]} tenantName={tenantName} />
                         <SidebarInset>
                             {/* Unified Admin Header with SidebarTrigger */}
                             <AdminHeader appName={tenantName} />

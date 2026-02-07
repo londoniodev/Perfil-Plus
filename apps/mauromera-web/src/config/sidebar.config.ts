@@ -141,3 +141,27 @@ export function getSidebarSections(features: FeatureKey[]): SidebarFeatureSectio
 
     return sections;
 }
+
+/**
+ * Get user (non-admin) sidebar sections
+ * Shows user-facing navigation based on enabled features
+ */
+export function getUserSections(features: FeatureKey[]): SidebarFeatureSection[] {
+    const userItems: AdminSidebarNavGroup[] = [
+        { title: "Mi Panel", href: "/perfil", icon: LayoutDashboard },
+    ];
+
+    // Add feature-specific user items
+    if (features.includes("lms")) {
+        userItems.push({ title: "Mis Cursos", href: "/cursos", icon: GraduationCap });
+    }
+    if (features.includes("shop")) {
+        userItems.push({ title: "Mis Compras", href: "/compras", icon: Package });
+    }
+
+    return [{
+        label: "Mi Panel",
+        groups: userItems,
+    }];
+}
+

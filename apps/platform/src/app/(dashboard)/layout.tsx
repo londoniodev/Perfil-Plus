@@ -1,5 +1,5 @@
-import { SidebarProvider, SidebarInset, SidebarTrigger, Separator } from "@alvarosky/ui";
-import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarInset, AdminHeader } from "@alvarosky/ui";
+import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { prismaManagement } from "@alvarosky/database-management";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    // Basic caching/optimization could be added here if needed, but for now direct fetch
+    // Fetch tenants for Platform sidebar
     let tenants: { name: string; slug: string }[] = [];
     try {
         tenants = await prismaManagement.tenant.findMany({
@@ -18,27 +18,20 @@ export default async function DashboardLayout({
         }).then(items => items.map(t => ({ ...t, name: t.name ?? t.slug })));
     } catch (error) {
         console.warn("Could not fetch tenants during render/build:", error);
-        // Fallback for build time or DB connection failure
         tenants = [];
     }
 
     return (
         <SidebarProvider>
-            <AppSidebar tenants={tenants} />
+            <DashboardSidebar tenants={tenants} />
             <SidebarInset>
-                {/* Global Header with Sidebar Trigger */}
-                <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-sidebar-border/50 bg-background/50 backdrop-blur-xl px-4 sticky top-0 z-10 w-full">
-                    <SidebarTrigger className="ml-1" /> {/* Increased margin */}
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                        <span className="text-muted-foreground">Platform</span>
-                    </div>
-                </header>
+                {/* Unified Admin Header */}
+                <AdminHeader appName="Platform" />
 
                 {/* Main Content */}
-                <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
                     {children}
-                </div>
+                </main>
             </SidebarInset>
         </SidebarProvider>
     );

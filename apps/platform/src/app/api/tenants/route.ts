@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prismaManagement } from "@alvarosky/database-management";
+import { prismaManagement, getTenantPool, closeTenantPool } from "@alvarosky/database-management";
 import { Pool } from "pg";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -247,13 +247,7 @@ async function provisionDatabase(
         // ========================================
         // NUEVO: Insertar SystemSetting inicial
         // ========================================
-        const tenantPool = new Pool({
-            host,
-            port: parseInt(port),
-            user,
-            password,
-            database: dbName,
-        });
+        const tenantPool = getTenantPool(dbName);
 
         try {
             // Insertar configuración inicial en la tabla SystemSetting
@@ -270,7 +264,8 @@ async function provisionDatabase(
 
             console.log(`SystemSetting TENANT_CONFIG inserted for ${tenantSlug}`);
         } finally {
-            await tenantPool.end();
+            // Pool centralizado gestiona ciclo de vida
+            await closeTenantPool(dbName);
         }
 
         // Update tenant status to ACTIVE

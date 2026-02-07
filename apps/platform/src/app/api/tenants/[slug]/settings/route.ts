@@ -1,117 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Pool } from "pg";
+import { getTenantPool } from "@alvarosky/database-management";
+import {
+    TenantConfigValue,
+    FlattenedTenantConfig,
+    flattenTenantConfig,
+    unflattenTenantConfig
+} from "@alvarosky/types";
 
 interface RouteParams {
     params: Promise<{ slug: string }>;
-}
-
-async function getTenantPool(dbName: string) {
-    const masterUrl = process.env.DATABASE_URL;
-    if (!masterUrl) throw new Error("DATABASE_URL not set");
-
-    const url = new URL(masterUrl);
-    url.pathname = `/${dbName}`;
-
-    return new Pool({
-        connectionString: url.toString(),
-        max: 2,
-    });
-}
-
-// Estructura esperada del TENANT_CONFIG en la DB
-interface TenantConfigValue {
-    name?: string;
-    slug?: string;
-    currency?: string;
-    mercadopago?: {
-        publicKey?: string;
-        accessToken?: string;
-        webhookSecret?: string;
-        clientId?: string;
-        clientSecret?: string;
-    };
-    smtp?: {
-        host?: string;
-        port?: number;
-        secure?: boolean;
-        auth?: {
-            user?: string;
-            pass?: string;
-        };
-    };
-    features?: {
-        blog?: boolean;
-        store?: boolean;
-        lms?: boolean;
-    };
-    theme?: string;
-    primary_color?: string;
-    api_key_openai?: string;
-}
-
-// Aplanar el objeto TENANT_CONFIG para el editor
-function flattenConfig(config: TenantConfigValue): Record<string, unknown> {
-    return {
-        // Básicos
-        tenant_name: config.name || "",
-        theme: config.theme || "",
-        primary_color: config.primary_color || "#000000",
-        currency: config.currency || "COP",
-
-        // Features
-        enable_blog: config.features?.blog !== false,
-        enable_store: config.features?.store !== false,
-        enable_lms: config.features?.lms === true,
-
-        // APIs
-        api_key_openai: config.api_key_openai || "",
-
-        // MercadoPago
-        mp_public_key: config.mercadopago?.publicKey || "",
-        mp_access_token: config.mercadopago?.accessToken || "",
-        mp_webhook_secret: config.mercadopago?.webhookSecret || "",
-        mp_client_id: config.mercadopago?.clientId || "",
-        mp_client_secret: config.mercadopago?.clientSecret || "",
-
-        // SMTP
-        smtp_host: config.smtp?.host || "",
-        smtp_port: config.smtp?.port || 587,
-        smtp_secure: config.smtp?.secure || false,
-        smtp_user: config.smtp?.auth?.user || "",
-        smtp_pass: config.smtp?.auth?.pass || "",
-    };
-}
-
-// Reconstruir la estructura de TENANT_CONFIG desde los datos aplanados
-function unflattenConfig(flat: Record<string, unknown>): TenantConfigValue {
-    return {
-        name: String(flat.tenant_name || ""),
-        theme: String(flat.theme || ""),
-        primary_color: String(flat.primary_color || "#000000"),
-        currency: String(flat.currency || "COP"),
-        api_key_openai: String(flat.api_key_openai || ""),
-        mercadopago: {
-            publicKey: String(flat.mp_public_key || ""),
-            accessToken: String(flat.mp_access_token || ""),
-            webhookSecret: String(flat.mp_webhook_secret || ""),
-            clientId: String(flat.mp_client_id || ""),
-            clientSecret: String(flat.mp_client_secret || ""),
-        },
-        smtp: {
-            host: String(flat.smtp_host || ""),
-            port: Number(flat.smtp_port) || 587,
-            secure: Boolean(flat.smtp_secure),
-            auth: {
-                user: String(flat.smtp_user || ""),
-                pass: String(flat.smtp_pass || ""),
-            },
-        },
-        features: {
-            blog: Boolean(flat.enable_blog),
-            store: Boolean(flat.enable_store),
-            lms: Boolean(flat.enable_lms),
-        },
-    };
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -139,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
             if (result.rows.length === 0) {
                 // No hay config, retornar valores por defecto
-                return NextResponse.json(flattenConfig({}));
+                return NextResponse.json(flattenTenantConfig({}));
             }
 
             // Parsear el JSON almacenado
@@ -159,7 +56,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             }
 
             // Aplanar y retornar
-            return NextResponse.json(flattenConfig(configValue));
+            return NextResponse.json(flattenTenantConfig(configValue));
         } finally {
             await pool.end();
         }
@@ -190,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
         try {
             // Reconstruir el objeto TENANT_CONFIG
-            const configValue = unflattenConfig(settings);
+            const configValue = unflattenTenantConfig(settings as FlattenedTenantConfig);
 
             // Upsert TENANT_CONFIG
             await pool.query(

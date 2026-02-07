@@ -17,3 +17,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Re-export types
 export * from '../generated/client';
+
+// Export tenant pool utilities
+export { getTenantPool, closeAllPools, closeTenantPool } from './tenant-pool';
+

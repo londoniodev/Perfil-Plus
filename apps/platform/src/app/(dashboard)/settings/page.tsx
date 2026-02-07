@@ -1,5 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@alvarosky/ui";
 
+export const dynamic = "force-dynamic";
+
 export default function SettingsPage() {
     return (
         <div className="container py-10">

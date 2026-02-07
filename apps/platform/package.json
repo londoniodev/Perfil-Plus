@@ -9,6 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@alvarosky/database": "workspace:*",
         "@alvarosky/database-management": "workspace:*",
         "@alvarosky/types": "workspace:^",
         "@alvarosky/ui": "workspace:*",

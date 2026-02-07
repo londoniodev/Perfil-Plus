@@ -1,86 +1,70 @@
-# ============================================
-# Platform Admin - Multi-stage Dockerfile
-# Using Debian-slim for Prisma compatibility
-# ============================================
+FROM node:20-alpine AS base
 
-FROM node:20-slim AS base
-RUN npm install -g pnpm@9
+# 1. Prune dependencies
+FROM base AS pruner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+# Prune the workspace for the platform app
+RUN turbo prune --scope=@alvarosky/platform --docker
 
-# Install OpenSSL for Prisma
-RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-
-# ============================================
-# Stage 1: Install dependencies
-# ============================================
-FROM base AS deps
+# 2. Install dependencies & Build
+FROM base AS builder
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
-# Copy workspace files
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/database-management/package.json ./packages/database-management/
-COPY packages/database/package.json ./packages/database/
-COPY packages/types/package.json ./packages/types/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/config-tailwind/package.json ./packages/config-tailwind/
-COPY packages/config-typescript/package.json ./packages/config-typescript/
-COPY apps/platform/package.json ./apps/platform/
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.1 --activate
 
-# Install dependencies
+# Copy pruned lockfile and package.json's
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Install dependencies (only what's needed for platform)
 RUN pnpm install --frozen-lockfile
 
-# ============================================
-# Stage 2: Build
-# ============================================
-FROM base AS builder
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/database-management/node_modules ./packages/database-management/node_modules
-COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
-COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
-COPY --from=deps /app/packages/config-tailwind/node_modules ./packages/config-tailwind/node_modules
-COPY --from=deps /app/apps/platform/node_modules ./apps/platform/node_modules
-
 # Copy source code
-COPY packages/database-management ./packages/database-management
-COPY packages/database ./packages/database
-COPY packages/types ./packages/types
-COPY packages/ui ./packages/ui
-COPY packages/config-tailwind ./packages/config-tailwind
-COPY packages/config-typescript ./packages/config-typescript
-COPY apps/platform ./apps/platform
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY --from=pruner /app/out/full/ .
 
-# Generate Prisma client for linux target
+# Build-time arguments
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Generate Prisma Client for Management (used by platform)
 RUN cd packages/database-management && npx prisma generate
 
-# Build the app
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build --filter=@alvarosky/platform
+# Build the project
+RUN pnpm run build --filter=@alvarosky/platform
 
-# ============================================
-# Stage 3: Production
-# ============================================
-FROM node:20-slim AS runner
+# 3. Production Runner
+FROM base AS runner
 WORKDIR /app
 
-# Install OpenSSL for Prisma runtime
-RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN groupadd --system --gid 1001 nodejs
-RUN useradd --system --uid 1001 nextjs
+# Don't run as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copy built assets and dependencies
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
+# Copy public files
 COPY --from=builder /app/apps/platform/public ./apps/platform/public
-COPY --from=builder /app/apps/platform/.next ./apps/platform/.next
-COPY --from=builder /app/apps/platform/package.json ./apps/platform/package.json
-COPY --from=builder /app/apps/platform/node_modules ./apps/platform/node_modules
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/package.json ./package.json
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/apps/platform/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/platform/.next/static ./apps/platform/.next/static
+
+# Copy database schemas required at runtime (for migrations and provisioning)
+COPY --from=builder --chown=nextjs:nodejs /app/packages/database-management/prisma ./packages/database-management/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./packages/database/prisma
 
 USER nextjs
 
@@ -89,5 +73,5 @@ EXPOSE 4000
 ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
-WORKDIR /app/apps/platform
-CMD ["sh", "-c", "cd /app/packages/database-management && npx prisma db push --accept-data-loss && cd /app/apps/platform && npx next start -p 4000"]
+# Migrations on start + App start
+CMD ["sh", "-c", "cd packages/database-management && npx prisma@5.22.0 db push --accept-data-loss && cd ../../ && node apps/platform/server.js"]

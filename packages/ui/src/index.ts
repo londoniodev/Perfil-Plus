@@ -115,6 +115,12 @@ export * from "./components/content";
 // LMS Components
 export * from "./components/lms";
 
+// Auth Components
+export * from "./components/auth";
+
+// Subscription Components
+export * from "./components/subscription";
+
 // Hooks
 export * from "./hooks/use-digital-product";
 

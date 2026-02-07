@@ -223,7 +223,7 @@ async function provisionDatabase(
 
             // Run prisma db push with the temp schema file
             const { stdout, stderr } = await execAsync(
-                `npx prisma db push --schema="${tempSchemaPath}" --accept-data-loss`,
+                `npx prisma@5.22.0 db push --schema="${tempSchemaPath}" --accept-data-loss`,
                 { env: { ...process.env, DATABASE_URL: tenantDbUrl } }
             );
 

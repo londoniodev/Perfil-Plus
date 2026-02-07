@@ -76,3 +76,6 @@ temp/
 
 scripts/find-list-users.js
 scripts/set-admin-mauro.js
+
+# AI Configuration
+.aiexclude

@@ -5,3 +5,7 @@ export { TagSelector } from "./tag-selector";
 export type { TagItem, TagSelectorProps } from "./tag-selector";
 export { CategorySelector } from "./category-selector";
 export type { CategoryItem, CategorySelectorProps } from "./category-selector";
+export { PostsGrid } from "./posts-grid";
+export type { PostGridItem, PostsGridProps } from "./posts-grid";
+export { PostsTable } from "./posts-table";
+export type { PostsTableProps } from "./posts-table";

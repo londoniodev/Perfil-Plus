@@ -101,7 +101,7 @@ function DesktopNavLinks({ isLoggedIn, currentPath }: { isLoggedIn: boolean, cur
                         <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex text-foreground hover:text-accent">
                             <Link href="/registro">Registrarse</Link>
                         </Button>
-                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-white border-0">
+                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                             <Link href="/login">
                                 <IconLogin size={18} className="mr-2" />
                                 Entrar

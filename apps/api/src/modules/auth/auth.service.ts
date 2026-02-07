@@ -52,7 +52,7 @@ export class AuthService {
         await this.sendVerificationEmail(user.id, user.email, user.name);
 
         // Generar tokens (el usuario puede loguearse pero no está verificado)
-        const tokens = await this.generateTokens(user.id, user.email);
+        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name);
 
         return {
             user,
@@ -148,7 +148,7 @@ export class AuthService {
         }
 
         // Generar tokens
-        const tokens = await this.generateTokens(user.id, user.email);
+        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name);
 
         // Remover campos sensibles de la respuesta
         const { password: _, failedLoginAttempts: __, lockedUntil: ___, ...userWithoutSensitive } = user;
@@ -287,7 +287,7 @@ export class AuthService {
         await this.prisma.client.refreshToken.delete({ where: { id: storedToken.id } });
 
         // Generar nuevos tokens
-        const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email);
+        const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email, storedToken.user.role, storedToken.user.name);
 
         return tokens;
     }
@@ -344,8 +344,8 @@ export class AuthService {
         };
     }
 
-    private async generateTokens(userId: string, email: string) {
-        const accessTokenPayload = { sub: userId, email };
+    private async generateTokens(userId: string, email: string, role?: string, name?: string) {
+        const accessTokenPayload = { sub: userId, email, role, name };
 
         // Generar tokens (Default 7 días si no hay variable de entorno)
         const accessToken = await this.jwtService.signAsync(accessTokenPayload, {

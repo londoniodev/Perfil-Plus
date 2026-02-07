@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader, Button, Badge, DataTable, PriceDisplay, AdaptiveImage } from "@alvarosky/ui"
+import { PageHeader, Button } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import Link from "next/link"
+import { ProductsTable } from "@/components/admin/ProductsTable"
 
 export default async function ProductsPage() {
     // 1. Verificar autenticación y rol
@@ -56,77 +57,6 @@ export default async function ProductsPage() {
         }
     })
 
-    // 4. Definir columnas
-    const columns = [
-        {
-            accessorKey: "image",
-            header: "Imagen",
-            cell: ({ row }: any) => (
-                <div className="h-12 w-12 overflow-hidden rounded border">
-                    <AdaptiveImage
-                        src={row.original.image}
-                        aspectRatio="square"
-                        alt={row.original.name}
-                    />
-                </div>
-            )
-        },
-        {
-            accessorKey: "name",
-            header: "Nombre",
-            cell: ({ row }: any) => (
-                <div className="font-medium">{row.original.name}</div>
-            )
-        },
-        {
-            accessorKey: "type",
-            header: "Tipo",
-            cell: ({ row }: any) => (
-                <Badge variant={row.original.type === "DIGITAL" ? "default" : "secondary"}>
-                    {row.original.type === "DIGITAL" ? "Digital" : "Físico"}
-                </Badge>
-            )
-        },
-        {
-            accessorKey: "price",
-            header: "Precio",
-            cell: ({ row }: any) => (
-                <PriceDisplay price={row.original.price} size="sm" />
-            )
-        },
-        {
-            accessorKey: "stock",
-            header: "Stock",
-            cell: ({ row }: any) => (
-                <span className="text-sm">
-                    {row.original.stock}
-                </span>
-            )
-        },
-        {
-            accessorKey: "published",
-            header: "Estado",
-            cell: ({ row }: any) => (
-                <Badge variant={row.original.published ? "default" : "outline"}>
-                    {row.original.published ? "Publicado" : "Borrador"}
-                </Badge>
-            )
-        },
-        {
-            id: "actions",
-            header: "Acciones",
-            cell: ({ row }: any) => (
-                <div className="flex gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                        <Link href={`/admin/products/${row.original.id}`}>
-                            Editar
-                        </Link>
-                    </Button>
-                </div>
-            )
-        }
-    ]
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -142,11 +72,7 @@ export default async function ProductsPage() {
                 </Button>
             </div>
 
-            <DataTable
-                data={tableData}
-                columns={columns}
-            />
+            <ProductsTable data={tableData} />
         </div>
     )
 }
-

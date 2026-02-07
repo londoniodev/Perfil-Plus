@@ -19,7 +19,7 @@ interface DecodedToken {
  */
 export async function getSessionUser() {
     const cookieStore = await cookies()
-    const token = cookieStore.get("Authentication")?.value
+    const token = cookieStore.get("accessToken")?.value || cookieStore.get("Authentication")?.value
 
     if (!token) return null
 

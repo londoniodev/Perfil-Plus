@@ -21,24 +21,21 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-    Badge,
-    Button,
-    Input,
+} from "../../table"
+import { Badge } from "../../badge"
+import { Button } from "../../button"
+import { Input } from "../../input"
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    PriceDisplay,
-} from "@alvarosky/ui"
+} from "../../dropdown-menu"
+import { PriceDisplay } from "../../price-display"
 import { MoreHorizontal, ArrowUpDown, Pencil, Trash2, Eye, Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { cn } from "@alvarosky/ui/lib/utils"
+import { cn } from "../../lib/utils"
 
 // ============================================
 // Types
@@ -47,14 +44,14 @@ export interface ProductTableData {
     id: string
     name: string
     image: string
-    type: "PHYSICAL" | "DIGITAL" | "SERVICE"
+    type: "PHYSICAL" | "DIGITAL" | "SERVICE" | string
     price: number
     stock: number | string
     published: boolean
     createdAt: Date
 }
 
-interface ProductsTableProps {
+export interface ProductsTableProps {
     data: ProductTableData[]
     onEdit?: (product: ProductTableData) => void
     onDelete?: (productId: string) => void
@@ -64,10 +61,10 @@ interface ProductsTableProps {
 // ============================================
 // Badge Variants for Product Type
 // ============================================
-const productTypeBadge = {
-    PHYSICAL: { label: "Físico", variant: "secondary" as const },
-    DIGITAL: { label: "Digital", variant: "default" as const },
-    SERVICE: { label: "Servicio", variant: "outline" as const },
+const productTypeBadge: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+    PHYSICAL: { label: "Físico", variant: "secondary" },
+    DIGITAL: { label: "Digital", variant: "default" },
+    SERVICE: { label: "Servicio", variant: "outline" },
 }
 
 // ============================================

@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader, Button } from "@alvarosky/ui"
+import { PageHeader, Button, ProductsTable } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import { ProductsTable } from "@/components/admin/ProductsTable"
 
 export default async function ProductsPage() {
     // 1. Verificar autenticación y rol

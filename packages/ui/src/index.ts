@@ -97,6 +97,23 @@ export * from "./price-display";
 export * from "./product-specs";
 export * from "./product-card";
 export * from "./components/commerce/product-action-button";
+export * from "./components/commerce/products-table";
+export * from "./components/commerce/order-details-sheet";
+export * from "./components/commerce/orders-table";
+export * from "./components/commerce/cart-sheet";
+export * from "./components/commerce/product-configurator";
+
+// Upload Components
+export * from "./components/upload";
+
+// Admin Components
+export * from "./components/admin";
+
+// Content Components (Blog/Editor)
+export * from "./components/content";
+
+// LMS Components
+export * from "./components/lms";
 
 // Hooks
 export * from "./hooks/use-digital-product";

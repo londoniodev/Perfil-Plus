@@ -17,7 +17,7 @@ import {
 import { Pencil, Trash2, ExternalLink } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { ProductsTable, ProductTableData } from "@/components/admin/products/products-table"
+import { ProductsTable, ProductTableData } from "@alvarosky/ui"
 
 interface ProductsTableClientProps {
     data: ProductTableData[]
@@ -53,10 +53,10 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
         }
     }
 
-    const productTypeBadge = {
-        PHYSICAL: { label: "Físico", variant: "secondary" as const },
-        DIGITAL: { label: "Digital", variant: "default" as const },
-        SERVICE: { label: "Servicio", variant: "outline" as const },
+    const productTypeBadge: Record<string, { label: string; variant: "secondary" | "default" | "outline" }> = {
+        PHYSICAL: { label: "Físico", variant: "secondary" },
+        DIGITAL: { label: "Digital", variant: "default" },
+        SERVICE: { label: "Servicio", variant: "outline" },
     }
 
     return (

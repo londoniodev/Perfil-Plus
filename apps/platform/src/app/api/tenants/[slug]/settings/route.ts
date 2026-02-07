@@ -153,6 +153,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 console.error("Error parsing TENANT_CONFIG:", parseError);
             }
 
+            // Fallback: Si no hay nombre en config, usar el de la tabla Tenant
+            if (!configValue.name) {
+                configValue.name = tenant.name || "";
+            }
+
             // Aplanar y retornar
             return NextResponse.json(flattenConfig(configValue));
         } finally {
@@ -194,6 +199,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                  ON CONFLICT (key) DO UPDATE SET value = $1, "updatedAt" = NOW()`,
                 [JSON.stringify(configValue)]
             );
+
+            // Actualizar nombre en la tabla Tenant de Management DB
+            if (configValue.name) {
+                const { prismaManagement } = await import("@alvarosky/database-management");
+                await prismaManagement.tenant.update({
+                    where: { slug },
+                    data: { name: configValue.name }
+                });
+            }
 
             return NextResponse.json({ success: true });
         } finally {

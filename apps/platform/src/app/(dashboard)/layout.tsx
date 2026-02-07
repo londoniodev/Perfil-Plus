@@ -12,12 +12,14 @@ export default async function DashboardLayout({
     // Fetch tenants for Platform sidebar
     let tenants: { name: string; slug: string }[] = [];
     try {
+        console.time("layout:fetchTenants");
         tenants = await prismaManagement.tenant.findMany({
             select: { name: true, slug: true },
             orderBy: { name: 'asc' }
         }).then(items => items.map(t => ({ ...t, name: t.name ?? t.slug })));
+        console.timeEnd("layout:fetchTenants");
     } catch (error) {
-        console.warn("Could not fetch tenants during render/build:", error);
+        console.error("LAYOUT ERROR: Could not fetch tenants:", error);
         tenants = [];
     }
 

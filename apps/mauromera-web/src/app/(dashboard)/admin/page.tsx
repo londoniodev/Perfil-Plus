@@ -89,7 +89,7 @@ export default async function AdminDashboardPage() {
                             </Button>
 
                             <Button variant="outline" className="h-auto py-4 justify-start" asChild>
-                                <Link href="/admin/productos">
+                                <Link href="/admin/products">
                                     <ShoppingCart className="mr-3 h-5 w-5" />
                                     <div className="text-left">
                                         <div className="font-semibold">Gestionar Productos</div>
@@ -101,7 +101,7 @@ export default async function AdminDashboardPage() {
                             </Button>
 
                             <Button variant="outline" className="h-auto py-4 justify-start" asChild>
-                                <Link href="/admin/usuarios">
+                                <Link href="/admin/users">
                                     <Users className="mr-3 h-5 w-5" />
                                     <div className="text-left">
                                         <div className="font-semibold">Gestionar Usuarios</div>

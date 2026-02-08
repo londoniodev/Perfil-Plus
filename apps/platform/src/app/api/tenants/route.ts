@@ -173,6 +173,8 @@ async function provisionDatabase(
     const port = url.port || "5432";
     const user = url.username;
     const password = url.password;
+    // Extract default database to connect to (e.g., 'web-projects' instead of 'postgres')
+    const defaultDbName = url.pathname.slice(1) || "postgres";
 
     // Connect to postgres (default db) to create new database
     const pool = new Pool({
@@ -180,7 +182,7 @@ async function provisionDatabase(
         port: parseInt(port),
         user,
         password,
-        database: "postgres",
+        database: defaultDbName, // Use the DB from the URL, which we know works
     });
 
     try {

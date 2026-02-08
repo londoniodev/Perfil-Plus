@@ -276,7 +276,6 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                                 <LessonItem
                                     key={lesson.id}
                                     lesson={lesson}
-                                    lesson={lesson}
                                     onEdit={(id) => router.push(`/admin/cursos/temas/${ids!.id}/cursos/${ids!.courseId}/lecciones/${id}`)}
                                     onDelete={handleDeleteLesson}
                                 />

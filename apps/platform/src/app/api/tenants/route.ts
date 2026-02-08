@@ -215,6 +215,10 @@ async function provisionDatabase(
         // The /tmp directory is usually writable in Docker containers
         const tempSchemaPath = `/tmp/schema-${tenantSlug}-${Date.now()}.prisma`;
 
+        // Check environment
+        const isDocker = process.env.NODE_ENV === "production" || process.cwd().startsWith("/app");
+        const prismaCommand = isDocker ? "prisma" : "npx prisma@5.22.0";
+
         try {
             // Read and write to ensure the node process (user nextjs) owns the file
             const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
@@ -223,7 +227,7 @@ async function provisionDatabase(
 
             // Run prisma db push with the temp schema file
             const { stdout, stderr } = await execAsync(
-                `npx prisma@5.22.0 db push --schema="${tempSchemaPath}" --accept-data-loss`,
+                `${prismaCommand} db push --schema="${tempSchemaPath}" --skip-generate --accept-data-loss`,
                 { env: { ...process.env, DATABASE_URL: tenantDbUrl } }
             );
 

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             : "../../packages/database/prisma/schema.prisma";
 
         const prismaPath = isDocker
-            ? "/app/node_modules/.bin/prisma"
+            ? "prisma"
             : "npx prisma";
 
         const command = `${prismaPath} db push --schema=${schemaPath} --skip-generate --accept-data-loss`;

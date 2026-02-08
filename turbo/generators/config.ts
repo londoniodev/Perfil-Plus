@@ -115,12 +115,31 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 templateFile: "templates/manifest.json.hbs",
                 force: true
             },
+            {
+                type: "install-dependencies",
+            },
         ],
     });
 
     // ==========================================
     // TAREA 3: Crear Generador `add-feature`
     // ==========================================
+    // Custom Action: install-dependencies
+    plop.setActionType("install-dependencies", async (answers, config, plop) => {
+        const { exec } = require("child_process");
+        return new Promise((resolve, reject) => {
+            console.log("📦 Installing dependencies to update lockfile...");
+            exec("pnpm install --lockfile-only", (error: any, stdout: any, stderr: any) => {
+                if (error) {
+                    console.error(`Error updating lockfile: ${error.message}`);
+                    return reject(error);
+                }
+                if (stderr) console.log(`Stderr: ${stderr}`);
+                console.log(stdout);
+                resolve("Dependencies installed & lockfile updated successfully!");
+            });
+        });
+    });
     plop.setGenerator("add-feature", {
         description: "Agrega una feature a un tenant existente",
         prompts: [

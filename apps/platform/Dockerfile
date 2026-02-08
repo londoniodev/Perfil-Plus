@@ -66,6 +66,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/platform/.next/static ./apps
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database-management/prisma ./packages/database-management/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./packages/database/prisma
 
+# Install Prisma globally (needed for tenant provisioning scripts)
+RUN npm install -g prisma@5.22.0
+
 USER nextjs
 
 EXPOSE 4000
@@ -74,4 +77,4 @@ ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
 # Migrations on start + App start
-CMD ["sh", "-c", "cd packages/database-management && sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && cd ../../ && node apps/platform/server.js"]
+CMD ["sh", "-c", "cd packages/database-management && sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && prisma db push --accept-data-loss && cd ../../ && node apps/platform/server.js"]

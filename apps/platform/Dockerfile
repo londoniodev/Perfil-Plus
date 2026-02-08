@@ -77,4 +77,4 @@ ENV PORT=4000
 ENV HOSTNAME="0.0.0.0"
 
 # Migrations on start + App start
-CMD ["sh", "-c", "cd packages/database-management && sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && prisma db push --accept-data-loss && cd ../../ && node apps/platform/server.js"]
+CMD ["sh", "-c", "cd packages/database-management && sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && prisma db push --skip-generate --accept-data-loss && cd ../../ && node apps/platform/server.js"]

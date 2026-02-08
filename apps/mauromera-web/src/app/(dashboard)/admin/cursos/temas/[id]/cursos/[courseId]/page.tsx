@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { ImageUploader } from "@alvarosky/ui";
-import LessonItem from "@/components/admin/lms/LessonItem";
+import { ImageUploader, LessonItem } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack, IconPlus } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
@@ -277,8 +276,8 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                                 <LessonItem
                                     key={lesson.id}
                                     lesson={lesson}
-                                    courseId={ids!.courseId}
-                                    themeId={ids!.id}
+                                    lesson={lesson}
+                                    onEdit={(id) => router.push(`/admin/cursos/temas/${ids!.id}/cursos/${ids!.courseId}/lecciones/${id}`)}
                                     onDelete={handleDeleteLesson}
                                 />
                             ))}

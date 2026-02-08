@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ThemeCard from "@/components/admin/lms/ThemeCard";
+import { ThemeCard } from "@alvarosky/ui";
 import { toast } from "sonner";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
@@ -274,6 +274,7 @@ export default function AdminCursosPage() {
                             <ThemeCard
                                 key={theme.id}
                                 theme={theme}
+                                onEdit={(id) => router.push(`/admin/cursos/temas/${id}`)}
                                 onDelete={handleDelete}
                             />
                         ))

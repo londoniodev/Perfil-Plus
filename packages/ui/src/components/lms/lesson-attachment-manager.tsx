@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     IconUpload,
     IconDownload,
@@ -9,12 +8,12 @@ import {
     IconFile,
     IconImage,
     IconDocument
-} from "@alvarosky/ui";
-import { useToast } from "@alvarosky/ui";
-import { Button } from "@alvarosky/ui";
-import { Card, CardHeader, CardTitle, CardContent } from "@alvarosky/ui";
+} from "../../icons";
+import { useToast } from "../../toast";
+import { Button } from "../../button";
+import { Card, CardHeader, CardTitle, CardContent } from "../../card";
 
-interface Attachment {
+export interface Attachment {
     id: string;
     lessonId: string;
     name: string;
@@ -24,10 +23,12 @@ interface Attachment {
     createdAt: string;
 }
 
-interface LessonAttachmentManagerProps {
+export interface LessonAttachmentManagerProps {
     lessonId: string;
     attachments: Attachment[];
     onUpdate: () => void;
+    apiBase: string;
+    tenantId: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -46,7 +47,7 @@ function getFileIcon(fileType: string): React.ReactNode {
     return <div className="text-muted-foreground"><IconFile size={24} /></div>;
 }
 
-export default function LessonAttachmentManager({ lessonId, attachments, onUpdate }: LessonAttachmentManagerProps) {
+export function LessonAttachmentManager({ lessonId, attachments, onUpdate, apiBase, tenantId }: LessonAttachmentManagerProps) {
     const [uploading, setUploading] = useState(false);
     const toast = useToast();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -84,9 +85,9 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
                 formData.append('file', file);
                 formData.append('folder', folder);
 
-                const uploadRes = await fetch(`${API_BASE}/storage/upload`, {
+                const uploadRes = await fetch(`${apiBase}/storage/upload`, {
                     method: 'POST',
-                    headers: { 'x-tenant-id': TENANT_ID },
+                    headers: { 'x-tenant-id': tenantId },
                     credentials: 'include',
                     body: formData,
                 });
@@ -103,11 +104,11 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
                 const uploadData = await uploadRes.json();
 
                 // Create attachment record
-                const attachRes = await fetch(`${API_BASE}/admin/lms/lessons/${lessonId}/attachments`, {
+                const attachRes = await fetch(`${apiBase}/admin/lms/lessons/${lessonId}/attachments`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-tenant-id': TENANT_ID,
+                        'x-tenant-id': tenantId,
                     },
                     credentials: 'include',
                     body: JSON.stringify({
@@ -136,9 +137,9 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
         if (!confirm(`¿Eliminar "${attachment.name}"?`)) return;
 
         try {
-            const res = await fetch(`${API_BASE}/admin/lms/attachments/${attachment.id}`, {
+            const res = await fetch(`${apiBase}/admin/lms/attachments/${attachment.id}`, {
                 method: 'DELETE',
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: { 'x-tenant-id': tenantId },
                 credentials: 'include',
             });
 
@@ -228,4 +229,3 @@ export default function LessonAttachmentManager({ lessonId, attachments, onUpdat
         </Card>
     );
 }
-

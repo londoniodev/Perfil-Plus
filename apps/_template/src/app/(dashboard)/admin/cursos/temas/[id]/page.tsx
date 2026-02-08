@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import CourseCard from "@/components/admin/lms/CourseCard";
+import { CourseCard } from "@alvarosky/ui";
 import { IconBack, IconPlus } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -266,7 +266,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                                 <CourseCard
                                     key={course.id}
                                     course={course}
-                                    themeId={themeId!}
+                                    onEdit={(id) => router.push(`/admin/cursos/temas/${themeId}/cursos/${id}`)}
                                     onDelete={handleDeleteCourse}
                                 />
                             ))}

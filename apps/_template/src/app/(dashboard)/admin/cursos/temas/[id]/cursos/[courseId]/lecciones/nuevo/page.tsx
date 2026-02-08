@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import BlogEditor from "@/components/admin/blog/BlogEditor";
+import { BlogEditor } from "@alvarosky/ui";
 import { VideoUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@alvarosky/ui";

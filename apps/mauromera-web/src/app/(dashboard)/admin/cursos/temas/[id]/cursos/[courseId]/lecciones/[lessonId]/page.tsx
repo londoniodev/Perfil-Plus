@@ -4,9 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import BlogEditor from "@/components/admin/blog/BlogEditor";
-import { VideoUploader } from "@alvarosky/ui";
-import LessonAttachmentManager from "@/components/admin/lms/LessonAttachmentManager";
+import { BlogEditor, VideoUploader, LessonAttachmentManager } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconBack } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -227,9 +225,11 @@ export default function EditarLeccionPage() {
 
                         <div className="space-y-2">
                             <LessonAttachmentManager
-                                lessonId={params.lessonId as string}
-                                attachments={lesson?.attachments || []}
+                                lessonId={lesson.id}
+                                attachments={lesson.attachments}
                                 onUpdate={fetchLesson}
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                             />
                         </div>
 

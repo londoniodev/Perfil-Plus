@@ -11,8 +11,7 @@ import { Button } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@alvarosky/ui";
-import { Pagination } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
+import { Pagination, AdminPageWrapper } from "@alvarosky/ui";
 import Link from "next/link";
 
 // ============================================================================
@@ -227,16 +226,16 @@ export default function AdminBlogPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Gestión del Blog"
-                description="Gestiona tus artículos y publicaciones"
-            >
+        <AdminPageWrapper
+            title="Gestión del Blog"
+            description="Gestiona tus artículos y publicaciones"
+            actions={
                 <Button onClick={() => router.push("/admin/blog/nuevo")}>
                     <IconPlus className="mr-2 h-4 w-4" />
                     Nuevo Post
                 </Button>
-            </PageHeader>
+            }
+        >
 
             {/* Filter Tabs using Buttons */}
             {/* ... resto del código ... */}
@@ -319,7 +318,7 @@ export default function AdminBlogPage() {
                     onPageChange={setPage}
                 />
             </div>
-        </div>
+        </AdminPageWrapper>
     );
 }
 

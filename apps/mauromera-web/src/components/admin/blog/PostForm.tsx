@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import BlogEditor from "./BlogEditor";
+import { BlogEditor } from "@alvarosky/ui";
 import { ImageUploader } from "@alvarosky/ui";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";

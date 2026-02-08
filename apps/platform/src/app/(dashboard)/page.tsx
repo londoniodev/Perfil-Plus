@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card } from "@alvarosky/ui";
+import { Card, AdminPageWrapper } from "@alvarosky/ui";
 import { LogoutButton } from "@/components/logout-button";
 import { prismaManagement } from "@alvarosky/database-management";
 
@@ -30,9 +30,15 @@ export default async function HomePage() {
     const stats = await getStats();
 
     return (
-        <div className="container mx-auto py-8 space-y-8">
-            {/* Header Section could go here if needed, but layout handles 'Platform' title */}
-
+        <AdminPageWrapper
+            title="Dashboard"
+            description="Resumen global de la plataforma."
+            actions={
+                <Link href="/tenants/new">
+                    <LogoutButton />
+                </Link>
+            }
+        >
             {/* Stats Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Link href="/tenants">
@@ -121,6 +127,6 @@ export default async function HomePage() {
                     </Link>
                 </div>
             </div>
-        </div>
+        </AdminPageWrapper>
     );
 }

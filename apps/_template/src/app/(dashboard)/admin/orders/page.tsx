@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageWrapper } from "@/components/layout/PageWrapper"
+import { AdminPageWrapper } from "@alvarosky/ui"
 import { OrdersTableClient } from "./orders-table-client"
 
 export default async function OrdersPage() {
@@ -65,14 +65,9 @@ export default async function OrdersPage() {
     }))
 
     return (
-        <PageWrapper
+        <AdminPageWrapper
             title="Órdenes"
             description="Gestiona las ventas y pedidos de tu tienda"
-            breadcrumbs={[
-                { label: "Admin", href: "/admin" },
-                { label: "Órdenes" }
-            ]}
-            maxWidth="full"
         >
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -102,6 +97,6 @@ export default async function OrdersPage() {
 
             {/* Orders Table */}
             <OrdersTableClient data={tableData} />
-        </PageWrapper>
+        </AdminPageWrapper>
     )
 }

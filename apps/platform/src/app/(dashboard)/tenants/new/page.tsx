@@ -14,17 +14,12 @@ import {
     SelectTrigger,
     SelectValue,
     Checkbox,
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+    CardContent,
+    AdminPageWrapper,
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
-    CardContent
 } from "@alvarosky/ui";
 import { Loader2, Save, ArrowLeft, Info, CreditCard, Box, Mail } from "lucide-react";
 
@@ -103,58 +98,36 @@ export default function NewTenantPage() {
     };
 
     return (
-        <div className="container max-w-5xl py-6 space-y-8">
-            {/* Header & Breadcrumbs */}
-            <div className="space-y-4">
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="/tenants">Tenants</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Nuevo Tenant</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Crear Nuevo Tenant</h1>
-                        <p className="text-muted-foreground mt-1">
-                            Provisiona una nueva base de datos y configura el cliente.
-                        </p>
-                    </div>
-                    <div className="flex gap-4">
-                        <Button variant="outline" asChild>
-                            <Link href="/tenants">
-                                Cancelar
-                            </Link>
-                        </Button>
-                        <Button
-                            onClick={onSave}
-                            disabled={loading}
-                            className="min-w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creando...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    Crear Tenant
-                                </>
-                            )}
-                        </Button>
-                    </div>
+        <AdminPageWrapper
+            title="Crear Nuevo Tenant"
+            description="Provisiona una nueva base de datos y configura el cliente."
+            actions={
+                <div className="flex gap-4">
+                    <Button variant="outline" asChild>
+                        <Link href="/tenants">
+                            Cancelar
+                        </Link>
+                    </Button>
+                    <Button
+                        onClick={onSave}
+                        disabled={loading}
+                        className="min-w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md shadow-indigo-500/20"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creando...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-4 w-4" />
+                                Crear Tenant
+                            </>
+                        )}
+                    </Button>
                 </div>
-            </div>
+            }
+        >
 
             {error && (
                 <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium">
@@ -361,6 +334,6 @@ export default function NewTenantPage() {
                     </Tabs>
                 </div>
             </Card>
-        </div>
+        </AdminPageWrapper>
     );
 }

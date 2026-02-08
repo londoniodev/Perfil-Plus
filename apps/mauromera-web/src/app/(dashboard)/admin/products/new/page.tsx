@@ -9,9 +9,7 @@ export default function NewProductPage() {
                 description="Crea un producto digital o físico para tu tienda"
             />
 
-            <div className="max-w-4xl">
-                <ProductForm />
-            </div>
+            <ProductForm />
         </div>
     )
 }

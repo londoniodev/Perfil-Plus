@@ -1,5 +1,7 @@
 "use client"
 
+import { cn } from "../../../lib/utils"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -80,9 +82,10 @@ interface ProductFormProps {
     apiBase: string
     tenantId: string
     backUrl?: string
+    className?: string
 }
 
-export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl = "/admin/products" }: ProductFormProps) {
+export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl = "/admin/products", className }: ProductFormProps) {
     const router = useRouter()
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -184,7 +187,7 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className={cn("grid grid-cols-1 lg:grid-cols-3 gap-8 w-full", className)}>
                 {/* LEFT COLUMN: Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Basic Info Card */}

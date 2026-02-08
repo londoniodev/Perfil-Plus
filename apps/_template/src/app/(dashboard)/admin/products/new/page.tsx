@@ -6,7 +6,7 @@ export default function NewProductPage() {
         <div className="space-y-6 max-w-[1600px] mx-auto">
             <PageHeader
                 title="Nuevo Producto"
-                description="Crea un producto digital o físico para tu tienda"
+                description="Crea un nuevo producto digital o físico para tu tienda"
             />
 
             <ProductForm />

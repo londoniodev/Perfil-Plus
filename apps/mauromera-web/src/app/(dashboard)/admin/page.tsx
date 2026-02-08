@@ -101,6 +101,18 @@ export default async function AdminDashboardPage() {
                             </Button>
 
                             <Button variant="outline" className="h-auto py-4 justify-start" asChild>
+                                <Link href="/admin/blog">
+                                    <Sparkles className="mr-3 h-5 w-5" />
+                                    <div className="text-left">
+                                        <div className="font-semibold">Gestionar Blog</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            Publica artículos y noticias
+                                        </div>
+                                    </div>
+                                </Link>
+                            </Button>
+
+                            <Button variant="outline" className="h-auto py-4 justify-start" asChild>
                                 <Link href="/admin/users">
                                     <Users className="mr-3 h-5 w-5" />
                                     <div className="text-left">

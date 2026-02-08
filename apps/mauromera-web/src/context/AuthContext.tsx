@@ -35,6 +35,7 @@ function clearAllAuthData() {
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false); // Concurrency lock
 
     const refreshUser = useCallback(async () => {
         try {
@@ -95,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Si el token de acceso expiró (401), intentar refrescar
             if (res.status === 401) {
+                if (isRefreshing) return;
+                setIsRefreshing(true);
                 try {
                     const refreshToken = localStorage.getItem("refreshToken");
 
@@ -137,7 +140,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 } catch (refreshError) {
                     console.error("Error refreshing token:", refreshError);
-                    // Si falla el refresco, procederá al logout abajo
+                } finally {
+                    setIsRefreshing(false);
                 }
             }
 
@@ -236,6 +240,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 console.log(`[Auth] Scheduled proactive refresh in ${(delay / 1000 / 60).toFixed(1)} minutes`);
 
                 refreshTimeout = setTimeout(async () => {
+                    if (isRefreshing) return;
+                    setIsRefreshing(true);
                     try {
                         const refreshToken = localStorage.getItem("refreshToken");
                         if (!refreshToken) return;
@@ -265,6 +271,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         }
                     } catch (error) {
                         console.error("[Auth] Proactive refresh error:", error);
+                    } finally {
+                        setIsRefreshing(false);
                     }
                 }, delay);
             } catch (error) {

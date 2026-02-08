@@ -279,12 +279,12 @@ export class AuthService {
         // Verificar si ha expirado
         if (new Date() > storedToken.expiresAt) {
             // Eliminar token expirado
-            await this.prisma.client.refreshToken.delete({ where: { id: storedToken.id } });
+            await this.prisma.client.refreshToken.deleteMany({ where: { id: storedToken.id } });
             throw new UnauthorizedException('Refresh token expirado');
         }
 
         // Eliminar el token usado (rotación de tokens)
-        await this.prisma.client.refreshToken.delete({ where: { id: storedToken.id } });
+        await this.prisma.client.refreshToken.deleteMany({ where: { id: storedToken.id } });
 
         // Generar nuevos tokens
         const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email, storedToken.user.role, storedToken.user.name);

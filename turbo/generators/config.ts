@@ -4,7 +4,7 @@ import path from "path";
 
 // TAREA 1: Definición Centralizada
 const AVAILABLE_FEATURES = [
-    { name: 'Tienda (E-commerce)', value: 'shop' },
+    { name: 'Tienda (E-commerce)', value: 'store' },
     { name: 'Blog / Noticias', value: 'blog' },
     { name: 'LMS (Cursos)', value: 'lms' },
     { name: 'Portafolio', value: 'portfolio' },
@@ -81,8 +81,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             {
                 type: "modify",
                 path: "apps/{{name}}/package.json",
-                pattern: /"dev": "next dev"/,
-                template: '"dev": "next dev -p {{port}}"',
+                pattern: /"dev": "next dev.*"/,
+                template: '"dev": "next dev --webpack -p {{port}}"',
             },
             {
                 type: "add",
@@ -179,7 +179,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             ]);
 
             // Store Cleanup
-            await removeIfMissing("shop", [
+            await removeIfMissing("store", [
                 path.join(appDir, "tienda"),
                 path.join(adminDir, "productos"),
                 path.join(appDir, "checkout")
@@ -232,7 +232,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                     "src/lib/whatsapp"
                 ];
                 break;
-            case 'shop':
+            case 'store':
                 pathsToCopy = [
                     "src/app/tienda",
                     "src/app/(dashboard)/admin/productos",

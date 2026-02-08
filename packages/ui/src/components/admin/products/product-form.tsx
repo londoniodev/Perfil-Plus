@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Button, Input, Textarea, Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../ui"
+import { Button } from "../../../button"
+import { Input } from "../../../input"
+import { Textarea } from "../../../textarea"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../../form"
 import { Plus, Trash2, Loader2 } from "lucide-react"
-import { ImageUploader } from "../../admin/ui/ImageUploader"
-import { useToast } from "../../ui/use-toast"
+import { ImageUploader } from "../../upload/image-uploader"
+import { useToast } from "../../../toast"
 
 // Schema de validación
 export const productSchema = z.object({
@@ -77,7 +80,7 @@ interface ProductFormProps {
 
 export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl = "/admin/products" }: ProductFormProps) {
     const router = useRouter()
-    const { toast } = useToast()
+    const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Valores por defecto
@@ -150,26 +153,15 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
             const result = await onSubmit(productData)
 
             if (result.success) {
-                toast({
-                    title: "Éxito",
-                    description: initialData ? "Producto actualizado correctamente" : "Producto creado exitosamente",
-                })
+                toast.success(initialData ? "Producto actualizado correctamente" : "Producto creado exitosamente", "Éxito")
                 router.push(backUrl)
                 router.refresh()
             } else {
-                toast({
-                    title: "Error",
-                    description: result.error || "Error al procesar producto",
-                    variant: "destructive"
-                })
+                toast.error(result.error || "Error al procesar producto", "Error")
             }
         } catch (error) {
             console.error("Error:", error)
-            toast({
-                title: "Error",
-                description: "Error inesperado al procesar el formulario",
-                variant: "destructive"
-            })
+            toast.error("Error inesperado al procesar el formulario", "Error")
         } finally {
             setIsSubmitting(false)
         }

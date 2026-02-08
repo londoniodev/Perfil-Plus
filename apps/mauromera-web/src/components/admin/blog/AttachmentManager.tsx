@@ -1,6 +1,6 @@
 "use client";
 
-import { AttachmentManager as SharedAttachmentManager, Attachment } from "@alvarosky/ui";
+import { AttachmentManager as SharedAttachmentManager, type BlogAttachment as Attachment } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 
 interface AttachmentManagerProps {

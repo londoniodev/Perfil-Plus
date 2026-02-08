@@ -1,6 +1,6 @@
 export { BlogEditor } from "./blog-editor";
 export { AttachmentManager } from "./attachment-manager";
-export type { Attachment, AttachmentManagerProps } from "./attachment-manager";
+export type { Attachment as BlogAttachment, AttachmentManagerProps } from "./attachment-manager";
 export { TagSelector } from "./tag-selector";
 export type { TagItem, TagSelectorProps } from "./tag-selector";
 export { CategorySelector } from "./category-selector";

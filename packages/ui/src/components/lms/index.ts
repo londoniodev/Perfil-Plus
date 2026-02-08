@@ -1,5 +1,6 @@
 export { QuestionEditor } from "./question-editor";
-export * from "./lesson-attachment-manager";
+export { LessonAttachmentManager } from "./lesson-attachment-manager";
+export type { Attachment as LmsAttachment, LessonAttachmentManagerProps } from "./lesson-attachment-manager";
 export type { Question, QuestionOption, QuestionEditorProps } from "./question-editor";
 export { ThemeCard } from "./theme-card";
 export type { LmsTheme, ThemeCardProps } from "./theme-card";

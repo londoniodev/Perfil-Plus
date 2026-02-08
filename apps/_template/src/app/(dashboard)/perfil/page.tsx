@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@alvarosky/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@alvarosky/ui";
 import { Button, Separator } from "@alvarosky/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
-import { IconUser, IconShoppingBag, IconShield, IconLogout, IconLoader, IconCheck, IconCrown } from "@alvarosky/ui";
+import { IconUser, IconShoppingBag, IconShield, IconLogout, IconLoader, IconCheck, IconCrown, PageHeader } from "@alvarosky/ui";
 
 export default function PerfilPage() {
     const router = useRouter();
@@ -41,12 +40,13 @@ export default function PerfilPage() {
         .substring(0, 2);
 
     return (
-        <PageWrapper
-            title="Mi Perfil"
-            description="Gestiona tu información personal y configuración de cuenta"
-            breadcrumbs={[{ label: "Perfil" }]}
-            maxWidth="4xl"
-        >
+        <div className="container mx-auto py-12 px-4 md:px-6 max-w-4xl">
+            <PageHeader
+                title="Mi Perfil"
+                description="Gestiona tu información personal y configuración de cuenta"
+                variant="admin"
+                className="mb-8"
+            />
             <div className="flex flex-col lg:flex-row gap-8 items-start">
                 {/* Sidebar / Profile Card */}
                 <Card className="w-full lg:w-72 shrink-0 sticky top-4">
@@ -207,6 +207,6 @@ export default function PerfilPage() {
                     </Tabs>
                 </div>
             </div>
-        </PageWrapper>
+        </div>
     );
 }

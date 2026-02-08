@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     SidebarTrigger,
     Separator,
@@ -43,6 +44,32 @@ export function AdminHeader({
     children,
     className,
 }: AdminHeaderProps) {
+    const pathname = usePathname() || "";
+
+    // Auto-generate breadcrumbs if not provided
+    const items = React.useMemo(() => {
+        if (breadcrumbs) return breadcrumbs;
+
+        // Skip breadcrumbs on root or dashboard home if desired
+        // For admin, usually /admin is home.
+
+        const segments = pathname.split('/').filter(Boolean);
+        // e.g. ['admin', 'products', 'new']
+
+        return segments.map((segment: string, index: number) => {
+            const href = `/${segments.slice(0, index + 1).join('/')}`;
+            // Capitalize and format label
+            const label = segment
+                .replace(/-/g, ' ')
+                .replace(/^./, (c: string) => c.toUpperCase());
+
+            return {
+                label,
+                href
+            };
+        });
+    }, [breadcrumbs, pathname]);
+
     return (
         <header
             className={`
@@ -61,21 +88,21 @@ export function AdminHeader({
 
             {/* Breadcrumbs or App Name */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-                {breadcrumbs && breadcrumbs.length > 0 ? (
+                {items && items.length > 0 ? (
                     <Breadcrumb>
                         <BreadcrumbList>
-                            {breadcrumbs.map((item, index) => {
-                                const isLast = index === breadcrumbs.length - 1;
+                            {items.map((item: AdminBreadcrumbItem, index: number) => {
+                                const isLast = index === items.length - 1;
                                 return (
-                                    <React.Fragment key={item.label}>
+                                    <React.Fragment key={item.href || item.label}>
                                         <BreadcrumbItem>
-                                            {isLast || !item.href ? (
-                                                <BreadcrumbPage className="truncate">
+                                            {isLast ? (
+                                                <BreadcrumbPage className="truncate capitalize">
                                                     {item.label}
                                                 </BreadcrumbPage>
                                             ) : (
                                                 <BreadcrumbLink asChild>
-                                                    <Link href={item.href}>{item.label}</Link>
+                                                    <Link href={item.href || "#"} className="capitalize">{item.label}</Link>
                                                 </BreadcrumbLink>
                                             )}
                                         </BreadcrumbItem>

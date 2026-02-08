@@ -265,7 +265,6 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                                 <CourseCard
                                     key={course.id}
                                     course={course}
-                                    course={course}
                                     onEdit={(id) => router.push(`/admin/cursos/temas/${themeId}/cursos/${id}`)}
                                     onDelete={handleDeleteCourse}
                                 />

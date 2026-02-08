@@ -193,8 +193,6 @@ async function provisionDatabase(
         tenantUrl.pathname = `/${dbName}`;
         const tenantDbUrl = tenantUrl.toString();
 
-        console.log(`[Provision] Debug - Tenant DB URL constructed from Master URL`);
-
         // Resolve absolute path to schema
         const path = require("path");
         const fs = require("fs");

@@ -39,8 +39,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         tenantUrl.pathname = `/${tenant.dbName}`;
         const tenantDbUrl = tenantUrl.toString();
 
-        console.log(`[Migrate] Debug - Constructed URL for ${tenant.dbName}`);
-
         console.log(`[Migrate] Starting schema push for tenant: ${slug} (${tenant.dbName})`);
 
         // Determine the correct paths based on environment

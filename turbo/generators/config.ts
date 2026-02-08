@@ -74,7 +74,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             {
                 type: "add",
                 path: "apps/{{name}}/.env.local",
-                template: "NEXT_PUBLIC_API_URL=http://localhost:3000/api\nNEXT_PUBLIC_TENANT_SLUG={{name}}",
+                // Assuming default local postgres credentials for dev. In prod, this should be overwritten or injected.
+                template: "NEXT_PUBLIC_API_URL=http://localhost:3000/api\nNEXT_PUBLIC_TENANT_SLUG={{name}}\nDATABASE_URL=postgresql://postgres:postgres@localhost:5432/db_{{name}}",
             },
             {
                 type: "cleanup-features",

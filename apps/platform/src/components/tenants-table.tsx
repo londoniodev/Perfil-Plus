@@ -21,8 +21,17 @@ import {
     Badge,
     Avatar,
     AvatarFallback,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@alvarosky/ui"
 import { MoreHorizontal, Search, Trash, Eye, Settings, Database } from "lucide-react"
+import { toast } from "sonner"
 
 interface Tenant {
     id: number
@@ -41,6 +50,8 @@ export function TenantsTable({ data }: TenantsTableProps) {
     const router = useRouter()
     const [search, setSearch] = React.useState("")
     const [currentPage, setCurrentPage] = React.useState(1)
+    const [tenantToDelete, setTenantToDelete] = React.useState<Tenant | null>(null)
+    const [isDeleting, setIsDeleting] = React.useState(false)
     const itemsPerPage = 10
 
     // Filter data
@@ -87,6 +98,30 @@ export function TenantsTable({ data }: TenantsTableProps) {
                 return "bg-red-500/20 text-red-400 border-red-500/30"
             default:
                 return "bg-slate-500/20 text-slate-400 border-slate-500/30"
+        }
+    }
+
+    const handleDelete = async () => {
+        if (!tenantToDelete) return
+
+        setIsDeleting(true)
+        try {
+            const response = await fetch(`/api/tenants/${tenantToDelete.slug}`, {
+                method: "DELETE",
+            })
+
+            if (!response.ok) {
+                throw new Error("Error al eliminar el tenant")
+            }
+
+            toast.success("Tenant eliminado correctamente")
+            router.refresh()
+        } catch (error) {
+            console.error(error)
+            toast.error("Error al eliminar el tenant")
+        } finally {
+            setIsDeleting(false)
+            setTenantToDelete(null)
         }
     }
 
@@ -173,7 +208,10 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                                     Configuración
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                                    onClick={() => setTenantToDelete(tenant)}
+                                                >
                                                     <Trash className="mr-2 h-4 w-4" />
                                                     Eliminar
                                                 </DropdownMenuItem>
@@ -211,6 +249,34 @@ export function TenantsTable({ data }: TenantsTableProps) {
                     </Button>
                 </div>
             )}
+
+            <AlertDialog open={!!tenantToDelete} onOpenChange={(open) => !open && setTenantToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el tenant
+                            <span className="font-bold text-foreground mx-1">
+                                {tenantToDelete?.name || tenantToDelete?.slug}
+                            </span>
+                            y sus registros asociados de la base de datos de gestión.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault()
+                                handleDelete()
+                            }}
+                            disabled={isDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {isDeleting ? "Eliminando..." : "Eliminar Tenant"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

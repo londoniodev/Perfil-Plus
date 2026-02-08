@@ -9,6 +9,8 @@ export const metadata: Metadata = {
     description: "Control Tower - Gestión de Tenants",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
     children,
 }: {
@@ -18,6 +20,7 @@ export default function RootLayout({
         <html lang="es" className="dark">
             <body className={inter.className}>
                 {children}
+                <Toaster richColors position="top-center" />
             </body>
         </html>
     );

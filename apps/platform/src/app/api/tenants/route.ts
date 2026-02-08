@@ -167,22 +167,9 @@ async function provisionDatabase(
     const masterUrl = process.env.DATABASE_URL;
     if (!masterUrl) throw new Error("DATABASE_URL not set");
 
-    // Parse connection string to get host/user/pass
-    const url = new URL(masterUrl);
-    const host = url.hostname;
-    const port = url.port || "5432";
-    const user = url.username;
-    const password = url.password;
-    // Extract default database to connect to (e.g., 'web-projects' instead of 'postgres')
-    const defaultDbName = url.pathname.slice(1) || "postgres";
-
-    // Connect to postgres (default db) to create new database
+    // Connect to postgres using the connection string directly to preserve all options (SSL, etc)
     const pool = new Pool({
-        host,
-        port: parseInt(port),
-        user,
-        password,
-        database: defaultDbName, // Use the DB from the URL, which we know works
+        connectionString: masterUrl,
     });
 
     try {
@@ -191,12 +178,13 @@ async function provisionDatabase(
         console.log(`Database ${dbName} created successfully`);
 
         // Run migrations on the new database
-        const encodedUser = encodeURIComponent(user);
-        const encodedPassword = encodeURIComponent(password);
-        const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${dbName}?schema=public`;
+        // Construct tenant-specific URL by modifying the master URL object
+        // This preserves query params (SSL, schema, etc) and handles encoding automatically
+        const tenantUrl = new URL(masterUrl);
+        tenantUrl.pathname = `/${dbName}`;
+        const tenantDbUrl = tenantUrl.toString();
 
-        console.log(`[Provision] Debug - Host: ${host}, Port: ${port}, User: ${user}, DB: ${dbName}`);
-        console.log(`[Provision] Debug - Constructed URL: postgresql://${encodedUser}:***@${host}:${port}/${dbName}?schema=public`);
+        console.log(`[Provision] Debug - Tenant DB URL constructed from Master URL`);
 
         // Resolve absolute path to schema
         const path = require("path");

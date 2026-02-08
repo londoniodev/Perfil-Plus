@@ -34,18 +34,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        const url = new URL(masterUrl);
-        const user = url.username;
-        const password = url.password;
-        const host = url.hostname;
-        const port = url.port || "5432";
+        // Build tenant-specific DATABASE_URL by cloning and modifying master URL
+        const tenantUrl = new URL(masterUrl);
+        tenantUrl.pathname = `/${tenant.dbName}`;
+        const tenantDbUrl = tenantUrl.toString();
 
-        // Build tenant-specific DATABASE_URL
-        const encodedUser = encodeURIComponent(user);
-        const encodedPassword = encodeURIComponent(password);
-        const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${tenant.dbName}?schema=public`;
-
-        console.log(`[Migrate] Debug - Constructed URL: postgresql://${encodedUser}:***@${host}:${port}/${tenant.dbName}?schema=public`);
+        console.log(`[Migrate] Debug - Constructed URL for ${tenant.dbName}`);
 
         console.log(`[Migrate] Starting schema push for tenant: ${slug} (${tenant.dbName})`);
 

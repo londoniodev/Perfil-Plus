@@ -121,7 +121,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                     )}
                                 />
 
-                                <Button type="submit" disabled={isSaving}>
+                                <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
                                     {isSaving ? "Guardando..." : "Guardar Cambios"}
                                 </Button>
                             </CardContent>
@@ -143,12 +143,12 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                 // Simulation of styles for preview
                                 borderRadius: `${watchedRadius}rem`
                             }}>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button>Primary Button</Button>
                                 <Button variant="secondary">Secondary</Button>
                                 <Button variant="outline">Outline</Button>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button size="sm">Small</Button>
                                 <Button size="lg">Large</Button>
                                 <Button variant="destructive">Destructive</Button>

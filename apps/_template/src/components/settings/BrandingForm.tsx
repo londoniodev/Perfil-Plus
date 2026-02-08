@@ -158,7 +158,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                     )}
                                 />
 
-                                <Button type="submit" disabled={isSaving} className="w-full">
+                                <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
                                     {isSaving ? "Guardando..." : "Guardar Cambios"}
                                 </Button>
                             </CardContent>

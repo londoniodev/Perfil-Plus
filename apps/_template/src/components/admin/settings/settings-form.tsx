@@ -191,7 +191,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="min-w-[120px]"
+                        className="w-full sm:w-auto min-w-[120px]"
                     >
                         {isSubmitting ? (
                             <>

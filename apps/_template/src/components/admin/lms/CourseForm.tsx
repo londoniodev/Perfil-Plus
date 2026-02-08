@@ -262,16 +262,17 @@ export default function CourseForm({
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
                     <Button
                         type="button"
                         variant="outline"
                         onClick={() => router.back()}
                         disabled={isSubmitting}
+                        className="w-full sm:w-auto"
                     >
                         Cancelar
                     </Button>
-                    <Button type="submit" disabled={isSubmitting || (!isDirty && mode === "edit")}>
+                    <Button type="submit" disabled={isSubmitting || (!isDirty && mode === "edit")} className="w-full sm:w-auto">
                         {isSubmitting
                             ? "Guardando..."
                             : mode === "create"

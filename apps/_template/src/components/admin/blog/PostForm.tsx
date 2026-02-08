@@ -286,11 +286,11 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-4">
-                        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")}>
+                    <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
+                        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")} className="w-full sm:w-auto">
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={saving}>
+                        <Button type="submit" disabled={saving} className="w-full sm:w-auto">
                             {saving ? "Guardando..." : "Guardar Cambios"}
                         </Button>
                     </div>

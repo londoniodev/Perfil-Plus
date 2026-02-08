@@ -584,7 +584,7 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="flex-1"
+                        className="w-full sm:flex-1"
                         size="lg"
                     >
                         {isSubmitting ? (
@@ -602,7 +602,7 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                     <Button
                         type="button"
                         variant="outline"
-                        className="flex-1 sm:flex-none"
+                        className="w-full sm:flex-none sm:w-auto"
                         onClick={() => router.push(backUrl)}
                         disabled={isSubmitting}
                     >

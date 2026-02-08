@@ -241,7 +241,7 @@ export default async function AdminDashboardPage() {
                                     )}
 
                                     <Button variant="outline" className="h-auto py-4 justify-start" asChild>
-                                        <Link href="/admin/usuarios">
+                                        <Link href="/admin/users">
                                             <Users className="mr-3 h-5 w-5" />
                                             <div className="text-left">
                                                 <div className="font-semibold">Gestionar Usuarios</div>

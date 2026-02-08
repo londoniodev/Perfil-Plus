@@ -11,7 +11,6 @@ import { Badge } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@alvarosky/ui";
 import { Pagination, AdminPageWrapper } from "@alvarosky/ui";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
 import Link from "next/link";
@@ -46,82 +45,6 @@ interface PostsResponse {
 
 type FilterType = "all" | "published" | "draft";
 type SortType = "newest" | "oldest" | "title";
-
-// ============================================================================
-// POST CARD COMPONENT
-// ============================================================================
-
-interface PostCardProps {
-    post: Post;
-    onDelete: (id: string, title: string) => void;
-    onTogglePublish: (post: Post) => void;
-    isLoading: boolean;
-}
-
-function PostCard({ post, onDelete, onTogglePublish, isLoading }: PostCardProps) {
-    return (
-        <Card className="overflow-hidden">
-            {post.coverImage && (
-                <div className="h-32 overflow-hidden">
-                    <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            )}
-            <CardHeader className="p-4 pb-2">
-                <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base line-clamp-2">{post.title}</CardTitle>
-                </div>
-                <p className="text-xs text-muted-foreground">{post.slug}</p>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-                <div className="flex gap-2 mb-2">
-                    <Badge
-                        variant={post.published ? "default" : "secondary"}
-                        className={post.published ? "bg-green-600 hover:bg-green-700" : ""}
-                    >
-                        {post.published ? "Publicado" : "Borrador"}
-                    </Badge>
-                    {post.isPremium && (
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
-                            Premium
-                        </Badge>
-                    )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                </p>
-            </CardContent>
-            <CardFooter className="p-4 pt-0 flex justify-end gap-1">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isLoading}
-                    onClick={() => onTogglePublish(post)}
-                    title={post.published ? "Despublicar" : "Publicar"}
-                >
-                    {post.published ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
-                </Button>
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/admin/blog/editar/${post.id}`}>
-                        <IconEdit className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isLoading}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => onDelete(post.id, post.title)}
-                >
-                    <IconTrash className="h-4 w-4" />
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -393,40 +316,9 @@ export default function AdminBlogPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             ) : (
-                <>
-                    {/* Mobile: Cards View */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
-                        {filteredAndSortedPosts.length === 0 ? (
-                            <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
-                                <h2 className="text-xl font-semibold mb-2">No hay posts</h2>
-                                <p className="text-muted-foreground mb-6">
-                                    {search ? "No se encontraron resultados." : "Crea tu primer post para comenzar."}
-                                </p>
-                                {!search && (
-                                    <Button onClick={() => router.push("/admin/blog/nuevo")}>
-                                        <IconPlus className="mr-2 h-4 w-4" />
-                                        Crear Post
-                                    </Button>
-                                )}
-                            </div>
-                        ) : (
-                            filteredAndSortedPosts.map((post) => (
-                                <PostCard
-                                    key={post.id}
-                                    post={post}
-                                    onDelete={handleDelete}
-                                    onTogglePublish={handleTogglePublish}
-                                    isLoading={actionLoading === post.id}
-                                />
-                            ))
-                        )}
-                    </div>
-
-                    {/* Desktop: Table View */}
-                    <div className="hidden md:block bg-card rounded-md border">
-                        <DataTable columns={columns} data={filteredAndSortedPosts} searchKey="title" />
-                    </div>
-                </>
+                <div className="bg-card rounded-md border overflow-x-auto">
+                    <DataTable columns={columns} data={filteredAndSortedPosts} searchKey="title" />
+                </div>
             )}
 
             {/* Pagination */}

@@ -12,8 +12,7 @@ import {
     TabsList,
     TabsTrigger,
     Badge,
-    UsersTable,
-    UsersGrid
+    UsersTable
 } from "@alvarosky/ui";
 import { Search } from "lucide-react";
 import { User } from "@/components/users/columns";
@@ -90,7 +89,7 @@ function UsersToolbar({
 // MAIN PAGE COMPONENT
 // ============================================================================
 
-export default function AdminUsuariosPage() {
+export default function AdminUsersPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
@@ -289,19 +288,8 @@ export default function AdminUsuariosPage() {
                 />
 
                 {/* Desktop Table */}
-                <div className="hidden md:block">
+                <div className="overflow-x-auto">
                     <UsersTable
-                        users={filteredData as any}
-                        actionLoading={actionLoading}
-                        onRoleChange={handleRoleChange}
-                        onDelete={handleDelete}
-                        onManageSubscription={handleSubscriptionChange}
-                    />
-                </div>
-
-                {/* Mobile Grid */}
-                <div className="block md:hidden">
-                    <UsersGrid
                         users={filteredData as any}
                         actionLoading={actionLoading}
                         onRoleChange={handleRoleChange}

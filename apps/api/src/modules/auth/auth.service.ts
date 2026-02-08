@@ -347,9 +347,9 @@ export class AuthService {
     private async generateTokens(userId: string, email: string, role?: string, name?: string) {
         const accessTokenPayload = { sub: userId, email, role, name };
 
-        // Generar tokens (Default 7 días si no hay variable de entorno)
+        // Generar tokens (Default 1 hora si no hay variable de entorno)
         const accessToken = await this.jwtService.signAsync(accessTokenPayload, {
-            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
+            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
         });
 
         // Crear refresh token
@@ -370,7 +370,7 @@ export class AuthService {
         return {
             accessToken,
             refreshToken: refreshTokenValue,
-            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
+            expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
         };
     }
     async forgotPassword(email: string) {

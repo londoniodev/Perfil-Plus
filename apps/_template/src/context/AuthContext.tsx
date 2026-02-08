@@ -152,6 +152,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser().finally(() => setLoading(false));
     }, [refreshUser]);
 
+    // ============================================================
+    // PROACTIVE TOKEN REFRESH
+    // Refresh token silently every 55 minutes (before 1h expiration)
+    // ============================================================
+    useEffect(() => {
+        if (!user) return; // Only run if authenticated
+
+        const REFRESH_INTERVAL_MS = 55 * 60 * 1000; // 55 minutes
+
+        const refreshTokenSilently = async () => {
+            try {
+                const refreshToken = localStorage.getItem("refreshToken");
+                if (!refreshToken) return;
+
+                const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+                    method: "POST",
+                    credentials: 'include',
+                    headers: {
+                        'x-tenant-id': TENANT_ID,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refreshToken }),
+                });
+
+                if (refreshRes.ok) {
+                    const refreshData = await refreshRes.json();
+                    if (refreshData.accessToken) {
+                        localStorage.setItem("token", refreshData.accessToken);
+                        localStorage.setItem("refreshToken", refreshData.refreshToken);
+                        setCookie("accessToken", refreshData.accessToken, 7);
+                        console.log("[Auth] Token refreshed proactively");
+                    }
+                } else {
+                    console.warn("[Auth] Proactive refresh failed, will retry on next request");
+                }
+            } catch (error) {
+                console.error("[Auth] Proactive refresh error:", error);
+            }
+        };
+
+        // Initial refresh after 55 minutes
+        const interval = setInterval(refreshTokenSilently, REFRESH_INTERVAL_MS);
+
+        // Cleanup on unmount or user logout
+        return () => clearInterval(interval);
+    }, [user]);
+
     const isAdmin = user?.role === "ADMIN";
     const isAuthenticated = !!user;
 

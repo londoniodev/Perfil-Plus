@@ -116,7 +116,7 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[1600px] mx-auto">
             <PageHeader
                 title="Editar Producto"
                 description={`Editando: ${name}`}

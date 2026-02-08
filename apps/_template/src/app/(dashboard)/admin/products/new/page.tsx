@@ -3,15 +3,13 @@ import { ProductForm } from "@/components/admin/products/product-form"
 
 export default function NewProductPage() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[1600px] mx-auto">
             <PageHeader
                 title="Nuevo Producto"
                 description="Crea un producto digital o físico para tu tienda"
             />
 
-            <div className="max-w-4xl">
-                <ProductForm />
-            </div>
+            <ProductForm />
         </div>
     )
 }

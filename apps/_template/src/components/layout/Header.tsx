@@ -50,17 +50,14 @@ export function Header() {
 
                 {/* Logo (Centered on mobile if desired, or left) */}
                 <Link href="/" className="flex items-center gap-2 z-10">
-                    {/* Logo (Centered on mobile if desired, or left) */}
-                    <Link href="/" className="flex items-center gap-2 z-10">
-                        <Image
-                            src={siteConfig.branding.logo}
-                            alt={siteConfig.branding.logoAlt}
-                            width={120}
-                            height={40}
-                            className="h-8 w-auto md:h-10 object-contain"
-                            priority
-                        />
-                    </Link>
+                    <Image
+                        src={siteConfig.branding.logo}
+                        alt={siteConfig.branding.logoAlt}
+                        width={100}
+                        height={40}
+                        className="h-8 md:h-10 w-auto object-contain"
+                        priority
+                    />
                 </Link>
 
                 {/* Desktop Nav */}

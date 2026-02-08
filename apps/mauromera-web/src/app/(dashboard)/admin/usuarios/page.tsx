@@ -289,10 +289,6 @@ export default function AdminUsuariosPage() {
         <AdminPageWrapper
             title="Gestión de Usuarios"
             description={`${meta.total} usuarios registrados en la plataforma`}
-            breadcrumbs={[
-                { label: "Dashboard", href: "/admin" },
-                { label: "Usuarios" }
-            ]}
         >
             <div className="space-y-6">
                 <DataTable

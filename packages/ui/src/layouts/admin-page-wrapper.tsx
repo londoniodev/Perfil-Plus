@@ -49,7 +49,7 @@ export function AdminPageWrapper({
     className,
 }: AdminPageWrapperProps) {
     return (
-        <div className={`flex flex-1 flex-col gap-4 p-4 pt-0 ${className || ""}`}>
+        <div className={`flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0 ${className || ""}`}>
             {/* Page Header with Breadcrumbs */}
             {(breadcrumbs || title) && (
                 <div className="space-y-4">

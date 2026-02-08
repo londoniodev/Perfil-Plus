@@ -251,8 +251,65 @@ export default function AdminBlogPage() {
                 </TabsList>
             </Tabs>
 
-            <div className="bg-card rounded-md border">
+            {/* Desktop View */}
+            <div className="bg-card rounded-md border hidden md:block">
                 <DataTable columns={columns} data={posts} searchKey="title" />
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {posts.map((post) => (
+                    <div key={post.id} className="bg-card rounded-lg border shadow-sm p-4 space-y-3">
+                        <div className="flex justify-between items-start gap-2">
+                            <div className="space-y-1">
+                                <Link href={`/admin/blog/editar/${post.id}`} className="font-semibold text-lg line-clamp-2 leading-tight hover:underline">
+                                    {post.title}
+                                </Link>
+                                <p className="text-xs text-muted-foreground">
+                                    {new Date(post.createdAt).toLocaleDateString()} • {post.slug}
+                                </p>
+                            </div>
+                            <Badge variant={post.published ? "default" : "secondary"} className={post.published ? "bg-green-600 hover:bg-green-700 shrink-0" : "shrink-0"}>
+                                {post.published ? "Publicado" : "Borrador"}
+                            </Badge>
+                        </div>
+
+                        {post.coverImage && (
+                            <img src={post.coverImage} alt="" className="w-full h-32 object-cover rounded-md" />
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={actionLoading === post.id}
+                                onClick={() => handleTogglePublish(post)}
+                            >
+                                {post.published ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="outline" size="sm" asChild className="flex-1">
+                                <Link href={`/admin/blog/editar/${post.id}`}>
+                                    <IconEdit className="h-4 w-4 mr-2" />
+                                    Editar
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={actionLoading === post.id}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => handleDelete(post.id, post.title)}
+                            >
+                                <IconTrash className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+                {!loading && posts.length === 0 && (
+                    <div className="text-center p-8 text-muted-foreground border rounded-lg bg-card">
+                        No hay posts para mostrar en la vista móvil.
+                    </div>
+                )}
             </div>
 
             <div className="mt-4">

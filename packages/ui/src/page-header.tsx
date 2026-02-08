@@ -23,7 +23,7 @@ export function PageHeader({
     return (
         <section
             className={cn(
-                "flex flex-col gap-1 py-4 md:py-8 mt-[30px]",
+                "flex flex-col gap-1 py-2 md:py-8 mt-4 md:mt-8",
                 isCentered ? "items-center text-center" : "items-start text-left w-full",
                 className
             )}
@@ -49,8 +49,10 @@ export function PageHeader({
             {/* Slot para contenido extra (botones, filtros) */}
             {children && (
                 <div className={cn(
-                    "mt-4 flex flex-wrap gap-2",
-                    isCentered ? "items-center justify-center" : "w-full justify-start"
+                    "mt-4 flex flex-wrap gap-2 w-full",
+                    isCentered ? "items-center justify-center" : "justify-start",
+                    // En móvil: botones full width o compartidos (flex-1). En desktop: auto.
+                    "[&>button]:flex-1 sm:[&>button]:flex-none sm:w-auto"
                 )}>
                     {children}
                 </div>

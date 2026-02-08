@@ -580,7 +580,7 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                 </Card>
 
                 {/* 5. Botones */}
-                <div className="flex flex-col sm:flex-row gap-3 sticky bottom-4 bg-background/80 backdrop-blur p-4 -mx-4 rounded-lg border">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
                         type="submit"
                         disabled={isSubmitting}

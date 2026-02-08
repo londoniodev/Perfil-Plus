@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronRight, ChevronsUpDown, LogOut, User } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -266,6 +266,12 @@ export function AdminSidebar({
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/perfil" className="gap-2 cursor-pointer">
+                                            <User className="size-4" />
+                                            <span>Mi Perfil</span>
+                                        </Link>
+                                    </DropdownMenuItem>
                                     {footerMenuItems}
                                     {onLogout && (
                                         <>

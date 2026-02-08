@@ -5,7 +5,7 @@ import { prisma } from "@alvarosky/database";
 import { Button } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@alvarosky/ui";
-import { AdminPageWrapper } from "@alvarosky/ui";
+import { PageHeader } from "@alvarosky/ui";
 import { ArrowLeft, Package, User, CreditCard, MapPin, Clock } from "lucide-react";
 
 function formatDate(date: Date): string {
@@ -102,10 +102,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
     const shippingData = order.shippingData as ShippingData | null;
 
     return (
-        <AdminPageWrapper
-            title={`Pedido #${order.orderNumber}`}
-            description={`Creado el ${formatDate(order.createdAt)}`}
-        >
+        <div className="space-y-6">
+            <PageHeader
+                title={`Pedido #${order.orderNumber}`}
+                description={`Creado el ${formatDate(order.createdAt)}`}
+            />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* LEFT: Order Items */}
                 <div className="lg:col-span-2 space-y-6">
@@ -249,6 +250,6 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     </Button>
                 </div>
             </div>
-        </AdminPageWrapper>
+        </div>
     );
 }

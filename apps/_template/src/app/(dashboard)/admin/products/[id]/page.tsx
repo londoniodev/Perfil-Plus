@@ -13,9 +13,9 @@ import { Textarea } from "@alvarosky/ui";
 import { Switch } from "@alvarosky/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
-import { Badge, AdminPageWrapper } from "@alvarosky/ui";
+import { Badge, PageHeader } from "@alvarosky/ui";
 import { ImageUploader } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+
 
 interface ProductData {
     id: string;
@@ -116,10 +116,11 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
     }
 
     return (
-        <AdminPageWrapper
-            title="Editar Producto"
-            description={`Editando: ${name}`}
-        >
+        <div className="space-y-6">
+            <PageHeader
+                title="Editar Producto"
+                description={`Editando: ${name}`}
+            />
             <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* LEFT: Main Content */}
                 <div className="lg:col-span-2 space-y-6">
@@ -265,6 +266,6 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
                     </div>
                 </div>
             </form>
-        </AdminPageWrapper>
+        </div>
     );
 }

@@ -108,6 +108,7 @@ export * from "./components/upload";
 
 // Admin Components
 export * from "./components/admin";
+export * from "./layouts/admin-layout";
 
 // Content Components (Blog/Editor)
 export * from "./components/content";

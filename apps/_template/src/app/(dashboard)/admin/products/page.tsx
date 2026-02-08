@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { Button, AdminPageWrapper } from "@alvarosky/ui"
+import { Button, PageHeader } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import { ProductsTableClient } from "./products-table-client"
 
@@ -59,20 +59,19 @@ export default async function ProductsPage() {
     })
 
     return (
-        <AdminPageWrapper
-            title="Productos"
-            description="Gestiona el catálogo de tu tienda"
-            actions={
+        <div className="space-y-6">
+            <PageHeader
+                title="Productos"
+                description="Gestiona el catálogo de tu tienda"
+            >
                 <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
                     <Link href="/admin/products/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Producto
                     </Link>
                 </Button>
-            }
-        >
-            {/* Products Table (Client Component) */}
+            </PageHeader>
             <ProductsTableClient data={tableData} />
-        </AdminPageWrapper>
+        </div>
     )
 }

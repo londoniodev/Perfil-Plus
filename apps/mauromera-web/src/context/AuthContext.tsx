@@ -158,50 +158,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [refreshUser]);
 
     // ============================================================
-    // PROACTIVE TOKEN REFRESH
-    // Refresh token silently every 55 minutes (before 1h expiration)
+    // PROACTIVE TOKEN REFRESH (Adaptive)
+    // Refreshes token automatically before it expires
     // ============================================================
     useEffect(() => {
         if (!user) return; // Only run if authenticated
 
-        const REFRESH_INTERVAL_MS = 55 * 60 * 1000; // 55 minutes
+        let refreshTimeout: NodeJS.Timeout;
 
-        const refreshTokenSilently = async () => {
+        const scheduleRefresh = () => {
             try {
-                const refreshToken = localStorage.getItem("refreshToken");
-                if (!refreshToken) return;
+                const token = localStorage.getItem("token");
+                if (!token) return;
 
-                const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-                    method: "POST",
-                    credentials: 'include',
-                    headers: {
-                        'x-tenant-id': TENANT_ID,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ refreshToken }),
-                });
+                // Simple JWT decode to get 'exp'
+                const payloadBase64 = token.split('.')[1];
+                if (!payloadBase64) return;
 
-                if (refreshRes.ok) {
-                    const refreshData = await refreshRes.json();
-                    if (refreshData.accessToken) {
-                        localStorage.setItem("token", refreshData.accessToken);
-                        localStorage.setItem("refreshToken", refreshData.refreshToken);
-                        setCookie("accessToken", refreshData.accessToken, 7);
-                        console.log("[Auth] Token refreshed proactively");
+                const payload = JSON.parse(atob(payloadBase64));
+                const expirationTime = payload.exp * 1000; // to ms
+                const currentTime = Date.now();
+
+                // Refresh 5 minutes before expiration (or 10s if already close)
+                const FIVE_MINUTES_MS = 5 * 60 * 1000;
+                const delay = Math.max(10000, (expirationTime - currentTime) - FIVE_MINUTES_MS);
+
+                console.log(`[Auth] Scheduled proactive refresh in ${(delay / 1000 / 60).toFixed(1)} minutes`);
+
+                refreshTimeout = setTimeout(async () => {
+                    try {
+                        const refreshToken = localStorage.getItem("refreshToken");
+                        if (!refreshToken) return;
+
+                        const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+                            method: "POST",
+                            credentials: 'include',
+                            headers: {
+                                'x-tenant-id': TENANT_ID,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ refreshToken }),
+                        });
+
+                        if (refreshRes.ok) {
+                            const refreshData = await refreshRes.json();
+                            if (refreshData.accessToken) {
+                                localStorage.setItem("token", refreshData.accessToken);
+                                localStorage.setItem("refreshToken", refreshData.refreshToken);
+                                setCookie("accessToken", refreshData.accessToken, 7);
+                                console.log("[Auth] Token refreshed proactively");
+                                // Reschedule next refresh
+                                scheduleRefresh();
+                            }
+                        } else {
+                            console.warn("[Auth] Proactive refresh failed, will retry on next activity");
+                        }
+                    } catch (error) {
+                        console.error("[Auth] Proactive refresh error:", error);
                     }
-                } else {
-                    console.warn("[Auth] Proactive refresh failed, will retry on next request");
-                }
+                }, delay);
             } catch (error) {
-                console.error("[Auth] Proactive refresh error:", error);
+                console.error("[Auth] Error scheduling proactive refresh:", error);
             }
         };
 
-        // Initial refresh after 55 minutes
-        const interval = setInterval(refreshTokenSilently, REFRESH_INTERVAL_MS);
+        scheduleRefresh();
 
         // Cleanup on unmount or user logout
-        return () => clearInterval(interval);
+        return () => {
+            if (refreshTimeout) clearTimeout(refreshTimeout);
+        };
     }, [user]);
 
     const isAdmin = user?.role === "ADMIN";

@@ -90,7 +90,7 @@ function UsersToolbar({
 // MAIN PAGE COMPONENT
 // ============================================================================
 
-export default function AdminUsuariosPage() {
+export default function AdminUsersPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
@@ -259,10 +259,6 @@ export default function AdminUsuariosPage() {
     };
 
     // ========================================================================
-    // COLUMNS WITH ACTIONS
-    // ========================================================================
-
-    // ========================================================================
     // RENDER
     // ========================================================================
 
@@ -290,20 +286,9 @@ export default function AdminUsuariosPage() {
                     setGlobalFilter={setGlobalFilter}
                 />
 
-                {/* Desktop Table */}
-                <div className="hidden md:block">
+                {/* Data View (Table Only for all devices) */}
+                <div className="overflow-x-auto rounded-md border">
                     <UsersTable
-                        users={filteredData as any}
-                        actionLoading={actionLoading}
-                        onRoleChange={handleRoleChange}
-                        onDelete={handleDelete}
-                        onManageSubscription={handleSubscriptionChange}
-                    />
-                </div>
-
-                {/* Mobile Grid */}
-                <div className="block md:hidden">
-                    <UsersGrid
                         users={filteredData as any}
                         actionLoading={actionLoading}
                         onRoleChange={handleRoleChange}

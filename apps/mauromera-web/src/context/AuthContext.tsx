@@ -39,6 +39,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const refreshUser = useCallback(async () => {
         try {
             const token = localStorage.getItem("token");
+
+            // Local expiration check to avoid sending expired tokens to backend
+            if (token) {
+                try {
+                    const payloadBase64 = token.split('.')[1];
+                    const base64 = payloadBase64?.replace(/-/g, '+').replace(/_/g, '/');
+                    if (base64) {
+                        const payload = JSON.parse(atob(base64));
+                        const isExpired = Date.now() >= (payload.exp * 1000) - 5000; // 5s buffer
+                        if (isExpired) {
+                            console.log("[Auth] Token expired locally, skipping /auth/me and triggering refresh");
+
+                            const refreshToken = localStorage.getItem("refreshToken");
+                            if (!refreshToken) throw new Error("No refresh token");
+
+                            const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+                                method: "POST",
+                                credentials: 'include',
+                                headers: {
+                                    'x-tenant-id': TENANT_ID,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ refreshToken }),
+                            });
+
+                            if (refreshRes.ok) {
+                                const refreshData = await refreshRes.json();
+                                if (refreshData.accessToken) {
+                                    localStorage.setItem("token", refreshData.accessToken);
+                                    localStorage.setItem("refreshToken", refreshData.refreshToken);
+                                    setCookie("accessToken", refreshData.accessToken, 7);
+                                    // Retry getting user with NEW token
+                                    return refreshUser();
+                                }
+                            }
+                            throw new Error("Refresh failed");
+                        }
+                    }
+                } catch (e) {
+                    console.error("[Auth] Error checking token expiration locally:", e);
+                    // On error, let it proceed to normal logic but clear if failed
+                }
+            }
+
             const headers: HeadersInit = { 'x-tenant-id': TENANT_ID };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
@@ -175,13 +219,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const payloadBase64 = token.split('.')[1];
                 if (!payloadBase64) return;
 
-                const payload = JSON.parse(atob(payloadBase64));
+                // Base64URL to Base64 (robust decode)
+                const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const payload = JSON.parse(jsonPayload);
                 const expirationTime = payload.exp * 1000; // to ms
                 const currentTime = Date.now();
 
                 // Refresh 5 minutes before expiration (or 10s if already close)
                 const FIVE_MINUTES_MS = 5 * 60 * 1000;
-                const delay = Math.max(10000, (expirationTime - currentTime) - FIVE_MINUTES_MS);
+                const delay = Math.max(5000, (expirationTime - currentTime) - FIVE_MINUTES_MS);
 
                 console.log(`[Auth] Scheduled proactive refresh in ${(delay / 1000 / 60).toFixed(1)} minutes`);
 

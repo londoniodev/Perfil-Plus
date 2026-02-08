@@ -101,6 +101,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // API returned error (401, etc) - clear everything
                 setUser(null);
                 clearAllAuthData();
+
+                // Si es 401, redirigir explícitamente a login con mensaje
+                if (res.status === 401) {
+                    window.location.href = "/login?reason=session_expired";
+                }
                 return;
             }
 

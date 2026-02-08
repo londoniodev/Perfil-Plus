@@ -11,13 +11,12 @@ import { Button } from "../../../button"
 import { Input } from "../../../input"
 import { Textarea } from "../../../textarea"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "../../../form"
-import { Plus, Trash2, Loader2, Save, ArrowLeft, MoreHorizontal, AlertCircle } from "lucide-react"
+import { Plus, Trash2, Loader2, Save, ArrowLeft, AlertCircle } from "lucide-react"
 import { ImageUploader } from "../../upload/image-uploader"
 import { useToast } from "../../../toast"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../select"
 import { Switch } from "../../../switch"
-import { Separator } from "../../../separator"
 
 // Schema de validación
 export const productSchema = z.object({
@@ -187,53 +186,46 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className={cn("grid grid-cols-1 lg:grid-cols-3 gap-8 w-full max-w-[1600px] mx-auto", className)}>
-                {/* LEFT COLUMN: Main Content */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Basic Info Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Información del Producto</CardTitle>
-                            <CardDescription>Detalles básicos de tu producto</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nombre del Producto *</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} placeholder="Ej: E-book Liderazgo o Gafas Urban Style" />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+            <form onSubmit={form.handleSubmit(handleSubmit)} className={cn("space-y-6 w-full max-w-[1000px] mx-auto", className)}>
 
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Descripción *</FormLabel>
-                                        <FormControl>
-                                            <Textarea {...field} rows={6} placeholder="Describe tu producto..." className="resize-none" />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
+                {/* 1. Información del Producto */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Información del Producto</CardTitle>
+                        <CardDescription>Detalles básicos de tu producto</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nombre del Producto *</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="Ej: E-book Liderazgo o Gafas Urban Style" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                    {/* Images Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Imágenes</CardTitle>
-                            <CardDescription>Sube imágenes atractivas de tu producto (min. 1)</CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Descripción *</FormLabel>
+                                    <FormControl>
+                                        <Textarea {...field} rows={4} placeholder="Describe tu producto..." className="resize-none" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Images */}
+                        <div className="space-y-2">
+                            <FormLabel>Imágenes *</FormLabel>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {form.watch("images").map((url, index) => (
                                     <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
@@ -263,16 +255,125 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                                 </div>
                             </div>
                             {form.formState.errors.images && (
-                                <p className="text-sm font-medium text-destructive mt-3 flex items-center gap-2">
+                                <p className="text-sm font-medium text-destructive flex items-center gap-2">
                                     <AlertCircle className="h-4 w-4" />
                                     {form.formState.errors.images.message}
                                 </p>
                             )}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* 2. Organización */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Organización</CardTitle>
+                        <CardDescription>Tipo y precio del producto</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="productType"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tipo de Producto *</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        disabled={!!initialData}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecciona un tipo" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="DIGITAL">Digital (E-book, Curso)</SelectItem>
+                                            <SelectItem value="PHYSICAL">Físico (Producto tangible)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="basePrice"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Precio Base *</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                                            <Input {...field} type="number" step="0.01" min="0" className="pl-7" placeholder="0.00" />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* 3. Campos condicionales según tipo */}
+                {productType === "DIGITAL" && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Entregable Digital</CardTitle>
+                            <CardDescription>Configura el archivo que recibirán los clientes</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="downloadUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>URL de Descarga *</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} placeholder="https://cdn.example.com/file.pdf" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="pages"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Páginas (opcional)</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="number" placeholder="120" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="format"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Formato (opcional)</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="PDF, ePub" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </CardContent>
                     </Card>
+                )}
 
-                    {/* PHYSICAL: Variants Card */}
-                    {productType === "PHYSICAL" && (
+                {productType === "PHYSICAL" && (
+                    <>
+                        {/* Variantes */}
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
@@ -286,7 +387,7 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                                     onClick={() => append({ name: "", sku: "", price: null, stock: 0, isDefault: false })}
                                 >
                                     <Plus className="h-4 w-4 mr-2" />
-                                    Agregar Variante
+                                    Agregar
                                 </Button>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -409,10 +510,8 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                                 )}
                             </CardContent>
                         </Card>
-                    )}
 
-                    {/* PHYSICAL: Specs Card */}
-                    {productType === "PHYSICAL" && (
+                        {/* Especificaciones de Envío */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Especificaciones de Envío</CardTitle>
@@ -448,177 +547,68 @@ export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl 
                                 />
                             </CardContent>
                         </Card>
-                    )}
+                    </>
+                )}
 
-                    {/* DIGITAL: Specs Card */}
-                    {productType === "DIGITAL" && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Entregable Digital</CardTitle>
-                                <CardDescription>Configura el archivo que recibirán los clientes</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="downloadUrl"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>URL de Descarga *</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="https://cdn.example.com/file.pdf" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="pages"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Páginas (opcional)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="120" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="format"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Formato (opcional)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="PDF, ePub" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
-                {/* RIGHT COLUMN: Sidebar */}
-                <div className="space-y-6">
-                    {/* Status Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Estado</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <FormField
-                                control={form.control}
-                                name="published"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/20">
-                                        <div className="space-y-0.5">
-                                            <FormLabel className="text-sm font-medium">Publicado</FormLabel>
-                                            <FormDescription className="text-xs">
-                                                Visible en la tienda
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    {/* Organization Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Organización</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="productType"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tipo de Producto *</FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            disabled={!!initialData}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona un tipo" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="DIGITAL">Digital (E-book, Curso)</SelectItem>
-                                                <SelectItem value="PHYSICAL">Físico (Producto tangible)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="basePrice"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Precio Base *</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                                <Input {...field} type="number" step="0.01" min="0" className="pl-7" placeholder="0.00" />
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-3 sticky top-4">
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full"
-                            size="lg"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Guardando...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {initialData ? "Guardar Cambios" : "Crear Producto"}
-                                </>
+                {/* 4. Estado */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Estado</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="published"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/20">
+                                    <div className="space-y-0.5">
+                                        <FormLabel className="text-sm font-medium">Publicado</FormLabel>
+                                        <FormDescription className="text-xs">
+                                            Visible en la tienda
+                                        </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                </FormItem>
                             )}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => router.push(backUrl)}
-                            disabled={isSubmitting}
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Cancelar y Volver
-                        </Button>
-                    </div>
+                        />
+                    </CardContent>
+                </Card>
+
+                {/* 5. Botones */}
+                <div className="flex flex-col sm:flex-row gap-3 sticky bottom-4 bg-background/80 backdrop-blur p-4 -mx-4 rounded-lg border">
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1"
+                        size="lg"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Guardando...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-4 w-4" />
+                                {initialData ? "Guardar Cambios" : "Crear Producto"}
+                            </>
+                        )}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => router.push(backUrl)}
+                        disabled={isSubmitting}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Cancelar
+                    </Button>
                 </div>
             </form>
         </Form>

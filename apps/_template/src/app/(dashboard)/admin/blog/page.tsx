@@ -12,7 +12,11 @@ import { useToast } from "@alvarosky/ui";
 import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@alvarosky/ui";
 import { Pagination } from "@alvarosky/ui";
 import { PageHeader } from "@alvarosky/ui";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@alvarosky/ui";
+import { Input } from "@alvarosky/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
 import Link from "next/link";
+import { Search, SortAsc, SortDesc, Loader2 } from "lucide-react";
 
 // ============================================================================
 // TIPOS
@@ -42,6 +46,83 @@ interface PostsResponse {
 }
 
 type FilterType = "all" | "published" | "draft";
+type SortType = "newest" | "oldest" | "title";
+
+// ============================================================================
+// POST CARD COMPONENT
+// ============================================================================
+
+interface PostCardProps {
+    post: Post;
+    onDelete: (id: string, title: string) => void;
+    onTogglePublish: (post: Post) => void;
+    isLoading: boolean;
+}
+
+function PostCard({ post, onDelete, onTogglePublish, isLoading }: PostCardProps) {
+    return (
+        <Card className="overflow-hidden">
+            {post.coverImage && (
+                <div className="h-32 overflow-hidden">
+                    <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            )}
+            <CardHeader className="p-4 pb-2">
+                <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base line-clamp-2">{post.title}</CardTitle>
+                </div>
+                <p className="text-xs text-muted-foreground">{post.slug}</p>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+                <div className="flex gap-2 mb-2">
+                    <Badge
+                        variant={post.published ? "default" : "secondary"}
+                        className={post.published ? "bg-green-600 hover:bg-green-700" : ""}
+                    >
+                        {post.published ? "Publicado" : "Borrador"}
+                    </Badge>
+                    {post.isPremium && (
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+                            Premium
+                        </Badge>
+                    )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                </p>
+            </CardContent>
+            <CardFooter className="p-4 pt-0 flex justify-end gap-1">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isLoading}
+                    onClick={() => onTogglePublish(post)}
+                    title={post.published ? "Despublicar" : "Publicar"}
+                >
+                    {post.published ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/admin/blog/editar/${post.id}`}>
+                        <IconEdit className="h-4 w-4" />
+                    </Link>
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isLoading}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => onDelete(post.id, post.title)}
+                >
+                    <IconTrash className="h-4 w-4" />
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -57,6 +138,8 @@ export default function AdminBlogPage() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filter, setFilter] = useState<FilterType>("all");
+    const [sort, setSort] = useState<SortType>("newest");
+    const [search, setSearch] = useState("");
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     // Redirigir si no es admin
@@ -96,6 +179,36 @@ export default function AdminBlogPage() {
             fetchPosts();
         }
     }, [isAdmin, fetchPosts]);
+
+    // Filtrar y ordenar localmente
+    const filteredAndSortedPosts = useMemo(() => {
+        let result = [...posts];
+
+        // Filtrar por búsqueda
+        if (search) {
+            const searchLower = search.toLowerCase();
+            result = result.filter(post =>
+                post.title.toLowerCase().includes(searchLower) ||
+                post.slug.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // Ordenar
+        result.sort((a, b) => {
+            switch (sort) {
+                case "newest":
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case "oldest":
+                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                case "title":
+                    return a.title.localeCompare(b.title);
+                default:
+                    return 0;
+            }
+        });
+
+        return result;
+    }, [posts, search, sort]);
 
     // Manejadores
     const handleDelete = async (id: string, title: string) => {
@@ -137,7 +250,7 @@ export default function AdminBlogPage() {
         }
     };
 
-    // Columnas
+    // Columnas para DataTable (versión desktop)
     const columns = useMemo<ColumnDef<Post>[]>(() => [
         {
             accessorKey: "title",
@@ -237,10 +350,7 @@ export default function AdminBlogPage() {
                 </Button>
             </PageHeader>
 
-            {/* Filter Tabs using Buttons */}
-            {/* ... resto del código ... */}
-
-            {/* Filter Tabs using Buttons */}
+            {/* Filter Tabs */}
             <div className="flex items-center gap-2 border-b pb-2 overflow-x-auto">
                 {(["all", "published", "draft"] as FilterType[]).map((t) => (
                     <Button
@@ -255,10 +365,72 @@ export default function AdminBlogPage() {
                 ))}
             </div>
 
-            <div className="bg-card rounded-md border">
-                <DataTable columns={columns} data={posts} searchKey="title" />
+            {/* Search and Sort Controls */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar por título o slug..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+                <Select value={sort} onValueChange={(v) => setSort(v as SortType)}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="newest">Más recientes</SelectItem>
+                        <SelectItem value="oldest">Más antiguos</SelectItem>
+                        <SelectItem value="title">Título A-Z</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
+            {/* Loading State */}
+            {loading ? (
+                <div className="flex h-48 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <>
+                    {/* Mobile: Cards View */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+                        {filteredAndSortedPosts.length === 0 ? (
+                            <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
+                                <h2 className="text-xl font-semibold mb-2">No hay posts</h2>
+                                <p className="text-muted-foreground mb-6">
+                                    {search ? "No se encontraron resultados." : "Crea tu primer post para comenzar."}
+                                </p>
+                                {!search && (
+                                    <Button onClick={() => router.push("/admin/blog/nuevo")}>
+                                        <IconPlus className="mr-2 h-4 w-4" />
+                                        Crear Post
+                                    </Button>
+                                )}
+                            </div>
+                        ) : (
+                            filteredAndSortedPosts.map((post) => (
+                                <PostCard
+                                    key={post.id}
+                                    post={post}
+                                    onDelete={handleDelete}
+                                    onTogglePublish={handleTogglePublish}
+                                    isLoading={actionLoading === post.id}
+                                />
+                            ))
+                        )}
+                    </div>
+
+                    {/* Desktop: Table View */}
+                    <div className="hidden md:block bg-card rounded-md border">
+                        <DataTable columns={columns} data={filteredAndSortedPosts} searchKey="title" />
+                    </div>
+                </>
+            )}
+
+            {/* Pagination */}
             <div className="mt-4">
                 <Pagination
                     currentPage={page}
@@ -269,4 +441,3 @@ export default function AdminBlogPage() {
         </div>
     );
 }
-

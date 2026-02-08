@@ -26,7 +26,7 @@ export default async function BrandingSettingsPage() {
                 title="Diseño y Marca"
                 description="Personaliza los colores y la apariencia de tu plataforma."
             />
-            <div className="hidden h-full flex-1 flex-col space-y-8 md:flex">
+            <div className="flex h-full flex-1 flex-col space-y-8">
                 <BrandingForm defaultValues={design as any} />
             </div>
         </div>

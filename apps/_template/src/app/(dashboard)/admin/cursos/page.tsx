@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -10,18 +10,19 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     Button,
     Separator,
-    SidebarTrigger,
-    Breadcrumb,
-    BreadcrumbList,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbSeparator,
-    BreadcrumbPage,
     Tabs,
     TabsList,
     TabsTrigger,
+    Pagination,
+    PageHeader,
+    Input,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@alvarosky/ui";
-import { Plus, BookOpen, Loader2 } from "lucide-react";
+import { Plus, BookOpen, Loader2, Search } from "lucide-react";
 
 interface Theme {
     id: string;
@@ -36,6 +37,9 @@ interface Theme {
 }
 
 type FilterType = "all" | "published" | "draft";
+type SortType = "newest" | "oldest" | "title" | "order";
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminCursosPage() {
     const { isAdmin, loading: authLoading } = useAuth();
@@ -44,6 +48,9 @@ export default function AdminCursosPage() {
     const [themes, setThemes] = useState<Theme[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FilterType>("all");
+    const [sort, setSort] = useState<SortType>("order");
+    const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         if (!authLoading && !isAdmin) {
@@ -93,11 +100,52 @@ export default function AdminCursosPage() {
         }
     };
 
-    const filteredThemes = themes.filter((theme) => {
-        if (filter === "published") return theme.published;
-        if (filter === "draft") return !theme.published;
-        return true;
-    });
+    // Filtrar, buscar y ordenar
+    const filteredAndSortedThemes = useMemo(() => {
+        let result = [...themes];
+
+        // Filtrar por estado
+        if (filter === "published") result = result.filter(t => t.published);
+        if (filter === "draft") result = result.filter(t => !t.published);
+
+        // Filtrar por búsqueda
+        if (search) {
+            const searchLower = search.toLowerCase();
+            result = result.filter(theme =>
+                theme.title.toLowerCase().includes(searchLower) ||
+                theme.description?.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // Ordenar
+        result.sort((a, b) => {
+            switch (sort) {
+                case "newest":
+                    return b.order - a.order; // Assuming higher order = newer
+                case "oldest":
+                    return a.order - b.order;
+                case "title":
+                    return a.title.localeCompare(b.title);
+                case "order":
+                default:
+                    return a.order - b.order;
+            }
+        });
+
+        return result;
+    }, [themes, filter, search, sort]);
+
+    // Paginación
+    const totalPages = Math.ceil(filteredAndSortedThemes.length / ITEMS_PER_PAGE);
+    const paginatedThemes = useMemo(() => {
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        return filteredAndSortedThemes.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredAndSortedThemes, page]);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(1);
+    }, [filter, search, sort]);
 
     const stats = {
         total: themes.length,
@@ -116,130 +164,133 @@ export default function AdminCursosPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Header with Breadcrumbs */}
-            <header className="flex h-14 lg:h-[60px] shrink-0 items-center gap-2 border-b bg-background px-4 lg:px-6 sticky top-0 z-10">
-                <SidebarTrigger className="-ml-1" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem className="hidden md:block">
-                            <BreadcrumbLink asChild>
-                                <Link href="/perfil">Dashboard</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator className="hidden md:block" />
-                        <BreadcrumbItem className="hidden md:block">
-                            <BreadcrumbLink asChild>
-                                <Link href="/admin">Admin</Link>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator className="hidden md:block" />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Cursos</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-            </header>
+        <div className="space-y-6">
+            <PageHeader
+                title="Gestión de Cursos"
+                description="Administra el catálogo de cursos y lecciones"
+            >
+                <Button asChild>
+                    <Link href="/admin/cursos/temas/nuevo">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Nuevo Tema
+                    </Link>
+                </Button>
+            </PageHeader>
 
-            {/* Content */}
-            <div className="flex-1 px-4 py-6 lg:px-8 lg:py-8">
-                <div className="max-w-7xl space-y-8">
-                    {/* Page Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="space-y-1">
-                            <h1 className="text-2xl font-bold tracking-tight">Gestión de Cursos</h1>
-                            <p className="text-muted-foreground">
-                                Administra el catálogo de cursos y lecciones
-                            </p>
-                        </div>
-                        <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
-                            <Link href="/admin/cursos/temas/nuevo">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Nuevo Tema
-                            </Link>
-                        </Button>
-                    </div>
-
-                    <Separator />
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="rounded-lg border bg-card p-4">
-                            <p className="text-sm text-muted-foreground">Total Temas</p>
-                            <p className="text-2xl font-bold">{stats.total}</p>
-                        </div>
-                        <div className="rounded-lg border bg-card p-4">
-                            <p className="text-sm text-muted-foreground">Publicados</p>
-                            <p className="text-2xl font-bold text-green-600">{stats.published}</p>
-                        </div>
-                        <div className="rounded-lg border bg-card p-4">
-                            <p className="text-sm text-muted-foreground">Borradores</p>
-                            <p className="text-2xl font-bold text-yellow-600">{stats.draft}</p>
-                        </div>
-                    </div>
-
-                    {/* Filter Tabs */}
-                    <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)} className="w-full">
-                        <TabsList>
-                            <TabsTrigger value="all">
-                                Todos ({stats.total})
-                            </TabsTrigger>
-                            <TabsTrigger value="published">
-                                Publicados ({stats.published})
-                            </TabsTrigger>
-                            <TabsTrigger value="draft">
-                                Borradores ({stats.draft})
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-
-                    {/* Content Grid */}
-                    {loading ? (
-                        <div className="flex h-48 items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredThemes.length === 0 ? (
-                                <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
-                                    <div className="flex justify-center mb-4 text-muted-foreground">
-                                        <BookOpen className="h-12 w-12" />
-                                    </div>
-                                    <h2 className="text-xl font-semibold mb-2">
-                                        {filter === "all"
-                                            ? "No hay temas creados"
-                                            : filter === "published"
-                                                ? "No hay temas publicados"
-                                                : "No hay borradores"}
-                                    </h2>
-                                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                                        {filter === "all"
-                                            ? "Crea tu primer tema para comenzar a organizar tus cursos."
-                                            : "Cambia el filtro para ver otros temas."}
-                                    </p>
-                                    {filter === "all" && (
-                                        <Button asChild>
-                                            <Link href="/admin/cursos/temas/nuevo">
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Crear Primer Tema
-                                            </Link>
-                                        </Button>
-                                    )}
-                                </div>
-                            ) : (
-                                filteredThemes.map((theme) => (
-                                    <ThemeCard
-                                        key={theme.id}
-                                        theme={theme}
-                                        onDelete={handleDelete}
-                                    />
-                                ))
-                            )}
-                        </div>
-                    )}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-lg border bg-card p-4">
+                    <p className="text-sm text-muted-foreground">Total Temas</p>
+                    <p className="text-2xl font-bold">{stats.total}</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                    <p className="text-sm text-muted-foreground">Publicados</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.published}</p>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                    <p className="text-sm text-muted-foreground">Borradores</p>
+                    <p className="text-2xl font-bold text-yellow-600">{stats.draft}</p>
                 </div>
             </div>
+
+            {/* Filter Tabs */}
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)} className="w-full">
+                <TabsList>
+                    <TabsTrigger value="all">
+                        Todos ({stats.total})
+                    </TabsTrigger>
+                    <TabsTrigger value="published">
+                        Publicados ({stats.published})
+                    </TabsTrigger>
+                    <TabsTrigger value="draft">
+                        Borradores ({stats.draft})
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+
+            {/* Search and Sort Controls */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar por título o descripción..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
+                <Select value={sort} onValueChange={(v) => setSort(v as SortType)}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="order">Por orden</SelectItem>
+                        <SelectItem value="newest">Más recientes</SelectItem>
+                        <SelectItem value="oldest">Más antiguos</SelectItem>
+                        <SelectItem value="title">Título A-Z</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Content Grid */}
+            {loading ? (
+                <div className="flex h-48 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {paginatedThemes.length === 0 ? (
+                        <div className="col-span-full py-16 px-4 text-center bg-muted/30 border border-dashed rounded-xl">
+                            <div className="flex justify-center mb-4 text-muted-foreground">
+                                <BookOpen className="h-12 w-12" />
+                            </div>
+                            <h2 className="text-xl font-semibold mb-2">
+                                {search
+                                    ? "No se encontraron resultados"
+                                    : filter === "all"
+                                        ? "No hay temas creados"
+                                        : filter === "published"
+                                            ? "No hay temas publicados"
+                                            : "No hay borradores"}
+                            </h2>
+                            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                                {search
+                                    ? "Intenta con otros términos de búsqueda."
+                                    : filter === "all"
+                                        ? "Crea tu primer tema para comenzar a organizar tus cursos."
+                                        : "Cambia el filtro para ver otros temas."}
+                            </p>
+                            {filter === "all" && !search && (
+                                <Button asChild>
+                                    <Link href="/admin/cursos/temas/nuevo">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Crear Primer Tema
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
+                        paginatedThemes.map((theme) => (
+                            <ThemeCard
+                                key={theme.id}
+                                theme={theme}
+                                onDelete={handleDelete}
+                            />
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                    />
+                </div>
+            )}
         </div>
     );
 }

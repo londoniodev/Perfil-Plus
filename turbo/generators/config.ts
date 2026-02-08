@@ -30,11 +30,18 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             {
                 type: "input",
                 name: "name",
-                message: "Nombre del Cliente (Slug) (ej: danielabotina-web)",
+                message: "Nombre del Cliente (Slug) (se agregará -web si no está presente) (ej: danielabotina)",
+                filter: (input) => {
+                    const slug = input.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+                    return slug.endsWith("-web") ? slug : `${slug}-web`;
+                },
                 validate: (input) => {
-                    if (input.includes(" ")) return "El slug no debe tener espacios";
-                    if (!/^[a-z0-9-]+$/.test(input)) return "Solo minúsculas, números y guiones";
-                    if (fs.existsSync(path.join(process.cwd(), "apps", input))) return "Este tenant ya existe";
+                    const slug = input.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+                    const finalName = slug.endsWith("-web") ? slug : `${slug}-web`;
+
+                    if (finalName.includes(" ")) return "El slug no debe tener espacios";
+                    if (!/^[a-z0-9-]+$/.test(finalName)) return "Solo minúsculas, números y guiones";
+                    if (fs.existsSync(path.join(process.cwd(), "apps", finalName))) return `El tenant ${finalName} ya existe`;
                     return true;
                 }
             },
@@ -83,6 +90,18 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 path: "apps/{{name}}/package.json",
                 pattern: /"dev": "next dev.*"/,
                 template: '"dev": "next dev --webpack -p {{port}}"',
+            },
+            {
+                type: "modify",
+                path: "apps/{{name}}/Dockerfile",
+                pattern: /mauromera-web/g,
+                template: "{{name}}",
+            },
+            {
+                type: "modify",
+                path: "apps/{{name}}/Dockerfile",
+                pattern: /ARG NEXT_PUBLIC_TENANT_ID=mauro/,
+                template: "ARG NEXT_PUBLIC_TENANT_ID={{name}}",
             },
             {
                 type: "add",

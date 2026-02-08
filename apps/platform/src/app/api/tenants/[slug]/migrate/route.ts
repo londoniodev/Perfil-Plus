@@ -41,7 +41,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const port = url.port || "5432";
 
         // Build tenant-specific DATABASE_URL
-        const tenantDbUrl = `postgresql://${user}:${password}@${host}:${port}/${tenant.dbName}?schema=public`;
+        const encodedUser = encodeURIComponent(user);
+        const encodedPassword = encodeURIComponent(password);
+        const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${tenant.dbName}?schema=public`;
 
         console.log(`[Migrate] Starting schema push for tenant: ${slug} (${tenant.dbName})`);
 

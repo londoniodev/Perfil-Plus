@@ -189,7 +189,9 @@ async function provisionDatabase(
         console.log(`Database ${dbName} created successfully`);
 
         // Run migrations on the new database
-        const tenantDbUrl = `postgresql://${user}:${password}@${host}:${port}/${dbName}?schema=public`;
+        const encodedUser = encodeURIComponent(user);
+        const encodedPassword = encodeURIComponent(password);
+        const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${dbName}?schema=public`;
 
         // Resolve absolute path to schema
         const path = require("path");

@@ -7,13 +7,13 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     useToast,
     AdminPageWrapper,
-    DataTable,
-    DataTableViewOptions,
     Input,
     Tabs,
     TabsList,
     TabsTrigger,
     Badge,
+    UsersTable,
+    UsersGrid
 } from "@alvarosky/ui";
 import { Search } from "lucide-react";
 import { createUserColumns, User, UserTableActions } from "@/components/users/columns";
@@ -262,15 +262,6 @@ export default function AdminUsuariosPage() {
     // COLUMNS WITH ACTIONS
     // ========================================================================
 
-    const actions: UserTableActions = {
-        onRoleChange: handleRoleChange,
-        onDelete: handleDelete,
-        onSubscriptionChange: handleSubscriptionChange,
-        actionLoading,
-    };
-
-    const columns = useMemo(() => createUserColumns(actions), [actionLoading]);
-
     // ========================================================================
     // RENDER
     // ========================================================================
@@ -291,21 +282,35 @@ export default function AdminUsuariosPage() {
             description={`${meta.total} usuarios registrados en la plataforma`}
         >
             <div className="space-y-6">
-                <DataTable
-                    columns={columns}
-                    data={filteredData}
-                    isLoading={loading}
-                    enableRowSelection={true}
-                    toolbar={
-                        <UsersToolbar
-                            data={users}
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            globalFilter={globalFilter}
-                            setGlobalFilter={setGlobalFilter}
-                        />
-                    }
+                <UsersToolbar
+                    data={users}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    globalFilter={globalFilter}
+                    setGlobalFilter={setGlobalFilter}
                 />
+
+                {/* Desktop Table */}
+                <div className="hidden md:block">
+                    <UsersTable
+                        users={filteredData as any}
+                        actionLoading={actionLoading}
+                        onRoleChange={handleRoleChange}
+                        onDelete={handleDelete}
+                        onManageSubscription={handleSubscriptionChange}
+                    />
+                </div>
+
+                {/* Mobile Grid */}
+                <div className="block md:hidden">
+                    <UsersGrid
+                        users={filteredData as any}
+                        actionLoading={actionLoading}
+                        onRoleChange={handleRoleChange}
+                        onDelete={handleDelete}
+                        onManageSubscription={handleSubscriptionChange}
+                    />
+                </div>
             </div>
         </AdminPageWrapper>
     );

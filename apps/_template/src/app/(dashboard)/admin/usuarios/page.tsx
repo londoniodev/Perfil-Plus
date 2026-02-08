@@ -6,17 +6,17 @@ import { useRouter } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     useToast,
-    PageHeader,
-    DataTable,
-    DataTableViewOptions,
+    AdminPageWrapper,
     Input,
     Tabs,
     TabsList,
     TabsTrigger,
     Badge,
+    UsersTable,
+    UsersGrid
 } from "@alvarosky/ui";
 import { Search } from "lucide-react";
-import { createUserColumns, User, UserTableActions } from "@/components/users/columns";
+import { User } from "@/components/users/columns";
 
 // ============================================================================
 // TYPES
@@ -258,18 +258,7 @@ export default function AdminUsuariosPage() {
         }
     };
 
-    // ========================================================================
-    // COLUMNS WITH ACTIONS
-    // ========================================================================
 
-    const actions: UserTableActions = {
-        onRoleChange: handleRoleChange,
-        onDelete: handleDelete,
-        onSubscriptionChange: handleSubscriptionChange,
-        actionLoading,
-    };
-
-    const columns = useMemo(() => createUserColumns(actions), [actionLoading]);
 
     // ========================================================================
     // RENDER
@@ -286,27 +275,41 @@ export default function AdminUsuariosPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Gestión de Usuarios"
-                description={`${meta.total} usuarios registrados en la plataforma`}
-            />
+        <AdminPageWrapper
+            title="Gestión de Usuarios"
+            description={`${meta.total} usuarios registrados en la plataforma`}
+        >
+            <div className="space-y-6">
+                <UsersToolbar
+                    data={users}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    globalFilter={globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                />
 
-            <DataTable
-                columns={columns}
-                data={filteredData}
-                isLoading={loading}
-                enableRowSelection={true}
-                toolbar={
-                    <UsersToolbar
-                        data={users}
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        globalFilter={globalFilter}
-                        setGlobalFilter={setGlobalFilter}
+                {/* Desktop Table */}
+                <div className="hidden md:block">
+                    <UsersTable
+                        users={filteredData as any}
+                        actionLoading={actionLoading}
+                        onRoleChange={handleRoleChange}
+                        onDelete={handleDelete}
+                        onManageSubscription={handleSubscriptionChange}
                     />
-                }
-            />
-        </div>
+                </div>
+
+                {/* Mobile Grid */}
+                <div className="block md:hidden">
+                    <UsersGrid
+                        users={filteredData as any}
+                        actionLoading={actionLoading}
+                        onRoleChange={handleRoleChange}
+                        onDelete={handleDelete}
+                        onManageSubscription={handleSubscriptionChange}
+                    />
+                </div>
+            </div>
+        </AdminPageWrapper>
     );
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader } from "@alvarosky/ui"
+import { PriceDisplay, AdminPageWrapper } from "@alvarosky/ui"
 import { OrdersTableClient } from "./orders-table-client"
 
 export default async function OrdersPage() {
@@ -70,41 +70,50 @@ export default async function OrdersPage() {
         }))
     }))
 
-    return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Órdenes"
-                description="Gestiona las ventas y pedidos de tu tienda"
-            />
+    // 4. Calculate stats
+    const totalSales = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
+    const totalOrders = orders.length;
+    const averageTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
+    const pendingOrders = orders.filter(o => o.status === "PENDING").length;
 
+    const stats = {
+        totalSales,
+        totalOrders,
+        averageTicket,
+        pendingOrders
+    };
+
+    return (
+        <AdminPageWrapper
+            title="Órdenes"
+            description="Gestiona las ventas y pedidos de tu tienda"
+        >
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Total Órdenes</p>
-                    <p className="text-2xl font-bold">{orders.length}</p>
+                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                    <div className="text-sm font-medium text-muted-foreground">Total Ventas</div>
+                    <div className="text-2xl font-bold mt-2">
+                        <PriceDisplay price={stats.totalSales} />
+                    </div>
                 </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Pendientes</p>
-                    <p className="text-2xl font-bold text-yellow-600">
-                        {orders.filter(o => o.status === "PENDING").length}
-                    </p>
+                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                    <div className="text-sm font-medium text-muted-foreground">Órdenes</div>
+                    <div className="text-2xl font-bold mt-2">{stats.totalOrders}</div>
                 </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Completadas</p>
-                    <p className="text-2xl font-bold text-green-600">
-                        {orders.filter(o => o.status === "DELIVERED").length}
-                    </p>
+                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                    <div className="text-sm font-medium text-muted-foreground">Ticket Medio</div>
+                    <div className="text-2xl font-bold mt-2">
+                        <PriceDisplay price={stats.averageTicket} />
+                    </div>
                 </div>
-                <div className="rounded-lg border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Ingresos</p>
-                    <p className="text-2xl font-bold">
-                        ${orders.reduce((sum, o) => sum + Number(o.totalAmount), 0).toLocaleString()}
-                    </p>
+                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                    <div className="text-sm font-medium text-muted-foreground">Pendientes</div>
+                    <div className="text-2xl font-bold mt-2">{stats.pendingOrders}</div>
                 </div>
             </div>
 
             {/* Orders Table */}
             <OrdersTableClient data={tableData} />
-        </div>
+        </AdminPageWrapper>
     )
 }

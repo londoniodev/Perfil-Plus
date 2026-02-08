@@ -140,7 +140,22 @@ export function OrdersTable({ orders, onStatusChange }: OrdersTableProps) {
 
     return (
         <>
-            <DataTable data={tableData} columns={columns} />
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <DataTable data={tableData} columns={columns} />
+            </div>
+
+            {/* Mobile View */}
+            <div className="block md:hidden space-y-4">
+                {tableData.map((row) => (
+                    <OrderCard
+                        key={row.id}
+                        row={row}
+                        getStatusConfig={getStatusConfig}
+                        onViewDetails={() => handleViewDetails(row.fullOrder)}
+                    />
+                ))}
+            </div>
 
             <OrderDetailsSheet
                 order={selectedOrder}
@@ -150,4 +165,52 @@ export function OrdersTable({ orders, onStatusChange }: OrdersTableProps) {
             />
         </>
     )
+}
+
+// ============================================
+// Mobile Card Component
+// ============================================
+
+function OrderCard({ row, getStatusConfig, onViewDetails }: any) {
+    const statusConfig = getStatusConfig(row.status);
+
+    return (
+        <div className="bg-card rounded-lg border shadow-sm p-4 space-y-3">
+            <div className="flex items-center justify-between">
+                <span className="font-mono font-medium text-sm">
+                    {row.orderNumber}
+                </span>
+                <Badge variant={statusConfig.variant}>
+                    {statusConfig.label}
+                </Badge>
+            </div>
+
+            <div className="space-y-1">
+                <div className="text-sm font-medium">{row.customerName}</div>
+                <div className="text-xs text-muted-foreground">{row.customerEmail}</div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t">
+                <div className="space-y-0.5">
+                    <div className="text-xs text-muted-foreground">Total</div>
+                    <PriceDisplay price={row.totalAmount} size="sm" className="font-bold" />
+                </div>
+                <div className="space-y-0.5 text-right">
+                    <div className="text-xs text-muted-foreground">Fecha</div>
+                    <div className="text-sm">
+                        {new Date(row.createdAt).toLocaleDateString("es-ES")}
+                    </div>
+                </div>
+            </div>
+
+            <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2"
+                onClick={onViewDetails}
+            >
+                Ver Detalles
+            </Button>
+        </div>
+    );
 }

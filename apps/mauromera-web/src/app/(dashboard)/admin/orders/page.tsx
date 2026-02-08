@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader } from "@alvarosky/ui"
+import { AdminPageWrapper } from "@alvarosky/ui"
 import { OrdersTableClient } from "./orders-table-client"
 
 export default async function OrdersPage() {
@@ -71,14 +71,11 @@ export default async function OrdersPage() {
     }))
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Órdenes"
-                description="Gestiona las ventas y pedidos de tu tienda"
-            />
-
+        <AdminPageWrapper
+            title="Órdenes"
+            description="Gestiona las ventas y pedidos de tu tienda"
+        >
             <OrdersTableClient data={tableData} />
-        </div>
+        </AdminPageWrapper>
     )
 }
-

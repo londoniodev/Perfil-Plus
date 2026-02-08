@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import ThemeCard from "@/components/admin/lms/ThemeCard";
-import { useToast } from "@alvarosky/ui";
+import { useToast, AdminPageWrapper } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconPlus, IconBook } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
 
 interface Theme {
     id: string;
@@ -100,24 +99,19 @@ export default function AdminCursosPage() {
 
     // ... (code)
 
-    if (!isAdmin) {
-        return null;
-    }
-
     return (
-        <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-            <PageHeader
-                title="Gestión de Cursos"
-                description="Administra el catálogo de cursos y lecciones"
-            >
+        <AdminPageWrapper
+            title="Gestión de Cursos"
+            description="Administra el catálogo de cursos y lecciones"
+            actions={
                 <Button asChild>
                     <Link href="/admin/cursos/temas/nuevo">
                         <IconPlus className="mr-2 h-4 w-4" />
                         Nuevo Tema
                     </Link>
                 </Button>
-            </PageHeader>
-
+            }
+        >
             <div className="flex gap-2 overflow-x-auto pb-2">
                 <Button
                     variant={filter === "all" ? "default" : "outline"}
@@ -180,7 +174,7 @@ export default function AdminCursosPage() {
                     )}
                 </div>
             )}
-        </div>
+        </AdminPageWrapper>
     );
 }
 

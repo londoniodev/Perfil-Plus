@@ -14,7 +14,7 @@ import {
     TabsList,
     TabsTrigger,
     Pagination,
-    PageHeader,
+    AdminPageWrapper,
     Input,
     Select,
     SelectContent,
@@ -164,18 +164,18 @@ export default function AdminCursosPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Gestión de Cursos"
-                description="Administra el catálogo de cursos y lecciones"
-            >
+        <AdminPageWrapper
+            title="Gestión de Cursos"
+            description="Administra el catálogo de cursos y lecciones"
+            actions={
                 <Button asChild>
                     <Link href="/admin/cursos/temas/nuevo">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Tema
                     </Link>
                 </Button>
-            </PageHeader>
+            }
+        >
 
             {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
@@ -291,6 +291,6 @@ export default function AdminCursosPage() {
                     />
                 </div>
             )}
-        </div>
+        </AdminPageWrapper>
     );
 }

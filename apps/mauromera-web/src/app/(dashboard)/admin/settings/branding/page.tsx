@@ -1,7 +1,7 @@
 import { BrandingForm } from "@/components/settings/BrandingForm";
 import { PrismaClient } from "@alvarosky/database-management";
 import { TENANT_ID } from "@/lib/config";
-import { PageHeader } from "@alvarosky/ui";
+import { AdminPageWrapper } from "@alvarosky/ui";
 
 const prisma = new PrismaClient();
 
@@ -21,14 +21,13 @@ export default async function BrandingSettingsPage() {
     const design = await getTenantDesign();
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Diseño y Marca"
-                description="Personaliza los colores y la apariencia de tu plataforma."
-            />
+        <AdminPageWrapper
+            title="Diseño y Marca"
+            description="Personaliza los colores y la apariencia de tu plataforma."
+        >
             <div className="flex h-full flex-1 flex-col space-y-8">
                 <BrandingForm defaultValues={design as any} />
             </div>
-        </div>
+        </AdminPageWrapper>
     );
 }

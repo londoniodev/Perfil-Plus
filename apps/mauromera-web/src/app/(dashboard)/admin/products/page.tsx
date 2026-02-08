@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
-import { PageHeader, Button, ProductsTable } from "@alvarosky/ui"
+import { AdminPageWrapper, Button, ProductsTable } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 
@@ -57,20 +57,19 @@ export default async function ProductsPage() {
     })
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Productos"
-                description="Gestiona el catálogo de tu tienda"
-            >
+        <AdminPageWrapper
+            title="Productos"
+            description="Gestiona el catálogo de tu tienda"
+            actions={
                 <Button asChild>
                     <Link href="/admin/products/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Producto
                     </Link>
                 </Button>
-            </PageHeader>
-
+            }
+        >
             <ProductsTable data={tableData} />
-        </div>
+        </AdminPageWrapper>
     )
 }

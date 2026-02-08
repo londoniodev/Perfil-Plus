@@ -67,6 +67,7 @@ export * from "./client-toast";
 export * from "./premium-lock";
 
 // Blog Components
+export * from "./components/blog/blog-card";
 export * from "./page-header";
 export * from "./adaptive-image";
 export * from "./skeleton";

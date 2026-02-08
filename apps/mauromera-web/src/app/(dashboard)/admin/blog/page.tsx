@@ -4,14 +4,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { DataTable } from "@alvarosky/ui";
 import { Tabs, TabsList, TabsTrigger } from "@alvarosky/ui";
-import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@alvarosky/ui";
-import { Badge } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
-import { IconPlus, IconEdit, IconTrash, IconEye, IconEyeOff } from "@alvarosky/ui";
-import { Pagination, AdminPageWrapper } from "@alvarosky/ui";
+import { IconPlus } from "@alvarosky/ui";
+import { Pagination, AdminPageWrapper, BlogCard } from "@alvarosky/ui";
 import Link from "next/link";
 
 // ============================================================================
@@ -137,90 +134,7 @@ export default function AdminBlogPage() {
         }
     };
 
-    // Columnas
-    const columns = useMemo<ColumnDef<Post>[]>(() => [
-        {
-            accessorKey: "title",
-            header: "Título",
-            cell: ({ row }) => {
-                const post = row.original;
-                return (
-                    <div className="flex items-center gap-3">
-                        {post.coverImage && (
-                            <img src={post.coverImage} alt="" className="w-10 h-10 object-cover rounded" />
-                        )}
-                        <div className="flex flex-col">
-                            <Link href={`/admin/blog/editar/${post.id}`} className="font-medium hover:underline">
-                                {post.title}
-                            </Link>
-                            <span className="text-xs text-muted-foreground">{post.slug}</span>
-                        </div>
-                    </div>
-                )
-            }
-        },
-        {
-            accessorKey: "status",
-            header: "Estado",
-            cell: ({ row }) => (
-                <div className="flex gap-2">
-                    <Badge variant={row.original.published ? "default" : "secondary"} className={row.original.published ? "bg-green-600 hover:bg-green-700" : ""}>
-                        {row.original.published ? "Publicado" : "Borrador"}
-                    </Badge>
-                    {row.original.isPremium && (
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">Premium</Badge>
-                    )}
-                </div>
-            )
-        },
-        {
-            accessorKey: "date",
-            header: "Fecha",
-            cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">
-                    {new Date(row.original.createdAt).toLocaleDateString()}
-                </span>
-            )
-        },
-        {
-            id: "actions",
-            cell: ({ row }) => {
-                const post = row.original;
-                const isLoading = actionLoading === post.id;
-                return (
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isLoading}
-                            onClick={() => handleTogglePublish(post)}
-                            title={post.published ? "Despublicar" : "Publicar"}
-                        >
-                            {post.published ? <IconEyeOff className="h-4 w-4" /> : <IconEye className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            asChild
-                        >
-                            <Link href={`/admin/blog/editar/${post.id}`}>
-                                <IconEdit className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isLoading}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDelete(post.id, post.title)}
-                        >
-                            <IconTrash className="h-4 w-4" />
-                        </Button>
-                    </div>
-                );
-            }
-        }
-    ], [actionLoading]);
+
 
     if (authLoading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     if (!isAdmin) return null;
@@ -250,9 +164,20 @@ export default function AdminBlogPage() {
                 </TabsList>
             </Tabs>
 
-            {/* Data View (Table Only for all devices) */}
-            <div className="bg-card rounded-md border overflow-x-auto">
-                <DataTable columns={columns} data={posts} searchKey="title" />
+            {/* Cards View (Grid) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {posts.map((post) => (
+                    <BlogCard
+                        key={post.id}
+                        post={{
+                            ...post,
+                            image: post.coverImage || undefined,
+                            publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
+                            createdAt: new Date(post.createdAt),
+                        }}
+                        onDelete={() => handleDelete(post.id, post.title)}
+                    />
+                ))}
             </div>
 
             <div className="mt-4">

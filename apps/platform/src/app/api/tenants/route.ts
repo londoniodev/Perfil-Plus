@@ -193,6 +193,9 @@ async function provisionDatabase(
         const encodedPassword = encodeURIComponent(password);
         const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${dbName}?schema=public`;
 
+        console.log(`[Provision] Debug - Host: ${host}, Port: ${port}, User: ${user}, DB: ${dbName}`);
+        console.log(`[Provision] Debug - Constructed URL: postgresql://${encodedUser}:***@${host}:${port}/${dbName}?schema=public`);
+
         // Resolve absolute path to schema
         const path = require("path");
         const fs = require("fs");

@@ -45,6 +45,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const encodedPassword = encodeURIComponent(password);
         const tenantDbUrl = `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${tenant.dbName}?schema=public`;
 
+        console.log(`[Migrate] Debug - Constructed URL: postgresql://${encodedUser}:***@${host}:${port}/${tenant.dbName}?schema=public`);
+
         console.log(`[Migrate] Starting schema push for tenant: ${slug} (${tenant.dbName})`);
 
         // Determine the correct paths based on environment

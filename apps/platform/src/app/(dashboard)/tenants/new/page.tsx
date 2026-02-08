@@ -14,14 +14,14 @@ import {
     SelectTrigger,
     SelectValue,
     Checkbox,
-    CardContent,
     AdminPageWrapper,
     Tabs,
     TabsContent,
     TabsList,
     TabsTrigger,
+    Switch,
 } from "@alvarosky/ui";
-import { Loader2, Save, ArrowLeft, Info, CreditCard, Box, Mail } from "lucide-react";
+import { Loader2, Save, Info, CreditCard, Box, Mail } from "lucide-react";
 
 export default function NewTenantPage() {
     const router = useRouter();
@@ -41,7 +41,12 @@ export default function NewTenantPage() {
         mpWebhookSecret: "",
         mpClientId: "",
         mpClientSecret: "",
-        smtpJson: "",
+        // SMTP Configuration
+        smtpHost: "",
+        smtpPort: 587,
+        smtpUser: "",
+        smtpPass: "",
+        smtpSecure: false,
         // Features
         blogEnabled: true,
         storeEnabled: true,
@@ -56,31 +61,35 @@ export default function NewTenantPage() {
         setFormData((prev) => ({ ...prev, name, slug }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); // Aunque el botón guardar está fuera del form "tradicional", lo manejaremos con onClick
-
-        // Pero espera, si uso Tabs, el form global envuelve todo?
-        // Mejor hacer que el handleSave se llame desde el botón explícitamente.
-    };
-
     const onSave = async () => {
         setLoading(true);
         setError(null);
 
         try {
-            // Validar SMTP JSON si se proporciona
-            if (formData.smtpJson.trim()) {
-                try {
-                    JSON.parse(formData.smtpJson);
-                } catch {
-                    throw new Error("El JSON de SMTP no es válido");
-                }
+            // Construct SMTP JSON if host is provided
+            let smtpJson = "";
+            if (formData.smtpHost) {
+                const smtpConfig = {
+                    host: formData.smtpHost,
+                    port: formData.smtpPort,
+                    secure: formData.smtpSecure,
+                    auth: {
+                        user: formData.smtpUser,
+                        pass: formData.smtpPass
+                    }
+                };
+                smtpJson = JSON.stringify(smtpConfig);
             }
+
+            const payload = {
+                ...formData,
+                smtpJson // Add compiled JSON for backend
+            };
 
             const res = await fetch("/api/tenants", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
@@ -138,7 +147,7 @@ export default function NewTenantPage() {
             <Card className="w-full">
                 <div className="p-1">
                     <Tabs defaultValue="info" className="w-full">
-                        <div className="px-6 py-4 border-b">
+                        <div className="px-6 py-4 border-b overflow-x-auto">
                             <TabsList>
                                 <TabsTrigger value="info">
                                     <Info className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Información</span>
@@ -317,17 +326,68 @@ export default function NewTenantPage() {
                             </TabsContent>
 
                             <TabsContent value="email" className="mt-0 space-y-6">
-                                <div className="space-y-2 max-w-2xl">
-                                    <Label htmlFor="smtpJson">Configuración SMTP (JSON)</Label>
-                                    <textarea
-                                        id="smtpJson"
-                                        rows={10}
-                                        placeholder={`{\n  "host": "smtp.example.com",\n  "port": 587,\n  "secure": false,\n  "auth": {\n    "user": "user@example.com",\n    "pass": "password"\n  }\n}`}
-                                        value={formData.smtpJson}
-                                        onChange={(e) => setFormData((prev) => ({ ...prev, smtpJson: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-md border border-input bg-transparent text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none"
-                                    />
-                                    <p className="text-xs text-muted-foreground">Opcional. Pega la configuración nodemailer en formato JSON.</p>
+                                <div className="max-w-2xl space-y-6">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="smtpHost">Host SMTP</Label>
+                                            <Input
+                                                id="smtpHost"
+                                                placeholder="smtp.example.com"
+                                                value={formData.smtpHost}
+                                                onChange={(e) => setFormData((prev) => ({ ...prev, smtpHost: e.target.value }))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="smtpPort">Puerto</Label>
+                                            <Input
+                                                id="smtpPort"
+                                                type="number"
+                                                placeholder="587"
+                                                value={formData.smtpPort}
+                                                onChange={(e) => setFormData((prev) => ({ ...prev, smtpPort: parseInt(e.target.value) || 587 }))}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                                        <Label htmlFor="smtpSecure" className="cursor-pointer">Usar SSL/TLS</Label>
+                                        <Switch
+                                            checked={formData.smtpSecure}
+                                            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, smtpSecure: checked }))}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="smtpUser">Usuario SMTP</Label>
+                                            <Input
+                                                id="smtpUser"
+                                                placeholder="user@example.com"
+                                                value={formData.smtpUser}
+                                                onChange={(e) => setFormData((prev) => ({ ...prev, smtpUser: e.target.value }))}
+                                                autoComplete="off"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="smtpPass">Contraseña</Label>
+                                            <Input
+                                                id="smtpPass"
+                                                type="password"
+                                                placeholder="••••••••"
+                                                value={formData.smtpPass}
+                                                onChange={(e) => setFormData((prev) => ({ ...prev, smtpPass: e.target.value }))}
+                                                autoComplete="new-password"
+                                                data-1p-ignore="true"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm">
+                                        <p className="flex items-start gap-2">
+                                            <Info className="w-4 h-4 mt-0.5 shrink-0" />
+                                            Esta configuración se usará para enviar correos transaccionales desde el tenant.
+                                        </p>
+                                    </div>
                                 </div>
                             </TabsContent>
                         </div>

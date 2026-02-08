@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
         <div className="space-y-4">
             {/* Backward compat: searchKey filter */}
             {searchKey && (
-                <div className="flex items-center py-2">
+                <div className="flex items-center py-4 px-1">
                     <Input
                         placeholder="Filtrar..."
                         value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}

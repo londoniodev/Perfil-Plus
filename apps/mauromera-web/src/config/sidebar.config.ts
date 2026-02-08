@@ -51,7 +51,7 @@ export const sidebarConfig: SidebarConfig = {
             },
             {
                 title: "Usuarios",
-                href: "/admin/usuarios",
+                href: "/admin/users",
                 icon: Users,
             },
             {

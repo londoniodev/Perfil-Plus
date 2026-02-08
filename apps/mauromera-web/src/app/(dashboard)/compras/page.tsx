@@ -6,7 +6,7 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import { Button } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { IconDownload, IconBook, IconLoader, IconShoppingBag } from "@alvarosky/ui";
-import { Card, CardContent } from "@alvarosky/ui";
+import { Card, CardContent, AdaptiveImage } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
 
 interface PurchasedItem {
@@ -122,7 +122,7 @@ export default function MisComprasPage() {
                         {items.map((item, idx) => (
                             <Card key={`${item.orderId}-${idx}`} className="overflow-hidden bg-card hover:shadow-lg transition-shadow border-border/50 flex flex-col h-full">
                                 <div className="aspect-[3/4] relative bg-muted overflow-hidden border-b border-border/50">
-                                    <img
+                                    <AdaptiveImage
                                         src={item.coverImage}
                                         alt={item.title}
                                         className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"

@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import ActiveSubscriptionCard from "@/components/subscription/ActiveSubscriptionCard";
-import PricingCard from "@/components/subscription/PricingCard";
+import { ActiveSubscriptionCard, PricingCard } from "@alvarosky/ui";
 
 // ============================================================================
 // TIPOS

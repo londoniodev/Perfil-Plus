@@ -1,11 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { IconTarget, IconBrain, IconZap } from "@alvarosky/ui";
-import { Button } from "@alvarosky/ui";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@alvarosky/ui";
-import { Badge } from "@alvarosky/ui";
-import { PageHeader } from "@alvarosky/ui";
+import {
+    IconTarget,
+    IconBrain,
+    IconZap,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardFooter,
+    Badge,
+    PageHeader
+} from "@alvarosky/ui";
 
 export default function FormacionContent() {
     const cursos = [

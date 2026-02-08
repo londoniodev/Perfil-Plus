@@ -3,7 +3,7 @@ import "@alvarosky/ui/globals.css";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
-import { ToastProvider, getFontVariables } from "@alvarosky/ui";
+import { ToastProvider, getFontVariables, BrandProvider } from "@alvarosky/ui";
 import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
 import { ThemeProvider } from "./providers";
 import { siteConfig } from "@/config/site";
@@ -96,13 +96,15 @@ export default function RootLayout({
           enableSystem={false}
           forcedTheme="dark"
         >
-          <GlobalSchemas />
-          <ToastProvider>
-            <NavigationWrapper footer={<Footer />}>
-              {children}
-            </NavigationWrapper>
-            <PwaInstallPrompt />
-          </ToastProvider>
+          <BrandProvider>
+            <GlobalSchemas />
+            <ToastProvider>
+              <NavigationWrapper footer={<Footer />}>
+                {children}
+              </NavigationWrapper>
+              <PwaInstallPrompt />
+            </ToastProvider>
+          </BrandProvider>
         </ThemeProvider>
       </body>
     </html>

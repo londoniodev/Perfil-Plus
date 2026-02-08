@@ -204,7 +204,7 @@ const Sidebar = React.forwardRef<
                     <SheetContent
                         data-sidebar="sidebar"
                         data-mobile="true"
-                        className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+                        className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden flex flex-col"
                         style={
                             {
                                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -216,7 +216,7 @@ const Sidebar = React.forwardRef<
                             <SheetTitle>Sidebar</SheetTitle>
                             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
                         </SheetHeader>
-                        <div className="flex h-full w-full flex-col">{children}</div>
+                        <div className="flex h-full w-full flex-col overflow-y-auto">{children}</div>
                     </SheetContent>
                 </Sheet>
             )
@@ -564,7 +564,7 @@ const SidebarMenuButton = React.forwardRef<
         ref
     ) => {
         const Comp = asChild ? Slot : "button"
-        const { isMobile, state } = useSidebar()
+        const { isMobile, state, setOpenMobile } = useSidebar()
 
         const button = (
             <Comp
@@ -573,6 +573,12 @@ const SidebarMenuButton = React.forwardRef<
                 data-size={size}
                 data-active={isActive}
                 className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+                onClick={(e) => {
+                    if (isMobile) {
+                        setOpenMobile(false)
+                    }
+                    props.onClick?.(e)
+                }}
                 {...props}
             />
         )
@@ -724,6 +730,7 @@ const SidebarMenuSubButton = React.forwardRef<
     }
 >(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
     const Comp = asChild ? Slot : "a"
+    const { isMobile, setOpenMobile } = useSidebar()
 
     return (
         <Comp
@@ -739,6 +746,12 @@ const SidebarMenuSubButton = React.forwardRef<
                 "group-data-[collapsible=icon]:hidden",
                 className
             )}
+            onClick={(e) => {
+                if (isMobile) {
+                    setOpenMobile(false)
+                }
+                props.onClick?.(e)
+            }}
             {...props}
         />
     )

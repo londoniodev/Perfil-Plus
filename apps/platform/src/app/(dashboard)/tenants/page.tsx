@@ -19,7 +19,6 @@ export default async function TenantsPage() {
         <AdminPageWrapper
             title="Tenants"
             description={`${activeCount} activo${activeCount !== 1 ? "s" : ""} de ${tenants.length} total`}
-            maxWidth="xl"
             actions={
                 <Link href="/tenants/new">
                     <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500">

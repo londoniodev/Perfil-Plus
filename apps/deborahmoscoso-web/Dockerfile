@@ -7,7 +7,7 @@ WORKDIR /app
 RUN npm install -g turbo
 COPY . .
 # Prune the workspace for the web app
-RUN turbo prune --scope=mauromera-web --docker
+RUN turbo prune --scope=deborahmoscoso-web --docker
 
 # 2. Install dependencies & Build
 FROM base AS builder
@@ -28,7 +28,7 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 
 # Build-time arguments for Next.js public env vars
-ARG NEXT_PUBLIC_TENANT_ID=mauro
+ARG NEXT_PUBLIC_TENANT_ID=deborahmoscoso
 ENV NEXT_PUBLIC_TENANT_ID=${NEXT_PUBLIC_TENANT_ID}
 
 ARG NEXT_PUBLIC_API_URL
@@ -63,7 +63,7 @@ RUN adduser --system --uid 1001 nextjs
 RUN apk add --no-cache openssl
 
 # Copy public files
-COPY --from=builder /app/apps/mauromera-web/public ./apps/mauromera-web/public
+COPY --from=builder /app/apps/deborahmoscoso-web/public ./apps/deborahmoscoso-web/public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -71,8 +71,8 @@ RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/static ./apps/mauromera-web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/deborahmoscoso-web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/deborahmoscoso-web/.next/static ./apps/deborahmoscoso-web/.next/static
 # Copiamos el esquema para poder correr migraciones en producción
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 
@@ -82,4 +82,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/mauromera-web/server.js"]
+CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/deborahmoscoso-web/server.js"]

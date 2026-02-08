@@ -9,6 +9,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
+    PageHeader,
 } from "../index";
 
 // ============================================================================
@@ -51,10 +52,10 @@ export function AdminPageWrapper({
         <div className={`flex flex-1 flex-col gap-4 p-4 pt-0 ${className || ""}`}>
             {/* Page Header with Breadcrumbs */}
             {(breadcrumbs || title) && (
-                <div className="space-y-2">
-                    {/* Breadcrumbs */}
+                <div className="space-y-4">
+                    {/* Breadcrumbs (Only if explicitely provided) */}
                     {breadcrumbs && breadcrumbs.length > 0 && (
-                        <Breadcrumb>
+                        <Breadcrumb className="justify-center">
                             <BreadcrumbList>
                                 {breadcrumbs.map((item, index) => {
                                     const isLast = index === breadcrumbs.length - 1;
@@ -77,27 +78,14 @@ export function AdminPageWrapper({
                         </Breadcrumb>
                     )}
 
-                    {/* Title and Actions Row */}
+                    {/* Standardized Page Header (Centered) */}
                     {(title || actions) && (
-                        <div className="flex items-center justify-between">
-                            <div>
-                                {title && (
-                                    <h1 className="text-2xl font-bold tracking-tight">
-                                        {title}
-                                    </h1>
-                                )}
-                                {description && (
-                                    <p className="text-muted-foreground text-sm mt-1">
-                                        {description}
-                                    </p>
-                                )}
-                            </div>
-                            {actions && (
-                                <div className="flex items-center gap-2">
-                                    {actions}
-                                </div>
-                            )}
-                        </div>
+                        <PageHeader
+                            title={title || ""}
+                            description={description}
+                        >
+                            {actions}
+                        </PageHeader>
                     )}
                 </div>
             )}

@@ -58,18 +58,17 @@ export default async function ProductsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <PageHeader
-                    title="Productos"
-                    description="Gestiona el catálogo de tu tienda"
-                />
+            <PageHeader
+                title="Productos"
+                description="Gestiona el catálogo de tu tienda"
+            >
                 <Button asChild>
                     <Link href="/admin/products/new">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Producto
                     </Link>
                 </Button>
-            </div>
+            </PageHeader>
 
             <ProductsTable data={tableData} />
         </div>

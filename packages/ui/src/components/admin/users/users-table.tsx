@@ -17,7 +17,7 @@ import { Badge } from "../../../badge";
 // Types
 // ============================================================================
 
-export interface UserData {
+export interface UserTableItem {
     id: string;
     email: string;
     name: string;
@@ -30,7 +30,7 @@ export interface UserData {
 }
 
 export interface UsersTableProps {
-    users: UserData[];
+    users: UserTableItem[];
     actionLoading: string | null;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;
@@ -87,12 +87,8 @@ export function UsersTable({
     );
 }
 
-// ============================================================================
-// User Row
-// ============================================================================
-
 interface UserRowProps {
-    user: UserData;
+    user: UserTableItem;
     isLoading: boolean;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;

@@ -174,8 +174,17 @@ async function provisionDatabase(
 
     try {
         // Create database
-        await pool.query(`CREATE DATABASE "${dbName}"`);
-        console.log(`Database ${dbName} created successfully`);
+        try {
+            await pool.query(`CREATE DATABASE "${dbName}"`);
+            console.log(`Database ${dbName} created successfully`);
+        } catch (dbErr: any) {
+            // 42P04 = Database already exists
+            if (dbErr.code === '42P04') {
+                console.log(`Database ${dbName} already exists, proceeding to migration...`);
+            } else {
+                throw dbErr;
+            }
+        }
 
         // Run migrations on the new database
         // Construct tenant-specific URL by modifying the master URL object

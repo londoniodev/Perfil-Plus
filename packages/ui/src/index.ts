@@ -127,6 +127,13 @@ export * from "./hooks/use-digital-product";
 // Layouts (Admin Panel Components)
 export * from "./layouts";
 
+// Layout Components (Footer, Carousel)
+export * from "./components/layout";
+
+// Marketing Components
+export * from "./components/marketing";
+
+
 // Providers
 export * from "./providers/brand-provider";
 export * from "./lib/themes";

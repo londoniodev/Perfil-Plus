@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
-import CourseCard from "@/components/admin/lms/CourseCard";
+import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
+import CourseCard from "@/components/admin/lms/CourseCard";
 import { IconBack, IconPlus } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -197,6 +197,8 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                         <div className="space-y-2">
                             <Label>Imagen de portada</Label>
                             <ImageUploader
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                                 value={formData.coverImage}
                                 onChange={(url) => setFormData({ ...formData, coverImage: url })}
                                 folder="lms-themes"

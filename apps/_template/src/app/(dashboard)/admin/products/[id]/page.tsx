@@ -14,7 +14,8 @@ import { Switch } from "@alvarosky/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
 import { Badge, AdminPageWrapper } from "@alvarosky/ui";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { ImageUploader } from "@alvarosky/ui";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 
 interface ProductData {
     id: string;
@@ -176,6 +177,8 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
                         </CardHeader>
                         <CardContent>
                             <ImageUploader
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                                 value={images[0] || null}
                                 onChange={(url) => setImages(url ? [url] : [])}
                                 folder="products"

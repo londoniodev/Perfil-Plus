@@ -44,24 +44,30 @@ export default async function OrdersPage() {
         orderBy: { createdAt: "desc" }
     })
 
-    // 3. Transform data for table
+    // 3. Transform data for table to match OrderData from @alvarosky/ui
     const tableData = orders.map(order => ({
         id: order.id,
         orderNumber: order.id.slice(-8).toUpperCase(),
-        customerName: order.user.name || "Sin nombre",
-        customerEmail: order.user.email,
         status: order.status,
-        paymentStatus: order.status,
-        total: Number(order.totalAmount),
-        itemCount: order.items.length,
+        totalAmount: Number(order.totalAmount),
+        createdAt: order.createdAt,
+        user: {
+            name: order.user.name,
+            email: order.user.email
+        },
+        shippingData: {}, // Map if available in prisma schema
         items: order.items.map(item => ({
-            name: item.variant.product.name,
-            image: item.variant.product.images[0] || "/placeholder.jpg",
+            id: item.id,
             quantity: item.quantity,
             price: Number(item.price),
-            type: item.variant.product.productType
-        })),
-        createdAt: order.createdAt,
+            variant: {
+                name: (item.variant as any).name, // Cast if necessary or fix include
+                product: {
+                    name: item.variant.product.name,
+                    images: item.variant.product.images
+                }
+            }
+        }))
     }))
 
     return (

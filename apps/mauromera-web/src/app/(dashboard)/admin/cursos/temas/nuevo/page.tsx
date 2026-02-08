@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
@@ -117,6 +117,8 @@ export default function NuevoTemaPage() {
                                 onChange={(url) => setFormData({ ...formData, coverImage: url })}
                                 label="Imagen de portada"
                                 folder="lms-themes"
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                             />
                         </div>
 

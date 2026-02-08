@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE, TENANT_ID } from "@/lib/config";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
-import VideoUploader from "@/components/admin/ui/VideoUploader";
+import { VideoUploader } from "@alvarosky/ui";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { useToast } from "@alvarosky/ui";
 import { IconVideo, IconUpload, IconPlay, IconClock, IconList, IconDocument, IconBack } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -118,6 +118,8 @@ export default function NuevaLeccionPage() {
 
                             {videoType === "upload" ? (
                                 <VideoUploader
+                                    apiBase={API_BASE}
+                                    tenantId={TENANT_ID}
                                     value={videoUrl}
                                     onChange={(url) => setVideoUrl(url || "")}
                                     folder="lms-videos"

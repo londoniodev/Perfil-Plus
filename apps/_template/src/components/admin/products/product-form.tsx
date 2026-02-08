@@ -8,7 +8,8 @@ import { z } from "zod"
 import { Button, Input, Textarea, Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@alvarosky/ui"
 import { Plus, Trash2, Loader2 } from "lucide-react"
 import { createProduct } from "@/actions/admin/create-product"
-import ImageUploader from "@/components/admin/ui/ImageUploader"
+import { ImageUploader } from "@alvarosky/ui"
+import { API_BASE, TENANT_ID } from "@/lib/config"
 import { useToast } from "@alvarosky/ui"
 
 // Schema de validación
@@ -285,6 +286,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         ))}
 
                         <ImageUploader
+                            apiBase={API_BASE}
+                            tenantId={TENANT_ID}
                             value={null}
                             onChange={handleAddImage}
                             label=""

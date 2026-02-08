@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
@@ -126,6 +126,8 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
                         <div className="space-y-2">
                             <Label>Imagen de portada</Label>
                             <ImageUploader
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                                 value={formData.coverImage}
                                 onChange={(url) => setFormData({ ...formData, coverImage: url })}
                                 label="Imagen de portada"

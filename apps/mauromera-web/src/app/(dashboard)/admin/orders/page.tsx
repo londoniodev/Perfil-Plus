@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
 import { PageHeader } from "@alvarosky/ui"
-import { OrdersTable } from "@/components/admin/orders/orders-table"
+import { OrdersTableClient } from "./orders-table-client"
 
 export default async function OrdersPage() {
     // 1. Verificar autenticación y rol
@@ -44,6 +44,32 @@ export default async function OrdersPage() {
         orderBy: { createdAt: "desc" }
     })
 
+    // 3. Transform data for table to match OrderData from @alvarosky/ui
+    const tableData = orders.map(order => ({
+        id: order.id,
+        orderNumber: order.orderNumber || order.id.slice(-8).toUpperCase(),
+        status: order.status,
+        totalAmount: Number(order.totalAmount),
+        createdAt: order.createdAt,
+        user: {
+            name: order.user?.name,
+            email: order.user?.email
+        },
+        shippingData: (order as any).shippingData || {},
+        items: order.items.map(item => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: Number(item.price),
+            variant: {
+                name: (item.variant as any).name,
+                product: {
+                    name: item.variant.product.name,
+                    images: item.variant.product.images
+                }
+            }
+        }))
+    }))
+
     return (
         <div className="space-y-6">
             <PageHeader
@@ -51,7 +77,7 @@ export default async function OrdersPage() {
                 description="Gestiona las ventas y pedidos de tu tienda"
             />
 
-            <OrdersTable orders={orders} />
+            <OrdersTableClient data={tableData} />
         </div>
     )
 }

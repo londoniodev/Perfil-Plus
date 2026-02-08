@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import BlogEditor from "./BlogEditor";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { ImageUploader } from "@alvarosky/ui";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
-import ToggleButton, { PremiumIcon, PublishIcon } from "@/components/admin/ui/ToggleButton"; // Legacy toggle, might need refactor or replace with Switch
+import { ToggleButton, PremiumIcon, PublishIcon } from "@alvarosky/ui"; // Legacy toggle, might need refactor or replace with Switch
 import { IconBack } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
@@ -204,6 +204,8 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                     </div>
 
                     <ImageUploader
+                        apiBase={API_BASE}
+                        tenantId={TENANT_ID}
                         value={coverImage}
                         onChange={setCoverImage}
                         label="Imagen de portada"

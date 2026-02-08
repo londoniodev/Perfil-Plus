@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import ImageUploader from "@/components/admin/ui/ImageUploader";
+import { ImageUploader } from "@alvarosky/ui";
 import CourseCard from "@/components/admin/lms/CourseCard";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { IconBack, IconPlus } from "@alvarosky/ui";
@@ -200,6 +200,8 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                                 value={formData.coverImage}
                                 onChange={(url) => setFormData({ ...formData, coverImage: url })}
                                 folder="lms-themes"
+                                apiBase={API_BASE}
+                                tenantId={TENANT_ID}
                             />
                         </div>
 

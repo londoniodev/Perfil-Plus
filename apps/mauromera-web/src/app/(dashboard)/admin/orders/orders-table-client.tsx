@@ -3,7 +3,11 @@
 import { OrdersTable } from "@alvarosky/ui"
 import { updateOrderStatus } from "@/actions/admin/update-order-status"
 
-export function OrdersTableClient({ data }: { data: any[] }) {
+interface OrdersTableClientProps {
+    data: any[]
+}
+
+export function OrdersTableClient({ data }: OrdersTableClientProps) {
 
     const handleStatusChange = async (orderId: string, newStatus: string) => {
         const result = await updateOrderStatus({

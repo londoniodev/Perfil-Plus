@@ -290,6 +290,18 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                     "src/app/(dashboard)/admin/blog"
                 ];
                 break;
+            case 'lms':
+                pathsToCopy = [
+                    "src/app/cursos",
+                    "src/app/(dashboard)/admin/cursos"
+                ];
+                break;
+            case 'portfolio':
+                pathsToCopy = [
+                    "src/app/portafolio",
+                    "src/app/(dashboard)/admin/portafolio"
+                ];
+                break;
             // Add other cases as needed
             default:
                 // Try Generic Logic: src/app/(dashboard)/[feature]

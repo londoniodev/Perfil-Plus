@@ -62,9 +62,8 @@ export default function ForgotPasswordPage() {
         <AuthLayout>
             <Card className="w-full border-none shadow-none bg-transparent p-0">
                 <CardHeader className="text-center px-0 pt-0">
-                    <CardTitle className="heading-h2 mb-2">Recuperar contraseña</CardTitle>
+                    <CardTitle className="heading-h2 mb-2"></CardTitle>
                     <CardDescription className="text-body text-base">
-                        Ingresa tu email y te enviaremos las instrucciones <br className="hidden sm:block" /> para restablecer tu contraseña.
                     </CardDescription>
                 </CardHeader>
 
@@ -110,13 +109,12 @@ export default function ForgotPasswordPage() {
                         </div>
                     )}
 
-                    <div className="mt-8 text-center">
+                    <div className="mt-8 text-center flex justify-center">
                         <Link
                             href="/login"
-                            className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-light hover:underline transition-colors gap-2"
+                            className="inline-flex items-center justify-center text-sm font-medium text-primary hover:text-primary-light transition-colors gap-2 p-2 rounded-full hover:bg-zinc-800"
                         >
-                            <ArrowLeft className="w-4 h-4" />
-                            Volver al inicio de sesión
+                            <ArrowLeft className="w-5 h-5" />
                         </Link>
                     </div>
                 </CardContent>

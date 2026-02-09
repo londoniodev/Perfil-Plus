@@ -6,8 +6,9 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
+import { Input, InputWithIcon } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
+import { User, Mail, Lock, CheckCircle } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -60,8 +61,8 @@ export default function RegisterPage() {
             <div className="min-h-screen flex items-center justify-center p-8 bg-background">
                 <Card className="w-full max-w-[500px] text-center border-green-500/20 shadow-2xl shadow-green-500/10 bg-card/60 backdrop-blur-md">
                     <CardHeader>
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-4xl shadow-lg animate-pulse">
-                            ✉️
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg animate-pulse">
+                            <CheckCircle className="h-10 w-10" />
                         </div>
 
                         <CardTitle className="mb-2 text-2xl font-serif">¡Revisa tu email!</CardTitle>
@@ -104,9 +105,8 @@ export default function RegisterPage() {
         <AuthLayout>
             <Card className="w-full border-none shadow-none bg-transparent p-0">
                 <CardHeader className="text-center px-0 pt-0">
-                    <CardTitle className="heading-h2 mb-2">Crear Cuenta</CardTitle>
+                    <CardTitle className="heading-h2 mb-2"></CardTitle>
                     <CardDescription className="text-body">
-                        Únete a nuestra comunidad para acceder a contenido exclusivo.
                     </CardDescription>
                 </CardHeader>
 
@@ -114,7 +114,8 @@ export default function RegisterPage() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre Completo</Label>
-                            <Input
+                            <InputWithIcon
+                                icon={<User className="h-5 w-5" />}
                                 id="name"
                                 type="text"
                                 value={formData.name}
@@ -127,7 +128,8 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
+                            <InputWithIcon
+                                icon={<Mail className="h-5 w-5" />}
                                 id="email"
                                 type="email"
                                 value={formData.email}
@@ -139,7 +141,8 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="password">Contraseña</Label>
-                            <Input
+                            <InputWithIcon
+                                icon={<Lock className="h-5 w-5" />}
                                 id="password"
                                 type="password"
                                 value={formData.password}

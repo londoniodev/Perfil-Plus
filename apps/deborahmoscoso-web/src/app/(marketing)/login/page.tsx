@@ -8,7 +8,8 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
+import { Input, InputWithIcon } from "@alvarosky/ui";
+import { Mail, Lock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -123,8 +124,8 @@ function LoginForm() {
   return (
     <Card className="w-full border-none shadow-none bg-transparent p-0">
       <CardHeader className="text-center px-0 pt-0">
-        <CardTitle className="heading-h2 mb-2">Iniciar Sesión</CardTitle>
-        <CardDescription className="text-body">Bienvenido de nuevo</CardDescription>
+        <CardTitle className="heading-h2 mb-2"></CardTitle>
+        <CardDescription className="text-body"></CardDescription>
       </CardHeader>
 
       <CardContent className="px-0">
@@ -137,7 +138,8 @@ function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
+                    <InputWithIcon
+                      icon={<Mail className="h-5 w-5" />}
                       type="email"
                       placeholder="admin@example.com"
                       {...field}
@@ -164,7 +166,8 @@ function LoginForm() {
                     </a>
                   </div>
                   <FormControl>
-                    <Input
+                    <InputWithIcon
+                      icon={<Lock className="h-5 w-5" />}
                       type="password"
                       placeholder="••••••••"
                       {...field}

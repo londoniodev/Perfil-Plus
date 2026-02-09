@@ -129,8 +129,9 @@ export * from "./hooks/use-digital-product";
 // Layouts (Admin Panel Components)
 export * from "./layouts";
 
-// Layout Components (Footer, Carousel)
+// Layout Components (Footer, Carousel, Fill)
 export * from "./components/layout";
+export * from "./components/layout/fill";
 
 // Marketing Components
 export * from "./components/marketing";

@@ -32,7 +32,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
             {/* Right Side - Form */}
             <div className="flex flex-col items-center justify-center p-6 md:p-12 w-full h-full relative z-20">
-                <FloatingBackButton />
+                <FloatingBackButton className="absolute left-4 top-4 md:left-8 md:top-8" />
                 <div className="w-full max-w-[450px] space-y-6">
                     {children}
                 </div>

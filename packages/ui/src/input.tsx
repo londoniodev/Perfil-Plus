@@ -29,11 +29,11 @@ const InputWithIcon = React.forwardRef<HTMLInputElement, InputWithIconProps>(
     ({ className, icon, ...props }, ref) => {
         return (
             <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none">
                     {icon}
                 </div>
                 <Input
-                    className={cn("pl-11", className)}
+                    className={cn("pl-12", className)}
                     ref={ref}
                     {...props}
                 />

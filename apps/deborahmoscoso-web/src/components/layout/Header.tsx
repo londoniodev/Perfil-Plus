@@ -84,7 +84,7 @@ function DesktopNavLinks({ isLoggedIn, currentPath }: { isLoggedIn: boolean, cur
             <Link href="/portafolio" className={linkClass("/portafolio")}>Portafolio</Link>
             <Link href="/formacion" className={linkClass("/formacion")}>Cursos</Link>
             <Link href="/blog" className={linkClass("/blog")}>Blog</Link>
-            <Link href="/ebooks" className={linkClass("/ebooks")}>E-books</Link>
+            <Link href="/tienda" className={linkClass("/tienda")}>Tienda</Link>
             <Link href="/servicios" className={linkClass("/servicios")}>Servicios</Link>
 
             <div className="pl-4 border-l border-border flex gap-2">
@@ -135,8 +135,8 @@ function MobileNavLinks({ onClick, isLoggedIn, currentPath }: { onClick?: () => 
                 <span>Blog</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
-            <Link href="/ebooks" onClick={onClick} className={`${linkClass("/ebooks")} animate-slide-in-left`} style={{ animationDelay: "500ms" }}>
-                <span>E-books</span>
+            <Link href="/tienda" onClick={onClick} className={`${linkClass("/tienda")} animate-slide-in-left`} style={{ animationDelay: "500ms" }}>
+                <span>Tienda</span>
                 <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
             </Link>
             <Link href="/servicios" onClick={onClick} className={`${linkClass("/servicios")} animate-slide-in-left`} style={{ animationDelay: "700ms" }}>

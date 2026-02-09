@@ -8,7 +8,7 @@ interface FillProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Fill({
     className,
     height,
-    minHeight = "60vh",
+    minHeight = "calc(100vh - 8rem)",
     ...props
 }: FillProps) {
     return (

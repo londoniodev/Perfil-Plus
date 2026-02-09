@@ -15,6 +15,9 @@ const config: Config = {
                 sans: ["var(--font-body)"],
                 heading: ["var(--font-heading)"],
             },
+            transitionDuration: {
+                "2000": "2000ms",
+            },
         },
     },
 };

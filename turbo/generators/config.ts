@@ -279,26 +279,26 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 break;
             case 'store':
                 pathsToCopy = [
-                    "src/app/tienda",
+                    "src/app/(marketing)/tienda",
                     "src/app/(dashboard)/admin/productos",
                     "src/app/checkout"
                 ];
                 break;
             case 'blog':
                 pathsToCopy = [
-                    "src/app/blog",
+                    "src/app/(marketing)/blog",
                     "src/app/(dashboard)/admin/blog"
                 ];
                 break;
             case 'lms':
                 pathsToCopy = [
-                    "src/app/cursos",
+                    "src/app/(dashboard)/cursos",
                     "src/app/(dashboard)/admin/cursos"
                 ];
                 break;
             case 'portfolio':
                 pathsToCopy = [
-                    "src/app/portafolio",
+                    "src/app/(marketing)/portafolio",
                     "src/app/(dashboard)/admin/portafolio"
                 ];
                 break;

@@ -105,6 +105,12 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 template: "ARG NEXT_PUBLIC_TENANT_ID={{name}}",
             },
             {
+                type: "modify",
+                path: "apps/{{name}}/Dockerfile",
+                pattern: /EXPOSE 3000/,
+                template: "EXPOSE {{port}}\n\nENV PORT {{port}}",
+            },
+            {
                 type: "add",
                 path: "apps/{{name}}/src/config/site.ts",
                 templateFile: "templates/site.ts.hbs",

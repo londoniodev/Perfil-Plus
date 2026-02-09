@@ -78,8 +78,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 3002
 
+ENV PORT 3002
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/deborahmoscoso-web/server.js"]

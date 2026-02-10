@@ -13,7 +13,13 @@ import { cookies } from "next/headers";
 import type { FeatureKey } from "@/config/sidebar.config";
 
 // --- Server Side Data Fetching ---
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: process.env.MANAGEMENT_DATABASE_URL,
+        },
+    },
+});
 
 async function getTenantData(tenantId: string) {
     try {

@@ -75,7 +75,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 type: "add",
                 path: "apps/{{name}}/.env.local",
                 // Asking for specific port or using default
-                template: "NEXT_PUBLIC_API_URL=http://localhost:3000/api\nNEXT_PUBLIC_TENANT_SLUG={{name}}\nNEXT_PUBLIC_TENANT_ID={{name}}\nDATABASE_URL=postgresql://postgres:alvarojose1998@web-projects-database-postgres-gyiyxn:5432/db_{{name}}",
+                template: "NEXT_PUBLIC_API_URL=http://localhost:3000/api\nNEXT_PUBLIC_TENANT_SLUG={{name}}\nNEXT_PUBLIC_TENANT_ID={{name}}\nDATABASE_URL=postgresql://postgres:alvarojose1998@web-projects-database-postgres-gyiyxn:5432/db_{{name}}\nMANAGEMENT_DATABASE_URL=postgresql://postgres:alvarojose1998@web-projects-database-postgres-gyiyxn:5432/web-projects-database-postgres-gyiyxn?schema=public",
             },
             {
                 type: "cleanup-features",

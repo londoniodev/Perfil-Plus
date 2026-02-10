@@ -3,16 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+SidebarTrigger,
+} from "../sidebar";
+import { Separator } from "../separator";
 import {
-    SidebarTrigger,
-    Separator,
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "../index";
+} from "../breadcrumb";
 
 // ============================================================================
 // TYPES

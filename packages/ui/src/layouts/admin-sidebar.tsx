@@ -18,19 +18,25 @@ import {
     SidebarRail,
     SidebarGroup,
     SidebarGroupLabel,
+} from "../sidebar";
+import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
+} from "../collapsible";
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+} from "../dropdown-menu";
+import {
     Avatar,
     AvatarFallback,
     AvatarImage,
-} from "../index";
+} from "../avatar";
 
 // ============================================================================
 // TYPES

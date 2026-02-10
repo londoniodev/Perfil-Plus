@@ -9,13 +9,7 @@ const config: Config = {
         "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/context/**/*.{js,ts,jsx,tsx,mdx}",
     ],
-    theme: {
-        extend: {
-            transitionDuration: {
-                "2000": "2000ms",
-            },
-        },
-    },
+
 };
 
 export default config;

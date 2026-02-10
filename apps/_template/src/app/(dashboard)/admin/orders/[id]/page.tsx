@@ -66,7 +66,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
     // 1. Verificar autenticación y rol
     const user = await getSessionUser();
-    if (!user) redirect("/auth/login");
+    if (!user) redirect("/login");
     if (user.role !== "ADMIN") redirect("/");
 
     // 2. Obtener pedido con items y cliente

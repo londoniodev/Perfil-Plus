@@ -10,7 +10,7 @@ export default async function ProductsPage() {
     const user = await getSessionUser()
 
     if (!user) {
-        redirect("/auth/login")
+        redirect("/login")
     }
 
     if (user.role !== "ADMIN") {

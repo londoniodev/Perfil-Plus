@@ -38,7 +38,7 @@ export async function updateOrderStatus(
         const user = await getSessionUser()
 
         if (!user) {
-            redirect("/auth/login")
+            redirect("/login")
         }
 
         if (user.role !== "ADMIN") {

@@ -30,7 +30,7 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
         const user = await getSessionUser()
 
         if (!user) {
-            redirect("/auth/login")
+            redirect("/login")
         }
 
         if (user.role !== "ADMIN") {

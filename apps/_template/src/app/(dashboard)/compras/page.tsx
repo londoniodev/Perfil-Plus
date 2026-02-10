@@ -10,7 +10,7 @@ export default async function ComprasPage() {
     const user = await getSessionUser()
 
     if (!user) {
-        redirect("/auth/login")
+        redirect("/login")
     }
 
     // 2. Consultar órdenes del usuario con relaciones completas

@@ -45,7 +45,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         const user = await getSessionUser()
 
         if (!user) {
-            redirect("/auth/login")
+            redirect("/login")
         }
 
         if (user.role !== "ADMIN") {

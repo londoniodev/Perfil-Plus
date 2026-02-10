@@ -120,18 +120,24 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <Tabs defaultValue="finance" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
-                        <TabsTrigger value="finance">
-                            <DollarSign className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Finanzas</span>
+                    <TabsList className="flex w-full overflow-x-auto lg:grid lg:grid-cols-3 mb-8 bg-transparent border-b rounded-none h-auto p-0 gap-2 scrollbar-none">
+                        <TabsTrigger
+                            value="finance"
+                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
+                        >
+                            <DollarSign className="w-4 h-4 mr-2" /> <span>Finanzas</span>
                         </TabsTrigger>
-                        <TabsTrigger value="appearance">
-                            <Palette className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Apariencia</span>
+                        <TabsTrigger
+                            value="email"
+                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
+                        >
+                            <Mail className="w-4 h-4 mr-2" /> <span>Email</span>
                         </TabsTrigger>
-                        <TabsTrigger value="email">
-                            <Mail className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Email</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="apis">
-                            <Code className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">API's</span>
+                        <TabsTrigger
+                            value="apis"
+                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
+                        >
+                            <Code className="w-4 h-4 mr-2" /> <span>API's</span>
                         </TabsTrigger>
                     </TabsList>
 
@@ -186,51 +192,6 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                         </Card>
                     </TabsContent>
 
-                    {/* Apariencia */}
-                    <TabsContent value="appearance">
-                        <Card className="p-6 space-y-4 max-w-2xl">
-                            <h3 className="text-lg font-semibold">Personalización</h3>
-                            <FormField
-                                control={form.control}
-                                name="theme"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tema</FormLabel>
-                                        <select
-                                            {...field}
-                                            className="w-full p-2.5 rounded-lg bg-background border border-input"
-                                        >
-                                            <option value="">Automático</option>
-                                            <option value="light">Claro</option>
-                                            <option value="dark">Oscuro</option>
-                                        </select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="primaryColor"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Color Primario</FormLabel>
-                                        <div className="flex gap-3">
-                                            <Input
-                                                type="color"
-                                                {...field}
-                                                className="w-16 h-10 p-1 cursor-pointer"
-                                            />
-                                            <Input
-                                                {...field}
-                                                className="flex-1 font-mono text-sm"
-                                            />
-                                        </div>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </Card>
-                    </TabsContent>
 
 
                     {/* Email */}

@@ -92,6 +92,12 @@ export async function POST(request: NextRequest) {
 
         const dbName = `db_${slug.replace(/-/g, "_")}`;
 
+        // Prepare initial features list
+        const initialFeatures: string[] = [];
+        if (blogEnabled !== false) initialFeatures.push('blog');
+        if (storeEnabled !== false) initialFeatures.push('shop'); // store -> shop
+        if (lmsEnabled === true) initialFeatures.push('lms');
+
         // 1. Create tenant record (DEPLOYING status)
         const tenant = await prismaManagement.tenant.create({
             data: {
@@ -101,6 +107,7 @@ export async function POST(request: NextRequest) {
                 ownerEmail: ownerEmail || null,
                 plan: plan || "free",
                 status: "DEPLOYING",
+                features: initialFeatures,
             },
         });
 

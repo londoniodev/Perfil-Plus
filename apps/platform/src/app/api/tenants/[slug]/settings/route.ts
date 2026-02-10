@@ -95,13 +95,29 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             [JSON.stringify(configValue)]
         );
 
-        // Actualizar nombre en la tabla Tenant de Management DB
-        if (configValue.name) {
+        // Actualizar nombre y features en la tabla Tenant de Management DB
+        if (configValue.name || configValue.features) {
             const { prismaManagement } = await import("@alvarosky/database-management");
-            await prismaManagement.tenant.update({
-                where: { slug },
-                data: { name: configValue.name }
-            });
+
+            const updateData: any = {};
+            if (configValue.name) updateData.name = configValue.name;
+
+            if (configValue.features) {
+                // Convert features object to string array
+                const featuresList: string[] = [];
+                if (configValue.features.blog) featuresList.push('blog');
+                if (configValue.features.store) featuresList.push('shop'); // store -> shop
+                if (configValue.features.lms) featuresList.push('lms');
+
+                updateData.features = featuresList;
+            }
+
+            if (Object.keys(updateData).length > 0) {
+                await prismaManagement.tenant.update({
+                    where: { slug },
+                    data: updateData
+                });
+            }
         }
 
         return NextResponse.json({ success: true });

@@ -3,14 +3,15 @@
 // Used by all apps in the monorepo for consistent typography
 // ============================================================================
 
-import { Inter, Geist_Mono } from "next/font/google";
+import { Poppins, Geist_Mono } from "next/font/google";
 
 /**
- * Primary Sans-serif font (Inter)
+ * Primary Sans-serif font (Poppins)
  * Applied as --font-sans CSS variable
  */
-export const fontSans = Inter({
+export const fontSans = Poppins({
     subsets: ["latin"],
+    weight: ["400", "500", "600", "700"],
     variable: "--font-sans",
     display: "swap",
 });

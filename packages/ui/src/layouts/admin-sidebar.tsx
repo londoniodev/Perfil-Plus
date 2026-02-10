@@ -230,12 +230,14 @@ export function AdminSidebar({
                                         size="lg"
                                         className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-200"
                                     >
-                                        <Avatar className="size-8 rounded-lg">
-                                            <AvatarImage src={user.avatar} alt={user.name} />
-                                            <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">
-                                                {userInitials}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        <div className="size-8 rounded-lg overflow-hidden shrink-0">
+                                            <Avatar className="size-full">
+                                                <AvatarImage src={user.avatar} alt={user.name} className="object-cover" />
+                                                <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-semibold">
+                                                    {userInitials}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </div>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
                                             <span className="truncate font-semibold">{user.name}</span>
                                             {user.email && (

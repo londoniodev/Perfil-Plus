@@ -87,13 +87,40 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // Reconstruir el objeto TENANT_CONFIG
         const configValue = unflattenTenantConfig(settings as FlattenedTenantConfig);
 
-        // Upsert TENANT_CONFIG
+        // Upsert TENANT_CONFIG (Mantener para UI)
         await pool.query(
             `INSERT INTO "SystemSetting" (id, key, value, "isPublic", "createdAt", "updatedAt")
                  VALUES (gen_random_uuid()::text, 'TENANT_CONFIG', $1, false, NOW(), NOW())
                  ON CONFLICT (key) DO UPDATE SET value = $1, "updatedAt" = NOW()`,
             [JSON.stringify(configValue)]
         );
+
+        // Upsert SMTP_CONFIG (Para EmailService)
+        if (configValue.smtp) {
+            // Flatten auth for EmailService (expects user/pass at root)
+            const smtpConfigForService = {
+                ...configValue.smtp,
+                user: configValue.smtp.auth?.user,
+                pass: configValue.smtp.auth?.pass,
+            };
+
+            await pool.query(
+                `INSERT INTO "SystemSetting" (id, key, value, "isPublic", "createdAt", "updatedAt")
+                     VALUES (gen_random_uuid()::text, 'SMTP_CONFIG', $1, false, NOW(), NOW())
+                     ON CONFLICT (key) DO UPDATE SET value = $1, "updatedAt" = NOW()`,
+                [JSON.stringify(smtpConfigForService)]
+            );
+        }
+
+        // Upsert MERCADOPAGO_CONFIG (Para PaymentsService)
+        if (configValue.mercadopago) {
+            await pool.query(
+                `INSERT INTO "SystemSetting" (id, key, value, "isPublic", "createdAt", "updatedAt")
+                     VALUES (gen_random_uuid()::text, 'MERCADOPAGO_CONFIG', $1, false, NOW(), NOW())
+                     ON CONFLICT (key) DO UPDATE SET value = $1, "updatedAt" = NOW()`,
+                [JSON.stringify(configValue.mercadopago)]
+            );
+        }
 
         // Actualizar nombre y features en la tabla Tenant de Management DB
         if (configValue.name || configValue.features) {

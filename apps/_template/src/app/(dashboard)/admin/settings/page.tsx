@@ -16,8 +16,24 @@ export default async function SettingsPage() {
         redirect("/")
     }
 
-    // 2. Obtener configuración actual
-    const settings = await prisma.storeSettings.findFirst()
+    // 2. Obtener configuración actual de SystemSetting (Sincronizado con Platform)
+    const systemSetting = await prisma.systemSetting.findUnique({
+        where: { key: "TENANT_CONFIG" }
+    })
+
+    let settings = null
+    if (systemSetting?.value) {
+        const config = systemSetting.value as any
+        settings = {
+            mpAccessToken: config.mercadopago?.accessToken,
+            mpPublicKey: config.mercadopago?.publicKey,
+            storeName: config.name,
+            storeEmail: config.email,
+        }
+    } else {
+        // Fallback to legacy StoreSettings
+        settings = await prisma.storeSettings.findFirst()
+    }
 
     return (
         <div className="space-y-6">

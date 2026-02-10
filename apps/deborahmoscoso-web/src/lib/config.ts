@@ -6,7 +6,7 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api";
 
 // Static fallback for client components and build time
-export const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID?.trim() || 'mauro';
+export const TENANT_ID = process.env.NEXT_PUBLIC_TENANT_ID?.trim() || 'deborahmoscoso';
 
 /**
  * Get API headers with tenant ID

@@ -8,10 +8,36 @@ import { z } from "zod"
 
 // Schema de validación
 const settingsSchema = z.object({
-    mpAccessToken: z.string().optional(),
-    mpPublicKey: z.string().optional(),
+    // Info
     storeName: z.string().optional(),
-    storeEmail: z.string().email().optional().or(z.literal(""))
+    storeEmail: z.string().email().optional().or(z.literal("")),
+
+    // Finance
+    currency: z.string().optional(),
+    mpPublicKey: z.string().optional(),
+    mpAccessToken: z.string().optional(),
+    mpWebhookSecret: z.string().optional(),
+    mpClientId: z.string().optional(),
+    mpClientSecret: z.string().optional(),
+
+    // Appearance
+    theme: z.string().optional(),
+    primaryColor: z.string().optional(),
+
+    // Email (SMTP)
+    smtpHost: z.string().optional(),
+    smtpPort: z.number().optional(),
+    smtpSecure: z.boolean().optional(),
+    smtpUser: z.string().optional(),
+    smtpPass: z.string().optional(),
+
+    // APIs
+    apiKeyOpenAI: z.string().optional(),
+
+    // Features
+    enableBlog: z.boolean().optional(),
+    enableStore: z.boolean().optional(),
+    enableLMS: z.boolean().optional(),
 })
 
 type UpdateSettingsInput = z.infer<typeof settingsSchema>
@@ -43,37 +69,122 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
         // 2. Validar datos
         const validated = settingsSchema.parse(data)
 
-        // 3. Buscar configuración existente
-        const existingSettings = await prisma.storeSettings.findFirst()
+        // 3. Obtener configuración actual para mergear
+        const tenantConfigSetting = await prisma.systemSetting.findUnique({
+            where: { key: "TENANT_CONFIG" }
+        })
 
-        // 4. Upsert (actualizar o crear)
-        if (existingSettings) {
-            // Actualizar existente
-            await prisma.storeSettings.update({
-                where: { id: existingSettings.id },
-                data: {
-                    mpAccessToken: validated.mpAccessToken || existingSettings.mpAccessToken,
-                    mpPublicKey: validated.mpPublicKey || existingSettings.mpPublicKey,
-                    storeName: validated.storeName || existingSettings.storeName,
-                    storeEmail: validated.storeEmail || existingSettings.storeEmail,
-                    updatedAt: new Date()
+        let currentConfig: any = {}
+        if (tenantConfigSetting?.value) {
+            currentConfig = typeof tenantConfigSetting.value === "string"
+                ? JSON.parse(tenantConfigSetting.value)
+                : tenantConfigSetting.value
+        }
+
+        // 4. Preparar nuevos objetos de configuración
+        // NOTA: Nombre, Email, Moneda y Features (Módulos) están bloqueados para admins de tenant
+        const newConfig = {
+            ...currentConfig,
+            theme: validated.theme ?? currentConfig.theme,
+            primary_color: validated.primaryColor ?? currentConfig.primary_color,
+            api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
+            mercadopago: {
+                ...currentConfig.mercadopago,
+                publicKey: validated.mpPublicKey ?? currentConfig.mercadopago?.publicKey,
+                accessToken: validated.mpAccessToken ?? currentConfig.mercadopago?.accessToken,
+                webhookSecret: validated.mpWebhookSecret ?? currentConfig.mercadopago?.webhookSecret,
+                clientId: validated.mpClientId ?? currentConfig.mercadopago?.clientId,
+                clientSecret: validated.mpClientSecret ?? currentConfig.mercadopago?.clientSecret,
+            },
+            smtp: {
+                ...currentConfig.smtp,
+                host: validated.smtpHost ?? currentConfig.smtp?.host,
+                port: validated.smtpPort ?? currentConfig.smtp?.port,
+                secure: validated.smtpSecure ?? currentConfig.smtp?.secure,
+                auth: {
+                    ...currentConfig.smtp?.auth,
+                    user: validated.smtpUser ?? currentConfig.smtp?.auth?.user,
+                    pass: validated.smtpPass ?? currentConfig.smtp?.auth?.pass,
                 }
-            })
-        } else {
-            // Crear nuevo
-            await prisma.storeSettings.create({
-                data: {
-                    mpAccessToken: validated.mpAccessToken || null,
-                    mpPublicKey: validated.mpPublicKey || null,
-                    storeName: validated.storeName || null,
-                    storeEmail: validated.storeEmail || null
+            }
+        }
+
+        // 5. Guardar en SystemSetting (Split Keys)
+
+        // TENANT_CONFIG
+        await prisma.systemSetting.upsert({
+            where: { key: "TENANT_CONFIG" },
+            create: {
+                id: crypto.randomUUID(),
+                key: "TENANT_CONFIG",
+                value: newConfig,
+                isPublic: false
+            },
+            update: {
+                value: newConfig
+            }
+        })
+
+        // SMTP_CONFIG (Flattened for EmailService)
+        if (newConfig.smtp) {
+            const smtpConfigForService = {
+                ...newConfig.smtp,
+                user: newConfig.smtp.auth?.user,
+                pass: newConfig.smtp.auth?.pass,
+            }
+            await prisma.systemSetting.upsert({
+                where: { key: "SMTP_CONFIG" },
+                create: {
+                    id: crypto.randomUUID(),
+                    key: "SMTP_CONFIG",
+                    value: smtpConfigForService,
+                    isPublic: false
+                },
+                update: {
+                    value: smtpConfigForService
                 }
             })
         }
 
-        // 5. Revalidar rutas que usan settings
+        // MERCADOPAGO_CONFIG
+        if (newConfig.mercadopago) {
+            await prisma.systemSetting.upsert({
+                where: { key: "MERCADOPAGO_CONFIG" },
+                create: {
+                    id: crypto.randomUUID(),
+                    key: "MERCADOPAGO_CONFIG",
+                    value: newConfig.mercadopago,
+                    isPublic: false
+                },
+                update: {
+                    value: newConfig.mercadopago
+                }
+            })
+        }
+
+        // 6. Sincronizar con legacy StoreSettings (Opcional)
+        // Solo sincronizamos campos permitidos para el admin de tenant
+        const legacySettings = await prisma.storeSettings.findFirst()
+        const legacyData = {
+            mpPublicKey: newConfig.mercadopago?.publicKey,
+            mpAccessToken: newConfig.mercadopago?.accessToken,
+        }
+
+        if (legacySettings) {
+            await prisma.storeSettings.update({
+                where: { id: legacySettings.id },
+                data: legacyData
+            })
+        } else {
+            await prisma.storeSettings.create({
+                data: legacyData
+            })
+        }
+
+        // 7. Revalidar rutas
         revalidatePath("/admin/settings")
-        revalidatePath("/checkout")
+        revalidatePath("/admin")
+        revalidatePath("/")
 
         return { success: true }
 

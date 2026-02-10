@@ -27,12 +27,35 @@ export default async function SettingsPage() {
         settings = {
             mpAccessToken: config.mercadopago?.accessToken,
             mpPublicKey: config.mercadopago?.publicKey,
+            mpWebhookSecret: config.mercadopago?.webhookSecret,
+            mpClientId: config.mercadopago?.clientId,
+            mpClientSecret: config.mercadopago?.clientSecret,
             storeName: config.name,
             storeEmail: config.email,
+            currency: config.currency,
+            theme: config.theme,
+            primaryColor: config.primary_color,
+            smtpHost: config.smtp?.host,
+            smtpPort: config.smtp?.port,
+            smtpSecure: config.smtp?.secure,
+            smtpUser: config.smtp?.auth?.user,
+            smtpPass: config.smtp?.auth?.pass,
+            apiKeyOpenAI: config.api_key_openai,
+            enableBlog: config.features?.blog,
+            enableStore: config.features?.store,
+            enableLMS: config.features?.lms,
         }
     } else {
         // Fallback to legacy StoreSettings
-        settings = await prisma.storeSettings.findFirst()
+        const legacy = await prisma.storeSettings.findFirst()
+        if (legacy) {
+            settings = {
+                storeName: legacy.storeName,
+                storeEmail: legacy.storeEmail,
+                mpPublicKey: legacy.mpPublicKey,
+                mpAccessToken: legacy.mpAccessToken,
+            }
+        }
     }
 
     return (

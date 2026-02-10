@@ -138,8 +138,7 @@ function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <InputWithIcon
-                      icon={<Mail className="h-5 w-5" />}
+                    <Input
                       type="email"
                       placeholder="admin@example.com"
                       {...field}
@@ -166,8 +165,7 @@ function LoginForm() {
                     </a>
                   </div>
                   <FormControl>
-                    <InputWithIcon
-                      icon={<Lock className="h-5 w-5" />}
+                    <Input
                       type="password"
                       placeholder="••••••••"
                       {...field}

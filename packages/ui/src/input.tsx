@@ -33,7 +33,8 @@ const InputWithIcon = React.forwardRef<HTMLInputElement, InputWithIconProps>(
                     {icon}
                 </div>
                 <Input
-                    className={cn("!pl-12", className)}
+                    className={className}
+                    style={{ paddingLeft: "3rem" }}
                     ref={ref}
                     {...props}
                 />

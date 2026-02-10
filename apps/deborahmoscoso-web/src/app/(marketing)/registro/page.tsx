@@ -114,8 +114,7 @@ export default function RegisterPage() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nombre Completo</Label>
-                            <InputWithIcon
-                                icon={<User className="h-5 w-5" />}
+                            <Input
                                 id="name"
                                 type="text"
                                 value={formData.name}
@@ -128,8 +127,7 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <InputWithIcon
-                                icon={<Mail className="h-5 w-5" />}
+                            <Input
                                 id="email"
                                 type="email"
                                 value={formData.email}
@@ -141,8 +139,7 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="password">Contraseña</Label>
-                            <InputWithIcon
-                                icon={<Lock className="h-5 w-5" />}
+                            <Input
                                 id="password"
                                 type="password"
                                 value={formData.password}

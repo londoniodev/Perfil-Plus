@@ -19,7 +19,9 @@ interface DecodedToken {
  */
 export async function getSessionUser() {
     const cookieStore = await cookies()
-    const token = cookieStore.get("Authentication")?.value
+    const token = cookieStore.get("Authentication")?.value || cookieStore.get("accessToken")?.value
+
+    console.log("[getSessionUser] Token found:", !!token, "Cookie names:", cookieStore.getAll().map(c => c.name));
 
     if (!token) return null
 
@@ -30,11 +32,15 @@ export async function getSessionUser() {
         // Para MVP, solo decodificamos (sin validación de firma)
         const decoded = jwt.decode(token) as DecodedToken | null
 
-        if (!decoded || !decoded.sub) return null
+        if (!decoded || !decoded.sub) {
+            console.log("[getSessionUser] Token decoded but invalid/missing sub. Keys:", decoded ? Object.keys(decoded) : "null");
+            return null
+        }
 
         // Validar expiración manualmente
         const now = Math.floor(Date.now() / 1000)
         if (decoded.exp && decoded.exp < now) {
+            console.log("[getSessionUser] Token expired. Exp:", decoded.exp, "Now:", now);
             return null // Token expirado
         }
 

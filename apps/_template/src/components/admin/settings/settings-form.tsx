@@ -119,19 +119,13 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Tabs defaultValue="info" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-8">
-                        <TabsTrigger value="info">
-                            <Info className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Info</span>
-                        </TabsTrigger>
+                <Tabs defaultValue="finance" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
                         <TabsTrigger value="finance">
                             <DollarSign className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Finanzas</span>
                         </TabsTrigger>
                         <TabsTrigger value="appearance">
                             <Palette className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Apariencia</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="features">
-                            <Puzzle className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Features</span>
                         </TabsTrigger>
                         <TabsTrigger value="email">
                             <Mail className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Email</span>
@@ -141,72 +135,12 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* Información */}
-                    <TabsContent value="info">
-                        <Card className="p-6 space-y-4">
-                            <div className="flex items-center gap-2 text-blue-600 bg-blue-50 p-3 rounded-md mb-4 text-sm">
-                                <Info className="h-4 w-4" />
-                                <span>El nombre y correo de la tienda se gestionan desde la plataforma central.</span>
-                            </div>
-                            <h3 className="text-lg font-semibold">Información General</h3>
-                            <div className="grid gap-4 max-w-2xl">
-                                <FormField
-                                    control={form.control}
-                                    name="storeName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Nombre de la Tienda</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="Mi Tienda" disabled />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="storeEmail"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email de Soporte</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} type="email" placeholder="soporte@mitienda.com" disabled />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </Card>
-                    </TabsContent>
 
                     {/* Finanzas */}
                     <TabsContent value="finance">
                         <Card className="p-6 space-y-6">
                             <div className="space-y-4 max-w-2xl">
-                                <FormField
-                                    control={form.control}
-                                    name="currency"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Moneda</FormLabel>
-                                            <select
-                                                {...field}
-                                                disabled
-                                                className="w-full p-2.5 rounded-lg bg-muted border border-input focus:ring-2 focus:ring-primary opacity-70 cursor-not-allowed"
-                                            >
-                                                <option value="COP">COP - Peso Colombiano</option>
-                                                <option value="USD">USD - Dólar Estadounidense</option>
-                                            </select>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                La moneda base se configura globalmente por el administrador del sistema.
-                                            </p>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="border-t pt-4 space-y-4">
+                                <div className="space-y-4">
                                     <h4 className="text-sm font-medium">Mercado Pago</h4>
                                     <FormField
                                         control={form.control}
@@ -298,42 +232,6 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                         </Card>
                     </TabsContent>
 
-                    {/* Features */}
-                    <TabsContent value="features">
-                        <Card className="p-6 space-y-4 max-w-2xl">
-                            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded-md mb-4 text-sm">
-                                <Puzzle className="h-4 w-4" />
-                                <span>La activación de módulos (Features) es gestionada por el administrador del sistema.</span>
-                            </div>
-                            <h3 className="text-lg font-semibold">Módulos Activos</h3>
-                            {[
-                                { name: "enableBlog" as const, label: "Blog", desc: "Sistema de artículos" },
-                                { name: "enableStore" as const, label: "Tienda", desc: "E-commerce" },
-                                { name: "enableLMS" as const, label: "LMS", desc: "Cursos y lecciones" },
-                            ].map((feature) => (
-                                <FormField
-                                    key={feature.name}
-                                    control={form.control}
-                                    name={feature.name}
-                                    render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border">
-                                            <div>
-                                                <FormLabel className="text-base">{feature.label}</FormLabel>
-                                                <p className="text-xs text-muted-foreground">{feature.desc}</p>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                    disabled
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            ))}
-                        </Card>
-                    </TabsContent>
 
                     {/* Email */}
                     <TabsContent value="email">
@@ -439,7 +337,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full sm:w-auto min-w-[200px] h-12 text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
+                        className="w-full sm:w-auto min-w-[200px] h-12 text-lg font-semibold"
                     >
                         {isSubmitting ? (
                             <>

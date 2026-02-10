@@ -32,7 +32,7 @@ export function SiteFooter({
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className={cn("bg-background border-t border-border py-12", className)}>
+        <footer className={cn("bg-background border-t border-border py-6", className)}>
             <div className="container mx-auto px-4 md:px-8">
                 {/* Full Footer - Hidden on Mobile */}
                 <div className="hidden lg:flex flex-col items-center gap-8 mb-12">

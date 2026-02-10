@@ -124,6 +124,8 @@ export * from "./components/auth";
 export * from "./components/subscription";
 
 // Hooks
+export * from "./hooks/use-mobile";
+export * from "./hooks/use-scroll";
 export * from "./hooks/use-digital-product";
 
 // Layouts (Admin Panel Components)

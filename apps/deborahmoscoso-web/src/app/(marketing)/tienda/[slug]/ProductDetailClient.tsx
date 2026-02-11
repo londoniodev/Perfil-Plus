@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, CreditCard, ChevronLeft, Star, ShieldCheck, Truck, Package } from "lucide-react";
-import { Button, useToast } from "@alvarosky/ui";
+import { Button, useToast, PriceDisplay } from "@alvarosky/ui";
 import Link from "next/link";
 import { useCart } from "@/store/use-cart";
 import { useRouter } from "next/navigation";
 
 interface ProductDetailClientProps {
     product: any;
+    relatedProducts?: any[];
 }
 
-export function ProductDetailClient({ product }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
     const [selectedVariant, setSelectedVariant] = useState(product.variants[0] || null);
     const [mainImage, setMainImage] = useState(product.images[0] || "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop");
     const [isBuyingNow, setIsBuyingNow] = useState(false);
@@ -21,24 +22,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     const { success, error } = useToast();
     const router = useRouter();
 
-    const handleAddToCart = () => {
-        if (!selectedVariant) {
+    const handleAddToCart = (prod: any = product, variant: any = selectedVariant) => {
+        if (!variant) {
             error("Por favor, selecciona una variante.");
             return;
         }
 
         cart.addItem({
-            productId: product.id,
-            variantId: selectedVariant.id,
-            title: product.name,
-            subtitle: selectedVariant.name || "Estándar",
-            imageSrc: product.images[0] || mainImage,
-            price: Number(selectedVariant.price),
+            productId: prod.id,
+            variantId: variant.id,
+            title: prod.name,
+            subtitle: variant.name || "Estándar",
+            imageSrc: prod.images[0] || mainImage,
+            price: Number(variant.price),
             quantity: 1,
-            productType: product.productType
+            productType: prod.productType
         });
 
-        success(`${product.name} añadido al carrito`);
+        success(`${prod.name} añadido al carrito`);
     };
 
     const handleBuyNow = async () => {
@@ -137,9 +138,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                                 {product.name}
                             </h1>
 
-                            <div className="text-3xl font-black text-fuchsia-500 mb-8">
-                                ${Number(selectedVariant?.price || 0).toFixed(2)}
-                            </div>
+                            <PriceDisplay
+                                price={selectedVariant?.price || 0}
+                                currency="COP"
+                                className="mb-8"
+                                size="lg"
+                            />
 
                             <p className="text-zinc-400 text-lg leading-relaxed mb-10 font-medium">
                                 {product.description || "Potencia tu rendimiento con este producto exclusivo. Diseñado para ofrecer la máxima calidad y resultados extraordinarios en tu rutina diaria."}
@@ -177,7 +181,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                                 </Button>
 
                                 <Button
-                                    onClick={handleAddToCart}
+                                    onClick={() => handleAddToCart()}
                                     variant="outline"
                                     className="h-16 rounded-[1.25rem] border-zinc-800 bg-zinc-900/50 text-white hover:bg-zinc-800 font-black uppercase tracking-[0.2em] text-[10px] group"
                                 >
@@ -212,6 +216,56 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         </motion.div>
                     </div>
                 </div>
+
+                {/* Recommended Products Section */}
+                {relatedProducts.length > 0 && (
+                    <div className="mt-40">
+                        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+                            <div>
+                                <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">Recomendaciones <span className="text-fuchsia-500">Premium</span></h2>
+                                <p className="text-zinc-500 text-sm font-medium uppercase tracking-widest mt-2">Productos seleccionados para tu transformación</p>
+                            </div>
+                            <Link href="/tienda" className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-500 hover:text-fuchsia-400 transition-colors border-b border-fuchsia-500/20 pb-1">
+                                Ver toda la tienda
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {relatedProducts.map((item) => (
+                                <motion.div
+                                    key={item.id}
+                                    whileHover={{ y: -10 }}
+                                    className="group relative bg-zinc-900/30 border border-zinc-800 rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:border-fuchsia-500/30"
+                                >
+                                    <Link href={`/tienda/${item.slug}`} className="block aspect-square overflow-hidden relative">
+                                        <img
+                                            src={item.images[0] || "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop"}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-60" />
+                                    </Link>
+                                    <div className="p-8">
+                                        <h3 className="text-lg font-bold uppercase italic leading-tight mb-2 line-clamp-1 group-hover:text-fuchsia-500 transition-colors uppercase italic">{item.name}</h3>
+                                        <PriceDisplay
+                                            price={item.variants[0]?.price || 0}
+                                            currency="COP"
+                                            className="mb-6"
+                                            size="sm"
+                                        />
+                                        <Button
+                                            onClick={() => handleAddToCart(item, item.variants[0])}
+                                            variant="outline"
+                                            className="w-full h-12 rounded-xl border-zinc-800 bg-zinc-900/50 text-[8px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+                                        >
+                                            Añadir al carrito
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

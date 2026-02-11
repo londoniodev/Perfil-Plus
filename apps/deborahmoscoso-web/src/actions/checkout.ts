@@ -201,10 +201,10 @@ export async function placeOrder(
         })
         const preference = new Preference(client)
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL
 
         if (!baseUrl) {
-            throw new Error("NEXT_PUBLIC_BASE_URL is not defined")
+            throw new Error("NEXT_PUBLIC_APP_URL is not defined")
         }
 
         const preferenceData = await preference.create({

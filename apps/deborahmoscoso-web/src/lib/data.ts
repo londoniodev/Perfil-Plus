@@ -1,4 +1,4 @@
-import { prisma } from "@alvarosky/database";
+import { prisma, ProductType } from "@alvarosky/database";
 
 export async function getAcademyCourses() {
     return await prisma.course.findMany({
@@ -69,6 +69,24 @@ export async function getProductBySlug(slug: string) {
         },
         include: {
             variants: true,
+        },
+    });
+}
+export async function getRelatedProducts(id: string, productType: ProductType, limit: number = 4): Promise<any[]> {
+    return await prisma.product.findMany({
+        where: {
+            id: { not: id },
+            productType,
+            published: true,
+            deletedAt: null,
+        },
+        take: limit,
+        include: {
+            variants: {
+                where: {
+                    isDefault: true,
+                },
+            },
         },
     });
 }

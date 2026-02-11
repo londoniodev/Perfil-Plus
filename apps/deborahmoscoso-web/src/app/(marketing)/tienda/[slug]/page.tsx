@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/lib/data";
+import { getProductBySlug, getRelatedProducts } from "@/lib/data";
 import { ProductDetailClient } from "./ProductDetailClient";
 import { Metadata } from "next";
 
 interface ProductPageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
+    }>;
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
@@ -38,7 +38,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         notFound();
     }
 
+    const relatedProducts = await getRelatedProducts(product.id, product.productType);
+
     return (
-        <ProductDetailClient product={product} />
+        <ProductDetailClient product={product} relatedProducts={relatedProducts} />
     );
 }

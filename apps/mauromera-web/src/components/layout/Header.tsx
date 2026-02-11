@@ -23,6 +23,7 @@ export function Header() {
         <SiteHeader
             logo={siteConfig.branding.logo}
             logoAlt={siteConfig.branding.logoAlt}
+            logoUnoptimized
             links={navLinks}
             isAuthenticated={isAuthenticated}
             pathname={pathname}

@@ -22,6 +22,7 @@ export interface NavLink {
 export interface SiteHeaderProps {
     logo: string;
     logoAlt?: string;
+    logoUnoptimized?: boolean;
     links: NavLink[];
     isAuthenticated?: boolean;
     pathname?: string;
@@ -35,6 +36,7 @@ export interface SiteHeaderProps {
 export function SiteHeader({
     logo,
     logoAlt = "Logo",
+    logoUnoptimized = false,
     links,
     isAuthenticated = false,
     pathname = "",
@@ -87,10 +89,11 @@ export function SiteHeader({
                     <Image
                         src={logo}
                         alt={logoAlt}
-                        width={100}
-                        height={40}
+                        width={200}
+                        height={80}
                         className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
                         priority
+                        unoptimized={logoUnoptimized}
                     />
                     <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
                         Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable

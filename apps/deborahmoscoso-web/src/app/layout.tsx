@@ -92,7 +92,7 @@ export default function RootLayout({
           enableSystem={false}
           forcedTheme="dark"
         >
-          <BrandProvider>
+          <BrandProvider settings={{ primary: "fuchsia" }}>
             <GlobalSchemas />
             <ToastProvider>
               <NavigationWrapper footer={<Footer />}>

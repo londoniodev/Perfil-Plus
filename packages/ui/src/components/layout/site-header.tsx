@@ -127,15 +127,25 @@ interface DesktopNavLinksProps {
 
 function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "text-base font-medium transition-colors hover:text-accent",
-        currentPath === path ? "text-accent font-semibold" : "text-foreground/80"
+        "text-base font-medium transition-colors hover:text-fuchsia-400",
+        currentPath === path ? "text-fuchsia-500 font-bold" : "text-foreground/80"
     );
 
     return (
         <>
             {links.map((link) => (
-                <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+                <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                        linkClass(link.href),
+                        "relative py-1 px-1"
+                    )}
+                >
                     {link.label}
+                    {currentPath === link.href && (
+                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-fuchsia-500 rounded-full animate-in fade-in slide-in-from-left-1 duration-300" />
+                    )}
                 </Link>
             ))}
 
@@ -177,8 +187,8 @@ interface MobileNavLinksProps {
 
 function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, profileUrl }: MobileNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-accent/5 transition-colors",
-        currentPath === path ? "text-accent bg-accent/10 font-bold" : "text-foreground"
+        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-fuchsia-500/5 transition-colors",
+        currentPath === path ? "text-fuchsia-500 bg-fuchsia-500/10 font-bold" : "text-foreground"
     );
 
     return (
@@ -188,10 +198,16 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
                     key={link.href}
                     href={link.href}
                     onClick={onClick}
-                    className={linkClass(link.href)}
+                    className={cn(
+                        linkClass(link.href),
+                        "relative"
+                    )}
                 >
-                    <span>{link.label}</span>
-                    <IconArrowRight size={18} className="text-muted-foreground opacity-50" />
+                    {currentPath === link.href && (
+                        <span className="absolute left-0 top-0 w-1.5 h-full bg-fuchsia-500" />
+                    )}
+                    <span className={cn(currentPath === link.href ? "pl-2" : "")}>{link.label}</span>
+                    <IconArrowRight size={18} className={cn("transition-all", currentPath === link.href ? "text-fuchsia-500 translate-x-1" : "text-muted-foreground opacity-50")} />
                 </Link>
             ))}
 

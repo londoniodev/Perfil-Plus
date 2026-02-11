@@ -19,7 +19,7 @@ export function Footer() {
         <SiteFooter
             logo={siteConfig.branding.logo}
             logoAlt={siteConfig.branding.logoAlt}
-            tagline="Transformar el mundo empieza por cuidar el mundo interno."
+            tagline="Transformando vidas a través del fitness, la nutrición y el bienestar integral."
             links={footerLinks}
             companyName={siteConfig.name}
         />

@@ -1,16 +1,16 @@
 export const siteConfig = {
     name: "Soy Deborah Soy Saludable",
-    description: "Sitio web de Soy Deborah Soy Saludable",
-    domain: "deborahmoscoso.local",
+    description: "Coaching fitness, nutrición y suplementación premium para tu transformación integral.",
+    domain: "deborahmoscoso.com",
     tenantId: "deborahmoscoso",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3002",
-    ogImage: "",
-    keywords: ["deborahmoscoso"],
-    phone: "+00 000 000 0000",
-    email: "info@deborahmoscoso.local",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://deborahmoscoso.com",
+    ogImage: "/og-image.jpg",
+    keywords: ["fitness coach", "nutrición personal", "suplementos premium", "cuidado personal", "bienestar"],
+    phone: "+57 321 000 0000",
+    email: "hola@deborahmoscoso.com",
     branding: {
-        logo: "/favicon.ico",
-        logoAlt: "Soy Deborah Soy Saludable Logo"
+        logo: "/logo.png",
+        logoAlt: "Deborah Moscoso"
     },
     features: {
         blog: { enabled: true },
@@ -20,9 +20,9 @@ export const siteConfig = {
     },
     mainNav: [
         { title: "Inicio", href: "/" },
-        { title: "Portafolio", href: "/portafolio" },
-        { title: "Cursos", href: "/formacion" },
+        { title: "Programas", href: "/servicios" },
+        { title: "Tienda", href: "/tienda" },
         { title: "Blog", href: "/blog" },
-        { title: "Servicios", href: "/servicios" }
+        { title: "Contacto", href: "#contacto" }
     ]
 };

@@ -12,11 +12,9 @@ export function Header() {
 
     const navLinks = [
         { label: "Inicio", href: "/" },
-        { label: "Portafolio", href: "/portafolio" },
-        { label: "Cursos", href: "/formacion" },
-        { label: "Blog", href: "/blog" },
+        { label: "Programas", href: "/servicios" },
         { label: "Tienda", href: "/tienda" },
-        { label: "Servicios", href: "/servicios" },
+        { label: "Blog", href: "/blog" },
     ];
 
     return (

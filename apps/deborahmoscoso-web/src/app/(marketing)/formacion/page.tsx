@@ -2,6 +2,8 @@ import { Fill } from "@alvarosky/ui";
 import { getAcademyCourses } from "@/lib/data";
 import { CoursePageClient } from "./CoursePageClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function CoursesPage() {
     const courses = await getAcademyCourses();
 

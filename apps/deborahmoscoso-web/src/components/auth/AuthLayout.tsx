@@ -15,7 +15,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-black items-end p-12 overflow-hidden">
                 <Image
-                    src="/images/lifestyle/auth_hero.png"
+                    src="https://images.unsplash.com/photo-1583454110551-21f2fa2ec617?q=80&w=2070&auto=format&fit=crop"
                     alt="Deborah Moscoso - Soy Deborah Soy Saludable"
                     fill
                     style={{ objectFit: 'cover' }}

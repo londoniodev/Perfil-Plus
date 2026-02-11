@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                     <div className="mt-8 text-center flex justify-center">
                         <Link
                             href="/login"
-                            className="inline-flex items-center justify-center text-sm font-medium text-fuchsia-500 hover:text-fuchsia-400 transition-colors gap-2 p-2 rounded-full hover:bg-fuchsia-500/10 border border-fuchsia-500/20"
+                            className="inline-flex items-center justify-center p-3 rounded-full bg-fuchsia-600 text-white shadow-[0_0_20px_rgba(217,70,239,0.5)] hover:bg-fuchsia-500 hover:shadow-[0_0_30px_rgba(217,70,239,0.8)] hover:scale-110 transition-all duration-300 border border-fuchsia-400/20"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </Link>

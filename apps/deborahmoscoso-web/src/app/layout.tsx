@@ -68,6 +68,11 @@ export const metadata: Metadata = {
     // Agregar cuando estén disponibles:
     // google: 'google-site-verification-code',
   },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {

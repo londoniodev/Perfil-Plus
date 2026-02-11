@@ -30,7 +30,7 @@ export function StorePageClient({ products }: StorePageClientProps) {
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop"
+                        src="https://images.unsplash.com/photo-1593073715694-8149e9185a97?q=80&w=2070&auto=format&fit=crop"
                         alt="Shop Hero"
                         className="w-full h-full object-cover opacity-30"
                     />
@@ -105,7 +105,7 @@ export function StorePageClient({ products }: StorePageClientProps) {
                         >
                             <div className="relative aspect-[4/5] rounded-[2.5rem] bg-zinc-900 mb-8 overflow-hidden border border-zinc-800 transition-all duration-500 group-hover:border-fuchsia-500/30 group-hover:shadow-2xl group-hover:shadow-fuchsia-900/10">
                                 <img
-                                    src={product.images[0] || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"}
+                                    src={product.images[0] || "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop"}
                                     alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                 />

@@ -17,7 +17,7 @@ export function CoursePageClient({ courses, stats }: CoursePageClientProps) {
             <section className="relative h-[70vh] flex items-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
-                        src="https://images.unsplash.com/photo-1548691905-57c36cc8d93f?q=80&w=2069&auto=format&fit=crop"
+                        src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop"
                         alt="Fitness Training"
                         className="w-full h-full object-cover opacity-40"
                     />
@@ -125,7 +125,7 @@ export function CoursePageClient({ courses, stats }: CoursePageClientProps) {
                         >
                             <div className="relative h-72 overflow-hidden">
                                 <img
-                                    src={course.coverImage || "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"}
+                                    src={course.coverImage || "https://images.unsplash.com/photo-1548691905-57c36cc8d93f?q=80&w=2069&auto=format&fit=crop"}
                                     alt={course.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />

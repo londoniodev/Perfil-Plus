@@ -83,15 +83,18 @@ export function SiteHeader({
                 </div>
 
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 z-10 lg:ml-4">
+                <Link href="/" className="flex items-center gap-2 z-10 lg:ml-4 group">
                     <Image
                         src={logo}
                         alt={logoAlt}
                         width={100}
                         height={40}
-                        className="h-8 md:h-10 w-auto object-contain"
+                        className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
                         priority
                     />
+                    <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
+                        Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
+                    </span>
                 </Link>
 
                 {/* Desktop Nav */}

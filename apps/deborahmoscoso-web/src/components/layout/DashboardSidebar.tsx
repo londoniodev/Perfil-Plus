@@ -32,10 +32,10 @@ export function DashboardSidebar({ features, tenantName }: DashboardSidebarProps
             <img
                 src="/images/branding/menu_logo.png"
                 alt="Logo"
-                className="size-5 object-contain brightness-0 invert"
+                className="size-8 object-contain"
             />
         ),
-        name: tenantName,
+        name: "Soy Deborah",
         subtitle: isAdmin ? "Consola Admin" : "Plataforma",
     }
 

@@ -9,7 +9,7 @@ export const siteConfig = {
     phone: "+57 321 000 0000",
     email: "hola@deborahmoscoso.com",
     branding: {
-        logo: "/logo.png",
+        logo: "/images/branding/menu_logo.png",
         logoAlt: "Deborah Moscoso"
     },
     features: {

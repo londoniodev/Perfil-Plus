@@ -14,13 +14,13 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    default: `${siteConfig.name} | Coaching Fitness y Transformación Premium`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
-  authors: [{ name: "Mauricio Mera", url: siteConfig.url }],
-  creator: "Mauricio Mera",
+  authors: [{ name: "Deborah Moscoso", url: siteConfig.url }],
+  creator: "Deborah Moscoso",
   publisher: siteConfig.name,
   formatDetection: {
     email: false,
@@ -32,23 +32,23 @@ export const metadata: Metadata = {
     locale: "es_CO",
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    title: `${siteConfig.name} | Coaching Fitness y Transformación Premium`,
     description: siteConfig.description,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - Psicólogo y Consultor Organizacional`,
+        alt: `${siteConfig.name} - Expertos en Transformación Física`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    title: `${siteConfig.name} | Coaching Fitness y Transformación Premium`,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: "@mauromera",
+    creator: "@deborahmoscoso",
   },
   robots: {
     index: true,

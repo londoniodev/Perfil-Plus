@@ -12,7 +12,7 @@ export function FloatingBackButton({ className }: FloatingBackButtonProps) {
 
     return (
         <SharedFloatingBackButton
-            className={className}
+            className={`text-fuchsia-500 hover:text-fuchsia-400 hover:bg-fuchsia-500/10 border-fuchsia-500/20 ${className}`}
             onClick={() => router.push('/')}
         />
     );

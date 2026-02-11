@@ -1,10 +1,20 @@
 import { Fill } from "@alvarosky/ui";
+import { getAcademyCourses } from "@/lib/data";
+import { CoursePageClient } from "./CoursePageClient";
 
-export default function FormacionPage() {
+export default async function CoursesPage() {
+    const courses = await getAcademyCourses();
+
+    const stats = [
+        { label: "Estudiantes", value: "500+" },
+        { label: "Programas", value: courses.length.toString() },
+        { label: "Comunidad", value: "24/7" },
+        { label: "Resultados", value: "100%" },
+    ];
+
     return (
         <Fill>
-            <h1 className="text-2xl font-bold mb-4">Formación</h1>
-            <p className="text-muted-foreground">Próximamente programas de formación.</p>
+            <CoursePageClient courses={courses} stats={stats} />
         </Fill>
     );
 }

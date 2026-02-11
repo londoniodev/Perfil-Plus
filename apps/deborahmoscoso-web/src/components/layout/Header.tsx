@@ -15,6 +15,7 @@ export function Header() {
         { label: "Programas", href: "/servicios" },
         { label: "Tienda", href: "/tienda" },
         { label: "Blog", href: "/blog" },
+        { label: "Cursos", href: "/formacion" },
     ];
 
     return (

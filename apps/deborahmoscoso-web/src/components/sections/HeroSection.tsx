@@ -7,42 +7,71 @@ import { motion } from "framer-motion";
 export function HeroSection() {
     return (
         <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-zinc-950">
-            {/* Background Overlay */}
+            {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-zinc-950 z-10" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.1)_0%,transparent_70%)]" />
+                <img
+                    src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"
+                    alt="Deborah Moscoso"
+                    className="w-full h-full object-cover opacity-30"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/60 to-zinc-950 z-10" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.15)_0%,transparent_70%)]" />
             </div>
 
             <div className="container relative z-20 px-4 pt-20 text-center">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.2,
+                                delayChildren: 0.3
+                            }
+                        }
+                    }}
                     className="max-w-4xl mx-auto"
                 >
-                    <span className="inline-block px-3 py-1 mb-6 text-xs font-semibold tracking-wider text-emerald-400 uppercase bg-emerald-400/10 rounded-full border border-emerald-400/20">
-                        Coaching Elite & Bienestar
-                    </span>
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6">
-                        Transforma Tu Vida, <br />
-                        <span className="text-emerald-500">Eleva Tu Rendimiento</span>
-                    </h1>
-                    <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        Coaching fitness de alto rendimiento y estrategias de bienestar integral
-                        diseñadas para el éxito. El físico y la mentalidad que mereces comienzan aquí.
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[200px] h-14 text-lg rounded-full">
+                    <motion.h1
+                        variants={{
+                            hidden: { opacity: 0, y: 40 },
+                            visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } }
+                        }}
+                        className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white mb-8 leading-[0.85]"
+                    >
+                        TRANSFORMA <br />
+                        <span className="text-fuchsia-500 italic">TU VIDA</span>
+                    </motion.h1>
+                    <motion.p
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 0.8, y: 0, transition: { duration: 0.8 } }
+                        }}
+                        className="text-xl md:text-2xl text-zinc-300 mb-12 max-w-2xl mx-auto leading-relaxed opacity-80"
+                    >
+                        Coaching de alto rendimiento y suplementación premium.
+                        El físico y la mentalidad que mereces comienzan aquí.
+                    </motion.p>
+                    <motion.div
+                        variants={{
+                            hidden: { opacity: 0, scale: 0.9 },
+                            visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
+                        }}
+                        className="flex flex-col sm:flex-row items-center justify-center gap-4"
+                    >
+                        <Button asChild size="lg" className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white min-w-[200px] h-14 text-lg rounded-full">
                             <Link href="/servicios">
                                 Comienza Tu Transformación
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" size="lg" className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 min-w-[200px] h-14 text-lg rounded-full">
+                        <Button asChild variant="outline" size="lg" className="border-fuchsia-500/50 text-fuchsia-400 hover:bg-fuchsia-500/10 min-w-[200px] h-14 text-lg rounded-full">
                             <Link href="/tienda">
                                 Explorar Tienda
                             </Link>
                         </Button>
-                    </div>
+                    </motion.div>
                 </motion.div>
 
                 {/* Trusted By / Social Proof placeholder */}

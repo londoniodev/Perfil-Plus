@@ -45,7 +45,7 @@ export function CoachingInquiryForm() {
                     <Input
                         {...register("name")}
                         placeholder="Tu nombre"
-                        className="bg-zinc-950 border-zinc-800 focus:border-emerald-500"
+                        className="bg-zinc-950 border-zinc-800 focus:border-fuchsia-500"
                     />
                     {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
                 </div>
@@ -56,7 +56,7 @@ export function CoachingInquiryForm() {
                         {...register("email")}
                         type="email"
                         placeholder="tu@email.com"
-                        className="bg-zinc-950 border-zinc-800 focus:border-emerald-500"
+                        className="bg-zinc-950 border-zinc-800 focus:border-fuchsia-500"
                     />
                     {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
                 </div>
@@ -66,7 +66,7 @@ export function CoachingInquiryForm() {
                     <Input
                         {...register("goal")}
                         placeholder="Ej: Perder 5kg, Ganar masa muscular..."
-                        className="bg-zinc-950 border-zinc-800 focus:border-emerald-500"
+                        className="bg-zinc-950 border-zinc-800 focus:border-fuchsia-500"
                     />
                     {errors.goal && <p className="text-red-500 text-xs">{errors.goal.message}</p>}
                 </div>
@@ -75,7 +75,7 @@ export function CoachingInquiryForm() {
                     <label className="text-sm font-medium text-zinc-300">Experiencia previa</label>
                     <select
                         {...register("experience")}
-                        className="w-full h-10 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full h-10 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-sm text-zinc-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
                     >
                         <option value="">Selecciona una opción</option>
                         <option value="beginner">Principiante (0-6 meses)</option>
@@ -90,14 +90,14 @@ export function CoachingInquiryForm() {
                     <Textarea
                         {...register("message")}
                         placeholder="Cuéntanos cualquier detalle importante..."
-                        className="bg-zinc-950 border-zinc-800 focus:border-emerald-500 h-32"
+                        className="bg-zinc-950 border-zinc-800 focus:border-fuchsia-500 h-32"
                     />
                 </div>
 
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 rounded-xl"
+                    className="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white h-12 rounded-xl"
                 >
                     {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
                 </Button>

@@ -12,8 +12,8 @@ const categories = [
         description: "Eleva tu rendimiento con nuestra línea de suplementación de alta pureza.",
         image: "/images/category-supplements.jpg", // Placeholder
         href: "/tienda?category=suplementos",
-        color: "bg-emerald-500/10",
-        borderColor: "border-emerald-500/20"
+        color: "bg-fuchsia-500/10",
+        borderColor: "border-fuchsia-500/20"
     },
     {
         title: "Cuidado Masculino",
@@ -39,7 +39,7 @@ export function ProductHighlight() {
             <div className="container px-4">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div className="max-w-2xl">
-                        <h2 className="text-sm font-semibold text-emerald-500 uppercase tracking-widest mb-3">
+                        <h2 className="text-sm font-semibold text-fuchsia-500 uppercase tracking-widest mb-3">
                             Nuestras Colecciones
                         </h2>
                         <h3 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -49,22 +49,40 @@ export function ProductHighlight() {
                             Productos seleccionados y desarrollados para acompañar tu proceso de transformación física y mental.
                         </p>
                     </div>
-                    <Button asChild variant="ghost" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+                    <Button asChild variant="ghost" className="text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-500/10">
                         <Link href="/tienda" className="flex items-center gap-2">
                             Ver Toda la Tienda <ChevronRight className="w-4 h-4" />
                         </Link>
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {categories.map((category, index) => (
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-100px" }}
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                            opacity: 1,
+                            transition: {
+                                staggerChildren: 0.15
+                            }
+                        }
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                >
+                    {categories.map((category) => (
                         <motion.div
                             key={category.title}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className={`group relative overflow-hidden rounded-3xl border ${category.borderColor} ${category.color} p-8 flex flex-col h-[450px] transition-all hover:shadow-2xl hover:shadow-emerald-500/5`}
+                            variants={{
+                                hidden: { opacity: 0, y: 30 },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: { duration: 0.8, ease: "easeOut" }
+                                }
+                            }}
+                            className={`group relative overflow-hidden rounded-3xl border ${category.borderColor} ${category.color} p-8 flex flex-col h-[450px] transition-all hover:shadow-2xl hover:shadow-fuchsia-500/5`}
                         >
                             <div className="flex-1">
                                 <h4 className="text-2xl font-bold text-white mb-3">{category.title}</h4>
@@ -76,7 +94,6 @@ export function ProductHighlight() {
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <ShoppingBag className="w-24 h-24 text-white/10" />
                                     </div>
-                                    {/* We'll use real images later */}
                                 </div>
                             </div>
 
@@ -87,7 +104,7 @@ export function ProductHighlight() {
                             </Button>
                         </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </section>
     );

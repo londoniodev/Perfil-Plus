@@ -61,3 +61,14 @@ export async function getThemes() {
         },
     });
 }
+
+export async function getProductBySlug(slug: string) {
+    return await prisma.product.findUnique({
+        where: {
+            slug,
+        },
+        include: {
+            variants: true,
+        },
+    });
+}

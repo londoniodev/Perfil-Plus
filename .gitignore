@@ -79,3 +79,7 @@ scripts/set-admin-mauro.js
 
 # AI Configuration
 .aiexclude
+
+# Scripts & Imports
+apps/deborahmoscoso-web/1770777527569-product-exports-01KH591H8JDNXQQXXA9RX931X5.csv
+apps/api/scripts/import-products.ts

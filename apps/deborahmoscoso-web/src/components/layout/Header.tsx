@@ -22,6 +22,11 @@ export function Header() {
         <SiteHeader
             logo={siteConfig.branding.logo}
             logoAlt={siteConfig.branding.logoAlt}
+            logoSuffix={
+                <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
+                    Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
+                </span>
+            }
             links={navLinks}
             isAuthenticated={isAuthenticated}
             pathname={pathname}

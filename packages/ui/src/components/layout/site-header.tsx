@@ -19,24 +19,25 @@ export interface NavLink {
     href: string;
 }
 
-export interface SiteHeaderProps {
-    logo: string;
-    logoAlt?: string;
-    logoUnoptimized?: boolean;
-    links: NavLink[];
-    isAuthenticated?: boolean;
-    pathname?: string;
-    cartComponent?: React.ReactNode;
-    loginUrl?: string;
-    registerUrl?: string;
-    profileUrl?: string;
-    className?: string;
+logo: string;
+logoAlt ?: string;
+logoUnoptimized ?: boolean;
+logoSuffix ?: React.ReactNode;
+links: NavLink[];
+isAuthenticated ?: boolean;
+pathname ?: string;
+cartComponent ?: React.ReactNode;
+loginUrl ?: string;
+registerUrl ?: string;
+profileUrl ?: string;
+className ?: string;
 }
 
 export function SiteHeader({
     logo,
     logoAlt = "Logo",
     logoUnoptimized = false,
+    logoSuffix,
     links,
     isAuthenticated = false,
     pathname = "",
@@ -95,9 +96,7 @@ export function SiteHeader({
                         priority
                         unoptimized={logoUnoptimized}
                     />
-                    <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
-                        Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
-                    </span>
+                    {logoSuffix}
                 </Link>
 
                 {/* Desktop Nav */}

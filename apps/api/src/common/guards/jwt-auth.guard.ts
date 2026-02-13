@@ -20,12 +20,16 @@ export class JwtAuthGuard implements CanActivate {
             context.getClass(),
         ]);
 
-        if (isPublic) {
+        const request = context.switchToHttp().getRequest();
+        const token = this.extractTokenFromHeader(request);
+
+        if (isPublic && !token) {
             return true;
         }
 
-        const request = context.switchToHttp().getRequest();
-        const token = this.extractTokenFromHeader(request);
+        // Si es público pero HAY token, intentamos procesarlo (Optional Auth)
+        // Si falla (expirado, inválido), simplemente lo ignoramos si es público.
+        // Si no es público, el error se lanzará más abajo.
 
         if (!token) {
             throw new UnauthorizedException('Token no proporcionado');
@@ -78,6 +82,10 @@ export class JwtAuthGuard implements CanActivate {
                 console.warn('[JwtAuthGuard]: Token expired');
             } else {
                 console.error('[JwtAuthGuard Error]:', error); // Other errors remain as errors
+            }
+
+            if (isPublic) {
+                return true;
             }
 
             if (error instanceof UnauthorizedException) {

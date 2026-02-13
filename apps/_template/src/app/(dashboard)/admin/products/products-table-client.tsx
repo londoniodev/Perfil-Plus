@@ -57,6 +57,7 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
         PHYSICAL: { label: "Físico", variant: "secondary" },
         DIGITAL: { label: "Digital", variant: "default" },
         SERVICE: { label: "Servicio", variant: "outline" },
+        RESTAURANT: { label: "Menú", variant: "secondary" }, // Reusing secondary or creating new one
     }
 
     return (
@@ -123,7 +124,11 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
                                 {/* Actions */}
                                 <div className="flex flex-col gap-2">
                                     <Button asChild className="w-full">
-                                        <Link href={`/admin/products/${selectedProduct.id}`}>
+                                        <Link href={
+                                            selectedProduct.type === "RESTAURANT"
+                                                ? `/admin/restaurant/menu/${selectedProduct.id}`
+                                                : `/admin/products/${selectedProduct.id}`
+                                        }>
                                             <Pencil className="mr-2 h-4 w-4" />
                                             Editar Producto
                                         </Link>

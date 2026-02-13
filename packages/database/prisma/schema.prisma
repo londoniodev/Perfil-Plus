@@ -361,6 +361,7 @@ enum ProductType {
   DIGITAL   // E-books, cursos digitales, etc.
   PHYSICAL  // Gafas, suplementos, obras de arte, etc.
   SERVICE   // Consultorías, mentorías
+  RESTAURANT // Platos, bebidas, menú del día
 }
 
 // Modelo: Producto (Base)
@@ -378,6 +379,9 @@ model Product {
   digitalFileUrl String?     // Privado (Minio)
   previewUrl     String?     // Público (Minio)
 
+  // Operativo Restaurante
+  isAvailable    Boolean     @default(true) // Kill switch operativo
+
   published      Boolean     @default(false)
   deletedAt      DateTime?
   createdAt      DateTime    @default(now())
@@ -385,6 +389,7 @@ model Product {
 
   // Relaciones
   variants       ProductVariant[]
+  modifierGroups ModifierGroup[]
   
   @@index([published, productType])
   @@index([slug])
@@ -411,36 +416,87 @@ model ProductVariant {
   @@index([sku])
 }
 
+// ============ RESTAURANTE: MODIFICADORES ============
+
+model ModifierGroup {
+  id          String     @id @default(cuid())
+  name        String     // "Elige tu acompañamiento"
+  minSelect   Int        @default(0)
+  maxSelect   Int        @default(1)
+  productId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  modifiers   Modifier[]
+
+  @@index([productId])
+}
+
+model Modifier {
+  id              String   @id @default(cuid())
+  name            String   // "Papas Fritas", "Sin cebolla"
+  priceAdjustment Decimal  @default(0) @db.Decimal(10, 2)
+  stock           Int?     // null = sin límite de inventario
+  isAvailable     Boolean  @default(true) // Kill switch operativo
+  groupId         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  group           ModifierGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  orderItems      OrderItemModifier[]
+
+  @@index([groupId])
+}
+
 // ============ ÓRDENES DE COMPRA ============
 
 enum OrderStatus {
   PENDING    // Esperando pago
   APPROVED   // Pago aprobado
   PROCESSING // En preparación (físicos)
+  PREPARING  // En cocina (restaurante)
+  READY      // Listo para servir (restaurante)
+  SERVED     // Servido en mesa (restaurante)
   SHIPPED    // Enviado (físicos)
   DELIVERED  // Entregado/Completado
   CANCELLED  // Cancelado
   REFUNDED   // Reembolsado
 }
 
+enum OrderType {
+  DINE_IN    // Comer en mesa
+  TAKE_AWAY  // Para llevar (recogida)
+  DELIVERY   // Domicilio
+}
+
 model Order {
   id            String      @id @default(cuid())
-  userId        String
+  userId        String?     // Opcional para Guest/Mesa
   orderNumber   String      @unique  // Ej: ORD-2026-0001
   totalAmount   Decimal     @db.Decimal(10, 2)
   status        OrderStatus @default(PENDING)
+  orderType     OrderType   @default(DINE_IN)
   mpPaymentId   String?     // ID de Mercado Pago
-  shippingData  Json?       // { "address": "...", "city": "...", "phone": "..." }
+  shippingData  Json?       // { "address": "...", "city": "..." }
+  tableNumber   String?     // Número de mesa (solo DINE_IN)
+  
+  // Guest / CRM fields
+  customerName  String?
+  customerPhone String?
+  notes         String?     // Notas generales de la orden
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   // Relaciones
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
 
   @@index([userId])
   @@index([status])
   @@index([orderNumber])
+  @@index([orderType])
 }
 
 model OrderItem {
@@ -448,17 +504,33 @@ model OrderItem {
   orderId     String
   variantId   String
   quantity    Int      @default(1)
-  price       Decimal  @db.Decimal(10, 2)  // Precio al momento de la compra
+  price       Decimal  @db.Decimal(10, 2)  // Precio unitario calculado server-side
   productName String   // Snapshot: nombre del producto al momento de compra
   variantName String?  // Snapshot: nombre de la variante (ej: "Rojo XL")
+  notes       String?  // "Sin sal", "Alergia al maní", "Salsa aparte"
   createdAt   DateTime @default(now())
 
   // Relaciones
-  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  order      Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant    ProductVariant      @relation(fields: [variantId], references: [id])
+  modifiers  OrderItemModifier[]
 
   @@index([orderId])
   @@index([variantId])
+}
+
+model OrderItemModifier {
+  id              String   @id @default(cuid())
+  orderItemId     String
+  modifierId      String
+  modifierName    String   // Snapshot del nombre al momento de compra
+  priceAdjustment Decimal  @db.Decimal(10, 2) // Snapshot del precio
+  quantity        Int      @default(1)         // "Doble Extra Queso" = 2
+
+  orderItem       OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifier        Modifier  @relation(fields: [modifierId], references: [id])
+
+  @@index([orderItemId])
 }
 
 // ============ CRM ============

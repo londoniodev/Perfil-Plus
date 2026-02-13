@@ -8,6 +8,7 @@ import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
 import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
+import { TableDetector } from "@/components/shop/table-detector";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -99,6 +100,7 @@ export default function RootLayout({
                 {children}
               </NavigationWrapper>
               <PwaInstallPrompt />
+              <TableDetector />
             </ToastProvider>
           </BrandProvider>
         </ThemeProvider>

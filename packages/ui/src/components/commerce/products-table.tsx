@@ -190,7 +190,11 @@ function getColumns(
                                 </DropdownMenuItem>
                             )}
                             <DropdownMenuItem asChild>
-                                <Link href={`/admin/products/${product.id}`}>
+                                <Link href={
+                                    product.type === "RESTAURANT"
+                                        ? `/admin/restaurant/menu/${product.id}`
+                                        : `/admin/products/${product.id}`
+                                }>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Editar
                                 </Link>

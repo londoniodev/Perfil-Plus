@@ -121,3 +121,11 @@ export async function getLessonBySlug(courseSlug: string, lessonSlug: string, to
     return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers });
 }
 
+// ============ SHOP ============
+export async function createOrder(data: any): Promise<any> {
+    return fetchAPI('/orders', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+

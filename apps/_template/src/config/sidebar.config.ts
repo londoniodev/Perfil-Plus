@@ -13,6 +13,9 @@ import {
     ClipboardList,
     FileText,
     GraduationCap,
+    UtensilsCrossed,
+    ChefHat,
+    QrCode,
 } from "lucide-react";
 import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
 
@@ -24,7 +27,7 @@ export type SidebarNavItem = AdminSidebarNavItem;
 export type SidebarNavGroup = AdminSidebarNavGroup;
 export type SidebarFeatureSection = AdminSidebarSection;
 
-export type FeatureKey = "shop" | "blog" | "lms";
+export type FeatureKey = "shop" | "blog" | "lms" | "restaurant";
 
 export type SidebarConfig = {
     core: AdminSidebarSection;
@@ -117,6 +120,32 @@ export const sidebarConfig: SidebarConfig = {
                     { title: "Ver temas", href: "/admin/cursos" },
                     { title: "Crear tema", href: "/admin/cursos/temas/nuevo" },
                 ],
+            },
+        ],
+    },
+    // ─────────────────────────────────────────────────────────────────────────
+    // RESTAURANT: Gastronomy feature
+    // ─────────────────────────────────────────────────────────────────────────
+    restaurant: {
+        label: "Restaurante",
+        groups: [
+            {
+                title: "Menú",
+                icon: UtensilsCrossed,
+                items: [
+                    { title: "Ver carta", href: "/admin/restaurant/menu" },
+                    { title: "Nuevo plato", href: "/admin/restaurant/menu/new" },
+                ],
+            },
+            {
+                title: "Comandas",
+                href: "/admin/restaurant/orders",
+                icon: ChefHat,
+            },
+            {
+                title: "Mesas",
+                href: "/admin/restaurant/tables",
+                icon: QrCode,
             },
         ],
     },

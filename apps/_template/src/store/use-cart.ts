@@ -10,12 +10,15 @@ export interface CartItem {
     price: number
     quantity: number
     productType: "DIGITAL" | "PHYSICAL" | "SERVICE"
+    modifiers?: { id: string; name: string; price: number }[]
 }
 
 interface CartStore {
     items: CartItem[]
+    tableId: string | null
     addItem: (data: CartItem) => void
     removeItem: (variantId: string) => void
+    setTableId: (id: string | null) => void
     clearCart: () => void
     totalItems: () => number
     totalPrice: () => number
@@ -25,22 +28,26 @@ export const useCart = create<CartStore>()(
     persist(
         (set, get) => ({
             items: [],
+            tableId: null,
+
+            setTableId: (id) => set({ tableId: id }),
 
             addItem: (data) => {
                 const currentItems = get().items
-                const existingItem = currentItems.find((item) => item.variantId === data.variantId)
+                // Comparar variantId Y modificadores para agrupar
+                const existingItemIndex = currentItems.findIndex((item) =>
+                    item.variantId === data.variantId &&
+                    JSON.stringify(item.modifiers?.sort((a, b) => a.id.localeCompare(b.id))) ===
+                    JSON.stringify(data.modifiers?.sort((a, b) => a.id.localeCompare(b.id)))
+                )
 
-                if (existingItem) {
-                    // Si ya existe, sumamos cantidad
-                    set({
-                        items: currentItems.map((item) =>
-                            item.variantId === data.variantId
-                                ? { ...item, quantity: item.quantity + data.quantity }
-                                : item
-                        ),
-                    })
+                if (existingItemIndex > -1) {
+                    // Si ya existe idéntico, sumamos cantidad
+                    const newItems = [...currentItems]
+                    newItems[existingItemIndex].quantity += data.quantity
+                    set({ items: newItems })
                 } else {
-                    // Si es nuevo, lo agregamos
+                    // Si es nuevo (o tiene modificadores distintos), lo agregamos
                     set({ items: [...currentItems, data] })
                 }
             },

@@ -506,12 +506,16 @@ export class PaymentsService {
                 });
 
                 if (variant && variant.product.productType === 'DIGITAL') {
-                    await this.emailService.sendDigitalPurchaseEmail(
-                        order.user.email,
-                        order.user.name || 'Cliente',
-                        item.productName, // e.g. "Ebook: Como programar"
-                        variant.product.slug
-                    );
+                    if (order.user?.email) {
+                        await this.emailService.sendDigitalPurchaseEmail(
+                            order.user.email,
+                            order.user.name || order.customerName || 'Cliente',
+                            item.productName,
+                            variant.product.slug
+                        );
+                    } else {
+                        this.logger.warn(`No se pudo enviar email digital para la orden ${orderId}: No hay email disponible.`);
+                    }
                 }
             }
 

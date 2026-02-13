@@ -296,12 +296,14 @@ async function main() {
     // 8.1 Tenant Principal (Mauro Mera)
     const tenantMauro = await prisma.tenant.upsert({
         where: { slug: 'mauro' },
-        update: {},
+        update: {
+            features: ["shop", "blog", "lms", "restaurant"]
+        },
         create: {
             name: 'Mauro Mera',
             slug: 'mauro',
             dbName: 'db_mauromera',
-            features: ["shop", "blog", "lms"],
+            features: ["shop", "blog", "lms", "restaurant"],
             design: {
                 colors: { primary: "#000000" }
             }

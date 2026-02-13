@@ -4,10 +4,10 @@ import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
 import { Button, AdminPageWrapper } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
-import { ProductsTableClient } from "./products-table-client"
+import { ProductsTableClient } from "../../products/products-table-client"
 
 // Server Component - Fetches data
-export default async function ProductsPage() {
+export default async function RestaurantMenuPage() {
     // 1. Verificar autenticación y rol
     const user = await getSessionUser()
 
@@ -19,8 +19,11 @@ export default async function ProductsPage() {
         redirect("/")
     }
 
-    // 2. Obtener productos con variantes
+    // 2. Obtener productos TIPO RESTAURANT
     const products = await prisma.product.findMany({
+        where: {
+            productType: "RESTAURANT" as any
+        },
         include: {
             variants: {
                 select: {
@@ -29,23 +32,18 @@ export default async function ProductsPage() {
                 }
             }
         },
-        where: {
-            productType: {
-                not: "RESTAURANT" as any
-            }
-        },
         orderBy: { createdAt: "desc" }
     })
 
     // 3. Transformar datos para la tabla
     const tableData = products.map((product: any) => {
-        // Calcular stock total
+        // Calcular stock total (Para restaurante suele ser ilimitado, pero mantenemos lógica)
         const totalStock = product.variants ? product.variants.reduce((sum: any, variant: any) => {
             if (variant.stock === -1) return Infinity
             return sum + variant.stock
         }, 0) : 0
 
-        // Precio mínimo de las variantes
+        // Precio mínimo
         const minPrice = product.variants && product.variants.length > 0 ? Math.min(
             Number(product.basePrice),
             ...product.variants.map((v: any) => Number(v.price))
@@ -55,7 +53,7 @@ export default async function ProductsPage() {
             id: product.id,
             name: product.name,
             image: product.images[0] || "/placeholder.jpg",
-            type: product.productType as "PHYSICAL" | "DIGITAL" | "SERVICE",
+            type: product.productType as any,
             price: minPrice,
             stock: totalStock === Infinity ? "Ilimitado" : totalStock,
             published: product.published,
@@ -65,13 +63,13 @@ export default async function ProductsPage() {
 
     return (
         <AdminPageWrapper
-            title="Productos"
-            description="Gestiona el catálogo de tu tienda"
+            title="Menú del Restaurante"
+            description="Gestiona los platos y bebidas de tu carta"
             actions={
                 <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
-                    <Link href="/admin/products/new">
+                    <Link href="/admin/restaurant/menu/new">
                         <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Producto
+                        Nuevo Plato
                     </Link>
                 </Button>
             }

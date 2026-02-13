@@ -65,7 +65,7 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
         SMTP_HOST: Joi.string().optional(),
         SMTP_PORT: Joi.number().default(465),
         SMTP_USER: Joi.string().optional(),
-        SMTP_PASS: Joi.string().optional(),
+        SMTP_PASS: Joi.string().optional().allow(''),
         SMTP_FROM: Joi.string().optional(),
 
         // Redis
@@ -98,16 +98,24 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        store: await redisStore({
-          socket: {
-            host: configService.get('REDIS_HOST') || 'redis',
-            port: parseInt(configService.get('REDIS_PORT') || '6379') || 6379,
-          },
-          password: configService.get('REDIS_PASSWORD'), // Auth Support
-          ttl: 3600 * 1000, // 1 Hora default
-        }),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        try {
+          const store = await redisStore({
+            socket: {
+              host: configService.get('REDIS_HOST') || 'localhost',
+              port: parseInt(configService.get('REDIS_PORT') || '6379') || 6379,
+              connectTimeout: 3000,
+            },
+            password: configService.get('REDIS_PASSWORD'),
+            ttl: 3600 * 1000,
+          });
+          console.log('✅ Redis cache connected');
+          return { store };
+        } catch (error) {
+          console.warn('⚠️ Redis not available, using in-memory cache:', error.message);
+          return { ttl: 3600 * 1000 };
+        }
+      },
       inject: [ConfigService],
     }),
   ],

@@ -1,0 +1,472 @@
+{
+  "meta": {
+    "project": "Módulo Restaurante Backend",
+    "date": "2026-02-12",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "Extensión de un sistema e-commerce para soportar operaciones de restaurante, incluyendo modificadores de productos, gestión de mesas, y workflow de cocina con control de inventario.",
+  "core_goals": [
+    "Agregar soporte para modificadores de producto anidados en productos de tipo PHYSICAL en el sistema e-commerce.",
+    "Permitir la creación, actualización y gestión de órdenes con selección de modificadores, cantidades, notas y asignación de mesa.",
+    "Implementar un workflow de estado de órdenes adaptado a operaciones de restaurante incluyendo estados específicos de cocina y servicio.",
+    "Garantizar integridad de stock con decremento atómico y validaciones de selección de modificadores.",
+    "Mantener compatibilidad hacia atrás con productos tipo DIGITAL y operaciones existentes."
+  ],
+  "key_features": [
+    "Creación y actualización de productos con grupos de modificadores y sus opciones, permitiendo límites de selección y ajustes de precio.",
+    "Modelo extendido en base de datos Prisma con nuevas entidades ModifierGroup, Modifier y OrderItemModifier para gestionar modificadores y snapshot de selección.",
+    "Creación de órdenes con validación completa (minSelect/maxSelect, stock, disponibilidad) y cálculo server-side de precios, con soporte para distintos tipos de orden (DINE_IN, TAKE_AWAY, DELIVERY) y número de mesa.",
+    "Actualización rápida del estado de órdenes para display de cocina y atención, con nuevos estados PREPARING, READY, SERVED.",
+    "Listados administrativos de órdenes con filtros por estado y detalle completo de usuario, items, modificadores y productos.",
+    "Endpoints REST protegidos con JWT y roles, incluyendo seguridad en endpoints administrativos."
+  ],
+  "user_flow_summary": [
+    "Administrador crea producto físico con grupos de modificadores anidados via POST /admin/products, con validaciones y creación de variants y modificadores.",
+    "Administrador actualiza producto y sus modificadores con PUT /admin/products/:id que reemplaza grupos y opciones.",
+    "Usuario crea orden via POST /orders indicando tipo, mesa, items con variantes y modificadores; backend valida reglas de selección y stock, calcula total y decrementa inventario.",
+    "Administrador actualiza estado de orden via PATCH /admin/orders/:id/status para reflejar operaciones en cocina y atención.",
+    "Administrador consulta listado de órdenes via GET /admin/orders con filtro opcional por estado y visualización detallada."
+  ],
+  "validation_criteria": [
+    "La creación y actualización de productos debe validar la estructura y restricciones de modificadores y devolver errores HTTP 400 en caso de violaciones.",
+    "La creación de órdenes debe validar la consistencia de cantidades, selección de modificadores según minSelect y maxSelect, disponibilidad de stock y existencia de variantes y modificadores; en caso de error debe retornar apropiados códigos 400 o 404.",
+    "La actualización de estado de órdenes sólo debe ser accesible por usuarios con rol ADMIN y reflejar correctamente el nuevo estado; debe manejar casos donde la orden no existe con error 404.",
+    "Los datos retornados en consultas administrativas deben incluir información completa de modificadores y usuarios ordenantes.",
+    "El sistema debe soportar migraciones Prisma para los nuevos modelos y enums sin afectar datos existentes y garantizar compatibilidad ascendente."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "NestJS",
+      "Prisma ORM",
+      "PostgreSQL",
+      "Jest",
+      "class-validator",
+      "class-transformer",
+      "JWT (Passport)",
+      "Redis (cache-manager)"
+    ],
+    "features": [
+      {
+        "name": "Create Product with Modifier Groups",
+        "description": "POST /admin/products - Creates a product with optional nested modifier groups (restaurant menu items). Each modifier group has name, minSelect, maxSelect and an array of modifiers with name, priceAdjustment, stock, isAvailable. Also creates a default ProductVariant. Requires ADMIN role JWT.",
+        "files": [
+          "src/modules/products/products.controller.ts",
+          "src/modules/products/products.service.ts",
+          "src/modules/products/dto/create-product.dto.ts",
+          "src/modules/products/dto/create-modifier-group.dto.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "paths": {
+            "/admin/products": {
+              "post": {
+                "summary": "Create product with optional modifier groups",
+                "security": [
+                  {
+                    "bearerAuth": []
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "slug",
+                          "description",
+                          "productType",
+                          "basePrice",
+                          "images"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "productType": {
+                            "type": "string",
+                            "enum": [
+                              "DIGITAL",
+                              "PHYSICAL",
+                              "SERVICE"
+                            ]
+                          },
+                          "basePrice": {
+                            "type": "number"
+                          },
+                          "images": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "stock": {
+                            "type": "integer"
+                          },
+                          "sku": {
+                            "type": "string"
+                          },
+                          "published": {
+                            "type": "boolean"
+                          },
+                          "modifierGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "name",
+                                "modifiers"
+                              ],
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "minSelect": {
+                                  "type": "integer",
+                                  "default": 0
+                                },
+                                "maxSelect": {
+                                  "type": "integer",
+                                  "default": 1
+                                },
+                                "modifiers": {
+                                  "type": "array",
+                                  "minItems": 1,
+                                  "items": {
+                                    "type": "object",
+                                    "required": [
+                                      "name"
+                                    ],
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "priceAdjustment": {
+                                        "type": "number",
+                                        "default": 0
+                                      },
+                                      "stock": {
+                                        "type": "integer"
+                                      },
+                                      "isAvailable": {
+                                        "type": "boolean",
+                                        "default": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Product created with variants and modifier groups"
+                  },
+                  "400": {
+                    "description": "Validation error or duplicate slug"
+                  },
+                  "401": {
+                    "description": "Unauthorized"
+                  },
+                  "403": {
+                    "description": "Forbidden - not ADMIN"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Update Product with Modifier Groups",
+        "description": "PUT /admin/products/:id - Updates a product and replaces modifier groups (delete all + recreate). Requires ADMIN role JWT.",
+        "files": [
+          "src/modules/products/products.controller.ts",
+          "src/modules/products/products.service.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "paths": {
+            "/admin/products/{id}": {
+              "put": {
+                "summary": "Update product with modifier groups (replace strategy)",
+                "security": [
+                  {
+                    "bearerAuth": []
+                  }
+                ],
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/CreateProductDto"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Product updated"
+                  },
+                  "404": {
+                    "description": "Product not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Create Order with Modifiers and Table",
+        "description": "POST /orders - Creates an order with server-side price calculation. Accepts variantId, quantity, notes per item, and modifiers with quantity. Validates minSelect/maxSelect, modifier availability, stock. Uses atomic decrement for inventory. Supports OrderType (DINE_IN, TAKE_AWAY, DELIVERY) and tableNumber.",
+        "files": [
+          "src/modules/orders/orders.controller.ts",
+          "src/modules/orders/orders.service.ts",
+          "src/modules/orders/dto/create-order.dto.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "paths": {
+            "/orders": {
+              "post": {
+                "summary": "Create order with server-side price calculation",
+                "security": [
+                  {
+                    "bearerAuth": []
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "required": [
+                          "items"
+                        ],
+                        "properties": {
+                          "orderType": {
+                            "type": "string",
+                            "enum": [
+                              "DINE_IN",
+                              "TAKE_AWAY",
+                              "DELIVERY"
+                            ],
+                            "default": "DINE_IN"
+                          },
+                          "tableNumber": {
+                            "type": "string"
+                          },
+                          "items": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "variantId",
+                                "quantity"
+                              ],
+                              "properties": {
+                                "variantId": {
+                                  "type": "string"
+                                },
+                                "quantity": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "notes": {
+                                  "type": "string"
+                                },
+                                "modifiers": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "required": [
+                                      "modifierId",
+                                      "quantity"
+                                    ],
+                                    "properties": {
+                                      "modifierId": {
+                                        "type": "string"
+                                      },
+                                      "quantity": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Order created with calculated total"
+                  },
+                  "400": {
+                    "description": "Validation error, stock insufficient, or modifier constraints violated"
+                  },
+                  "404": {
+                    "description": "Variant or modifier not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Update Order Status (Kitchen Display)",
+        "description": "PATCH /admin/orders/:id/status - Quick status change for kitchen display or waiter. Supports: PENDING, APPROVED, PROCESSING, PREPARING, READY, SERVED, SHIPPED, DELIVERED, CANCELLED, REFUNDED. Requires ADMIN role.",
+        "files": [
+          "src/modules/orders/orders.controller.ts",
+          "src/modules/orders/orders.service.ts",
+          "src/modules/orders/dto/update-order-status.dto.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "paths": {
+            "/admin/orders/{id}/status": {
+              "patch": {
+                "summary": "Update order status for kitchen display",
+                "security": [
+                  {
+                    "bearerAuth": []
+                  }
+                ],
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "PENDING",
+                              "APPROVED",
+                              "PROCESSING",
+                              "PREPARING",
+                              "READY",
+                              "SERVED",
+                              "SHIPPED",
+                              "DELIVERED",
+                              "CANCELLED",
+                              "REFUNDED"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Order status updated"
+                  },
+                  "404": {
+                    "description": "Order not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "List Admin Orders",
+        "description": "GET /admin/orders?status=... - Lists all orders with optional status filter. Includes user info, items with modifiers, and product details. Requires ADMIN role.",
+        "files": [
+          "src/modules/orders/orders.controller.ts",
+          "src/modules/orders/orders.service.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "paths": {
+            "/admin/orders": {
+              "get": {
+                "summary": "List all orders with optional status filter",
+                "security": [
+                  {
+                    "bearerAuth": []
+                  }
+                ],
+                "parameters": [
+                  {
+                    "name": "status",
+                    "in": "query",
+                    "required": false,
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "PENDING",
+                        "APPROVED",
+                        "PROCESSING",
+                        "PREPARING",
+                        "READY",
+                        "SERVED",
+                        "SHIPPED",
+                        "DELIVERED",
+                        "CANCELLED",
+                        "REFUNDED"
+                      ]
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "List of orders with items, modifiers, and user info"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

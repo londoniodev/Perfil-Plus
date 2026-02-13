@@ -13,8 +13,21 @@ export class ProductsService {
         private storage: StorageService
     ) { }
 
+    // ============ INCLUDES REUTILIZABLES ============
+    private readonly modifierGroupsInclude = {
+        modifierGroups: {
+            include: {
+                modifiers: {
+                    orderBy: { createdAt: 'asc' as const },
+                },
+            },
+            orderBy: { createdAt: 'asc' as const },
+        },
+    };
+
+    // ============ CREAR PRODUCTO ============
     async create(data: CreateProductDto) {
-        const { sku, stock, ...productData } = data;
+        const { sku, stock, modifierGroups, ...productData } = data;
 
         // Validar slug único
         const existing = await this.prisma.client.product.findUnique({
@@ -25,7 +38,7 @@ export class ProductsService {
             throw new BadRequestException('El slug del producto ya existe');
         }
 
-        // Transacción para crear producto + variante default
+        // Transacción para crear producto + variante default + modifier groups
         return await this.prisma.client.$transaction(async (tx) => {
             const product = await tx.product.create({
                 data: {
@@ -57,10 +70,110 @@ export class ProductsService {
                 },
             });
 
-            return product;
+            // Crear modifier groups si se envían (restaurante)
+            if (modifierGroups && modifierGroups.length > 0) {
+                for (const group of modifierGroups) {
+                    await tx.modifierGroup.create({
+                        data: {
+                            productId: product.id,
+                            name: group.name,
+                            minSelect: group.minSelect ?? 0,
+                            maxSelect: group.maxSelect ?? 1,
+                            modifiers: {
+                                create: group.modifiers.map((mod) => ({
+                                    name: mod.name,
+                                    priceAdjustment: mod.priceAdjustment ?? 0,
+                                    stock: mod.stock ?? null,
+                                    isAvailable: mod.isAvailable ?? true,
+                                })),
+                            },
+                        },
+                    });
+                }
+            }
+
+            // Retornar producto completo con relaciones
+            return await tx.product.findUnique({
+                where: { id: product.id },
+                include: {
+                    variants: true,
+                    ...this.modifierGroupsInclude,
+                },
+            });
         });
     }
 
+    // ============ ACTUALIZAR PRODUCTO ============
+    async update(id: string, data: CreateProductDto) {
+        const existing = await this.prisma.client.product.findUnique({
+            where: { id },
+        });
+
+        if (!existing) {
+            throw new NotFoundException('Producto no encontrado');
+        }
+
+        const { sku, stock, modifierGroups, ...productData } = data;
+
+        return await this.prisma.client.$transaction(async (tx) => {
+            // Actualizar producto base
+            await tx.product.update({
+                where: { id },
+                data: {
+                    name: productData.name,
+                    slug: productData.slug,
+                    description: productData.description,
+                    productType: productData.productType,
+                    basePrice: productData.basePrice,
+                    images: productData.images,
+                    specs: productData.specs || {},
+                    published: productData.published,
+                    digitalFileUrl: productData.digitalFileUrl,
+                    previewUrl: productData.previewUrl,
+                },
+            });
+
+            // Sync modifier groups: borrar existentes y recrear (replace strategy)
+            if (modifierGroups !== undefined) {
+                // Borrar todos los grupos existentes (cascade borra modifiers)
+                await tx.modifierGroup.deleteMany({
+                    where: { productId: id },
+                });
+
+                // Recrear si hay nuevos
+                if (modifierGroups && modifierGroups.length > 0) {
+                    for (const group of modifierGroups) {
+                        await tx.modifierGroup.create({
+                            data: {
+                                productId: id,
+                                name: group.name,
+                                minSelect: group.minSelect ?? 0,
+                                maxSelect: group.maxSelect ?? 1,
+                                modifiers: {
+                                    create: group.modifiers.map((mod) => ({
+                                        name: mod.name,
+                                        priceAdjustment: mod.priceAdjustment ?? 0,
+                                        stock: mod.stock ?? null,
+                                        isAvailable: mod.isAvailable ?? true,
+                                    })),
+                                },
+                            },
+                        });
+                    }
+                }
+            }
+
+            return await tx.product.findUnique({
+                where: { id },
+                include: {
+                    variants: true,
+                    ...this.modifierGroupsInclude,
+                },
+            });
+        });
+    }
+
+    // ============ DESCARGAS DIGITALES ============
     async getProductDownloadUrl(productId: string, userId: string) {
         // 1. Verify Active Subscription (Priority Access)
         const subscription = await this.prisma.client.subscription.findUnique({
@@ -72,12 +185,10 @@ export class ProductsService {
             // Pass through to download
         } else {
             // 2. Verify Purchase (if no subscription)
-            // We check existing Orders for this User that contain any Variant of this Product
-            // AND the Order status is APPROVED/DELIVERED
             const hasPurchased = await this.prisma.client.order.findFirst({
                 where: {
                     userId,
-                    status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] }, // Any valid paid status
+                    status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
                     items: {
                         some: {
                             variant: { productId }
@@ -91,7 +202,7 @@ export class ProductsService {
                 where: {
                     userId,
                     status: 'approved',
-                    productId // Assuming we migrated data to this field or logic handles it
+                    productId
                 }
             });
 
@@ -115,14 +226,18 @@ export class ProductsService {
         }
 
         // 4. Generate Signed URL
-        const signedUrl = await this.storage.getSignedUrl(product.digitalFileUrl, 3600); // 1 hour validity
+        const signedUrl = await this.storage.getSignedUrl(product.digitalFileUrl, 3600);
         return { downloadUrl: signedUrl };
     }
 
+    // ============ QUERIES ============
     async findAllAdmin() {
         return await this.prisma.client.product.findMany({
             orderBy: { createdAt: 'desc' },
-            include: { variants: true },
+            include: {
+                variants: true,
+                ...this.modifierGroupsInclude,
+            },
         });
     }
 
@@ -135,8 +250,9 @@ export class ProductsService {
             orderBy: { createdAt: 'desc' },
             include: {
                 variants: {
-                    where: { isDefault: true } // Only show default variant for listing
-                }
+                    where: { isDefault: true }
+                },
+                ...this.modifierGroupsInclude,
             },
         });
     }
@@ -144,7 +260,10 @@ export class ProductsService {
     async findOnePublished(slug: string) {
         const product = await this.prisma.client.product.findUnique({
             where: { slug },
-            include: { variants: true },
+            include: {
+                variants: true,
+                ...this.modifierGroupsInclude,
+            },
         });
 
         if (!product || !product.published) {
@@ -157,10 +276,12 @@ export class ProductsService {
     async findOne(id: string) {
         const product = await this.prisma.client.product.findUnique({
             where: { id },
-            include: { variants: true },
+            include: {
+                variants: true,
+                ...this.modifierGroupsInclude,
+            },
         });
         if (!product) throw new NotFoundException('Producto no encontrado');
         return product;
     }
 }
-

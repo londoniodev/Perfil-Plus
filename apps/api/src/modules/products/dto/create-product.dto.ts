@@ -1,6 +1,7 @@
 import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductType } from '@prisma/client';
+import { CreateModifierGroupDto } from './create-modifier-group.dto';
 
 export class CreateProductDto {
     @IsString()
@@ -45,5 +46,12 @@ export class CreateProductDto {
     @IsString()
     @IsOptional()
     sku?: string;
+
+    // Restaurante: Grupos de modificadores (opcional)
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateModifierGroupDto)
+    @IsOptional()
+    modifierGroups?: CreateModifierGroupDto[];
 }
 

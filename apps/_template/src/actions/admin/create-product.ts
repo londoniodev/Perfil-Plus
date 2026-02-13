@@ -16,16 +16,33 @@ const variantSchema = z.object({
     attributes: z.record(z.string(), z.any()).optional()
 })
 
+// Schema para modificadores individuales
+const modifierSchema = z.object({
+    name: z.string().min(1, "Nombre requerido"),
+    priceAdjustment: z.number().min(0).default(0),
+    stock: z.number().nullable().optional(), // null = infinito
+    isAvailable: z.boolean().default(true)
+})
+
+// Schema para grupos de modificadores
+const modifierGroupSchema = z.object({
+    name: z.string().min(1, "Nombre del grupo requerido"),
+    minSelect: z.number().min(0).default(0),
+    maxSelect: z.number().min(1).default(1),
+    modifiers: z.array(modifierSchema).min(1, "Debe tener al menos una opción")
+})
+
 // Schema principal de producto
 const productSchema = z.object({
     name: z.string().min(1, "El nombre es requerido"),
     description: z.string().min(1, "La descripción es requerida"),
-    productType: z.enum(["DIGITAL", "PHYSICAL"]),
+    productType: z.enum(["DIGITAL", "PHYSICAL", "RESTAURANT"]), // Agregado RESTAURANT
     basePrice: z.number().min(0, "El precio debe ser mayor a 0"),
-    images: z.array(z.string()).min(1, "Debes agregar al menos una imagen"),
+    images: z.array(z.string()).optional().default([]),
     specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
-    variants: z.array(variantSchema).optional()
+    variants: z.array(variantSchema).optional(),
+    modifierGroups: z.array(modifierGroupSchema).optional()
 })
 
 type CreateProductInput = z.infer<typeof productSchema>
@@ -109,7 +126,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
             variantsData = validated.variants
         }
 
-        // 6. Crear producto + variantes en transacción
+        // 6. Crear producto + variantes + modificadores en transacción
         const product = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // Crear producto
             const newProduct = await tx.product.create({
@@ -117,7 +134,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
                     name: validated.name,
                     slug,
                     description: validated.description,
-                    productType: validated.productType,
+                    productType: validated.productType as any,
                     basePrice: validated.basePrice,
                     images: validated.images,
                     specs,
@@ -136,10 +153,32 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
                 isDefault: variant.isDefault ?? ((variantsData ?? []).length === 1)
             }))
 
-            // Crear todas las variantes en UNA sola consulta (OPTIMIZACIÓN)
+            // Crear todas las variantes
             await tx.productVariant.createMany({
                 data: variantsToCreate
             })
+
+            // Crear grupos de modificadores (Restaurante)
+            if (validated.modifierGroups && validated.modifierGroups.length > 0) {
+                for (const group of validated.modifierGroups) {
+                    await tx.modifierGroup.create({
+                        data: {
+                            productId: newProduct.id,
+                            name: group.name,
+                            minSelect: group.minSelect,
+                            maxSelect: group.maxSelect,
+                            modifiers: {
+                                create: group.modifiers.map(mod => ({
+                                    name: mod.name,
+                                    priceAdjustment: mod.priceAdjustment,
+                                    stock: mod.stock === 0 ? null : mod.stock, // 0 suele enviarse como null/infinito en UI a veces, ajustar según lógica de negocio. Aquí asumimos que si viene stock, se usa.
+                                    isAvailable: mod.isAvailable
+                                }))
+                            }
+                        }
+                    })
+                }
+            }
 
             return newProduct
         })

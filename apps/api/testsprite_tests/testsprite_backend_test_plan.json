@@ -1,0 +1,27 @@
+[
+  {
+    "id": "TC001",
+    "title": "create product with nested modifier groups",
+    "description": "Test the POST /admin/products endpoint to create a physical product with nested modifier groups and modifiers. Validate that the product, modifier groups, and modifiers are created correctly with proper validation of minSelect, maxSelect, stock, and price adjustments. Verify that unauthorized or non-admin users cannot create products."
+  },
+  {
+    "id": "TC002",
+    "title": "update product and replace modifier groups",
+    "description": "Test the PUT /admin/products/:id endpoint to update an existing product and replace all modifier groups and modifiers. Verify that the old modifier groups are deleted and new ones are created. Validate proper error handling for non-existent product IDs and unauthorized access."
+  },
+  {
+    "id": "TC003",
+    "title": "create order with modifiers and table number",
+    "description": "Test the POST /orders endpoint to create an order with items including variantId, quantity, notes, and modifiers with quantities. Validate server-side price calculation, minSelect/maxSelect constraints, modifier availability, and atomic stock decrement. Verify support for different order types (DINE_IN, TAKE_AWAY, DELIVERY) and table number assignment."
+  },
+  {
+    "id": "TC004",
+    "title": "update order status with admin authorization",
+    "description": "Test the PATCH /admin/orders/:id/status endpoint to update the status of an order. Verify that only users with ADMIN role can update the status. Validate that the status changes reflect correctly and that non-existent order IDs return 404 errors."
+  },
+  {
+    "id": "TC005",
+    "title": "list admin orders with optional status filter",
+    "description": "Test the GET /admin/orders endpoint to retrieve a list of orders with optional filtering by status. Verify that the response includes detailed information about users, order items, modifiers, and products. Ensure that only authorized admin users can access this endpoint."
+  }
+]

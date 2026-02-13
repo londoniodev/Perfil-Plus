@@ -19,18 +19,19 @@ export interface NavLink {
     href: string;
 }
 
-logo: string;
-logoAlt ?: string;
-logoUnoptimized ?: boolean;
-logoSuffix ?: React.ReactNode;
-links: NavLink[];
-isAuthenticated ?: boolean;
-pathname ?: string;
-cartComponent ?: React.ReactNode;
-loginUrl ?: string;
-registerUrl ?: string;
-profileUrl ?: string;
-className ?: string;
+export interface SiteHeaderProps {
+    logo: string;
+    logoAlt?: string;
+    logoUnoptimized?: boolean;
+    logoSuffix?: React.ReactNode;
+    links: NavLink[];
+    isAuthenticated?: boolean;
+    pathname?: string;
+    cartComponent?: React.ReactNode;
+    loginUrl?: string;
+    registerUrl?: string;
+    profileUrl?: string;
+    className?: string;
 }
 
 export function SiteHeader({

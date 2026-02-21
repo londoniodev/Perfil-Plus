@@ -3,7 +3,6 @@ import {
   LandingPlanes,
   LandingTestimonios,
   LandingAbout,
-  LandingFooter,
   LandingCTABottom,
 } from "@/components/landing";
 
@@ -14,7 +13,6 @@ export default function Home() {
       <LandingPlanes />
       <LandingTestimonios />
       <LandingAbout />
-      <LandingFooter />
       <LandingCTABottom />
     </div>
   );

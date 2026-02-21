@@ -22,21 +22,21 @@ export function LandingAbout() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                        <span className="material-icons-round text-3xl text-cs-secondary mb-2">local_shipping</span>
-                        <h3 className="font-bold text-white">Envíos Rápidos</h3>
+                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 flex flex-col items-start justify-center">
+                        <span className="material-icons-round text-cs-secondary mb-2 block w-8 h-8 overflow-hidden whitespace-nowrap text-[32px] leading-none">local_shipping</span>
+                        <h3 className="font-bold text-white text-sm">Envíos Rápidos</h3>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                        <span className="material-icons-round text-3xl text-cs-secondary mb-2">restaurant_menu</span>
-                        <h3 className="font-bold text-white">Chef Expertos</h3>
+                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 flex flex-col items-start justify-center">
+                        <span className="material-icons-round text-cs-secondary mb-2 block w-8 h-8 overflow-hidden whitespace-nowrap text-[32px] leading-none">restaurant_menu</span>
+                        <h3 className="font-bold text-white text-sm">Chef Expertos</h3>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                        <span className="material-icons-round text-3xl text-cs-secondary mb-2">savings</span>
-                        <h3 className="font-bold text-white">Mejor Precio</h3>
+                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 flex flex-col items-start justify-center">
+                        <span className="material-icons-round text-cs-secondary mb-2 block w-8 h-8 overflow-hidden whitespace-nowrap text-[32px] leading-none">savings</span>
+                        <h3 className="font-bold text-white text-sm">Mejor Precio</h3>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                        <span className="material-icons-round text-3xl text-cs-secondary mb-2">support_agent</span>
-                        <h3 className="font-bold text-white">Soporte 24/7</h3>
+                    <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 flex flex-col items-start justify-center">
+                        <span className="material-icons-round text-cs-secondary mb-2 block w-8 h-8 overflow-hidden whitespace-nowrap text-[32px] leading-none">support_agent</span>
+                        <h3 className="font-bold text-white text-sm">Soporte 24/7</h3>
                     </div>
                 </div>
             </div>

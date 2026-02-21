@@ -118,7 +118,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             {
                 type: "modify",
                 path: "apps/{{name}}/package.json",
-                pattern: /"name": "_template"/,
+                pattern: /"name": "template"/,
                 template: '"name": "{{name}}"',
             },
             {

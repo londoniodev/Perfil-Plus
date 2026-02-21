@@ -15,13 +15,13 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    default: `${siteConfig.name} | Almuerzos Saludables`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
-  authors: [{ name: "Mauricio Mera", url: siteConfig.url }],
-  creator: "Mauricio Mera",
+  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  creator: siteConfig.name,
   publisher: siteConfig.name,
   formatDetection: {
     email: false,
@@ -33,23 +33,22 @@ export const metadata: Metadata = {
     locale: "es_CO",
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    title: `${siteConfig.name} | Almuerzos Saludables`,
     description: siteConfig.description,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - Psicólogo y Consultor Organizacional`,
+        alt: `${siteConfig.name} - Almuerzos Saludables`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
+    title: `${siteConfig.name} | Almuerzos Saludables`,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: "@mauromera",
   },
   robots: {
     index: true,
@@ -64,10 +63,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: SITE_URL,
-  },
-  verification: {
-    // Agregar cuando estén disponibles:
-    // google: 'google-site-verification-code',
   },
 };
 
@@ -86,6 +81,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+      </head>
       <body className={`${getFontVariables()} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"

@@ -1,15 +1,15 @@
 export const siteConfig = {
     name: "Cocina Siete",
-    description: "Sitio web de Cocina Siete",
+    description: "Almuerzos saludables entregados en tu oficina o casa. Come bien todos los días sin cocinar.",
     domain: "cocinasiete-web.local",
     tenantId: "cocinasiete-web",
     url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3003",
-    ogImage: "", 
-    keywords: ["cocinasiete-web"],
+    ogImage: "",
+    keywords: ["almuerzos saludables", "delivery comida", "plan oficina", "plan hogar", "cocinasiete", "comida a domicilio"],
     phone: "+00 000 000 0000",
     email: "info@cocinasiete-web.local",
     branding: {
-        logo: "/favicon.ico", 
+        logo: "/favicon.ico",
         logoAlt: "Cocina Siete Logo"
     },
     features: {

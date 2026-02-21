@@ -109,4 +109,13 @@
     opacity: 0;
     /* Ensures it starts invisible */
   }
+
+  /* Hide scrollbar for testimonials carousel */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getSessionUser } from "@/lib/auth-server";
 import { prisma } from "@alvarosky/database";
 import { Button } from "@alvarosky/ui";
@@ -126,10 +127,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
                                         <div key={item.id} className="py-4 first:pt-0 last:pb-0 flex gap-4">
                                             <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                                                 {productImage ? (
-                                                    <img
+                                                    <Image
                                                         src={productImage}
                                                         alt={item.productName}
-                                                        className="w-full h-full object-cover"
+                                                        fill
+                                                        sizes="64px"
+                                                        className="object-cover"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">

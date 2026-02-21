@@ -3,6 +3,8 @@ import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
+import * as fs from 'fs/promises';
+import { join } from 'path';
 
 export interface UploadResult {
     key: string;
@@ -24,7 +26,13 @@ export class StorageService {
         private configService: ConfigService
     ) {
         this.endpoint = this.configService.get('S3_ENDPOINT', 'http://localhost:9000');
-        this.publicUrl = this.configService.get('S3_PUBLIC_URL', this.endpoint);
+        // Si es local, la URL pública base es diferente
+        if (this.configService.get('STORAGE_DRIVER') === 'local') {
+            const apiUrl = this.configService.get('API_URL') || `http://localhost:${this.configService.get('PORT') || 3001}`;
+            this.publicUrl = `${apiUrl}/uploads`;
+        } else {
+            this.publicUrl = this.configService.get('S3_PUBLIC_URL', this.endpoint);
+        }
     }
 
     private async getS3Client() {
@@ -122,6 +130,32 @@ export class StorageService {
         folder: string = 'uploads',
         isPrivate: boolean = false,
     ): Promise<UploadResult> {
+        const driver = this.configService.get('STORAGE_DRIVER', 's3');
+
+        if (driver === 'local') {
+            const tenantId = this.getTenantId();
+            const extension = file.originalname.split('.').pop()?.toLowerCase();
+            const fileName = `${randomUUID()}.${extension}`;
+
+            // Estructura: uploads/<tenantId>/<folder>
+            // Nota: isPrivate no impide acceso directo en local simple, pero podríamos moverlo a carpeta fuera de public
+            const uploadDir = join(process.cwd(), 'uploads', tenantId, folder);
+
+            try {
+                await fs.mkdir(uploadDir, { recursive: true });
+                await fs.writeFile(join(uploadDir, fileName), file.buffer);
+
+                const key = `${folder}/${fileName}`;
+                // URL: http://localhost:3001/uploads/<tenantId>/<folder>/<fileName>
+                const url = `${this.publicUrl}/${tenantId}/${key}`;
+
+                return { key, url, bucket: 'local' };
+            } catch (error) {
+                console.error('Local Upload Error:', error);
+                throw new BadRequestException('Error al subir el archivo localmente');
+            }
+        }
+
         const bucket = this.getBucketName(isPrivate);
         await this.ensureBucketExists(bucket, isPrivate);
 
@@ -159,6 +193,29 @@ export class StorageService {
         folder: string = 'uploads',
         isPrivate: boolean = false,
     ): Promise<UploadResult> {
+        const driver = this.configService.get('STORAGE_DRIVER', 's3');
+
+        if (driver === 'local') {
+            const tenantId = this.getTenantId();
+            const extension = filename.split('.').pop()?.toLowerCase();
+            const fileName = `${randomUUID()}.${extension}`;
+
+            const uploadDir = join(process.cwd(), 'uploads', tenantId, folder);
+
+            try {
+                await fs.mkdir(uploadDir, { recursive: true });
+                await fs.writeFile(join(uploadDir, fileName), buffer);
+
+                const key = `${folder}/${fileName}`;
+                const url = `${this.publicUrl}/${tenantId}/${key}`;
+
+                return { key, url, bucket: 'local' };
+            } catch (error) {
+                console.error('Local Upload Buffer Error:', error);
+                throw new BadRequestException('Error al subir el archivo localmente');
+            }
+        }
+
         const bucket = this.getBucketName(isPrivate);
         await this.ensureBucketExists(bucket, isPrivate);
 
@@ -190,6 +247,21 @@ export class StorageService {
     }
 
     async deleteFile(key: string, isPrivate: boolean = false): Promise<void> {
+        const driver = this.configService.get('STORAGE_DRIVER', 's3');
+
+        if (driver === 'local') {
+            const tenantId = this.getTenantId();
+            // key tiene formato "folder/filename.ext"
+            const filePath = join(process.cwd(), 'uploads', tenantId, key);
+            try {
+                await fs.unlink(filePath);
+            } catch (error) {
+                // Ignoramos si no existe
+                console.warn(`Could not delete local file ${filePath}`, error);
+            }
+            return;
+        }
+
         const bucket = this.getBucketName(isPrivate);
         const client = await this.getS3Client();
         const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');

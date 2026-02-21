@@ -59,6 +59,11 @@ async function bootstrap() {
       // Allow server-side requests (no origin) and Postman
       if (!requestOrigin) return callback(null, true);
 
+      // Debug log
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[CORS] Checking origin: ${requestOrigin}`);
+      }
+
       // Check if origin is in the allowed list
       if (allowedOrigins.includes(requestOrigin)) {
         callback(null, true);

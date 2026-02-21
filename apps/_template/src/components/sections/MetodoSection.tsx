@@ -86,10 +86,19 @@ export function MetodoSection() {
                         const isActive = activeIndex === i;
                         return (
                             <div
-                                key={i}
+                                key={step.num}
                                 ref={(el) => { itemRefs.current[i] = el; }}
                                 data-index={i}
                                 onClick={() => handleItemClick(i)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        handleItemClick(i);
+                                    }
+                                }}
+                                aria-expanded={isActive}
                                 className={cn(
                                     "relative rounded-xl overflow-hidden cursor-pointer transition-all duration-500 ease-out border",
                                     isActive ? "h-80" : "h-20"
@@ -108,6 +117,7 @@ export function MetodoSection() {
                                         src={step.image}
                                         alt={step.title}
                                         fill
+                                        sizes="(max-width: 768px) 100vw, 50vw"
                                         className="object-cover"
                                     />
                                 </div>

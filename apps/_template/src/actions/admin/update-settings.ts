@@ -38,6 +38,16 @@ const settingsSchema = z.object({
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
+
+    // Social & Contact
+    whatsapp: z.string().optional(),
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+    address: z.string().optional(),
+
+    // Menu
+    menuSlogan: z.string().optional(),
+    menuLogo: z.string().optional(),
 })
 
 type UpdateSettingsInput = z.infer<typeof settingsSchema>
@@ -106,6 +116,18 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
                     user: validated.smtpUser ?? currentConfig.smtp?.auth?.user,
                     pass: validated.smtpPass ?? currentConfig.smtp?.auth?.pass,
                 }
+            },
+            contact: {
+                ...(currentConfig.contact || {}),
+                whatsapp: validated.whatsapp !== undefined ? validated.whatsapp : currentConfig.contact?.whatsapp,
+                instagram: validated.instagram !== undefined ? validated.instagram : currentConfig.contact?.instagram,
+                facebook: validated.facebook !== undefined ? validated.facebook : currentConfig.contact?.facebook,
+                address: validated.address !== undefined ? validated.address : currentConfig.contact?.address,
+            },
+            menu: {
+                ...(currentConfig.menu || {}),
+                slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
+                logo: validated.menuLogo !== undefined ? validated.menuLogo : currentConfig.menu?.logo,
             }
         }
 

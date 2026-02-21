@@ -153,7 +153,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                     <TableHeader>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
                             <TableHead className="w-[40%]">Nombre</TableHead>
-                            <TableHead className="w-[20%]">Precio Extra ($)</TableHead>
+                            <TableHead className="w-[20%]">Precio</TableHead>
                             <TableHead className="w-[20%]">Stock</TableHead>
                             <TableHead className="w-[10%] text-right"></TableHead>
                         </TableRow>

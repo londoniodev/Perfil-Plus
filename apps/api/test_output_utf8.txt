@@ -1,0 +1,210 @@
+﻿node.exe : FAIL 
+src/modules/orders/orders.service.spec.ts
+En C:\Program Files\nodejs\npx.ps1: 29 
+Carácter: 3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecifi 
+   ed: (FAIL src/module...service.spec.  
+  ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComm 
+   andError
+ 
+  OrdersService
+    createOrder
+      ÔêÜ deber├¡a crear orden con 
+c├ílculo de precio server-side (41 ms)
+      ÔêÜ deber├¡a lanzar 
+NotFoundException si la variante no 
+existe (77 ms)
+      ÔêÜ deber├¡a lanzar 
+BadRequestException si stock es 
+insuficiente (12 ms)
+      ÔêÜ deber├¡a lanzar 
+BadRequestException si producto no est├í 
+publicado (5 ms)
+      ÔêÜ deber├¡a lanzar 
+BadRequestException si producto no est├í 
+disponible (isAvailable) (9 ms)
+      ÔêÜ deber├¡a validar minSelect ÔÇö 
+lanzar error si se requiere selecci├│n 
+m├¡nima y no se env├¡a (5 ms)
+      ÔêÜ deber├¡a validar maxSelect ÔÇö 
+lanzar error si se excede el m├íximo (4 
+ms)
+      ÔêÜ deber├¡a lanzar error si 
+modificador no est├í disponible (7 ms)
+      ÔêÜ deber├¡a NO decrementar stock 
+si variante es digital (stock = -1) (7 
+ms)
+      Guest Checkout
+        ÔêÜ deber├¡a crear orden para 
+usuario invitado (userId null) con 
+detalles de cliente (4 ms)
+        ÔêÜ deber├¡a persistir datos de 
+env├¡o para delivery (4 ms)
+    updateStatus
+      ÔêÜ deber├¡a cambiar estado de 
+orden existente (3 ms)
+      ÔêÜ deber├¡a lanzar 
+NotFoundException si la orden no existe 
+(3 ms)
+    findAllAdmin
+      ÔêÜ deber├¡a listar todas las 
+├│rdenes sin filtro (4 ms)
+      ÔêÜ deber├¡a filtrar ├│rdenes por 
+status (14 ms)
+    createOrder con status inicial
+      ÔêÜ deber├¡a crear orden con 
+status PREPARING cuando POS lo env├¡a 
+(flujo mesero) (6 ms)
+      ÔêÜ deber├¡a defaultear a PENDING 
+si no se env├¡a status (5 ms)
+    findAllAdmin con activeOnly
+      ÔêÜ deber├¡a filtrar por 
+activeOnly=true retornando PENDING,APPROV
+ED,PROCESSING,PREPARING,READY (5 ms)
+      ÔêÜ deber├¡a listar todas sin 
+filtro cuando activeOnly=false (5 ms)
+    Ciclo de vida completo de orden
+      ÔêÜ deber├¡a transicionar PENDING 
+ÔåÆ PREPARING (13 ms)
+      ÔêÜ deber├¡a transicionar 
+PREPARING ÔåÆ READY (cocinero marca 
+listo) (5 ms)
+      ÔêÜ deber├¡a transicionar READY 
+ÔåÆ SERVED (mesero entrega al cliente) 
+(2 ms)
+      ÔêÜ deber├¡a permitir cancelar en 
+cualquier estado (2 ms)
+      ├ù deber├¡a recuperar stock de 
+variante y modificadores al cancelar 
+orden (10 ms)
+    findMyOrders
+      ÔêÜ deber├¡a retornar ├│rdenes del 
+usuario filtradas por status activos (3 
+ms)
+      ÔêÜ deber├¡a retornar array vac├¡o 
+si el usuario no tiene ├│rdenes (2 ms)
+      ÔêÜ deber├¡a ordenar por createdAt 
+descendiente (3 ms)
+      ÔêÜ deber├¡a incluir items con 
+modifiers y variant.product (3 ms)
+    createPayment
+      ÔêÜ deber├¡a crear pago y marcar 
+items como pagados (3 ms)
+      ÔêÜ deber├¡a cerrar orden 
+autom├íticamente cuando todos los items 
+est├ín pagados (3 ms)
+      ÔêÜ deber├¡a forzar cierre con 
+closeOrder: true aunque queden items (3 
+ms)
+      ÔêÜ deber├¡a NO cerrar orden si 
+quedan items sin pagar y closeOrder no 
+es true (2 ms)
+      ÔêÜ deber├¡a lanzar 
+NotFoundException si la orden no existe 
+(3 ms)
+      ÔêÜ deber├¡a aceptar pagos sin 
+itemIds (pago parcial gen├®rico) (3 ms)
+    updateStatus ÔÇö Cancelaci├│n con 
+restauraci├│n de stock
+      ÔêÜ deber├¡a restaurar stock de 
+variantes al cancelar orden (3 ms)
+      ÔêÜ deber├¡a restaurar stock de 
+modificadores al cancelar orden (3 ms)
+      ÔêÜ deber├¡a NO restaurar stock de 
+variante digital (stock = -1) (2 ms)
+      ÔêÜ deber├¡a lanzar 
+BadRequestException al intentar cancelar 
+orden ya cancelada (4 ms)
+    Emisi├│n de eventos SSE
+      ÔêÜ deber├¡a emitir evento 
+new_order al crear orden (4 ms)
+      ÔêÜ deber├¡a emitir evento 
+status_changed al actualizar estado (2 
+ms)
+      ÔêÜ deber├¡a emitir evento 
+payment_received al crear pago (2 ms)
+    getDownloadUrl
+      ÔêÜ deber├¡a retornar URL firmada 
+para descarga digital v├ílida (con 
+orderId) (3 ms)
+      ÔêÜ deber├¡a lanzar 
+ForbiddenException si el usuario no ha 
+comprado el producto (3 ms)
+      ÔêÜ deber├¡a lanzar 
+NotFoundException si el producto no 
+existe (4 ms)
+      ÔêÜ deber├¡a lanzar 
+NotFoundException si producto no tiene 
+archivo digital (3 ms)
+      ÔêÜ deber├¡a buscar orden sin 
+orderId espec├¡fico (cualquier orden 
+v├ílida) (3 ms)
+    createOrder con m├║ltiples items
+      ÔêÜ deber├¡a calcular totalAmount 
+correctamente con m├║ltiples items (2 ms)
+      ÔêÜ deber├¡a decrementar stock de 
+cada variante independientemente (2 ms)
+
+  ÔùÅ OrdersService ÔÇ║ Ciclo de vida 
+completo de orden ÔÇ║ deber├¡a recuperar 
+stock de variante y modificadores al 
+cancelar orden
+
+    expect(jest.fn()).toHaveBeenCalledWit
+h(...expected)
+
+    - Expected
+    + Received
+
+    @@ -1,9 +1,9 @@
+      Object {
+        "data": Object {
+          "stock": Object {
+    -       "increment": 2,
+    +       "increment": 1,
+          },
+        },
+        "where": Object {
+          "id": "mod-1",
+        },,
+
+    Number of calls: 1
+
+    [0m [90m 675 |[39m             
+[90m// Verifica incremento de stock del 
+modificador (1 unidad * 2 items = 2?) 
+[39m
+     [90m 676 |[39m             
+[90m// OJO: Mi l├│gica actual en 
+service hace: item.quantity * 
+mod.quantity[39m
+    [31m[1m>[22m[39m[90m 677 |[39m 
+            expect(mockClient[33m.[39mm
+odifier[33m.[39mupdate)[33m.[39mtoHav
+eBeenCalledWith({
+     [90m     |[39m                    
+                            
+[31m[1m^[22m[39m
+     [90m 678 |[39m                 
+where[33m:[39m { id[33m:[39m 
+[32m'mod-1'[39m }[33m,[39m
+     [90m 679 |[39m                 
+data[33m:[39m { stock[33m:[39m { 
+increment[33m:[39m [35m2[39m } } 
+[90m// 2 (items) * 1 (mod/item)[39m
+     [90m 680 |[39m             
+})[33m;[39m[0m
+
+      at Object.<anonymous> (modules/orde
+rs/orders.service.spec.ts:677:48)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 47 passed, 48 
+total
+Snapshots:   0 total
+Time:        3.78 s
+Ran all test suites matching 
+orders.service.spec.ts.

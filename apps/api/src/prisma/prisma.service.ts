@@ -1,11 +1,10 @@
-import { Injectable, Scope, Inject, OnModuleDestroy, Logger } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { Injectable, Inject, OnModuleDestroy, Logger } from '@nestjs/common';
+import { PrismaContext } from './prisma-context.service';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import type { Request } from 'express';
 
 // Connection Cache global para clientes de tenant (fuera de la clase para persistir entre requests)
 const prismaClientCache = new Map<string, PrismaClient>();
@@ -19,15 +18,13 @@ let masterPool: Pool | null = null;
 // Flag para saber si el pool ya fue inicializado
 let poolInitialized = false;
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class PrismaService implements OnModuleDestroy {
     private readonly logger = new Logger(PrismaService.name);
-    private _client: PrismaClient | null = null;
-    private _tenantId: string | null = null;
-    private _initPromise: Promise<PrismaClient> | null = null;
+    // Removed stateful _client and _tenantId
 
     constructor(
-        @Inject(REQUEST) private readonly request: Request,
+        private readonly prismaContext: PrismaContext,
         private readonly configService: ConfigService,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) {
@@ -120,6 +117,27 @@ export class PrismaService implements OnModuleDestroy {
         }
     }
 
+    public async getTenantClient(slug: string): Promise<PrismaClient> {
+        return this.getOrCreateClient(slug);
+    }
+
+    public async getTenantBySlug(slug: string): Promise<any> {
+        if (!masterPool) {
+            this.initMasterPool();
+        }
+
+        const result = await masterPool!.query(
+            'SELECT id, name, slug, design FROM "Tenant" WHERE slug = $1',
+            [slug]
+        );
+
+        if (result.rows.length === 0) {
+            return null;
+        }
+
+        return result.rows[0];
+    }
+
     private async getOrCreateClient(tenantId: string): Promise<PrismaClient> {
         // Verificar si ya existe un cliente en cache
         const existingClient = prismaClientCache.get(tenantId);
@@ -129,6 +147,7 @@ export class PrismaService implements OnModuleDestroy {
         }
 
         // Obtener nombre de base de datos desde la tabla Tenant
+        // Nota: lookupTenantDbName espera el slug/tenantId
         const databaseName = await this.lookupTenantDbName(tenantId);
 
         const baseUrl = this.configService.get<string>('DATABASE_URL_BASE');
@@ -165,28 +184,28 @@ export class PrismaService implements OnModuleDestroy {
     }
 
     /**
-     * Inicializa el cliente Prisma para el request actual basado en el tenant ID.
-     * Debe ser llamado por un interceptor o guard antes de usar el servicio.
-     */
-    async initClient() {
-        const tenantId = this.request.headers['x-tenant-id'] as string;
-        if (!tenantId) {
-            // Si no hay tenant, no inicializamos (quedará en null)
-            // Los servicios que requieran DB fallarán si intentan acceder a client
-            return;
-        }
-        this._client = await this.getOrCreateClient(tenantId);
-    }
-
-    /**
      * Obtiene la instancia de PrismaClient inicializada para el tenant actual.
      * Lanza error si no se ha inicializado.
      */
     get client(): PrismaClient {
-        if (!this._client) {
-            throw new Error('PrismaClient not initialized. Missing x-tenant-id header or initClient() not called.');
+        // Obtenemos el cliente pre-calentado del contexto (AsyncLocalStorage)
+        const client = this.prismaContext.get<PrismaClient>('prismaClient');
+
+        if (client) {
+            return client;
         }
-        return this._client;
+
+        // Fallback: Si no está en contexto, intentamos ver si hay tenantId para dar un error más descriptivo
+        const tenantId = this.prismaContext.getTenantId();
+        if (!tenantId) {
+            throw new Error('PrismaClient not accessible. No tenant context found (missing x-tenant-id header?).');
+        }
+
+        // This should theoretically not happen if middleware works, but...
+        // Fallback sync check in cache just in case middleware set the ID but failed to set client? 
+        // No, construction is async.
+
+        throw new Error('PrismaClient not found in context. Ensure TenantMiddleware is running and DB connection is successful.');
     }
 
     /**
@@ -220,4 +239,3 @@ export class PrismaService implements OnModuleDestroy {
         }
     }
 }
-

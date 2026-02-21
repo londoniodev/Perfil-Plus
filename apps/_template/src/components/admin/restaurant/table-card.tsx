@@ -11,12 +11,14 @@ import {
     Badge
 } from "@alvarosky/ui"
 import { Download, Edit, Trash2 } from "lucide-react"
-import { useRef } from "react"
+import { useRef, useEffect, useState } from "react"
 
-interface TableData {
+export interface TableData {
     id: string
     label: string
-    status: 'active' | 'inactive'
+    status: string
+    capacity?: number
+    qrCode?: string | null
 }
 
 interface TableCardProps {
@@ -34,17 +36,49 @@ export function TableCard({ table, customUrl, customLabel, tenantId, onEdit, onD
     // If customUrl is provided, use it.
     // Else, use table format: https://{tenant}.dominio.com/menu?table={id}
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://dominio.com'
+    const [qrUrl, setQrUrl] = useState<string>("")
 
-    let qrUrl = customUrl;
+    useEffect(() => {
+        if (customUrl) {
+            setQrUrl(customUrl)
+        } else if (table) {
+            const origin = window.location.origin
+            // Construct URL dependent on subdomain logic needed? 
+            // For now, let's use origin + /menu?table=ID
+            // Adjust logic if you have specific subdomain requirements
+            setQrUrl(`${origin}/${tenantId}/menu?table=${table.id}`)
+        } else {
+            setQrUrl(`${window.location.origin}/${tenantId}/menu`)
+        }
+    }, [customUrl, table, tenantId])
 
-    if (!qrUrl && table) {
-        qrUrl = typeof window !== 'undefined'
-            ? `${window.location.protocol}//${tenantId}.${window.location.host.replace("admin.", "")}/menu?table=${table.id}`
-            : `https://${tenantId}.tu-dominio.com/menu?table=${table.id}`
+    // While mounting, show skeleton or empty? 
+    // Or just render a default to avoid layout shift? 
+    // Returning null for qrUrl might be okay if we handle it.
+
+    // Better yet, just use a suppressed hydration warning if it's just the text, 
+    // but the QR code itself might be different.
+
+    // Let's rely on `mounted` state to render the QR and URL.
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return (
+            <Card className="overflow-hidden">
+                <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                        <CardTitle className="text-lg">{customLabel || table?.label || "QR Code"}</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent className="h-[200px] flex items-center justify-center">
+                    <span className="text-sm text-muted-foreground">Cargando QR...</span>
+                </CardContent>
+            </Card>
+        )
     }
-
-    if (!qrUrl) qrUrl = origin; // Fallback
 
     const label = customLabel || table?.label || "QR Code";
     const status = table?.status || 'active';
@@ -57,30 +91,66 @@ export function TableCard({ table, customUrl, customLabel, tenantId, onEdit, onD
             const canvas = document.createElement("canvas")
             const ctx = canvas.getContext("2d")
             const img = new Image()
+
             img.onload = () => {
-                const padding = 40;
-                const textHeight = 40;
-                canvas.width = img.width + padding
-                canvas.height = img.height + padding + textHeight // Add space for text
+                const qrSize = 500; // Base size requested
+                const padding = 50;
+                const fontSize = 32;
+                const lineHeight = 40;
+                const maxWidth = qrSize; // Max text width matches QR size
+
+                // Calculate Lines
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = words[0];
 
                 if (ctx) {
-                    ctx.fillStyle = "white"
-                    ctx.fillRect(0, 0, canvas.width, canvas.height)
+                    ctx.font = `bold ${fontSize}px Arial`;
 
-                    // Draw QR
-                    ctx.drawImage(img, padding / 2, padding / 2)
+                    for (let i = 1; i < words.length; i++) {
+                        const word = words[i];
+                        const width = ctx.measureText(currentLine + " " + word).width;
+                        if (width < maxWidth) {
+                            currentLine += " " + word;
+                        } else {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        }
+                    }
+                    lines.push(currentLine);
 
-                    // Draw Label
-                    ctx.font = "bold 16px Arial"
-                    ctx.fillStyle = "black"
-                    ctx.textAlign = "center"
-                    ctx.fillText(label, canvas.width / 2, img.height + padding + (textHeight / 2) - 5)
+                    const textSectionHeight = (lines.length * lineHeight) + padding; // Extra padding at bottom
 
-                    const pngFile = canvas.toDataURL("image/png")
-                    const downloadLink = document.createElement("a")
-                    downloadLink.download = `QR-${label.replace(" ", "-")}.png`
-                    downloadLink.href = pngFile
-                    downloadLink.click()
+                    // Set Canvas Size
+                    canvas.width = qrSize + (padding * 2);
+                    canvas.height = qrSize + (padding * 2) + textSectionHeight - padding; // adjust vertical space
+
+                    // Draw Background
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw QR (Scaled)
+                    ctx.drawImage(img, padding, padding, qrSize, qrSize);
+
+                    // Draw Text
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillStyle = "black";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle"; // Helps with vertical centering per line
+
+                    const textStartX = canvas.width / 2;
+                    let textStartY = padding + qrSize + 40; // Start below QR
+
+                    lines.forEach((line) => {
+                        ctx.fillText(line, textStartX, textStartY);
+                        textStartY += lineHeight;
+                    });
+
+                    const pngFile = canvas.toDataURL("image/png");
+                    const downloadLink = document.createElement("a");
+                    downloadLink.download = `QR-${label.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
+                    downloadLink.href = pngFile;
+                    downloadLink.click();
                 }
             }
             img.src = "data:image/svg+xml;base64," + btoa(svgData)

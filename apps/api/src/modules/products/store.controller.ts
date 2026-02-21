@@ -9,8 +9,11 @@ export class StoreController {
 
     @Public()
     @Get()
-    async findAll(@Query('type') type?: ProductType) {
-        return this.productsService.findAllPublished(type);
+    async findAll(
+        @Query('type') type?: ProductType,
+        @Query('allVariants') allVariants?: string,
+    ) {
+        return this.productsService.findAllPublished(type, allVariants === 'true');
     }
 
     @Public()

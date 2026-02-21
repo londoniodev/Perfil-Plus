@@ -121,9 +121,40 @@ export async function getLessonBySlug(courseSlug: string, lessonSlug: string, to
     return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers });
 }
 
-// ============ SHOP ============
+// ============ SHOP & RESTAURANT ============
+import { Order, OrderStatus } from '@/types/restaurant';
+
 export async function createOrder(data: any): Promise<any> {
     return fetchAPI('/orders', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function getAdminOrders(status?: OrderStatus, activeOnly: boolean = false): Promise<Order[]> {
+    const queryParams = new URLSearchParams();
+    if (status) queryParams.append('status', status);
+    if (activeOnly) queryParams.append('activeOnly', 'true');
+
+    return fetchAPI<Order[]>(`/admin/orders?${queryParams.toString()}`);
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
+    return fetchAPI<Order>(`/admin/orders/${orderId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+    });
+}
+
+export async function toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean): Promise<any> {
+    return fetchAPI(`/admin/orders/${orderId}/items/${itemId}/prepared`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isPrepared }),
+    });
+}
+
+export async function payOrder(orderId: string, data: { amount: number, method: string, itemIds?: string[], closeOrder?: boolean, reference?: string }): Promise<any> {
+    return fetchAPI(`/admin/orders/${orderId}/pay`, {
         method: 'POST',
         body: JSON.stringify(data),
     });

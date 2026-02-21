@@ -82,7 +82,7 @@ export function AreasImpactoSection() {
             <div className="sticky top-0 h-screen w-full -z-10 bg-background">
                 {areas.map((area, index) => (
                     <div
-                        key={`bg-${index}`}
+                        key={`bg-${area.name}`}
                         className={cn(
                             "absolute inset-0 transition-opacity duration-[2000ms]",
                             activeIndex === index ? "opacity-100 z-1" : "opacity-0 z-0"
@@ -94,6 +94,7 @@ export function AreasImpactoSection() {
                                 src={area.image}
                                 alt={area.name}
                                 fill
+                                sizes="100vw"
                                 priority={index === 0}
                                 unoptimized
                                 className="object-cover brightness-[0.7]"
@@ -106,6 +107,7 @@ export function AreasImpactoSection() {
                                 src={area.imageDesktop}
                                 alt={area.name}
                                 fill
+                                sizes="100vw"
                                 priority={index === 0}
                                 unoptimized
                                 className="object-cover brightness-[0.7]"
@@ -130,7 +132,7 @@ export function AreasImpactoSection() {
 
                     {areas.map((area, index) => (
                         <div
-                            key={`content-${index}`}
+                            key={`content-${area.name}`}
                             ref={(el) => { sectionRefs.current[index] = el; }}
                             data-index={index}
                             className="min-h-screen flex items-center justify-center py-20"

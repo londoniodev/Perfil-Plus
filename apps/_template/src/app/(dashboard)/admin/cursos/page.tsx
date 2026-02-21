@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ThemeCard } from "@alvarosky/ui";
@@ -10,9 +10,6 @@ import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
     Button,
     Separator,
-    Tabs,
-    TabsList,
-    TabsTrigger,
     Pagination,
     AdminPageWrapper,
     Input,
@@ -21,6 +18,8 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
+    StatusFilter,
+    StatusFilterType
 } from "@alvarosky/ui";
 import { Plus, BookOpen, Loader2, Search } from "lucide-react";
 
@@ -36,7 +35,6 @@ interface Theme {
     };
 }
 
-type FilterType = "all" | "published" | "draft";
 type SortType = "newest" | "oldest" | "title" | "order";
 
 const ITEMS_PER_PAGE = 9;
@@ -47,16 +45,14 @@ export default function AdminCursosPage() {
 
     const [themes, setThemes] = useState<Theme[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<FilterType>("all");
+    const [filter, setFilter] = useState<StatusFilterType>("all");
     const [sort, setSort] = useState<SortType>("order");
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
 
-    useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
-        }
-    }, [isAdmin, authLoading, router]);
+    if (!authLoading && !isAdmin) {
+        redirect("/perfil");
+    }
 
     useEffect(() => {
         if (isAdmin) {
@@ -194,19 +190,11 @@ export default function AdminCursosPage() {
             </div>
 
             {/* Filter Tabs */}
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterType)} className="w-full">
-                <TabsList>
-                    <TabsTrigger value="all">
-                        Todos ({stats.total})
-                    </TabsTrigger>
-                    <TabsTrigger value="published">
-                        Publicados ({stats.published})
-                    </TabsTrigger>
-                    <TabsTrigger value="draft">
-                        Borradores ({stats.draft})
-                    </TabsTrigger>
-                </TabsList>
-            </Tabs>
+            <StatusFilter
+                value={filter}
+                onValueChange={setFilter}
+                stats={stats}
+            />
 
             {/* Search and Sort Controls */}
             <div className="flex flex-col sm:flex-row gap-3">

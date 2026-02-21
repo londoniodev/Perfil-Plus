@@ -1,9 +1,9 @@
 {
-  "name": "_template",
+  "name": "template",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev -p 3000 --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
@@ -13,6 +13,7 @@
     "@alvarosky/database-management": "workspace:*",
     "@alvarosky/eslint-config": "workspace:*",
     "@alvarosky/features": "workspace:*",
+    "@alvarosky/restaurant-sdk": "workspace:*",
     "@alvarosky/tailwind-config": "workspace:*",
     "@alvarosky/typescript-config": "workspace:*",
     "@alvarosky/ui": "workspace:*",
@@ -41,6 +42,8 @@
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.0.0",
     "isomorphic-dompurify": "^2.35.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.562.0",
@@ -52,7 +55,7 @@
     "react-hook-form": "^7.71.0",
     "react-icons": "^5.5.0",
     "react-qr-code": "^2.0.18",
-    "recharts": "^3.6.0",
+    "recharts": "^2.15.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",

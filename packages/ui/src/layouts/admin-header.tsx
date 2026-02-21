@@ -58,12 +58,38 @@ export function AdminHeader({
         const segments = pathname.split('/').filter(Boolean);
         // e.g. ['admin', 'products', 'new']
 
+        const segmentTranslations: Record<string, string> = {
+            "admin": "Admin",
+            "restaurant": "Restaurante",
+            "menu": "Menú",
+            "orders": "Comandas",
+            "kitchen": "Cocina KDS",
+            "pos": "Caja POS",
+            "new": "Nuevo",
+            "products": "Productos",
+            "categories": "Categorías",
+            "ecommerce": "E-Commerce",
+            "blog": "Blog",
+            "posts": "Entradas",
+            "courses": "LMS Cursos",
+            "settings": "Configuración",
+            "users": "Usuarios",
+            "roles": "Roles",
+            "dashboard": "Dashboard",
+            "inventory": "Inventario",
+            "analytics": "Métricas",
+        };
+
         return segments.map((segment: string, index: number) => {
             const href = `/${segments.slice(0, index + 1).join('/')}`;
-            // Capitalize and format label
-            const label = segment
-                .replace(/-/g, ' ')
-                .replace(/^./, (c: string) => c.toUpperCase());
+            // Translate or Capitalize and format label
+            let label = segmentTranslations[segment.toLowerCase()];
+
+            if (!label) {
+                label = segment
+                    .replace(/-/g, ' ')
+                    .replace(/^./, (c: string) => c.toUpperCase());
+            }
 
             return {
                 label,

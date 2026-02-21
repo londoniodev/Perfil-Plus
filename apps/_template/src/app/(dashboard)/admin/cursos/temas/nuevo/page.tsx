@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -29,14 +29,17 @@ export default function NuevoTemaPage() {
     const [loading, setLoading] = useState(false);
     const toast = useToast();
 
+    useEffect(() => {
+        if (!authLoading && !isAdmin) {
+            router.push("/perfil");
+        }
+    }, [authLoading, isAdmin, router]);
+
     if (authLoading) {
         return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     }
 
-    if (!isAdmin) {
-        router.push("/perfil");
-        return null;
-    }
+    if (!isAdmin) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

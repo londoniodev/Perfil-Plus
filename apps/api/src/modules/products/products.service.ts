@@ -237,11 +237,12 @@ export class ProductsService {
             include: {
                 variants: true,
                 ...this.modifierGroupsInclude,
+                categories: { include: { category: true } },
             },
         });
     }
 
-    async findAllPublished(type?: ProductType) {
+    async findAllPublished(type?: ProductType, allVariants: boolean = false) {
         return await this.prisma.client.product.findMany({
             where: {
                 published: true,
@@ -249,10 +250,11 @@ export class ProductsService {
             },
             orderBy: { createdAt: 'desc' },
             include: {
-                variants: {
+                variants: allVariants ? true : {
                     where: { isDefault: true }
                 },
                 ...this.modifierGroupsInclude,
+                categories: { include: { category: true } },
             },
         });
     }

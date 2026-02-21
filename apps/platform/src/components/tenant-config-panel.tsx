@@ -18,7 +18,9 @@ import {
     Palette,
     Puzzle,
     Mail,
-    Code
+    Mail,
+    Code,
+    Share2
 } from "lucide-react";
 
 interface Props {
@@ -114,6 +116,9 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                             </TabsTrigger>
                             <TabsTrigger value="apis">
                                 <Code className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">API's</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="social">
+                                <Share2 className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Redes</span>
                             </TabsTrigger>
                         </TabsList>
                     </div>
@@ -329,8 +334,68 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                                     onChange={(e) => updateSetting("api_key_openai", e.target.value)}
                                     className="bg-slate-800/50 border-slate-700 font-mono text-sm"
                                     autoComplete="new-password"
-                                    data-1p-ignore="true"
-                                />
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="social" className="mt-0 space-y-4">
+                            <div className="max-w-2xl space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">WhatsApp (Número Completo)</Label>
+                                    <Input
+                                        placeholder="Ej: 573001234567"
+                                        value={String(settings.social_whatsapp || "")}
+                                        onChange={(e) => updateSetting("social_whatsapp", e.target.value)}
+                                        className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-slate-500">Incluye el código de país sin el símbolo +</p>
+                                </div>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Instagram (URL)</Label>
+                                        <Input
+                                            placeholder="https://instagram.com/..."
+                                            value={String(settings.social_instagram || "")}
+                                            onChange={(e) => updateSetting("social_instagram", e.target.value)}
+                                            className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Facebook (URL)</Label>
+                                        <Input
+                                            placeholder="https://facebook.com/..."
+                                            value={String(settings.social_facebook || "")}
+                                            onChange={(e) => updateSetting("social_facebook", e.target.value)}
+                                            className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">Twitter / X (URL)</Label>
+                                        <Input
+                                            placeholder="https://twitter.com/..."
+                                            value={String(settings.social_twitter || "")}
+                                            onChange={(e) => updateSetting("social_twitter", e.target.value)}
+                                            className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-300">TikTok (URL)</Label>
+                                        <Input
+                                            placeholder="https://tiktok.com/..."
+                                            value={String(settings.social_tiktok || "")}
+                                            onChange={(e) => updateSetting("social_tiktok", e.target.value)}
+                                            className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-slate-300">YouTube (URL)</Label>
+                                    <Input
+                                        placeholder="https://youtube.com/..."
+                                        value={String(settings.social_youtube || "")}
+                                        onChange={(e) => updateSetting("social_youtube", e.target.value)}
+                                        className="bg-slate-800/50 border-slate-700 font-mono text-sm"
+                                    />
+                                </div>
                             </div>
                         </TabsContent>
 

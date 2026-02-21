@@ -41,6 +41,7 @@ const productSchema = z.object({
     images: z.array(z.string()).optional().default([]),
     specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
+    categories: z.array(z.string()).optional(), // New category field
     variants: z.array(variantSchema).optional(),
     modifierGroups: z.array(modifierGroupSchema).optional()
 })
@@ -105,10 +106,10 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         // 5. Preparar variantes
         let variantsData: typeof validated.variants = []
 
-        if (validated.productType === "DIGITAL") {
-            // Producto digital: crear 1 variante por defecto con stock ilimitado
+        if (validated.productType === "DIGITAL" || validated.productType === "RESTAURANT") {
+            // Producto digital o restaurante: crear 1 variante por defecto
             variantsData = [{
-                name: undefined,
+                name: "Standard",
                 sku: undefined, // Se generará automáticamente
                 price: validated.basePrice,
                 stock: -1, // Ilimitado
@@ -138,7 +139,12 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
                     basePrice: validated.basePrice,
                     images: validated.images,
                     specs,
-                    published: validated.published
+                    published: validated.published,
+                    categories: validated.categories && validated.categories.length > 0 ? {
+                        create: validated.categories.map(catId => ({
+                            categoryId: catId
+                        }))
+                    } : undefined
                 }
             })
 

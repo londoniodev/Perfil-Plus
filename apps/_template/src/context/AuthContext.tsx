@@ -1,9 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 
-import { User, AuthContextType } from "@/types/auth";
+import { User, AuthContextType, STAFF_ROLES } from "@/types/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,10 +33,50 @@ function clearAllAuthData() {
     window.dispatchEvent(new Event("user-login"));
 }
 
+// Helper to safely parse JWT tokens
+function parseJwt(token: string) {
+    try {
+        const payloadBase64 = token.split('.')[1];
+        const base64 = payloadBase64?.replace(/-/g, '+').replace(/_/g, '/');
+        if (base64) {
+            return JSON.parse(atob(base64));
+        }
+    } catch (e) {
+        console.error("[Auth] Error parsing token:", e);
+    }
+    return null;
+}
+
+// Helper to handle the API call and storage of refreshed tokens
+async function executeTokenRefresh(refreshToken: string) {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+            'x-tenant-id': TENANT_ID,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refreshToken }),
+    });
+
+    if (res.ok) {
+        const refreshData = await res.json();
+        if (refreshData.accessToken) {
+            localStorage.setItem("token", refreshData.accessToken);
+            localStorage.setItem("refreshToken", refreshData.refreshToken);
+            setCookie("accessToken", refreshData.accessToken, 7);
+            return { success: true, ...refreshData };
+        }
+    }
+
+    return { success: false, status: res.status };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false); // Concurrency lock
+    const isRefreshingRef = useRef(false); // Concurrency lock
+    const router = useRouter();
 
     const refreshUser = useCallback(async () => {
         try {
@@ -44,48 +85,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Local expiration check to avoid sending expired tokens to backend
             if (token) {
                 try {
-                    const payloadBase64 = token.split('.')[1];
-                    const base64 = payloadBase64?.replace(/-/g, '+').replace(/_/g, '/');
-                    if (base64) {
-                        const payload = JSON.parse(atob(base64));
+                    const payload = parseJwt(token);
+                    if (payload && payload.exp) {
                         const isExpired = Date.now() >= (payload.exp * 1000) - 5000; // 5s buffer
                         if (isExpired) {
-                            console.log("[Auth] Token expired locally, skipping /auth/me and triggering refresh");
-
-                            if (isRefreshing) return;
-                            setIsRefreshing(true);
+                            if (isRefreshingRef.current) return;
+                            isRefreshingRef.current = true;
                             try {
                                 const refreshToken = localStorage.getItem("refreshToken");
                                 if (!refreshToken) throw new Error("No refresh token");
 
-                                const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-                                    method: "POST",
-                                    credentials: 'include',
-                                    headers: {
-                                        'x-tenant-id': TENANT_ID,
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({ refreshToken }),
-                                });
+                                const refreshRes = await executeTokenRefresh(refreshToken);
 
-                                if (refreshRes.ok) {
-                                    const refreshData = await refreshRes.json();
-                                    if (refreshData.accessToken) {
-                                        localStorage.setItem("token", refreshData.accessToken);
-                                        localStorage.setItem("refreshToken", refreshData.refreshToken);
-                                        setCookie("accessToken", refreshData.accessToken, 7);
-                                        // Retry getting user with NEW token
-                                        return refreshUser();
-                                    }
+                                if (refreshRes.success) {
+                                    // Retry getting user with NEW token
+                                    return refreshUser();
                                 }
                                 throw new Error("Refresh failed");
                             } finally {
-                                setIsRefreshing(false);
+                                isRefreshingRef.current = false;
                             }
                         }
                     }
                 } catch (e) {
-                    console.error("[Auth] Error checking token expiration locally:", e);
+                    // Ignore parsing error
                 }
             }
 
@@ -101,8 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // Si el token de acceso expiró (401), intentar refrescar
             if (res.status === 401) {
-                if (isRefreshing) return;
-                setIsRefreshing(true);
+                if (isRefreshingRef.current) return;
+                isRefreshingRef.current = true;
                 try {
                     const refreshToken = localStorage.getItem("refreshToken");
 
@@ -111,26 +134,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
 
                     // Refresh with Cookie (primary) OR body token (fallback)
-                    const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-                        method: "POST",
-                        credentials: 'include',
-                        headers: {
-                            'x-tenant-id': TENANT_ID,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ refreshToken }),
-                    });
+                    const refreshRes = await executeTokenRefresh(refreshToken);
 
-                    if (refreshRes.ok) {
-                        // Update tokens in localStorage if returned
-                        const refreshData = await refreshRes.json();
-                        if (refreshData.accessToken) {
-                            localStorage.setItem("token", refreshData.accessToken);
-                            localStorage.setItem("refreshToken", refreshData.refreshToken);
-                            // Update cookie for middleware
-                            setCookie("accessToken", refreshData.accessToken, 7);
-                        }
-
+                    if (refreshRes.success) {
                         // Retry original request with NEW token
                         const newToken = localStorage.getItem("token");
                         const newHeaders: HeadersInit = { 'x-tenant-id': TENANT_ID };
@@ -144,9 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         });
                     }
                 } catch (refreshError) {
-                    console.error("Error refreshing token:", refreshError);
+                    // Ignore error silently
                 } finally {
-                    setIsRefreshing(false);
+                    isRefreshingRef.current = false;
                 }
             }
 
@@ -157,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 // Si es 401, redirigir explícitamente a login con mensaje
                 if (res.status === 401) {
-                    window.location.href = "/login?reason=session_expired";
+                    router.replace("/login?reason=session_expired");
                 }
                 return;
             }
@@ -166,7 +172,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(userData);
             localStorage.setItem("user", JSON.stringify(userData));
         } catch (error) {
-            console.error("Error fetching user:", error);
             setUser(null);
             clearAllAuthData();
         }
@@ -213,6 +218,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // ============================================================
     // PROACTIVE TOKEN REFRESH (Adaptive & Robust)
     // ============================================================
+    const performTokenRefresh = useCallback(async () => {
+        if (isRefreshingRef.current) return false;
+        isRefreshingRef.current = true;
+        try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (!refreshToken) return false;
+
+            const refreshRes = await executeTokenRefresh(refreshToken);
+
+            if (refreshRes.success) {
+                return true;
+            } else {
+                if (refreshRes.status === 401 || refreshRes.status === 403) {
+                    setUser(null);
+                    clearAllAuthData();
+                    router.replace("/login?reason=session_expired");
+                }
+            }
+        } catch (error) {
+            // Silently caught
+        } finally {
+            isRefreshingRef.current = false;
+        }
+        return false;
+    }, []);
+
+    // ============================================================
+    // PROACTIVE TOKEN REFRESH (Adaptive & Robust)
+    // ============================================================
     useEffect(() => {
         let refreshTimeout: NodeJS.Timeout;
 
@@ -222,61 +256,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             try {
                 // Decode payload to get expiration time
-                const payloadBase64 = token.split('.')[1];
-                const base64 = payloadBase64?.replace(/-/g, '+').replace(/_/g, '/');
-                if (!base64) return;
+                const payload = parseJwt(token);
+                if (!payload || !payload.exp) return;
 
-                const payload = JSON.parse(atob(base64));
                 const expirationDate = new Date(payload.exp * 1000);
                 const now = new Date();
 
                 // Refresh 5 minutes before actual expiration
                 const delay = expirationDate.getTime() - now.getTime() - (5 * 60 * 1000);
 
-                if (delay <= 0) {
-                    console.log("[Auth] Token already near expiration, scheduling immediate refresh");
-                } else {
-                    console.log(`[Auth] Scheduled proactive refresh in ${(delay / 1000 / 60).toFixed(1)} minutes`);
-                }
-
                 refreshTimeout = setTimeout(async () => {
-                    if (isRefreshing) return;
-                    setIsRefreshing(true);
-                    try {
-                        const refreshToken = localStorage.getItem("refreshToken");
-                        if (!refreshToken) return;
-
-                        const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-                            method: "POST",
-                            credentials: 'include',
-                            headers: {
-                                'x-tenant-id': TENANT_ID,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ refreshToken }),
-                        });
-
-                        if (refreshRes.ok) {
-                            const refreshData = await refreshRes.json();
-                            if (refreshData.accessToken) {
-                                localStorage.setItem("token", refreshData.accessToken);
-                                localStorage.setItem("refreshToken", refreshData.refreshToken);
-                                setCookie("accessToken", refreshData.accessToken, 7);
-                                console.log("[Auth] Token refreshed proactively");
-                                // Reschedule next refresh
-                                scheduleRefresh();
-                            }
-                        } else {
-                            console.warn("[Auth] Proactive refresh failed, will retry on next activity");
-                        }
-                    } catch (error) {
-                        console.error("[Auth] Proactive refresh error:", error);
-                    } finally {
-                        setIsRefreshing(false);
+                    const success = await performTokenRefresh();
+                    if (success) {
+                        scheduleRefresh();
                     }
                 }, Math.max(delay, 0));
             } catch (error) {
-                console.error("[Auth] Error parsing token for proactive refresh:", error);
+                // Ignore error
             }
         };
 
@@ -287,13 +283,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             if (refreshTimeout) clearTimeout(refreshTimeout);
         };
-    }, [user]);
+    }, [user, performTokenRefresh]);
 
     const isAdmin = user?.role === "ADMIN";
+    const isStaff = !!user?.role && STAFF_ROLES.includes(user.role as any);
     const isAuthenticated = !!user;
 
     return (
-        <AuthContext.Provider value={{ user, loading, isAdmin, isAuthenticated, refreshUser, logout }}>
+        <AuthContext.Provider value={{ user, loading, isAdmin, isStaff, isAuthenticated, refreshUser, logout }}>
             {children}
         </AuthContext.Provider>
     );
@@ -304,6 +301,7 @@ const defaultAuthContext: AuthContextType = {
     user: null,
     loading: true,
     isAdmin: false,
+    isStaff: false,
     isAuthenticated: false,
     refreshUser: async () => { },
     logout: async () => { },

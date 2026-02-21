@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { Pagination, AdminPageWrapper, BlogCard, Button, useToast, IconPlus } from "@alvarosky/ui";
+import { Pagination, AdminPageWrapper, BlogCard, Button, useToast, IconPlus, StatusFilter, StatusFilterType } from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
 import Link from "next/link";
@@ -37,7 +37,6 @@ interface PostsResponse {
     };
 }
 
-type FilterType = "all" | "published" | "draft";
 type SortType = "newest" | "oldest" | "title";
 
 // ============================================================================
@@ -53,17 +52,15 @@ export default function AdminBlogPage() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [filter, setFilter] = useState<FilterType>("all");
+    const [filter, setFilter] = useState<StatusFilterType>("all");
     const [sort, setSort] = useState<SortType>("newest");
     const [search, setSearch] = useState("");
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     // Redirigir si no es admin
-    useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
-        }
-    }, [isAdmin, authLoading, router]);
+    if (!authLoading && !isAdmin) {
+        redirect("/perfil");
+    }
 
     // Cargar posts
     const fetchPosts = useCallback(async () => {
@@ -184,18 +181,11 @@ export default function AdminBlogPage() {
         >
 
             {/* Filter Tabs */}
-            <div className="flex items-center gap-2 border-b pb-2 overflow-x-auto">
-                {(["all", "published", "draft"] as FilterType[]).map((t) => (
-                    <Button
-                        key={t}
-                        variant={filter === t ? "secondary" : "ghost"}
-                        size="sm"
-                        onClick={() => { setFilter(t); setPage(1); }}
-                        className="capitalize"
-                    >
-                        {t === "all" ? "Todos" : t === "published" ? "Publicados" : "Borradores"}
-                    </Button>
-                ))}
+            <div className="mb-4">
+                <StatusFilter
+                    value={filter}
+                    onValueChange={(v) => { setFilter(v); setPage(1); }}
+                />
             </div>
 
             {/* Search and Sort Controls */}

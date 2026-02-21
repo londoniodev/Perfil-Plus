@@ -10,7 +10,7 @@ import {
     ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderType } from '@prisma/client';
+import { OrderType, OrderStatus } from '@prisma/client';
 
 export class OrderItemModifierDto {
     @IsString()
@@ -44,6 +44,10 @@ export class CreateOrderDto {
     @IsEnum(OrderType)
     @IsOptional()
     orderType?: OrderType = OrderType.DINE_IN;
+
+    @IsEnum(OrderStatus)
+    @IsOptional()
+    status?: OrderStatus;
 
     @IsString()
     @IsOptional()

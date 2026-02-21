@@ -68,9 +68,9 @@ export function CaseVisual({ category, color, id }: CaseVisualProps) {
 
             {visualConfig.type === "flow" && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                    {[1, 2, 3].map((i) => (
+                    {[1, 2, 3].map((num, i) => (
                         <div
-                            key={i}
+                            key={num}
                             className="absolute rounded-full animate-pulse"
                             style={{
                                 width: `${200 + i * 80}px`,
@@ -95,9 +95,9 @@ export function CaseVisual({ category, color, id }: CaseVisualProps) {
 
             {visualConfig.type === "connections" && (
                 <div className="absolute inset-0">
-                    {[1, 2, 3, 4].map((i) => (
+                    {[1, 2, 3, 4].map((num, i) => (
                         <div
-                            key={i}
+                            key={num}
                             className="absolute w-3 h-3 rounded-full animate-pulse"
                             style={{
                                 top: `${20 + (id * i * 17) % 60}%`,

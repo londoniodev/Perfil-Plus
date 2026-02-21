@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import {
-    useToast,
     AdminPageWrapper,
     Input,
     Tabs,
@@ -15,21 +14,9 @@ import {
     UsersTable
 } from "@alvarosky/ui";
 import { Search } from "lucide-react";
+import { useUsers } from "@/hooks";
 import { User } from "@/components/users/columns";
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface UsersResponse {
-    data: User[];
-    meta: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    };
-}
 
 // ============================================================================
 // TOOLBAR COMPONENT
@@ -53,20 +40,20 @@ function UsersToolbar({
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="bg-muted/50">
-                    <TabsTrigger value="all" className="text-xs sm:text-sm">
+                <TabsList className="bg-muted/50 rounded-full p-1">
+                    <TabsTrigger value="all" className="text-xs sm:text-sm rounded-full">
                         Todos
-                        <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+                        <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs rounded-full">
                             {data.length}
                         </Badge>
                     </TabsTrigger>
-                    <TabsTrigger value="admins" className="text-xs sm:text-sm">
+                    <TabsTrigger value="admins" className="text-xs sm:text-sm rounded-full">
                         Admins
                     </TabsTrigger>
-                    <TabsTrigger value="premium" className="text-xs sm:text-sm">
+                    <TabsTrigger value="premium" className="text-xs sm:text-sm rounded-full">
                         Premium
                     </TabsTrigger>
-                    <TabsTrigger value="free" className="text-xs sm:text-sm">
+                    <TabsTrigger value="free" className="text-xs sm:text-sm rounded-full">
                         Gratis
                     </TabsTrigger>
                 </TabsList>
@@ -92,57 +79,21 @@ function UsersToolbar({
 export default function AdminUsersPage() {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
-    const toast = useToast();
 
-    const [users, setUsers] = useState<User[]>([]);
-    const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
-    const [loading, setLoading] = useState(true);
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const {
+        users,
+        meta,
+        loading,
+        actionLoading,
+        handleRoleChange,
+        handleDelete,
+        handleSubscriptionChange
+    } = useUsers(isAdmin, authLoading);
 
     // Filter state
     const [activeTab, setActiveTab] = useState("all");
     const [globalFilter, setGlobalFilter] = useState("");
 
-    // ========================================================================
-    // DATA FETCHING
-    // ========================================================================
-
-    const fetchUsers = useCallback(async () => {
-        setLoading(true);
-        try {
-            const queryParams = new URLSearchParams({
-                limit: "100",
-            });
-
-            const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
-                headers: { "x-tenant-id": TENANT_ID },
-                credentials: "include",
-            });
-
-            if (res.ok) {
-                const data: UsersResponse = await res.json();
-                setUsers(data.data);
-                setMeta(data.meta);
-            }
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Error al cargar usuarios");
-        } finally {
-            setLoading(false);
-        }
-    }, [toast]);
-
-    useEffect(() => {
-        if (!authLoading && isAdmin) {
-            fetchUsers();
-        }
-    }, [fetchUsers, authLoading, isAdmin]);
-
-    useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
-        }
-    }, [isAdmin, authLoading, router]);
 
     // ========================================================================
     // FILTER DATA BY TAB
@@ -176,86 +127,6 @@ export default function AdminUsersPage() {
 
         return filtered;
     }, [users, activeTab, globalFilter]);
-
-    // ========================================================================
-    // ACTION HANDLERS
-    // ========================================================================
-
-    const handleRoleChange = async (userId: string, newRole: "USER" | "ADMIN") => {
-        setActionLoading(userId);
-        try {
-            const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
-                credentials: "include",
-                body: JSON.stringify({ role: newRole }),
-            });
-            if (res.ok) {
-                setUsers(users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-                toast.success(`Rol cambiado a ${newRole === "ADMIN" ? "Administrador" : "Usuario"}`);
-            } else {
-                toast.error("Error al actualizar rol");
-            }
-        } catch {
-            toast.error("Error al actualizar rol");
-        } finally {
-            setActionLoading(null);
-        }
-    };
-
-    const handleDelete = async (userId: string) => {
-        if (!confirm("¿Eliminar usuario irreversiblemente?")) return;
-        setActionLoading(userId);
-        try {
-            const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
-                method: "DELETE",
-                headers: { "x-tenant-id": TENANT_ID },
-                credentials: "include",
-            });
-            if (res.ok) {
-                setUsers(users.filter((u) => u.id !== userId));
-                toast.success("Usuario eliminado");
-            } else {
-                toast.error("Error al eliminar");
-            }
-        } catch {
-            toast.error("Error al eliminar");
-        } finally {
-            setActionLoading(null);
-        }
-    };
-
-    const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel") => {
-        if (!confirm(action === "assign" ? "¿Asignar Premium?" : "¿Cancelar Premium?")) return;
-        setActionLoading(userId);
-        try {
-            const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
-                method: action === "assign" ? "POST" : "DELETE",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
-                credentials: "include",
-            });
-            if (res.ok) {
-                setUsers(
-                    users.map((u) => {
-                        if (u.id === userId) {
-                            return {
-                                ...u,
-                                subscription: { status: action === "assign" ? "ACTIVE" : "CANCELLED" },
-                            };
-                        }
-                        return u;
-                    })
-                );
-                toast.success(action === "assign" ? "Premium asignado" : "Premium cancelado");
-            } else {
-                toast.error("Error en suscripción");
-            }
-        } catch {
-            toast.error("Error en suscripción");
-        } finally {
-            setActionLoading(null);
-        }
-    };
 
 
 

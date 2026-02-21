@@ -13,4 +13,6 @@ export { useAuth } from "./use-auth";
 // Domain Hooks
 export { useCourses } from "./use-courses";
 export { useBlog } from "./use-blog";
+export { useCategories } from "./use-categories";
+export { useUsers } from "./use-users";
 

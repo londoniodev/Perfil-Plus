@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { IconImage, IconTrash, IconUpload } from "../../icons";
+import { Plus } from "lucide-react";
 import { useToast } from "../../toast";
 import { cn } from "../../lib/utils";
 import { Button } from "../../button";
@@ -23,6 +24,8 @@ export interface ImageUploaderProps {
     tenantId: string;
     /** Max file size in MB (default: 5) */
     maxSizeMB?: number;
+    /** Display variant */
+    variant?: "default" | "button";
 }
 
 export function ImageUploader({
@@ -33,7 +36,8 @@ export function ImageUploader({
     className,
     apiBase,
     tenantId,
-    maxSizeMB = 5
+    maxSizeMB = 5,
+    variant = "default"
 }: ImageUploaderProps) {
     const [uploading, setUploading] = useState(false);
     const toast = useToast();
@@ -107,9 +111,11 @@ export function ImageUploader({
 
     return (
         <div className={cn("space-y-2", className)}>
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {label}
-            </label>
+            {label && (
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    {label}
+                </label>
+            )}
 
             {value ? (
                 <div className="relative rounded-md overflow-hidden border bg-black group max-h-[300px] w-full aspect-video">
@@ -130,6 +136,23 @@ export function ImageUploader({
                         </Button>
                     </div>
                 </div>
+            ) : variant === "button" ? (
+                <Button
+                    type="button"
+                    variant="outline"
+                    className={cn("w-full h-full bg-primary/10 border-dashed border-primary/20 hover:bg-primary/20 flex flex-col items-center justify-center gap-2", uploading && "opacity-50 cursor-wait")}
+                    onClick={() => inputRef.current?.click()}
+                    disabled={uploading}
+                >
+                    {uploading ? (
+                        <IconUpload className="h-5 w-5 animate-bounce" />
+                    ) : (
+                        <div className="flex flex-col items-center gap-1">
+                            <Plus className="h-6 w-6 text-primary/80" />
+                            <span className="text-xs text-primary/80 font-medium">Agregar</span>
+                        </div>
+                    )}
+                </Button>
             ) : (
                 <div
                     onClick={() => inputRef.current?.click()}

@@ -44,6 +44,12 @@ export default async function SettingsPage() {
             enableBlog: config.features?.blog,
             enableStore: config.features?.store,
             enableLMS: config.features?.lms,
+            whatsapp: config.contact?.whatsapp,
+            instagram: config.contact?.instagram,
+            facebook: config.contact?.facebook,
+            address: config.contact?.address,
+            menuSlogan: config.menu?.slogan,
+            menuLogo: config.menu?.logo,
         }
     } else {
         // Fallback to legacy StoreSettings

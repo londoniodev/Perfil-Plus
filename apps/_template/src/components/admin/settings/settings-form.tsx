@@ -5,13 +5,14 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch, Label } from "@alvarosky/ui"
-import { Loader2, ExternalLink, Check, Info, DollarSign, Palette, Puzzle, Mail, Code } from "lucide-react"
+import { Loader2, ExternalLink, Check, Info, DollarSign, Palette, Puzzle, Mail, Code, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
+import { ImageUploader } from "@alvarosky/ui"
+import { API_BASE, TENANT_ID } from "@/lib/config"
 
 const settingsSchema = z.object({
-    // Info
-    storeName: z.string().min(1, "El nombre de la tienda es requerido").optional(),
+    storeName: z.string().optional().or(z.literal("")),
     storeEmail: z.string().email("Email inválido").optional().or(z.literal("")),
 
     // Finance
@@ -36,10 +37,19 @@ const settingsSchema = z.object({
     // APIs
     apiKeyOpenAI: z.string().optional(),
 
-    // Features
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
+
+    // Contact
+    whatsapp: z.string().optional(),
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+    address: z.string().optional(),
+
+    // Menu
+    menuSlogan: z.string().optional(),
+    menuLogo: z.string().optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -65,6 +75,12 @@ interface SettingsFormProps {
         enableBlog?: boolean | null
         enableStore?: boolean | null
         enableLMS?: boolean | null
+        whatsapp?: string | null
+        instagram?: string | null
+        facebook?: string | null
+        address?: string | null
+        menuSlogan?: string | null
+        menuLogo?: string | null
     }
 }
 
@@ -94,6 +110,12 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
             enableBlog: initialData?.enableBlog ?? true,
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
+            whatsapp: initialData?.whatsapp || "",
+            instagram: initialData?.instagram || "",
+            facebook: initialData?.facebook || "",
+            address: initialData?.address || "",
+            menuSlogan: initialData?.menuSlogan || "",
+            menuLogo: initialData?.menuLogo || "",
         },
     })
 
@@ -118,9 +140,21 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Tabs defaultValue="finance" className="w-full">
-                    <TabsList className="flex w-full overflow-x-auto lg:grid lg:grid-cols-3 mb-8 bg-transparent border-b rounded-none h-auto p-0 gap-2 scrollbar-none">
+            <form
+                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                    console.error("Form Validation Errors:", errors);
+                    toast.error("Error de validación en el formulario");
+                })}
+                className="space-y-6"
+            >
+                <Tabs defaultValue="general" className="w-full">
+                    <TabsList className="flex w-full overflow-x-auto lg:grid lg:grid-cols-4 mb-8 bg-transparent border-b rounded-none h-auto p-0 gap-2 scrollbar-none">
+                        <TabsTrigger
+                            value="general"
+                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
+                        >
+                            <Info className="w-4 h-4 mr-2" /> <span>General</span>
+                        </TabsTrigger>
                         <TabsTrigger
                             value="finance"
                             className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
@@ -140,6 +174,119 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                             <Code className="w-4 h-4 mr-2" /> <span>API's</span>
                         </TabsTrigger>
                     </TabsList>
+
+                    {/* General/Contacto */}
+                    <TabsContent value="general">
+                        <Card className="p-6 space-y-6">
+                            <div className="space-y-4 max-w-2xl">
+                                <h3 className="text-lg font-semibold">Información del Negocio</h3>
+                                <div className="grid gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="whatsapp"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>WhatsApp (incluir código de país)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="+57310..." />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="address"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Dirección Física</FormLabel>
+                                                <FormControl>
+                                                    <div className="relative">
+                                                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                        <Input {...field} placeholder="Calle 123, Ciudad" className="pl-10" />
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <FormField
+                                            control={form.control}
+                                            name="instagram"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Instagram (usuario)</FormLabel>
+                                                    <FormControl>
+                                                        <div className="flex items-center">
+                                                            <span className="bg-muted px-3 h-10 flex items-center border border-r-0 rounded-l-md text-muted-foreground text-sm">@</span>
+                                                            <Input {...field} placeholder="mi_negocio" className="rounded-l-none" />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="facebook"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Facebook (URL/ID)</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} placeholder="mi.negocio" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    {/* Menú Digital */}
+                                    <div className="pt-4 border-t space-y-4">
+                                        <h4 className="text-sm font-medium">Menú Digital</h4>
+
+                                        <FormField
+                                            control={form.control}
+                                            name="menuLogo"
+                                            render={({ field }) => (
+                                                <div className="space-y-3">
+                                                    <FormLabel>Logo del Restaurante</FormLabel>
+                                                    <FormControl>
+                                                        <ImageUploader
+                                                            apiBase={API_BASE || ""}
+                                                            tenantId={TENANT_ID || ""}
+                                                            value={field.value || null}
+                                                            onChange={field.onChange}
+                                                            label="Haz clic para subir el logo (JPG, PNG, WEBP)"
+                                                            folder="logos"
+                                                            className="max-w-[200px]" // Limit size
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </div>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="menuSlogan"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Mensaje de bienvenida del menú</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} placeholder="Bienvenido a nuestro menú digital" />
+                                                    </FormControl>
+                                                    <p className="text-xs text-muted-foreground">Este texto aparece debajo del nombre del negocio en el menú público.</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                    </TabsContent>
 
 
                     {/* Finanzas */}
@@ -219,7 +366,14 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                         <FormItem>
                                             <FormLabel>Puerto</FormLabel>
                                             <FormControl>
-                                                <Input {...field} type="number" onChange={e => field.onChange(parseInt(e.target.value))} />
+                                                <Input
+                                                    {...field}
+                                                    type="number"
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        field.onChange(val === "" ? undefined : parseInt(val));
+                                                    }}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

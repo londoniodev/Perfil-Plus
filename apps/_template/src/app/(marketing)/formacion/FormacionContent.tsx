@@ -54,8 +54,8 @@ export default function FormacionContent() {
                 <div className="container">
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {cursos.map((curso, index) => (
-                                <Card key={index} className="flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 border-border/50">
+                            {cursos.map((curso) => (
+                                <Card key={curso.title} className="flex flex-col h-full hover:-translate-y-1 hover:shadow-lg transition-all duration-300 border-border/50">
                                     <div className="p-6 pb-0">
                                         <div className="w-[60px] h-[60px] bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-6">
                                             {curso.icon}

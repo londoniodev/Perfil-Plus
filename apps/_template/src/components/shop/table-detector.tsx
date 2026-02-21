@@ -11,7 +11,6 @@ function TableDetectorContent() {
     useEffect(() => {
         const table = searchParams.get("table")
         if (table) {
-            console.log("Mesa detectada:", table)
             setTableId(table)
         }
     }, [searchParams, setTableId])

@@ -12,14 +12,19 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
         pathname?.includes("/mis-compras") ||
         pathname?.startsWith("/cursos") || // Mis Cursos (LMS)
         pathname?.startsWith("/suscripcion") ||
+        pathname?.startsWith("/waiter") ||
+        pathname?.startsWith("/kitchen") ||
         pathname?.startsWith("/dashboard");
 
     const isAuthPage = pathname === "/login" ||
         pathname === "/registro" ||
         pathname?.startsWith("/auth");
 
-    // Dashboard and Auth pages don't show Header/Footer
-    if (isDashboard || isAuthPage) {
+    // Menú público del restaurante - sin header/footer
+    const isMenuPage = pathname === "/menu" || pathname?.endsWith("/menu");
+
+    // Dashboard, Auth and Menu pages don't show Header/Footer
+    if (isDashboard || isAuthPage || isMenuPage) {
         return <>{children}</>;
     }
 

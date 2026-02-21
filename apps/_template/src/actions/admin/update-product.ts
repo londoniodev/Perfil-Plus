@@ -38,6 +38,7 @@ const productSchema = z.object({
     images: z.array(z.string()).optional().default([]),
     specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
+    categories: z.array(z.string()).optional(), // New category field
     variants: z.array(variantSchema).optional(),
     modifierGroups: z.array(modifierGroupSchema).optional()
 })
@@ -77,6 +78,24 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
                 }
             })
 
+            // 1b. Sync Categories
+            if (validated.categories) {
+                // Wipe existing relations
+                await tx.categoriesOnProducts.deleteMany({
+                    where: { productId: id }
+                })
+
+                // Create new ones
+                if (validated.categories.length > 0) {
+                    await tx.categoriesOnProducts.createMany({
+                        data: validated.categories.map(catId => ({
+                            productId: id,
+                            categoryId: catId
+                        }))
+                    })
+                }
+            }
+
             // 2. Handle Variants (Simplification: Delete all and re-create for physical products)
             // Ideally we should sync by ID but for now re-create strategy is safer to avoid orphans
             if (validated.productType === "PHYSICAL" && validated.variants) {
@@ -97,6 +116,34 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
                 }))
 
                 await tx.productVariant.createMany({ data: variantsToCreate })
+            } else if (validated.productType === "RESTAURANT") {
+                // Ensure at least one variant exists for Restaurant products
+                const existingCount = await tx.productVariant.count({ where: { productId: id } })
+
+                if (existingCount === 0) {
+                    await tx.productVariant.create({
+                        data: {
+                            productId: id,
+                            name: "Standard",
+                            sku: `${validated.name.slice(0, 3).toUpperCase()}-${id.slice(0, 4)}-DEF`,
+                            price: validated.basePrice,
+                            stock: -1, // Unlimited
+                            isDefault: true
+                        }
+                    })
+                } else {
+                    // Update default variant price to match basePrice
+                    const defaultVariant = await tx.productVariant.findFirst({
+                        where: { productId: id, isDefault: true }
+                    })
+
+                    if (defaultVariant) {
+                        await tx.productVariant.update({
+                            where: { id: defaultVariant.id },
+                            data: { price: validated.basePrice }
+                        })
+                    }
+                }
             }
 
 

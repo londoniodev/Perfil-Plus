@@ -51,10 +51,10 @@ export default async function OrdersPage() {
         status: order.status,
         totalAmount: Number(order.totalAmount),
         createdAt: order.createdAt,
-        user: {
+        user: order.user ? {
             name: order.user.name,
             email: order.user.email
-        },
+        } : null,
         shippingData: {}, // Map if available in prisma schema
         items: order.items.map(item => ({
             id: item.id,

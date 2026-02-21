@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { BlogEditor } from "@alvarosky/ui";
@@ -56,25 +56,25 @@ export default function PostForm({ mode, postId }: PostFormProps) {
     const [loading, setLoading] = useState(mode === "edit");
     const [saving, setSaving] = useState(false);
 
-    // Redirigir si no es admin
-    useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
-        }
-    }, [isAdmin, authLoading, router]);
+    // Redirigir si no es admin (Server-side like redirect)
+    if (!authLoading && !isAdmin) {
+        redirect("/perfil");
+    }
 
     // Cargar datos iniciales
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchData = async () => {
             try {
                 const requests: Promise<Response>[] = [
-                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': TENANT_ID } }),
-                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': TENANT_ID } }),
+                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': TENANT_ID }, signal: controller.signal }),
+                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': TENANT_ID }, signal: controller.signal }),
                 ];
 
                 if (mode === "edit" && postId) {
                     requests.push(
-                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" })
+                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", signal: controller.signal })
                     );
                 }
 
@@ -99,13 +99,19 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                     setMetaDescription(post.metaDescription || "");
                 }
             } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Error al cargar datos");
+                if ((err as Error).name !== 'AbortError') {
+                    toast.error(err instanceof Error ? err.message : "Error al cargar datos");
+                }
             } finally {
-                setLoading(false);
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         if (isAdmin) fetchData();
+
+        return () => controller.abort();
     }, [isAdmin, mode, postId]);
 
     const handleSubmit = async (e: React.FormEvent) => {

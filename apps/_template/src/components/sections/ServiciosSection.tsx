@@ -39,8 +39,8 @@ export function ServiciosSection() {
                                 Espacio clínico para ordenar el mundo interno y sanar.
                             </p>
                             <ul className="space-y-3 mb-8">
-                                {["Ansiedad y estrés", "Duelo y crisis", "Vínculos sanos", "Propósito de vida"].map((item, i) => (
-                                    <li key={i} className="flex gap-2.5 items-start text-sm text-foreground/80">
+                                {["Ansiedad y estrés", "Duelo y crisis", "Vínculos sanos", "Propósito de vida"].map((item) => (
+                                    <li key={item} className="flex gap-2.5 items-start text-sm text-foreground/80">
                                         <span className="text-green-500 mt-0.5"><IconCheck className="w-4 h-4" /></span>
                                         {item}
                                     </li>
@@ -73,8 +73,8 @@ export function ServiciosSection() {
                                 Alineación de cultura, liderazgo y equipos con resultados de negocio.
                             </p>
                             <ul className="space-y-3 mb-8">
-                                {["Cultura y cambio", "Escuelas de liderazgo", "Talleres de equipo", "Eventos corporativos"].map((item, i) => (
-                                    <li key={i} className="flex gap-2.5 items-start text-sm text-foreground/80">
+                                {["Cultura y cambio", "Escuelas de liderazgo", "Talleres de equipo", "Eventos corporativos"].map((item) => (
+                                    <li key={item} className="flex gap-2.5 items-start text-sm text-foreground/80">
                                         <span className="text-primary mt-0.5"><IconCheck className="w-4 h-4" /></span>
                                         {item}
                                     </li>
@@ -112,8 +112,8 @@ export function ServiciosSection() {
                                 Claridad, seguimiento y lenguaje simple para decisiones complejas.
                             </p>
                             <ul className="space-y-3 mb-8">
-                                {["Evaluación 360° con IA", "Sesiones 1 a 1", "App de resultados", "Ruta de carrera"].map((item, i) => (
-                                    <li key={i} className="flex gap-2.5 items-start text-sm text-foreground/80">
+                                {["Evaluación 360° con IA", "Sesiones 1 a 1", "App de resultados", "Ruta de carrera"].map((item) => (
+                                    <li key={item} className="flex gap-2.5 items-start text-sm text-foreground/80">
                                         <span className="text-accent mt-0.5"><IconCheck className="w-4 h-4" /></span>
                                         {item}
                                     </li>

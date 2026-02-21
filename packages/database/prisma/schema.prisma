@@ -14,6 +14,9 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  WAITER    // Mesero: solo pedidos
+  KITCHEN   // Cocina: solo comandas (KDS)
+  CASHIER   // Caja: POS, mesas, menú, caja
 }
 
 model User {
@@ -353,6 +356,23 @@ model StoreSettings {
   updatedAt     DateTime @updatedAt
 }
 
+// ============ RESTAURANTE: MESA Y ZONAS ============
+model Table {
+  id        String   @id @default(cuid())
+  label     String   // "Mesa 1", "Barra 2"
+  capacity  Int      @default(4)
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE, MAINTENANCE
+  x         Int      @default(0) // Posición X en plano (futuro)
+  y         Int      @default(0) // Posición Y en plano (futuro)
+  
+  // QR
+  qrCode    String?  // URL o código único
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
 
 // ============ E-COMMERCE: PRODUCTOS MULTI-TIPO ============
 
@@ -492,6 +512,7 @@ model Order {
   // Relaciones
   user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
+  payments      Payment[]
 
   @@index([userId])
   @@index([status])
@@ -505,8 +526,10 @@ model OrderItem {
   variantId   String
   quantity    Int      @default(1)
   price       Decimal  @db.Decimal(10, 2)  // Precio unitario calculado server-side
+  isPaid      Boolean  @default(false)     // Control de pagos parciales
   productName String   // Snapshot: nombre del producto al momento de compra
   variantName String?  // Snapshot: nombre de la variante (ej: "Rojo XL")
+  isPrepared  Boolean  @default(false)     // Control de cocina (KDS)
   notes       String?  // "Sin sal", "Alergia al maní", "Salsa aparte"
   createdAt   DateTime @default(now())
 
@@ -530,7 +553,23 @@ model OrderItemModifier {
   orderItem       OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
   modifier        Modifier  @relation(fields: [modifierId], references: [id])
 
+
+
   @@index([orderItemId])
+}
+
+// Modelo: Pagos (Parciales o Totales)
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  amount        Decimal  @db.Decimal(10, 2)
+  method        String   // 'CASH', 'CARD', 'TRANSFER', 'OTHER'
+  reference     String?  // Auth code, transaction ID
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
 }
 
 // ============ CRM ============

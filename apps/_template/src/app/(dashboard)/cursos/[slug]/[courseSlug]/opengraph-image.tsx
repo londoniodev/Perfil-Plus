@@ -12,11 +12,11 @@ export const size = {
 export const contentType = 'image/png';
 
 interface Props {
-    params: { slug: string; courseSlug: string };
+    params: Promise<{ slug: string; courseSlug: string }>;
 }
 
 export default async function Image({ params }: Props) {
-    const { courseSlug } = params;
+    const { courseSlug } = await params;
 
     // Fetch course data
     let courseTitle = 'Curso Online';

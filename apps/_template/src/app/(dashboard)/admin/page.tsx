@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth-server";
 import { PrismaClient } from "@alvarosky/database-management";
 import { getTenantId } from "@/lib/config-server";
+import { getDashboardStats, type DashboardStats } from "@/actions/admin/dashboard";
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
 import {
     Users,
@@ -10,11 +12,12 @@ import {
     BookOpen,
     TrendingUp,
     Package,
-    Calendar,
     DollarSign,
     GraduationCap,
     Settings,
     Sparkles,
+    UtensilsCrossed,
+    ChefHat,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -37,6 +40,21 @@ async function getTenantData(tenantId: string) {
     }
 }
 
+function formatCurrency(value: number): string {
+    return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(value);
+}
+
+function formatTrend(percent: number | null): { text: string; up: boolean } | null {
+    if (percent === null) return null;
+    const sign = percent >= 0 ? "+" : "";
+    return { text: `${sign}${percent}%`, up: percent >= 0 };
+}
+
 export default async function AdminDashboardPage() {
     const user = await getSessionUser();
 
@@ -50,6 +68,7 @@ export default async function AdminDashboardPage() {
 
     const tenantId = await getTenantId();
     const tenant = await getTenantData(tenantId);
+    const stats = await getDashboardStats(tenant.features || []);
 
     // Check if this is first-time setup (no features enabled)
     const isFirstTime = !tenant.features || tenant.features.length === 0;
@@ -64,34 +83,39 @@ export default async function AdminDashboardPage() {
     const hasLMS = tenant.features?.includes("lms");
     const hasShop = tenant.features?.includes("shop");
     const hasBlog = tenant.features?.includes("blog");
+    const hasRestaurant = tenant.features?.includes("restaurant");
+
+    const userTrend = formatTrend(stats.userGrowthPercent);
+    const revTrend = formatTrend(stats.revenueGrowthPercent);
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* Header */}
-            <header className="border-b bg-background px-6 py-4">
-                <div className="max-w-7xl">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight">
-                                Hola, {user.name || "Admin"} 👋
-                            </h1>
-                            <p className="text-sm text-muted-foreground mt-1 capitalize">
-                                {currentDate}
-                            </p>
-                        </div>
-                        <Button variant="outline" asChild>
-                            <Link href="/admin/settings">
-                                <Settings className="mr-2 h-4 w-4" />
-                                Configuración
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </header>
-
-            {/* Content */}
+            {/* Header - Now part of content for better Card styling */}
             <div className="flex-1 px-6 py-8">
                 <div className="max-w-7xl space-y-8">
+
+                    {/* Welcome Card */}
+                    <Card className="bg-card border-border overflow-hidden relative">
+                        {/* Optional: Add a subtle gradient or pattern overlay if desired, keeping it simple for now matching request */}
+                        <div className="absolute top-0 right-0 p-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+
+                        <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+                            <div>
+                                <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+                                    Hola, <span className="text-primary">{user.name || "Admin"}</span> 👋
+                                </h1>
+                                <p className="text-muted-foreground capitalize font-medium text-lg">
+                                    {currentDate}
+                                </p>
+                            </div>
+                            <Button variant="outline" size="lg" className="h-12 px-6 border-primary/20 hover:bg-primary/5" asChild>
+                                <Link href="/admin/settings">
+                                    <Settings className="mr-2 h-5 w-5" />
+                                    Configuración
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
                     {isFirstTime ? (
                         /* Empty State - First Time Setup */
                         <Card className="border-dashed">
@@ -119,42 +143,29 @@ export default async function AdminDashboardPage() {
                             <div>
                                 <h2 className="text-lg font-semibold mb-4">Resumen General</h2>
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                    {/* LMS Stats */}
-                                    {hasLMS && (
-                                        <>
-                                            <StatsCard
-                                                title="Estudiantes Activos"
-                                                value="1,234"
-                                                icon={Users}
-                                                trend="+12%"
-                                                trendUp={true}
-                                            />
-                                            <StatsCard
-                                                title="Cursos Completados"
-                                                value="89"
-                                                icon={GraduationCap}
-                                                trend="+8%"
-                                                trendUp={true}
-                                            />
-                                        </>
-                                    )}
+                                    {/* Usuarios totales */}
+                                    <StatsCard
+                                        title="Usuarios Totales"
+                                        value={stats.totalUsers.toLocaleString("es-ES")}
+                                        icon={Users}
+                                        trend={userTrend?.text}
+                                        trendUp={userTrend?.up}
+                                    />
 
-                                    {/* E-commerce Stats */}
-                                    {hasShop && (
+                                    {/* Revenue - Shop o Restaurant */}
+                                    {(hasShop || hasRestaurant) && (
                                         <>
                                             <StatsCard
-                                                title="Ventas Totales"
-                                                value="$12,450"
+                                                title="Ingresos del Mes"
+                                                value={formatCurrency(stats.totalRevenueThisMonth)}
                                                 icon={DollarSign}
-                                                trend="+18%"
-                                                trendUp={true}
+                                                trend={revTrend?.text}
+                                                trendUp={revTrend?.up}
                                             />
                                             <StatsCard
                                                 title="Pedidos Pendientes"
-                                                value="23"
+                                                value={stats.pendingOrders.toLocaleString("es-ES")}
                                                 icon={Package}
-                                                trend="-5%"
-                                                trendUp={false}
                                             />
                                         </>
                                     )}
@@ -163,50 +174,56 @@ export default async function AdminDashboardPage() {
                                     {hasBlog && (
                                         <StatsCard
                                             title="Artículos Publicados"
-                                            value="47"
+                                            value={stats.publishedPosts.toLocaleString("es-ES")}
                                             icon={BookOpen}
-                                            trend="+3 este mes"
                                         />
                                     )}
 
-                                    {/* General Stats */}
-                                    <StatsCard
-                                        title="Usuarios Totales"
-                                        value="2,847"
-                                        icon={Users}
-                                        trend="+24%"
-                                        trendUp={true}
-                                    />
+                                    {/* LMS Stats */}
+                                    {hasLMS && (
+                                        <>
+                                            <StatsCard
+                                                title="Temas Publicados"
+                                                value={stats.publishedThemes.toLocaleString("es-ES")}
+                                                icon={GraduationCap}
+                                            />
+                                            <StatsCard
+                                                title="Lecciones Activas"
+                                                value={stats.totalLessons.toLocaleString("es-ES")}
+                                                icon={BookOpen}
+                                            />
+                                        </>
+                                    )}
+
+                                    {/* Restaurant Stats */}
+                                    {hasRestaurant && (
+                                        <>
+                                            <StatsCard
+                                                title="Órdenes Hoy"
+                                                value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
+                                                icon={UtensilsCrossed}
+                                            />
+                                            {stats.topProductToday && (
+                                                <StatsCard
+                                                    title="Plato Más Vendido Hoy"
+                                                    value={stats.topProductToday}
+                                                    icon={ChefHat}
+                                                />
+                                            )}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
                             <Separator />
 
-                            {/* Chart Placeholder */}
-                            <div>
-                                <h2 className="text-lg font-semibold mb-4">Análisis de Rendimiento</h2>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Ingresos vs Tiempo</CardTitle>
-                                        <CardDescription>
-                                            Evolución de ingresos en los últimos 7 días
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex items-center justify-center h-[300px] bg-muted/30 rounded-lg border-2 border-dashed">
-                                            <div className="text-center space-y-2">
-                                                <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto" />
-                                                <p className="text-sm text-muted-foreground">
-                                                    Gráfico de tendencias
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Próximamente: Integración con Chart.js o Recharts
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
+                            {/* Revenue Chart - shadcn/recharts */}
+                            {(hasShop || hasRestaurant) && (
+                                <div>
+                                    <h2 className="text-lg font-semibold mb-4">Análisis de Rendimiento</h2>
+                                    <RevenueChart data={stats.revenueByDay} />
+                                </div>
+                            )}
 
                             {/* Quick Actions */}
                             <div>
@@ -238,6 +255,33 @@ export default async function AdminDashboardPage() {
                                                 </div>
                                             </Link>
                                         </Button>
+                                    )}
+
+                                    {hasRestaurant && (
+                                        <>
+                                            <Button variant="outline" className="h-auto py-4 justify-start" asChild>
+                                                <Link href="/admin/restaurant/pos">
+                                                    <UtensilsCrossed className="mr-3 h-5 w-5" />
+                                                    <div className="text-left">
+                                                        <div className="font-semibold">Punto de Venta</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            Abre el POS para tomar pedidos
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            </Button>
+                                            <Button variant="outline" className="h-auto py-4 justify-start" asChild>
+                                                <Link href="/admin/restaurant/orders">
+                                                    <ChefHat className="mr-3 h-5 w-5" />
+                                                    <div className="text-left">
+                                                        <div className="font-semibold">Cocina / Comandas</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            Gestiona las órdenes en la cocina
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            </Button>
+                                        </>
                                     )}
 
                                     <Button variant="outline" className="h-auto py-4 justify-start" asChild>

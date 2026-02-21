@@ -43,9 +43,9 @@ export function PropuestaSection() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {pillars.map((item, i) => (
+                    {pillars.map((item) => (
                         <Card
-                            key={i}
+                            key={item.title}
                             className="group relative overflow-hidden text-center p-0 rounded-3xl border-white/10 bg-[#0a0e14]/60 hover:border-white/20 transition-all duration-500 shadow-2xl"
                         >
                             {/* Background Animation Layer */}

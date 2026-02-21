@@ -1,10 +1,11 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@alvarosky/ui"
 import { CheckCircle2 } from "lucide-react"
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const orderId = searchParams.get("orderId")
@@ -34,5 +35,17 @@ export default function OrderConfirmationPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function OrderConfirmationPage() {
+    return (
+        <Suspense fallback={
+            <div className="container py-24 text-center">
+                <p className="text-muted-foreground">Cargando confirmación...</p>
+            </div>
+        }>
+            <OrderConfirmationContent />
+        </Suspense>
     )
 }

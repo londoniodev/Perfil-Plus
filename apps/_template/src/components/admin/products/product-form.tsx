@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2, Loader2, Save, ArrowLeft, AlertCircle } from "lucide-react"
@@ -22,6 +23,7 @@ import {
 // Local Components & Schema
 import { productSchema, ProductFormValues } from "@/schemas/ecommerce"
 import { ModifierGroupsBuilder } from "./modifier-groups-builder"
+import { CategorySelector } from "./category-selector"
 
 interface ProductFormProps {
     initialData?: any
@@ -52,7 +54,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
         })) || [
                 { name: "Standard", sku: "", price: null, stock: 0, isDefault: true }
             ],
-        modifierGroups: initialData?.modifierGroups || []
+        modifierGroups: initialData?.modifierGroups || [],
+        categories: initialData?.categories?.map((c: any) => c.category.id) || []
     }
 
     const form = useForm<ProductFormValues>({
@@ -101,7 +104,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     isDefault: v.isDefault
                 })) : undefined,
                 // Si habilitamos modificadores, los enviamos. Si no, enviamos array vacío o undefined
-                modifierGroups: hasModifiers ? data.modifierGroups : []
+                modifierGroups: hasModifiers ? data.modifierGroups : [],
+                categories: data.categories
             }
 
             // Llamada al Server Action (Create or Update)
@@ -164,12 +168,49 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                 <FormItem>
                                     <FormLabel>Nombre del Producto *</FormLabel>
                                     <FormControl>
-                                        <Input {...field} placeholder="Ej: Hamburguesa Doble" />
+                                        <Input {...field} placeholder="Ej: Hamburguesa Doble" className="bg-background" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="basePrice"
+                                render={({ field }: { field: any }) => (
+                                    <FormItem>
+                                        <FormLabel>Precio *</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                                                <Input {...field} type="number" step="0.01" min="0" className="pl-7 bg-background" placeholder="0.00" />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* Categorías */}
+                            <FormField
+                                control={form.control}
+                                name="categories"
+                                render={({ field }: { field: any }) => (
+                                    <FormItem>
+                                        <FormLabel>Categorías</FormLabel>
+                                        <FormControl>
+                                            <CategorySelector
+                                                value={field.value || []}
+                                                onChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <FormField
                             control={form.control}
@@ -178,20 +219,49 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                 <FormItem>
                                     <FormLabel>Descripción *</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} rows={4} placeholder="Descripción detallada..." className="resize-none" />
+                                        <Textarea {...field} rows={4} placeholder="Descripción detallada..." className="resize-none bg-background" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
+                        {initialData?.productType !== "RESTAURANT" && (
+                            <FormField
+                                control={form.control}
+                                name="productType"
+                                render={({ field }: { field: any }) => (
+                                    <FormItem>
+                                        <FormLabel>Tipo de Producto *</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            disabled={!!initialData}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="bg-background">
+                                                    <SelectValue placeholder="Selecciona un tipo" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="PHYSICAL">Físico (Tienda)</SelectItem>
+                                                <SelectItem value="DIGITAL">Digital</SelectItem>
+                                                <SelectItem value="RESTAURANT">Restaurante (Plato/Bebida)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
                         {/* Images */}
                         <div className="space-y-2">
-                            <FormLabel>Imágenes (Opcional)</FormLabel>
+                            <FormLabel>Imágenes</FormLabel>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {form.watch("images").map((url, index) => (
-                                    <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
-                                        <img src={url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    <div key={url} className="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
+                                        <Image src={url} alt={`Imagen ${index + 1}`} fill sizes="200px" className="object-cover transition-transform group-hover:scale-105" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <Button
                                                 type="button"
@@ -213,6 +283,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                         folder="products"
                                         apiBase={API_BASE}
                                         tenantId={TENANT_ID}
+                                        variant="button"
                                     />
                                 </div>
                             </div>
@@ -226,57 +297,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     </CardContent>
                 </Card>
 
-                {/* 2. Configuración y Precio */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Configuración</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="productType"
-                            render={({ field }: { field: any }) => (
-                                <FormItem>
-                                    <FormLabel>Tipo de Producto *</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        disabled={!!initialData}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un tipo" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="PHYSICAL">Físico (Tienda)</SelectItem>
-                                            <SelectItem value="DIGITAL">Digital</SelectItem>
-                                            <SelectItem value="RESTAURANT">Restaurante (Plato/Bebida)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
 
-                        <FormField
-                            control={form.control}
-                            name="basePrice"
-                            render={({ field }: { field: any }) => (
-                                <FormItem>
-                                    <FormLabel>Precio Base *</FormLabel>
-                                    <FormControl>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                            <Input {...field} type="number" step="0.01" min="0" className="pl-7" placeholder="0.00" />
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                </Card>
 
                 {/* 3. Modificadores (Restaurante o Físico con opciones) */}
                 {(productType === "PHYSICAL" || productType === "RESTAURANT") && (
@@ -284,7 +305,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         <CardHeader className="pb-3">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
-                                    <CardTitle>Personalización / Modificadores</CardTitle>
+                                    <CardTitle>Modificadores</CardTitle>
                                     <CardDescription>Opcionales, acompañamientos, términos de cocción</CardDescription>
                                 </div>
                                 <Switch
@@ -373,30 +394,28 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 )}
 
                 {/* 5. Estado y Botones */}
-                <Card>
-                    <CardContent className="pt-6">
-                        <FormField
-                            control={form.control}
-                            name="published"
-                            render={({ field }: { field: any }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/20">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-sm font-medium">Publicado</FormLabel>
-                                        <FormDescription className="text-xs">
-                                            Visible en la tienda/menú
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                </Card>
+                <div className="pb-4">
+                    <FormField
+                        control={form.control}
+                        name="published"
+                        render={({ field }: { field: any }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card shadow-sm">
+                                <div className="space-y-0.5">
+                                    <FormLabel className="text-base font-medium">Publicado</FormLabel>
+                                    <FormDescription className="text-sm">
+                                        Visible en la tienda/menú
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
@@ -421,7 +440,10 @@ export function ProductForm({ initialData }: ProductFormProps) {
                         type="button"
                         variant="outline"
                         className="w-full sm:flex-none sm:w-auto"
-                        onClick={() => router.push("/admin/products")}
+                        onClick={() => {
+                            const type = form.getValues("productType")
+                            router.push(type === "RESTAURANT" ? "/admin/restaurant/menu" : "/admin/products")
+                        }}
                         disabled={isSubmitting}
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />

@@ -28,27 +28,14 @@ function StatusContent() {
                 collectionStatus === "rejected" || collectionStatus === "failure" ? "rejected" :
                     "unknown"
 
-    // Prevenir hidratación
-    useEffect(() => {
-        setIsMounted(true)
-    }, [])
-
     // Limpiar carrito si pago aprobado
     useEffect(() => {
-        if (isMounted && status === "approved") {
+        if (status === "approved") {
             cart.clearCart()
         }
-    }, [isMounted, status, cart])
+    }, [status, cart])
 
-    if (!isMounted) {
-        return (
-            <div className="container py-12">
-                <div className="max-w-2xl mx-auto text-center">
-                    <p className="text-muted-foreground">Cargando...</p>
-                </div>
-            </div>
-        )
-    }
+
 
     return (
         <div className="container py-12">

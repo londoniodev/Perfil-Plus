@@ -42,7 +42,8 @@ export async function getSessionUser() {
             id: decoded.sub,
             email: decoded.email,
             role: decoded.role,
-            name: decoded.name
+            name: decoded.name,
+            accessToken: token
         }
     } catch (error) {
         console.error("Error decodificando token:", error)

@@ -61,9 +61,7 @@ function LoginForm() {
       return;
     }
 
-    if (user) {
-      router.push("/perfil");
-    }
+
   }, [router, searchParams]);
 
   // Helper simple para cookies (ya que no tenemos js-cookie)
@@ -114,7 +112,23 @@ function LoginForm() {
       if (redirect) {
         router.push(redirect);
       } else {
-        router.push("/perfil");
+        // Redirección basada en rol
+        switch (data.user.role) {
+          case 'WAITER':
+            router.push("/waiter?tab=active");
+            break;
+          case 'KITCHEN':
+            router.push("/admin/restaurant/orders");
+            break;
+          case 'CASHIER':
+            router.push("/admin/restaurant/pos");
+            break;
+          case 'ADMIN':
+            router.push("/admin");
+            break;
+          default:
+            router.push("/perfil");
+        }
       }
     } catch (err: any) {
       toast.error(err.message);

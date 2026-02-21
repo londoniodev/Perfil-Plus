@@ -18,6 +18,7 @@ import { Pencil, Trash2, ExternalLink } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { ProductsTable, ProductTableData } from "@alvarosky/ui"
+import { toggleProductAvailability } from "@/actions/admin/toggle-product-availability"
 
 interface ProductsTableClientProps {
     data: ProductTableData[]
@@ -53,6 +54,32 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
         }
     }
 
+    const handleToggleAvailable = async (productId: string, isAvailable: boolean) => {
+        const loadingToast = toast.loading("Actualizando disponibilidad...")
+
+        try {
+            const result = await toggleProductAvailability(productId, isAvailable)
+
+            if (result.success) {
+                toast.success(isAvailable ? "Producto visible en tienda" : "Producto oculto de la tienda", {
+                    id: loadingToast
+                })
+            } else {
+                toast.error(result.error || "Error al actualizar", {
+                    id: loadingToast
+                })
+                // Trigger a refresh to revert the optimistic UI update if needed, though 
+                // revalidatePath in the server action usually handles the data sync.
+                router.refresh()
+            }
+        } catch (error) {
+            toast.error("Error de conexión", {
+                id: loadingToast
+            })
+            router.refresh()
+        }
+    }
+
     const productTypeBadge: Record<string, { label: string; variant: "secondary" | "default" | "outline" }> = {
         PHYSICAL: { label: "Físico", variant: "secondary" },
         DIGITAL: { label: "Digital", variant: "default" },
@@ -66,6 +93,7 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
                 data={data}
                 onView={handleView}
                 onDelete={handleDelete}
+                onToggleAvailable={handleToggleAvailable}
             />
 
             {/* Quick View Sheet */}
@@ -86,6 +114,7 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
                                     src={selectedProduct.image}
                                     alt={selectedProduct.name}
                                     fill
+                                    sizes="(max-width: 640px) 100vw, 500px"
                                     className="object-cover"
                                 />
                             </div>

@@ -1,4 +1,5 @@
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AuthProvider } from "@/context/AuthContext";
 import { DashboardProvider } from "@/context/DashboardContext";
 import {
@@ -38,35 +39,49 @@ async function getTenantData(tenantId: string) {
     }
 }
 
+import { redirect } from "next/navigation";
+import { getSessionUser } from "@/lib/auth-server";
+
+// ... existing imports
+
 export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    // 1. Validate Session Server-Side
+    const user = await getSessionUser();
+    if (!user) {
+        redirect("/login?reason=session_expired");
+    }
+
     const cookieStore = await cookies();
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
     // Resolve Tenant ID
     const tenantId = await getTenantId();
-    const { name, features, design } = await getTenantData(tenantId);
+    const { name, features: dbFeatures, design } = await getTenantData(tenantId);
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
+
+    // Normalize features from DB (uppercase) to Config (lowercase/mapped)
+    const features = (dbFeatures || []).map((f) => {
+        const lower = f.toLowerCase();
+        if (lower === 'ecommerce') return 'shop';
+        return lower as FeatureKey;
+    }).filter((f): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
 
     return (
         <AuthProvider>
             <DashboardProvider>
                 <BrandProvider settings={design as any}>
-                    <SidebarProvider defaultOpen={defaultOpen}>
-                        <DashboardSidebar features={features as FeatureKey[]} tenantName={tenantName} />
-                        <SidebarInset>
-                            {/* Unified Admin Header with SidebarTrigger */}
-                            <AdminHeader appName={tenantName} />
-
-                            {/* Main Content Area */}
-                            <main className="flex flex-1 flex-col min-h-screen bg-background">
-                                {children}
-                            </main>
-                        </SidebarInset>
-                    </SidebarProvider>
+                    <DashboardShell
+                        features={features}
+                        tenantName={tenantName}
+                        defaultOpen={defaultOpen}
+                        appName={tenantName}
+                    >
+                        {children}
+                    </DashboardShell>
                 </BrandProvider>
             </DashboardProvider>
         </AuthProvider>

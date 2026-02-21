@@ -16,6 +16,33 @@ interface BrandProviderProps {
     defaultSettings?: BrandSettings
 }
 
+function getSidebarColors(hsl: string) {
+    const parts = hsl.split(' ');
+    if (parts.length < 3) return null;
+    const h = parts[0];
+    const s = parts[1];
+
+    // Light Mode: Very light background (96%), dark text
+    // Dark Mode: Dark background (15%), light text
+
+    return {
+        light: {
+            "--sidebar-accent": `${h} ${s} 96%`,
+            "--sidebar-accent-foreground": `${h} ${s} 40%`,
+            "--sidebar-ring": hsl,
+            "--sidebar-primary": hsl,
+            "--sidebar-primary-foreground": "0 0% 98%",
+        },
+        dark: {
+            "--sidebar-accent": `${h} ${s} 15%`,
+            "--sidebar-accent-foreground": `${h} ${s} 90%`,
+            "--sidebar-ring": hsl,
+            "--sidebar-primary": hsl,
+            "--sidebar-primary-foreground": "0 0% 98%",
+        }
+    }
+}
+
 export function BrandProvider({
     children,
     settings,
@@ -28,14 +55,39 @@ export function BrandProvider({
     // Merge settings with defaults
     const config = { ...defaultSettings, ...settings }
 
-    // Ensure primary is a valid theme key, fallback to zinc
-    const primaryTheme = (config.primary && config.primary in themes)
+    // Ensure primary is a valid theme key, fallback to zinc ONLY if it's not a valid HSL string (basic check)
+    // We treat any string containing spaces (e.g. "262 80% 50%") as a custom HSL value
+    const isCustomColor = config.primary && !themes[config.primary as ThemeName] && config.primary.includes(" ");
+    const primaryThemeKey = (config.primary && config.primary in themes)
         ? config.primary as ThemeName
         : "zinc"
 
     React.useEffect(() => {
         const root = document.documentElement
-        const theme = themes[primaryTheme]
+
+        let theme = themes[primaryThemeKey]
+
+        // If Custom Color, override the base theme (zinc)
+        if (isCustomColor && config.primary) {
+            const base = themes.zinc
+            const custom = config.primary
+            const sidebarColors = getSidebarColors(custom)
+
+            theme = {
+                light: {
+                    ...base.light,
+                    "--primary": custom,
+                    "--ring": custom,
+                    ...(sidebarColors ? sidebarColors.light : {})
+                } as any,
+                dark: {
+                    ...base.dark,
+                    "--primary": custom,
+                    "--ring": custom,
+                    ...(sidebarColors ? sidebarColors.dark : {})
+                } as any
+            }
+        }
 
         // 1. Inject Radius
         root.style.setProperty("--radius", `${config.radius}rem`)
@@ -80,7 +132,7 @@ export function BrandProvider({
             // We might persist it or remove it. Better to leave it to avoid FOUC on nav.
         }
 
-    }, [config.primary, config.radius, primaryTheme])
+    }, [config.primary, config.radius, primaryThemeKey, isCustomColor])
 
     return <>{children}</>
 }

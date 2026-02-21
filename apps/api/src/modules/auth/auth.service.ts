@@ -1,9 +1,11 @@
+
 import { Injectable, ConflictException, UnauthorizedException, BadRequestException, Scope } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaContext } from '../../prisma/prisma-context.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
 import { randomUUID } from 'crypto';
@@ -12,6 +14,7 @@ import { randomUUID } from 'crypto';
 export class AuthService {
     constructor(
         private prisma: PrismaService,
+        private prismaContext: PrismaContext,
         private jwtService: JwtService,
         private configService: ConfigService,
         private emailService: EmailService,
@@ -94,7 +97,7 @@ export class AuthService {
         if (user.lockedUntil && new Date() < user.lockedUntil) {
             const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
             throw new UnauthorizedException(
-                `Cuenta bloqueada temporalmente. Intenta de nuevo en ${minutesLeft} minutos.`
+                `Cuenta bloqueada temporalmente.Intenta de nuevo en ${minutesLeft} minutos.`
             );
         }
 
@@ -130,7 +133,7 @@ export class AuthService {
             const attemptsLeft = MAX_FAILED_ATTEMPTS - newFailedAttempts;
             if (attemptsLeft > 0) {
                 throw new UnauthorizedException(
-                    `Credenciales inválidas. ${attemptsLeft} intento(s) restante(s).`
+                    `Credenciales inválidas.${attemptsLeft} intento(s) restante(s).`
                 );
             } else {
                 throw new UnauthorizedException(
@@ -345,7 +348,8 @@ export class AuthService {
     }
 
     private async generateTokens(userId: string, email: string, role?: string, name?: string) {
-        const accessTokenPayload = { sub: userId, email, role, name };
+        const tenantId = this.prismaContext.getTenantId();
+        const accessTokenPayload = { sub: userId, email, role, name, tenantId };
 
         // Generar tokens (Default 1 hora si no hay variable de entorno)
         const accessToken = await this.jwtService.signAsync(accessTokenPayload, {

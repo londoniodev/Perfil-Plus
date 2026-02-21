@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, redirect } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@alvarosky/ui";
@@ -16,11 +16,9 @@ export default function PerfilPage() {
     const { user, loading, logout } = useAuth();
     const [activeTab, setActiveTab] = useState("data");
 
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push("/login");
-        }
-    }, [user, loading, router]);
+    if (!loading && !user) {
+        redirect("/login");
+    }
 
     if (loading) {
         return (

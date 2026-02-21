@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CartSheet as SharedCartSheet } from "@alvarosky/ui"
+import { CartSheet as SharedCartSheet, Button } from "@alvarosky/ui"
 import { useCart } from "@/store/use-cart"
 
 export function CartSheet() {
@@ -45,7 +45,13 @@ export function CartSheet() {
         }
     }
 
-    if (!isMounted) return null
+    if (!isMounted) {
+        return (
+            <Button variant="ghost" size="icon" className="relative" disabled>
+                <div className="h-5 w-5 bg-muted rounded-full animate-pulse" />
+            </Button>
+        )
+    }
 
     return (
         <SharedCartSheet

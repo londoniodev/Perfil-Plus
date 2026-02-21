@@ -99,8 +99,12 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
     const pathname = usePathname();
 
-    const isActive = (href: string) =>
-        pathname === href || pathname?.startsWith(href + "/");
+    const isActive = (href: string) => {
+        if (href === "/admin" || href === "/dashboard") {
+            return pathname === href;
+        }
+        return pathname === href || pathname?.startsWith(href + "/");
+    };
 
     const userInitials = user?.name
         ?.split(" ")

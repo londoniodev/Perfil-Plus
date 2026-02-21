@@ -21,7 +21,8 @@ const buttonVariants = cva(
                 // Primary: Solid flat color, subtle interaction
                 default: [
                     "bg-primary text-primary-foreground border border-transparent",
-                    "hover:bg-primary/90",
+                    "shadow-[0_0_20px_hsl(var(--primary)/0.3)]",
+                    "hover:bg-primary/90 hover:shadow-[0_0_25px_hsl(var(--primary)/0.4)]",
                     "active:scale-[0.98]",
                 ],
                 // Secondary: Clean border, transparent/dark background

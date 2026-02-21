@@ -98,14 +98,17 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
         }
     };
 
+    useEffect(() => {
+        if (!authLoading && !isAdmin) {
+            router.push("/perfil");
+        }
+    }, [authLoading, isAdmin, router]);
+
     if (authLoading || loading) {
         return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
     }
 
-    if (!isAdmin) {
-        router.push("/perfil");
-        return null;
-    }
+    if (!isAdmin) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

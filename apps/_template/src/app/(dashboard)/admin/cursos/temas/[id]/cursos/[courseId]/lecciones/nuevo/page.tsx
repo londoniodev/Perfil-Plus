@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { BlogEditor } from "@alvarosky/ui";
 import { VideoUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
@@ -18,7 +19,14 @@ export default function NuevaLeccionPage() {
     const params = useParams();
     const router = useRouter();
     const toast = useToast();
+    const { isAdmin, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!authLoading && !isAdmin) {
+            router.push("/perfil");
+        }
+    }, [authLoading, isAdmin, router]);
 
     // Form state
     const [title, setTitle] = useState("");
@@ -28,6 +36,9 @@ export default function NuevaLeccionPage() {
     const [duration, setDuration] = useState(0);
     const [order, setOrder] = useState(0);
     const [published, setPublished] = useState(false);
+
+    if (authLoading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (!isAdmin) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

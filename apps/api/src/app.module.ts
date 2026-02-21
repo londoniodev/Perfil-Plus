@@ -1,12 +1,18 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
+// Middleware
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { PrismaContext } from './prisma/prisma-context.service';
 
 // Core modules
 import { PrismaModule } from './prisma';
@@ -20,12 +26,14 @@ import { LeadsModule } from './modules/leads';
 import { EmailModule } from './modules/email/email.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { RestaurantModule } from './modules/restaurant/restaurant.module';
+import { EmployeesModule } from './modules/employees/employees.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
 
 // Interceptors
-import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interceptor';
+// Interceptors removed
 
 @Module({
   imports: [
@@ -86,13 +94,33 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     LmsModule,
     PaymentsModule,
     LeadsModule,
+    EmployeesModule,
     EmailModule,
+    RestaurantModule,
 
-    // Rate Limiting - 20 requests per minute globally
-    ThrottlerModule.forRoot([{
-      ttl: 60000,    // 1 minuto en milisegundos
-      limit: 20,     // 20 requests por minuto (global)
-    }]),
+    // Rate Limiting
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 100,
+      },
+      {
+        name: 'auth',
+        ttl: 60000,
+        limit: 10, // Strict limit for login/register
+      },
+      {
+        name: 'public',
+        ttl: 60000,
+        limit: 300, // Higher limit for public menu browsing
+      },
+      {
+        name: 'strict',
+        ttl: 60000,
+        limit: 20, // For sensitive operations
+      }
+    ]),
 
     // Redis Cache
     CacheModule.registerAsync({
@@ -118,6 +146,13 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
       },
       inject: [ConfigService],
     }),
+
+    // Static Files (for local uploads)
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+      exclude: ['/api/(.*)'],
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -142,11 +177,18 @@ import { PrismaInitInterceptor } from './common/interceptors/prisma-init.interce
     },
 
     // Global Prisma Initialization Interceptor
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: PrismaInitInterceptor,
-    },
+    // REMOVED: Using AsyncLocalStorage Middleware instead
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: PrismaInitInterceptor,
+    // },
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes('*');
+  }
+}
 

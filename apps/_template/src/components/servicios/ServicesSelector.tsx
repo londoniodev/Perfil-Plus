@@ -35,8 +35,8 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle: string }
 
 const FeatureList = ({ items, iconColor = "var(--primary)" }: { items: string[], iconColor?: string }) => (
     <ul className="flex flex-col gap-3 text-left">
-        {items.map((item, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm">
+        {items.map((item) => (
+            <li key={item} className="flex items-start gap-3 text-sm">
                 <span className="mt-0.5 shrink-0" style={{ color: iconColor }}>
                     <IconCheck className="w-4 h-4" />
                 </span>
@@ -68,7 +68,7 @@ const ContentEmpresas = ({ color = "hsl(var(--primary))" }: { color?: string }) 
                         { text: "Alta rotación de talento clave.", author: "Equipo" }
                     ].map((item, i) => (
                         <div
-                            key={i}
+                            key={item.author}
                             className="p-3 rounded-lg border border-l-4 bg-background/50 text-sm italic"
                             style={{ borderLeftColor: color, borderColor: "var(--border)" }}
                         >
@@ -106,8 +106,8 @@ const ContentEmpresas = ({ color = "hsl(var(--primary))" }: { color?: string }) 
                     { step: "02", title: "Diseñar", desc: "Co-creación de la ruta de solución." },
                     { step: "03", title: "Activar", desc: "Talleres, coaching y mentoría." },
                     { step: "04", title: "Medir", desc: "Seguimiento a indicadores de impacto." }
-                ].map((s, i) => (
-                    <div key={i} className="text-center">
+                ].map((s) => (
+                    <div key={s.step} className="text-center">
                         <div className="text-3xl font-bold text-muted-foreground/50 mb-2">{s.step}</div>
                         <h4 className="font-bold mb-1" style={{ color }}>{s.title}</h4>
                         <p className="text-sm text-muted-foreground">{s.desc}</p>
@@ -156,8 +156,8 @@ const ContentExplora = () => (
                             { icon: <IconUsers />, label: "Universitarios en duda" },
                             { icon: <IconHeart />, label: "Padres que acompañan" },
                             { icon: <IconCompass />, label: "Proyectos de vida" },
-                        ].map((tag, i) => (
-                            <div key={i} className="flex flex-col items-center justify-center p-4 rounded-lg bg-accent/5 border border-accent/20 text-center gap-2">
+                        ].map((tag) => (
+                            <div key={tag.label} className="flex flex-col items-center justify-center p-4 rounded-lg bg-accent/5 border border-accent/20 text-center gap-2">
                                 <span className="text-accent text-2xl">{tag.icon}</span>
                                 <span className="text-xs font-medium text-foreground/80">{tag.label}</span>
                             </div>

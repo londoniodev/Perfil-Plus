@@ -338,6 +338,118 @@ async function main() {
     console.log('   - 2 Blog Posts');
     console.log('   - 2 Tenants (mauro, default)');
     console.log('   - 3 Productos E-commerce (1 Digital, 2 físicos con variantes)');
+
+    // 9. Crear Pedidos de Ejemplo (KDS)
+    console.log('\n🍽️  Creando pedidos para KDS...');
+
+    // Obtener productos CON sus variantes
+    const allProducts = await prisma.product.findMany({
+        include: { variants: true }
+    });
+
+    if (allProducts.length > 0) {
+        // Helper to get random variant
+        const getVar = (prodIndex: number) => {
+            const p = allProducts[prodIndex % allProducts.length];
+            return p.variants[0]; // Usar la primera variante disponible
+        };
+        const getProd = (prodIndex: number) => allProducts[prodIndex % allProducts.length];
+
+        const orderData = [
+            {
+                orderNumber: 'ORD-2026-1001',
+                customerName: 'Juan Pérez',
+                orderType: 'DINE_IN',
+                tableNumber: '1',
+                status: 'PENDING',
+                totalAmount: 45.00,
+                items: [
+                    { variant: getVar(0), quantity: 2, price: 15.00, productName: getProd(0).name },
+                    { variant: getVar(1), quantity: 1, price: 15.00, productName: getProd(1).name }
+                ]
+            },
+            {
+                orderNumber: 'ORD-2026-1002',
+                customerName: 'María García',
+                orderType: 'DINE_IN',
+                tableNumber: '3',
+                status: 'PREPARING',
+                totalAmount: 89.00,
+                items: [
+                    { variant: getVar(1), quantity: 1, price: 89.00, productName: getProd(1).name }
+                ]
+            },
+            {
+                orderNumber: 'ORD-2026-1003',
+                customerName: 'Carlos López',
+                orderType: 'TAKE_AWAY',
+                status: 'READY',
+                totalAmount: 29.99,
+                items: [
+                    { variant: getVar(0), quantity: 1, price: 29.99, productName: getProd(0).name }
+                ]
+            },
+            {
+                orderNumber: 'ORD-2026-1004',
+                customerName: 'Ana Martínez',
+                orderType: 'DINE_IN',
+                tableNumber: '5',
+                status: 'SERVED',
+                totalAmount: 120.00,
+                items: [
+                    { variant: getVar(0), quantity: 4, price: 30.00, productName: getProd(0).name }
+                ]
+            },
+            {
+                orderNumber: 'ORD-2026-1005',
+                customerName: 'Luis Rodríguez',
+                orderType: 'DELIVERY',
+                status: 'PENDING',
+                totalAmount: 55.50,
+                shippingData: { address: 'Calle Falsa 123', city: 'Madrid' },
+                items: [
+                    { variant: getVar(1), quantity: 1, price: 55.50, productName: getProd(1).name }
+                ]
+            },
+            {
+                orderNumber: 'ORD-2026-1006',
+                customerName: 'Sofia Herrera',
+                orderType: 'DELIVERY',
+                status: 'DELIVERED',
+                totalAmount: 45.00,
+                shippingData: { address: 'Av. Libertador 456', city: 'Bogotá' },
+                items: [
+                    { variant: getVar(0), quantity: 2, price: 22.50, productName: getProd(0).name }
+                ]
+            }
+        ];
+
+        for (const order of orderData) {
+            // Separar items del header
+            const { items, ...orderHeader } = order;
+
+            await prisma.order.upsert({
+                where: { orderNumber: order.orderNumber },
+                update: {},
+                create: {
+                    ...(orderHeader as any),
+                    // @ts-ignore
+                    items: {
+                        create: (items as any[]).map(item => ({
+                            variantId: item.variant.id,
+                            quantity: item.quantity,
+                            price: item.price,
+                            productName: item.productName,
+                            variantName: item.variant.name || 'Standard'
+                        }))
+                    }
+                } as any
+            });
+        }
+        console.log(`   ✓ ${orderData.length} Pedidos de prueba creados.`);
+    } else {
+        console.log('   ⚠️ No se encontraron productos para crear pedidos.');
+    }
 }
 
 main()

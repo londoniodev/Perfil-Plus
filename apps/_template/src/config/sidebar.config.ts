@@ -1,8 +1,9 @@
 /**
  * Sidebar Configuration
  * 
- * Defines the navigation structure based on tenant features.
- * Items are grouped by feature (core, shop, blog, lms) and rendered dynamically.
+ * Defines the navigation structure based on tenant features and user roles.
+ * Items are grouped by feature (core, shop, blog, lms, restaurant) and rendered dynamically.
+ * Staff roles (WAITER, KITCHEN, CASHIER) get restricted sidebar sections.
  */
 
 import {
@@ -16,8 +17,11 @@ import {
     UtensilsCrossed,
     ChefHat,
     QrCode,
+    DollarSign,
+    UserCog,
 } from "lucide-react";
 import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
+import type { UserRole } from "@/types/auth";
 
 // ============================================================================
 // TYPES (Re-export for convenience)
@@ -57,6 +61,7 @@ export const sidebarConfig: SidebarConfig = {
                 href: "/admin/users",
                 icon: Users,
             },
+
             {
                 title: "Configuración",
                 icon: Settings,
@@ -130,6 +135,11 @@ export const sidebarConfig: SidebarConfig = {
         label: "Restaurante",
         groups: [
             {
+                title: "Empleados",
+                href: "/admin/employees",
+                icon: UserCog,
+            },
+            {
                 title: "Menú",
                 icon: UtensilsCrossed,
                 items: [
@@ -141,6 +151,32 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Comandas",
                 href: "/admin/restaurant/orders",
                 icon: ChefHat,
+            },
+            {
+                title: "Caja",
+                href: "/admin/restaurant/cashier",
+                icon: DollarSign,
+            },
+            {
+                title: "Punto de Venta (POS)",
+                href: "/admin/restaurant/pos",
+                icon: ClipboardList,
+            },
+            {
+                title: "Cocina (KDS Exclusivo)",
+                href: "/kitchen",
+                icon: ChefHat,
+            },
+            {
+                title: "Mesero (Pedidos)",
+                icon: ClipboardList,
+                items: [
+                    { title: "Activas", href: "/waiter?tab=active" },
+                    { title: "Pendientes", href: "/waiter?tab=pending" },
+                    { title: "En Cocina", href: "/waiter?tab=kitchen" },
+                    { title: "Listas", href: "/waiter?tab=ready" },
+                    { title: "Historial", href: "/waiter?tab=history" },
+                ]
             },
             {
                 title: "Mesas",
@@ -156,7 +192,7 @@ export const sidebarConfig: SidebarConfig = {
 // ============================================================================
 
 /**
- * Get all sidebar sections based on active features
+ * Get all sidebar sections based on active features (ADMIN role)
  */
 export function getSidebarSections(features: FeatureKey[]): SidebarFeatureSection[] {
     const sections: SidebarFeatureSection[] = [sidebarConfig.core];
@@ -169,6 +205,87 @@ export function getSidebarSections(features: FeatureKey[]): SidebarFeatureSectio
     });
 
     return sections;
+}
+
+/**
+ * Get sidebar sections for staff roles (WAITER, KITCHEN, CASHIER)
+ * Each role only sees the sections relevant to their responsibilities.
+ */
+export function getStaffSections(role: UserRole, features: FeatureKey[]): SidebarFeatureSection[] {
+    // Staff only sees restaurant-related sections when the feature is enabled
+    if (!features.includes('restaurant')) {
+        return [{
+            label: "Sin Acceso",
+            groups: [
+                { title: "Sin funciones asignadas", href: "/", icon: LayoutDashboard },
+            ],
+        }];
+    }
+
+    switch (role) {
+        case 'WAITER':
+            return [{
+                label: "Mesero",
+                groups: [
+                    {
+                        title: "Pedidos",
+                        icon: ClipboardList,
+                        items: [
+                            { title: "Activas", href: "/waiter?tab=active" },
+                            { title: "Pendientes", href: "/waiter?tab=pending" },
+                            { title: "En Cocina", href: "/waiter?tab=kitchen" },
+                            { title: "Listas", href: "/waiter?tab=ready" },
+                            { title: "Historial", href: "/waiter?tab=history" },
+                        ],
+                    },
+                ],
+            }];
+
+        case 'KITCHEN':
+            return [{
+                label: "Cocina",
+                groups: [
+                    {
+                        title: "Comandas",
+                        href: "/admin/restaurant/orders",
+                        icon: ChefHat,
+                    },
+                ],
+            }];
+
+        case 'CASHIER':
+            return [{
+                label: "Caja",
+                groups: [
+                    {
+                        title: "Caja",
+                        href: "/admin/restaurant/cashier",
+                        icon: DollarSign,
+                    },
+                    {
+                        title: "Punto de Venta (POS)",
+                        href: "/admin/restaurant/pos",
+                        icon: ClipboardList,
+                    },
+                    {
+                        title: "Mesas",
+                        href: "/admin/restaurant/tables",
+                        icon: QrCode,
+                    },
+                    {
+                        title: "Menú",
+                        icon: UtensilsCrossed,
+                        items: [
+                            { title: "Ver carta", href: "/admin/restaurant/menu" },
+                            { title: "Nuevo plato", href: "/admin/restaurant/menu/new" },
+                        ],
+                    },
+                ],
+            }];
+
+        default:
+            return [];
+    }
 }
 
 /**
@@ -193,4 +310,3 @@ export function getUserSections(features: FeatureKey[]): SidebarFeatureSection[]
         groups: userItems,
     }];
 }
-

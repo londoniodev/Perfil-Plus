@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { BlogEditor } from "@alvarosky/ui";
 import { VideoUploader, LessonAttachmentManager } from "@alvarosky/ui";
@@ -19,6 +20,7 @@ export default function EditarLeccionPage() {
     const params = useParams();
     const router = useRouter();
     const toast = useToast();
+    const { isAdmin, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -67,8 +69,16 @@ export default function EditarLeccionPage() {
     };
 
     useEffect(() => {
-        fetchLesson();
-    }, [params.lessonId]);
+        if (isAdmin) {
+            fetchLesson();
+        }
+    }, [params.lessonId, isAdmin]);
+
+    useEffect(() => {
+        if (!authLoading && !isAdmin) {
+            router.push("/perfil");
+        }
+    }, [authLoading, isAdmin, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,7 +110,8 @@ export default function EditarLeccionPage() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (authLoading || loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
+    if (!isAdmin) return null;
 
     return (
         <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">

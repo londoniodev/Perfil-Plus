@@ -31,6 +31,7 @@ export class AuthController {
     }
 
     @Public()
+    @Throttle({ auth: { limit: 10, ttl: 60000 } })
     @Post('register')
     async register(
         @Body() dto: RegisterDto,
@@ -53,7 +54,7 @@ export class AuthController {
     }
 
     @Public()
-    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 intentos por minuto para prevenir fuerza bruta
+    @Throttle({ auth: { limit: 10, ttl: 60000 } }) // 10 attempts per minute
     @Post('login')
     @HttpCode(HttpStatus.OK)
     async login(

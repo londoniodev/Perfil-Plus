@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Reflector, ModuleRef, ContextIdFactory } from '@nestjs/core';
+import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -10,7 +10,7 @@ export class JwtAuthGuard implements CanActivate {
     constructor(
         private reflector: Reflector,
         private jwtService: JwtService,
-        private moduleRef: ModuleRef,
+        private prisma: PrismaService, // Inject directly (Singleton)
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,15 +38,15 @@ export class JwtAuthGuard implements CanActivate {
         try {
             const payload = await this.jwtService.verifyAsync(token);
 
-            // Resolver PrismaService dinámicamente con el contexto de la petición
-            const contextId = ContextIdFactory.getByRequest(request);
-            const prisma = await this.moduleRef.resolve(PrismaService, contextId, { strict: false });
-
-            // Inicializar cliente Prisma (necesario porque el Guard corre antes que el Interceptor)
-            await prisma.initClient();
-
             // Cargar usuario desde la base de datos
-            const user = await prisma.client.user.findUnique({
+            // PrismaService.client getter will throw if no tenant context, BUT:
+            // This guard runs AFTER middleware, so context should be there IF x-tenant-id was sent.
+            // If x-tenant-id is missing, this might fail unless we handle it.
+            // But JwtAuth usually implies we are in a tenant context or global?
+            // If global (e.g. /profile), we might need a different DB strategy or master DB.
+            // Assuming for now Auth is tenant-scoped as per previous analysis.
+
+            const user = await this.prisma.client.user.findUnique({
                 where: { id: payload.sub },
                 select: {
                     id: true,

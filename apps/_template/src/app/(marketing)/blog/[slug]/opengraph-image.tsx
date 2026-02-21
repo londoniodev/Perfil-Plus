@@ -12,11 +12,11 @@ export const size = {
 export const contentType = 'image/png';
 
 interface Props {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }
 
 export default async function Image({ params }: Props) {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Fetch post data
     let postTitle = 'Artículo de Blog';

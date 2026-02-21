@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 
 // ============ MOCK FACTORIES ============
 
@@ -69,6 +69,7 @@ function createMockPrismaClient() {
     const client: any = {
         product: {
             findUnique: jest.fn(),
+            findMany: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
         },
@@ -78,6 +79,15 @@ function createMockPrismaClient() {
         modifierGroup: {
             create: jest.fn(),
             deleteMany: jest.fn(),
+        },
+        subscription: {
+            findUnique: jest.fn(),
+        },
+        order: {
+            findFirst: jest.fn(),
+        },
+        purchase: {
+            findFirst: jest.fn(),
         },
         $transaction: jest.fn((fn) => fn(client)),
     };
@@ -127,6 +137,7 @@ describe('ProductsService', () => {
             published: true,
             stock: 50,
             sku: 'BURG-001',
+            specs: {},
             modifierGroups: [
                 {
                     name: 'Extras',
@@ -217,7 +228,7 @@ describe('ProductsService', () => {
             const result = await service.create(dtoSinModifiers);
 
             expect(mockClient.modifierGroup.create).not.toHaveBeenCalled();
-            expect(result.modifierGroups).toEqual([]);
+            expect(result!.modifierGroups).toEqual([]);
         });
 
         it('debería usar defaults para minSelect (0) y maxSelect (1) si no se envían', async () => {
@@ -265,6 +276,7 @@ describe('ProductsService', () => {
             basePrice: 22.99,
             images: ['https://example.com/burger-premium.jpg'],
             published: true,
+            specs: {},
             modifierGroups: [
                 {
                     name: 'Nuevos Extras',
@@ -308,6 +320,251 @@ describe('ProductsService', () => {
 
             await expect(service.update('no-existe', updateDto)).rejects.toThrow(NotFoundException);
             await expect(service.update('no-existe', updateDto)).rejects.toThrow('Producto no encontrado');
+        });
+    });
+
+    // ============ QUERIES ============
+
+    describe('findAllAdmin', () => {
+        it('debería retornar todos los productos con includes ordenados por createdAt desc', async () => {
+            const products = [mockProductComplete, { ...mockProductComplete, id: 'prod-2', name: 'Otro' }];
+            mockClient.product.findMany.mockResolvedValue(products);
+
+            const result = await service.findAllAdmin();
+
+            expect(result).toEqual(products);
+            expect(mockClient.product.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    orderBy: { createdAt: 'desc' },
+                    include: expect.objectContaining({
+                        variants: true,
+                        categories: { include: { category: true } },
+                    }),
+                }),
+            );
+        });
+
+        it('debería retornar array vacío cuando no hay productos', async () => {
+            mockClient.product.findMany.mockResolvedValue([]);
+
+            const result = await service.findAllAdmin();
+
+            expect(result).toEqual([]);
+        });
+    });
+
+    describe('findAllPublished', () => {
+        it('debería filtrar por published=true sin filtro de tipo', async () => {
+            mockClient.product.findMany.mockResolvedValue([mockProductComplete]);
+
+            await service.findAllPublished();
+
+            expect(mockClient.product.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { published: true },
+                }),
+            );
+        });
+
+        it('debería filtrar por tipo cuando se pasa type', async () => {
+            mockClient.product.findMany.mockResolvedValue([]);
+
+            await service.findAllPublished('DIGITAL' as any);
+
+            expect(mockClient.product.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { published: true, productType: 'DIGITAL' },
+                }),
+            );
+        });
+
+        it('debería incluir solo variantes default cuando allVariants=false', async () => {
+            mockClient.product.findMany.mockResolvedValue([]);
+
+            await service.findAllPublished(undefined, false);
+
+            expect(mockClient.product.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    include: expect.objectContaining({
+                        variants: { where: { isDefault: true } },
+                    }),
+                }),
+            );
+        });
+
+        it('debería incluir todas las variantes cuando allVariants=true', async () => {
+            mockClient.product.findMany.mockResolvedValue([]);
+
+            await service.findAllPublished(undefined, true);
+
+            expect(mockClient.product.findMany).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    include: expect.objectContaining({
+                        variants: true,
+                    }),
+                }),
+            );
+        });
+    });
+
+    describe('findOnePublished', () => {
+        it('debería retornar producto publicado por slug', async () => {
+            mockClient.product.findUnique.mockResolvedValue(mockProductComplete);
+
+            const result = await service.findOnePublished('hamburguesa-clasica');
+
+            expect(result).toEqual(mockProductComplete);
+            expect(mockClient.product.findUnique).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { slug: 'hamburguesa-clasica' },
+                }),
+            );
+        });
+
+        it('debería lanzar NotFoundException si el producto no existe', async () => {
+            mockClient.product.findUnique.mockResolvedValue(null);
+
+            await expect(service.findOnePublished('no-existe')).rejects.toThrow(NotFoundException);
+        });
+
+        it('debería lanzar NotFoundException si el producto no está publicado', async () => {
+            mockClient.product.findUnique.mockResolvedValue({ ...mockProductComplete, published: false });
+
+            await expect(service.findOnePublished('hamburguesa-clasica')).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('findOne', () => {
+        it('debería retornar producto por id con variantes y modifierGroups', async () => {
+            mockClient.product.findUnique.mockResolvedValue(mockProductComplete);
+
+            const result = await service.findOne('prod-1');
+
+            expect(result).toEqual(mockProductComplete);
+            expect(mockClient.product.findUnique).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { id: 'prod-1' },
+                    include: expect.objectContaining({
+                        variants: true,
+                    }),
+                }),
+            );
+        });
+
+        it('debería lanzar NotFoundException si el producto no existe', async () => {
+            mockClient.product.findUnique.mockResolvedValue(null);
+
+            await expect(service.findOne('no-existe')).rejects.toThrow(NotFoundException);
+            await expect(service.findOne('no-existe')).rejects.toThrow('Producto no encontrado');
+        });
+    });
+
+    // ============ DESCARGAS DIGITALES ============
+
+    describe('getProductDownloadUrl', () => {
+        const digitalProduct = {
+            digitalFileUrl: 'uploads/ebook.pdf',
+            productType: 'DIGITAL',
+        };
+
+        it('debería permitir descarga con suscripción activa (sin verificar compra)', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue({ status: 'ACTIVE', userId: 'user-1' });
+            mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+
+            const result = await service.getProductDownloadUrl('prod-1', 'user-1');
+
+            expect(result).toEqual({ downloadUrl: 'https://signed-url.com/file' });
+            // No debería consultar orders ni purchases
+            expect(mockClient.order.findFirst).not.toHaveBeenCalled();
+            expect(mockClient.purchase.findFirst).not.toHaveBeenCalled();
+        });
+
+        it('debería permitir descarga con compra válida (Order)', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue(null); // sin suscripción
+            mockClient.order.findFirst.mockResolvedValue({ id: 'order-1' }); // compra via Order
+            mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+
+            const result = await service.getProductDownloadUrl('prod-1', 'user-1');
+
+            expect(result).toEqual({ downloadUrl: 'https://signed-url.com/file' });
+            expect(mockClient.order.findFirst).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: expect.objectContaining({
+                        userId: 'user-1',
+                        status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
+                    }),
+                }),
+            );
+        });
+
+        it('debería permitir descarga con compra legacy (Purchase table)', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue(null);
+            mockClient.order.findFirst.mockResolvedValue(null); // sin Order
+            mockClient.purchase.findFirst.mockResolvedValue({ id: 'purchase-1', status: 'approved' }); // legacy
+            mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+
+            const result = await service.getProductDownloadUrl('prod-1', 'user-1');
+
+            expect(result).toEqual({ downloadUrl: 'https://signed-url.com/file' });
+            expect(mockClient.purchase.findFirst).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { userId: 'user-1', status: 'approved', productId: 'prod-1' },
+                }),
+            );
+        });
+
+        it('debería lanzar ForbiddenException si no tiene acceso (sin suscripción, sin compra)', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue(null);
+            mockClient.order.findFirst.mockResolvedValue(null);
+            mockClient.purchase.findFirst.mockResolvedValue(null);
+
+            await expect(
+                service.getProductDownloadUrl('prod-1', 'user-1'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('debería lanzar NotFoundException si producto no es DIGITAL', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue({ status: 'ACTIVE' });
+            mockClient.product.findUnique.mockResolvedValue({
+                digitalFileUrl: null,
+                productType: 'PHYSICAL',
+            });
+
+            await expect(
+                service.getProductDownloadUrl('prod-1', 'user-1'),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('debería lanzar NotFoundException si producto digital no tiene archivo', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue({ status: 'ACTIVE' });
+            mockClient.product.findUnique.mockResolvedValue({
+                digitalFileUrl: null,
+                productType: 'DIGITAL',
+            });
+
+            await expect(
+                service.getProductDownloadUrl('prod-1', 'user-1'),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('debería generar signed URL con expiración de 3600 segundos', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue({ status: 'ACTIVE' });
+            mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+
+            await service.getProductDownloadUrl('prod-1', 'user-1');
+
+            const mockStorage = (service as any).storage;
+            expect(mockStorage.getSignedUrl).toHaveBeenCalledWith('uploads/ebook.pdf', 3600);
+        });
+
+        it('debería NO permitir acceso con suscripción inactiva', async () => {
+            mockClient.subscription.findUnique.mockResolvedValue({ status: 'CANCELLED' });
+            mockClient.order.findFirst.mockResolvedValue(null);
+            mockClient.purchase.findFirst.mockResolvedValue(null);
+
+            await expect(
+                service.getProductDownloadUrl('prod-1', 'user-1'),
+            ).rejects.toThrow(ForbiddenException);
         });
     });
 });

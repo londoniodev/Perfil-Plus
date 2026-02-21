@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client"
 import { ProductForm } from "@/components/admin/products/product-form"
 import { PageHeader } from "@alvarosky/ui"
 import { notFound } from "next/navigation"
+import { BreadcrumbSetter } from "@/components/layout/breadcrumb-setter"
 
 const prisma = new PrismaClient()
 
@@ -59,6 +60,7 @@ export default async function EditMenuPage({ params }: EditMenuPageProps) {
                 title="Editar Menú"
                 description={`Editando: ${product.name}`}
             />
+            <BreadcrumbSetter segment={id} label={product.name} />
             <ProductForm initialData={product} />
         </div>
     )

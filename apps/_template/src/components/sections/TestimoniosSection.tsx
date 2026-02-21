@@ -32,8 +32,8 @@ export function TestimoniosSection() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {testimonials.map((test, i) => (
-                        <Card key={i} className={cn(GLASS_CARD_STYLES, "p-0 relative overflow-hidden h-full")}>
+                    {testimonials.map((test) => (
+                        <Card key={test.author} className={cn(GLASS_CARD_STYLES, "p-0 relative overflow-hidden h-full")}>
                             {/* Static Icon for decoration */}
                             <IconQuote className="absolute top-4 left-4 text-white/5 text-8xl pointer-events-none select-none" />
 

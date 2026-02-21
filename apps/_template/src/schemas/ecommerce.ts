@@ -7,6 +7,7 @@ export const productSchema = z.object({
     basePrice: z.coerce.number().min(0, "El precio debe ser mayor o igual a 0"),
     images: z.array(z.string()).min(1, "Debe subir al menos una imagen"),
     published: z.boolean().default(false),
+    categories: z.array(z.string()).optional(),
 
     // Specs condicionales
     downloadUrl: z.string().optional(),

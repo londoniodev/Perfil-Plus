@@ -1,7 +1,7 @@
 import { ProductForm } from "@/components/admin/products/product-form"
 import { API_BASE, TENANT_ID } from "@/lib/config"
 
-export default async function CreateMenuPage({ params }: { params: { productId?: string } }) {
+export default async function CreateMenuPage() {
     // If we support editing here too, we'd fetch data. For now, it's just 'new' page logic mostly.
 
     return (

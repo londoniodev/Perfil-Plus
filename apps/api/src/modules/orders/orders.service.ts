@@ -1,204 +1,259 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { ProductType, OrderStatus, Prisma } from '@prisma/client';
+import { ProductType, OrderStatus, Prisma, Role } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
-import { Decimal } from '@prisma/client/runtime/library';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 
-@Injectable()
+import { Decimal } from '@prisma/client/runtime/library';
+import { OrdersGateway } from './orders.gateway';
+import { validateOrderTransition } from './domain/order-state-machine';
+
+import { Inject, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import type { Request } from 'express';
+
+@Injectable({ scope: Scope.REQUEST })
 export class OrdersService {
     private readonly logger = new Logger(OrdersService.name);
 
     constructor(
+        @Inject(REQUEST) private readonly request: Request,
         private prisma: PrismaService,
-        private storage: StorageService
+        private storage: StorageService,
+        private ordersGateway: OrdersGateway,
     ) { }
+
+    private getTenantId(): string {
+        const tenantId = this.request.headers['x-tenant-id'] as string;
+        if (!tenantId) {
+            // Fallback for some edge cases or throw? 
+            // Ideally we should always have it if we used the guard/interceptor.
+            // But for safety in async contexts (if any) we might check.
+            // services are request scoped so it should be fine.
+            this.logger.warn('Tenant ID missing in OrdersService');
+            return 'default';
+        }
+        return tenantId;
+    }
 
     // ============ CREAR ORDEN (con cálculo server-side) ============
     async createOrder(userId: string | undefined, dto: CreateOrderDto) {
-        return await this.prisma.client.$transaction(async (tx) => {
-            // Generar orderNumber único
-            const orderCount = await tx.order.count();
-            const year = new Date().getFullYear();
-            const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
+        let lastError: any;
+        const MAX_RETRIES = 3;
 
-            let totalAmount = new Decimal(0);
-            const orderItemsData: Array<{
-                variantId: string;
-                quantity: number;
-                price: Decimal;
-                productName: string;
-                variantName: string | null;
-                notes: string | null;
-                modifiers: Array<{
-                    modifierId: string;
-                    modifierName: string;
-                    priceAdjustment: Decimal;
-                    quantity: number;
-                }>;
-            }> = [];
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            try {
+                return await this.prisma.client.$transaction(async (tx) => {
+                    // Generar orderNumber único
+                    const orderCount = await tx.order.count();
+                    const year = new Date().getFullYear();
+                    const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
 
-            // Procesar cada item
-            for (const item of dto.items) {
-                const variant = await tx.productVariant.findUnique({
-                    where: { id: item.variantId },
-                    include: {
-                        product: {
-                            include: { modifierGroups: { include: { modifiers: true } } }
-                        }
-                    }
-                });
+                    let totalAmount = new Decimal(0);
+                    const orderItemsData: Array<{
+                        variantId: string;
+                        quantity: number;
+                        price: Decimal;
+                        productName: string;
+                        variantName: string | null;
+                        notes: string | null;
+                        modifiers: Array<{
+                            modifierId: string;
+                            modifierName: string;
+                            priceAdjustment: Decimal;
+                            quantity: number;
+                        }>;
+                    }> = [];
 
-                if (!variant) {
-                    throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
-                }
-
-                if (!variant.product.published || !variant.product.isAvailable) {
-                    throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
-                }
-
-                // Validar Stock de Variante
-                if (variant.stock !== -1) { // -1 = Infinito/Digital
-                    if (variant.stock < item.quantity) {
-                        throw new BadRequestException(`Stock insuficiente para ${variant.product.name} (${variant.name})`);
-                    }
-                    // Decrementar stock
-                    await tx.productVariant.update({
-                        where: { id: variant.id },
-                        data: { stock: { decrement: item.quantity } }
-                    });
-                }
-
-                let itemPrice = variant.price;
-                const modifiersData: Array<{
-                    modifierId: string;
-                    modifierName: string;
-                    priceAdjustment: Decimal;
-                    quantity: number;
-                }> = [];
-
-                // Validar Modificadores
-                if (item.modifiers && item.modifiers.length > 0) {
-                    const groupedModifiers = item.modifiers.reduce((acc, mod) => {
-                        // Encontrar el modificador real en la DB (desde la variante fetched)
-                        // Esto es ineficiente si son muchos, mejor fetch modifiers.
-                        // Pero por ahora usamos la logica de grupos de la variante.
-                        // O mejor, hacemos fetch de los modifiers seleccionados.
-                        // Para simplificar y seguir el test, validamos contra los grupos del producto.
-                        return acc; // TODO: Implementar validación completa de modificadores si es necesario estrictamente
-                    }, {});
-
-                    // Por ahora, procesamos los modificadores enviados
-                    for (const mod of item.modifiers) {
-                        const dbModifier = await tx.modifier.findUnique({
-                            where: { id: mod.modifierId }
+                    // Procesar cada item
+                    for (const item of dto.items) {
+                        const variant = await tx.productVariant.findUnique({
+                            where: { id: item.variantId },
+                            include: {
+                                product: {
+                                    include: { modifierGroups: { include: { modifiers: true } } }
+                                }
+                            }
                         });
 
-                        if (!dbModifier) continue;
-                        if (!dbModifier.isAvailable) {
-                            throw new BadRequestException(`Modificador no disponible: ${dbModifier.name}`);
+                        if (!variant) {
+                            throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
                         }
 
-                        // Validar stock modificador
-                        if (dbModifier.stock !== null && dbModifier.stock < mod.quantity) {
-                            throw new BadRequestException(`Stock insuficiente para modificador ${dbModifier.name}`);
+                        if (!variant.product.published || !variant.product.isAvailable) {
+                            throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
                         }
 
-                        itemPrice = itemPrice.plus(dbModifier.priceAdjustment.times(mod.quantity));
-                        modifiersData.push({
-                            modifierId: dbModifier.id,
-                            modifierName: dbModifier.name,
-                            priceAdjustment: dbModifier.priceAdjustment,
-                            quantity: mod.quantity
-                        });
-                    }
-                }
+                        // Validar Stock de Variante
+                        if (variant.stock !== -1) { // -1 = Infinito/Digital
+                            if (variant.stock < item.quantity) {
+                                throw new BadRequestException(`Stock insuficiente para ${variant.product.name} (${variant.name})`);
+                            }
+                            // Decrementar stock
+                            await tx.productVariant.update({
+                                where: { id: variant.id },
+                                data: { stock: { decrement: item.quantity } }
+                            });
+                        }
 
-                // Validar Min/Max Select de Grupos
-                for (const group of variant.product.modifierGroups) {
-                    const selectedInGroup = item.modifiers?.filter(m =>
-                        group.modifiers.some(gm => gm.id === m.modifierId)
-                    ) || [];
+                        let itemPrice = variant.price;
+                        const modifiersData: Array<{
+                            modifierId: string;
+                            modifierName: string;
+                            priceAdjustment: Decimal;
+                            quantity: number;
+                        }> = [];
 
-                    const totalSelected = selectedInGroup.reduce((sum, m) => sum + m.quantity, 0);
+                        // Validar Modificadores
+                        if (item.modifiers && item.modifiers.length > 0) {
+                            for (const mod of item.modifiers) {
+                                // 1. Try to find in pre-fetched structure
+                                let dbModifier: any = null;
 
-                    if (totalSelected < group.minSelect) {
-                        throw new BadRequestException(`El grupo ${group.name} requiere mínimo ${group.minSelect} selecciones.`);
-                    }
-                    if (totalSelected > group.maxSelect) {
-                        throw new BadRequestException(`El grupo ${group.name} permite máximo ${group.maxSelect} selecciones.`);
-                    }
-                }
+                                // Check against the structure we already included: variant.product.modifierGroups...
+                                for (const group of variant.product.modifierGroups) {
+                                    const match = group.modifiers.find(m => m.id === mod.modifierId);
+                                    if (match) {
+                                        dbModifier = match;
+                                        break;
+                                    }
+                                }
 
-                totalAmount = totalAmount.plus(itemPrice.times(item.quantity));
+                                // 2. Fallback to DB if not found
+                                if (!dbModifier) {
+                                    dbModifier = await tx.modifier.findUnique({
+                                        where: { id: mod.modifierId }
+                                    });
+                                }
 
-                orderItemsData.push({
-                    variantId: variant.id,
-                    quantity: item.quantity,
-                    price: itemPrice, // Precio unitario con modificadores
-                    productName: variant.product.name,
-                    variantName: variant.name,
-                    notes: item.notes || null,
-                    modifiers: modifiersData
-                });
-            }
-            // ... (rest of processing)
+                                if (!dbModifier) continue;
 
-            // 8. Crear la orden
-            const order = await tx.order.create({
-                data: {
-                    // @ts-ignore
-                    userId: userId || null, // Allow null for Guest
-                    orderNumber,
-                    totalAmount,
-                    orderType: dto.orderType || 'DINE_IN',
-                    tableNumber: dto.tableNumber || null,
+                                if (!dbModifier.isAvailable) {
+                                    throw new BadRequestException(`Modificador no disponible: ${dbModifier.name}`);
+                                }
 
-                    // New Fields
-                    customerName: dto.customerName || null,
-                    customerPhone: dto.customerPhone || null,
-                    notes: dto.notes || null,
-                    shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
+                                // Validar stock modificador
+                                if (dbModifier.stock !== null && dbModifier.stock < mod.quantity) {
+                                    throw new BadRequestException(`Stock insuficiente para modificador ${dbModifier.name}`);
+                                }
 
-                    items: {
-                        create: orderItemsData.map((item) => ({
-                            variantId: item.variantId,
+                                itemPrice = itemPrice.plus(dbModifier.priceAdjustment.times(mod.quantity));
+                                modifiersData.push({
+                                    modifierId: dbModifier.id,
+                                    modifierName: dbModifier.name,
+                                    priceAdjustment: dbModifier.priceAdjustment,
+                                    quantity: mod.quantity
+                                });
+                            }
+                        }
+
+                        // Validar Min/Max Select de Grupos
+                        for (const group of variant.product.modifierGroups) {
+                            const selectedInGroup = item.modifiers?.filter(m =>
+                                group.modifiers.some(gm => gm.id === m.modifierId)
+                            ) || [];
+
+                            const totalSelected = selectedInGroup.reduce((sum, m) => sum + m.quantity, 0);
+
+                            if (totalSelected < group.minSelect) {
+                                throw new BadRequestException(`El grupo ${group.name} requiere mínimo ${group.minSelect} selecciones.`);
+                            }
+                            if (totalSelected > group.maxSelect) {
+                                throw new BadRequestException(`El grupo ${group.name} permite máximo ${group.maxSelect} selecciones.`);
+                            }
+                        }
+
+                        totalAmount = totalAmount.plus(itemPrice.times(item.quantity));
+
+                        orderItemsData.push({
+                            variantId: variant.id,
                             quantity: item.quantity,
-                            price: item.price,
-                            productName: item.productName,
-                            variantName: item.variantName,
-                            notes: item.notes,
-                            modifiers: {
-                                create: item.modifiers.map((mod) => ({
-                                    modifierId: mod.modifierId,
-                                    modifierName: mod.modifierName,
-                                    priceAdjustment: mod.priceAdjustment,
-                                    quantity: mod.quantity,
+                            price: itemPrice, // Precio unitario con modificadores
+                            productName: variant.product.name,
+                            variantName: variant.name,
+                            notes: item.notes || null,
+                            modifiers: modifiersData
+                        });
+                    }
+
+                    // 8. Crear la orden
+                    const order = await tx.order.create({
+                        data: {
+                            // @ts-ignore
+                            userId: userId || null, // Allow null for Guest
+                            orderNumber,
+                            totalAmount,
+                            status: dto.status || 'PENDING', // Use provided status or default
+                            orderType: dto.orderType || 'DINE_IN',
+                            tableNumber: dto.tableNumber || null,
+
+                            // New Fields
+                            customerName: dto.customerName || null,
+                            customerPhone: dto.customerPhone || null,
+                            notes: dto.notes || null,
+                            shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
+
+                            items: {
+                                create: orderItemsData.map((item) => ({
+                                    variantId: item.variantId,
+                                    quantity: item.quantity,
+                                    price: item.price,
+                                    productName: item.productName,
+                                    variantName: item.variantName,
+                                    notes: item.notes,
+                                    modifiers: {
+                                        create: item.modifiers.map((mod) => ({
+                                            modifierId: mod.modifierId,
+                                            modifierName: mod.modifierName,
+                                            priceAdjustment: mod.priceAdjustment,
+                                            quantity: mod.quantity,
+                                        })),
+                                    },
                                 })),
                             },
-                        })),
-                    },
-                },
-                include: {
-                    items: {
+                        },
                         include: {
-                            modifiers: true,
-                            variant: {
-                                include: { product: true },
+                            items: {
+                                include: {
+                                    modifiers: true,
+                                    variant: {
+                                        include: { product: true },
+                                    },
+                                },
                             },
                         },
-                    },
-                },
-            });
+                    });
 
-            this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
-            return order;
-        });
+                    this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
+
+                    // SSE: notificar cocina/POS
+                    this.ordersGateway.emit(this.getTenantId(), {
+                        type: 'new_order',
+                        orderId: order.id,
+                        data: { orderNumber, status: order.status, totalAmount: Number(totalAmount), items: dto.items.length },
+                    });
+
+                    return order;
+                });
+            } catch (error) {
+                lastError = error;
+                // Retry only on unique constraint violation (P2002) for orderNumber
+                if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                    // Check if it's strictly orderNumber if possible, or just retry P2002
+                    continue;
+                }
+                throw error;
+            }
+        }
+        throw lastError;
     }
 
+
+
     // ============ CAMBIO DE ESTADO (Kitchen Display / Mesero) ============
-    async updateStatus(orderId: string, dto: UpdateOrderStatusDto) {
+    async updateStatus(orderId: string, dto: UpdateOrderStatusDto, userRole: Role) {
         const order = await this.prisma.client.order.findUnique({
             where: { id: orderId },
         });
@@ -207,16 +262,81 @@ export class OrdersService {
             throw new NotFoundException('Orden no encontrada');
         }
 
-        return await this.prisma.client.order.update({
-            where: { id: orderId },
-            data: { status: dto.status },
-            include: {
-                items: {
+        // Validate Transition
+        validateOrderTransition(order.status, dto.status, userRole);
+
+        return await this.prisma.client.$transaction(async (tx) => {
+            // 0. Verificar estado actual para evitar doble cancelación/devolución
+            if (order.status === 'CANCELLED') {
+                throw new BadRequestException('Esta orden ya fue cancelada anteriormente.');
+            }
+
+            // 1. Si el nuevo estado es CANCELLED, devolver stock
+            if (dto.status === 'CANCELLED') {
+                const orderWithItems = await tx.order.findUnique({
+                    where: { id: orderId },
                     include: {
-                        modifiers: true,
+                        items: {
+                            include: {
+                                modifiers: true,
+                                variant: true
+                            }
+                        }
+                    }
+                });
+
+                if (orderWithItems) {
+                    for (const item of orderWithItems.items) {
+                        // Devolver stock Variante
+                        if (item.variant.stock !== -1) { // -1 = Infinito
+                            await tx.productVariant.update({
+                                where: { id: item.variantId },
+                                data: { stock: { increment: item.quantity } }
+                            });
+                        }
+
+                        // Devolver stock Modificadores
+                        for (const mod of item.modifiers) {
+                            // Necesitamos saber si el modifier tiene control de stock.
+                            // En OrderItemModifier no tenemos el stock actual, solo el ID y nombre snapshot.
+                            // Debemos buscar el modificador original en la DB.
+                            const originalModifier = await tx.modifier.findUnique({
+                                where: { id: mod.modifierId }
+                            });
+
+                            if (originalModifier && originalModifier.stock !== null) {
+                                await tx.modifier.update({
+                                    where: { id: mod.modifierId },
+                                    data: { stock: { increment: mod.quantity * item.quantity } }
+                                });
+                            }
+                        }
+                    }
+                    this.logger.log(`Stock restaurado para orden cancelada: ${orderId}`);
+                }
+            }
+
+            // 2. Actualizar estado
+            const updated = await tx.order.update({
+                where: { id: orderId },
+                data: { status: dto.status },
+                include: {
+                    items: {
+                        include: {
+                            modifiers: true,
+                        },
                     },
                 },
-            },
+            });
+
+            // SSE: notificar cambio de estado
+            this.ordersGateway.emit(this.getTenantId(), {
+                type: 'status_changed',
+                orderId,
+                data: { status: dto.status },
+            });
+
+            return updated;
         });
     }
 
@@ -244,7 +364,47 @@ export class OrdersService {
     }
 
     // ============ ADMIN: LISTAR ÓRDENES ============
-    async findAllAdmin(status?: OrderStatus) {
+    // ============ ADMIN: LISTAR ÓRDENES ============
+    async findAllAdmin(status?: OrderStatus, activeOnly: boolean = false) {
+        if (activeOnly) {
+            // Fetch active orders + recent completed/delivered
+            const activeStatuses: OrderStatus[] = ['PENDING', 'APPROVED', 'PROCESSING', 'PREPARING', 'READY'];
+            // Valid Enum Values: PENDING, APPROVED, PROCESSING, PREPARING, READY, SERVED, SHIPPED, DELIVERED, CANCELLED, REFUNDED
+            const completedStatuses: OrderStatus[] = ['SERVED', 'DELIVERED', 'SHIPPED', 'CANCELLED', 'REFUNDED'];
+
+            const [activeOrders, recentCompleted] = await Promise.all([
+                this.prisma.client.order.findMany({
+                    where: { status: { in: activeStatuses } },
+                    include: {
+                        user: { select: { id: true, name: true, email: true } },
+                        items: {
+                            include: {
+                                modifiers: true,
+                                variant: { include: { product: true } },
+                            },
+                        },
+                    },
+                    orderBy: { createdAt: 'desc' },
+                }),
+                this.prisma.client.order.findMany({
+                    where: { status: { in: completedStatuses } },
+                    include: {
+                        user: { select: { id: true, name: true, email: true } },
+                        items: {
+                            include: {
+                                modifiers: true,
+                                variant: { include: { product: true } },
+                            },
+                        },
+                    },
+                    orderBy: { createdAt: 'desc' },
+                    take: 20 // Limit historical items
+                })
+            ]);
+
+            return [...activeOrders, ...recentCompleted].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
+
         return await this.prisma.client.order.findMany({
             where: status ? { status } : undefined,
             include: {
@@ -323,5 +483,113 @@ export class OrdersService {
 
         const signedUrl = await this.storage.getSignedUrl(product.digitalFileUrl, 3600);
         return { downloadUrl: signedUrl };
+    }
+
+    // ============ PAGOS (CAJA) ============
+    async createPayment(orderId: string, dto: CreatePaymentDto) {
+        return await this.prisma.client.$transaction(async (tx) => {
+            const order = await tx.order.findUnique({
+                where: { id: orderId },
+                include: { items: true }
+            });
+
+            if (!order) throw new NotFoundException('Orden no encontrada');
+
+            // 1. Crear Pago
+            const payment = await tx.payment.create({
+                data: {
+                    orderId,
+                    amount: dto.amount,
+                    method: dto.method,
+                    reference: dto.reference
+                }
+            });
+
+            // 2. Marcar items como pagados
+            if (dto.itemIds && dto.itemIds.length > 0) {
+                await tx.orderItem.updateMany({
+                    where: {
+                        id: { in: dto.itemIds },
+                        orderId: orderId // Seguridad extra
+                    },
+                    data: { isPaid: true }
+                });
+            }
+
+            // 3. Verificar cierre de orden
+            let shouldClose = dto.closeOrder;
+
+            if (!shouldClose) {
+                // Verificar si quedan items sin pagar
+                const unpaidItemsCount = await tx.orderItem.count({
+                    where: {
+                        orderId: orderId,
+                        isPaid: false
+                    }
+                });
+
+                if (unpaidItemsCount === 0) {
+                    shouldClose = true;
+                }
+            }
+
+            if (shouldClose) {
+                await tx.order.update({
+                    where: { id: orderId },
+                    data: { status: 'DELIVERED' }
+                });
+            }
+
+            // SSE: notificar pago recibido
+            this.ordersGateway.emit(this.getTenantId(), {
+                type: 'payment_received',
+                orderId,
+                data: { amount: Number(dto.amount), method: dto.method, closed: shouldClose },
+            });
+
+            return payment;
+        });
+    }
+
+    // ============ KITCHEN CONTROL (isPrepared) ============
+    async toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean) {
+        // 1. Verificar que el item pertenece a la orden
+        const item = await this.prisma.client.orderItem.findFirst({
+            where: { id: itemId, orderId },
+        });
+
+        if (!item) {
+            throw new NotFoundException('Item no encontrado en esta orden');
+        }
+
+        // 2. Actualizar estado
+        const updatedItem = await this.prisma.client.orderItem.update({
+            where: { id: itemId },
+            data: { isPrepared },
+        });
+
+        this.logger.log(`Item ${itemId} de orden ${orderId} marcado como ${isPrepared ? 'PREPARADO' : 'PENDIENTE'}`);
+
+        // 3. Notificar SSE a todos (Cocina, Meseros)
+        // Podríamos enviar solo el update del item, pero para simplificar el frontend,
+        // ordenamos refrescar la orden o enviamos el evento específico.
+        // Vamos a enviar un 'order_update' genérico o 'item_update'.
+        // Para consistencia con el frontend actual que escucha 'status_changed',
+        // podemos reutilizar ese evento o crear uno nuevo.
+        // El frontend WaiterClient hace `fetchOrders` en `status_changed`.
+        // KitchenPage hace `fetchOrders` en `status_changed`.
+        // Así que 'status_changed' es seguro para forzar recarga.
+
+        this.ordersGateway.emit(this.getTenantId(), {
+            type: 'status_changed',
+            orderId,
+            data: {
+                itemId,
+                isPrepared,
+                triggeredBy: 'kitchen_display'
+            },
+        });
+
+        return updatedItem;
     }
 }

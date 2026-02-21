@@ -162,8 +162,8 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
                         {/* KPIs */}
                         <div className="flex flex-wrap gap-8 pt-6">
-                            {caso.resultados.map((res, i) => (
-                                <div key={i} className="text-center">
+                            {caso.resultados.map((res) => (
+                                <div key={res.label} className="text-center">
                                     <div className="text-3xl font-bold" style={{ color: sectionColor }}>{res.metric}</div>
                                     <div className="text-sm text-muted-foreground mt-1">{res.label}</div>
                                 </div>

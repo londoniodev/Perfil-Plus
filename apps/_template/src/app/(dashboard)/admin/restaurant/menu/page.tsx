@@ -57,6 +57,7 @@ export default async function RestaurantMenuPage() {
             price: minPrice,
             stock: totalStock === Infinity ? "Ilimitado" : totalStock,
             published: product.published,
+            isAvailable: product.isAvailable,
             createdAt: product.createdAt
         }
     })

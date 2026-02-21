@@ -1,27 +1,52 @@
 [
   {
     "id": "TC001",
-    "title": "create product with nested modifier groups",
-    "description": "Test the POST /admin/products endpoint to create a physical product with nested modifier groups and modifiers. Validate that the product, modifier groups, and modifiers are created correctly with proper validation of minSelect, maxSelect, stock, and price adjustments. Verify that unauthorized or non-admin users cannot create products."
+    "title": "post orders create new order with validation",
+    "description": "Test the POST /orders endpoint to create a new order with various order types (DINE_IN, DELIVERY, PICKUP). Verify server-side validation for price calculation, stock availability, and modifier constraints. Ensure guest checkout works without authorization and returns 201 with created order details."
   },
   {
     "id": "TC002",
-    "title": "update product and replace modifier groups",
-    "description": "Test the PUT /admin/products/:id endpoint to update an existing product and replace all modifier groups and modifiers. Verify that the old modifier groups are deleted and new ones are created. Validate proper error handling for non-existent product IDs and unauthorized access."
+    "title": "get orders my orders list user orders",
+    "description": "Test the GET /orders/my-orders endpoint with valid authorization token. Verify it returns 200 with a list of orders belonging to the authenticated user, including items, modifiers, and variant product details."
   },
   {
     "id": "TC003",
-    "title": "create order with modifiers and table number",
-    "description": "Test the POST /orders endpoint to create an order with items including variantId, quantity, notes, and modifiers with quantities. Validate server-side price calculation, minSelect/maxSelect constraints, modifier availability, and atomic stock decrement. Verify support for different order types (DINE_IN, TAKE_AWAY, DELIVERY) and table number assignment."
+    "title": "get orders product productid download url",
+    "description": "Test the GET /orders/product/:productId/download endpoint with valid authorization. Verify it returns 200 with a download URL for a digital product owned by the user. Test 403 Forbidden for unauthorized access and 404 Not found for invalid productId."
   },
   {
     "id": "TC004",
-    "title": "update order status with admin authorization",
-    "description": "Test the PATCH /admin/orders/:id/status endpoint to update the status of an order. Verify that only users with ADMIN role can update the status. Validate that the status changes reflect correctly and that non-existent order IDs return 404 errors."
+    "title": "get orders id download productid download url",
+    "description": "Test the GET /orders/:id/download/:productId endpoint with valid authorization. Verify it returns 200 with a download URL for a specific order item if the user owns the order. Test 403 Forbidden for unauthorized access and 404 Not found for invalid order or product."
   },
   {
     "id": "TC005",
-    "title": "list admin orders with optional status filter",
-    "description": "Test the GET /admin/orders endpoint to retrieve a list of orders with optional filtering by status. Verify that the response includes detailed information about users, order items, modifiers, and products. Ensure that only authorized admin users can access this endpoint."
+    "title": "get admin orders list all orders with filter",
+    "description": "Test the GET /admin/orders endpoint with valid admin authorization. Verify it returns 200 with a list of all orders including user, items, and modifiers. Test filtering by status query parameter returns filtered orders. Test 401 Unauthorized when no token provided."
+  },
+  {
+    "id": "TC006",
+    "title": "patch admin orders id status update order status",
+    "description": "Test the PATCH /admin/orders/:id/status endpoint with valid admin authorization. Verify it updates the order status through the kitchen workflow and returns 200 with updated order details. Test 404 Not found for non-existent order id."
+  },
+  {
+    "id": "TC007",
+    "title": "post products create new product with validation",
+    "description": "Test the POST /products endpoint with valid admin authorization. Verify it creates a new product with variants and modifier groups, returning 201 with product details. Test 400 error when using an existing slug. Test 401 Unauthorized when no token provided."
+  },
+  {
+    "id": "TC008",
+    "title": "post auth login user authentication",
+    "description": "Test the POST /auth/login endpoint with valid and invalid credentials. Verify successful login returns 200 with accessToken, refreshToken, and user info. Verify invalid credentials return 401 error."
+  },
+  {
+    "id": "TC009",
+    "title": "post auth register user registration",
+    "description": "Test the POST /auth/register endpoint to register a new user. Verify it returns 201 with created user details."
+  },
+  {
+    "id": "TC010",
+    "title": "post auth refresh refresh access token",
+    "description": "Test the POST /auth/refresh endpoint with a valid refresh token. Verify it returns 200 with a new accessToken."
   }
 ]

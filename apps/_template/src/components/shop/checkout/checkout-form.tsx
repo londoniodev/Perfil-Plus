@@ -106,19 +106,12 @@ export function CheckoutForm() {
 
             const order = await createOrder(payload)
 
-            toast({
-                title: "Pedido realizado",
-                description: `Tu orden #${order.orderNumber} ha sido enviada a cocina.`
-            })
+            toast.success(`Tu orden #${order.orderNumber} ha sido enviada a cocina.`, "Pedido realizado")
             clearCart()
             router.push(`/order-confirmation?orderId=${order.id}`)
         } catch (error) {
             console.error("Checkout Error:", error)
-            toast({
-                title: "Error",
-                description: "No se pudo procesar el pedido. Verifica tu conexión.",
-                variant: "destructive"
-            })
+            toast.error("No se pudo procesar el pedido. Verifica tu conexión.", "Error")
         } finally {
             setIsSubmitting(false)
         }
@@ -235,8 +228,8 @@ export function CheckoutForm() {
                         <CardTitle>Resumen ({items.length} items)</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {items.map((item, idx) => (
-                            <div key={`${item.variantId}-${idx}`} className="flex justify-between items-start text-sm">
+                        {items.map((item) => (
+                            <div key={item.variantId} className="flex justify-between items-start text-sm">
                                 <div>
                                     <p className="font-medium">{item.title} x{item.quantity}</p>
                                     {item.subtitle && <p className="text-muted-foreground text-xs">{item.subtitle}</p>}

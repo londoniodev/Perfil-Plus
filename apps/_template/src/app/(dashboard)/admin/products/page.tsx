@@ -59,6 +59,7 @@ export default async function ProductsPage() {
             price: minPrice,
             stock: totalStock === Infinity ? "Ilimitado" : totalStock,
             published: product.published,
+            isAvailable: product.isAvailable,
             createdAt: product.createdAt
         }
     })

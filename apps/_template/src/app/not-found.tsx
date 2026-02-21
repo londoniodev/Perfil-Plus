@@ -11,7 +11,7 @@ export default function NotFound() {
             <p className="text-muted-foreground max-w-[500px] mb-8">
                 Lo sentimos, no pudimos encontrar lo que buscas. Es posible que la página haya sido eliminada o la dirección sea incorrecta.
             </p>
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 border-none transition-colors">
                 <Link href="/">
                     Volver al Inicio
                 </Link>

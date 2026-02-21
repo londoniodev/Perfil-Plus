@@ -14,6 +14,9 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  WAITER    // Mesero: solo pedidos
+  KITCHEN   // Cocina: solo comandas (KDS)
+  CASHIER   // Caja: POS, mesas, menú, caja
 }
 
 model User {
@@ -134,10 +137,11 @@ model Post {
 }
 
 model Category {
-  id    String @id @default(cuid())
-  name  String @unique
-  slug  String @unique
-  posts CategoriesOnPosts[]
+  id       String @id @default(cuid())
+  name     String @unique
+  slug     String @unique
+  posts    CategoriesOnPosts[]
+  products CategoriesOnProducts[]
 }
 
 model CategoriesOnPosts {
@@ -316,74 +320,60 @@ model UserProgress {
 }
 
 // ============ E-BOOKS ============
-model Ebook {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String   @db.Text
-  coverImage  String
-  fileUrl     String   // PDF en Minio (protegido)
-  previewUrl  String?  // PDF/Imagen de vista previa (público)
-  price       Decimal  @db.Decimal(10, 2)
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  purchases   Purchase[]
-
-  @@index([published])
-}
+// ============ E-BOOK/PURCHASE DEPRECATION NOTES ============
+// Ebook model deleted. Purchase model deprecated in favor of Order system.
+// Keeping Purchase tentatively if needed for easy migration, but removing Ebook relation.
 
 model Purchase {
   id            String   @id @default(cuid())
   userId        String
-  ebookId       String
-  mpPaymentId   String?  // ID de pago en Mercado Pago
+  // ebookId removed - legacy
+  productId     String?  // Optional migration field
+  mpPaymentId   String?
   amount        Decimal  @db.Decimal(10, 2)
-  status        String   @default("pending") // pending, approved, rejected
+  status        String   @default("pending")
   purchasedAt   DateTime @default(now())
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ebook         Ebook    @relation(fields: [ebookId], references: [id], onDelete: Cascade)
+  // No relation to deleted Ebook model
 
-  @@unique([userId, ebookId])
   @@index([userId])
   @@index([status])
 }
 
-// ============ LEADS ============
-model Lead {
+// ============ CONFIGURACIÓN DE TIENDA ============
+model StoreSettings {
+  id            String   @id @default(cuid())
+  
+  // Mercado Pago - Credenciales dinámicas
+  mpAccessToken String?  @db.Text
+  mpPublicKey   String?  @db.Text
+  
+  // Configuraciones adicionales
+  storeName     String?
+  storeEmail    String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============ RESTAURANTE: MESA Y ZONAS ============
+model Table {
   id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  message   String?  @db.Text
-  source    String   // landing, blog, servicios, lms, ebook
-  metadata  Json?    // Datos adicionales
+  label     String   // "Mesa 1", "Barra 2"
+  capacity  Int      @default(4)
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE, MAINTENANCE
+  x         Int      @default(0) // Posición X en plano (futuro)
+  y         Int      @default(0) // Posición Y en plano (futuro)
+  
+  // QR
+  qrCode    String?  // URL o código único
+
   createdAt DateTime @default(now())
-
-  @@index([source])
-  @@index([createdAt])
+  updatedAt DateTime @updatedAt
 }
 
-// ============ PAGOS ============
-model Payment {
-  id              String   @id @default(cuid())
-  userId          String?
-  mpPaymentId     String   @unique
-  type            String   // subscription, ebook
-  referenceId     String   // ID del item comprado
-  amount          Decimal  @db.Decimal(10, 2)
-  status          String   // pending, approved, rejected, refunded
-  mpStatus        String   // Estado original de Mercado Pago
-  rawData         Json?    // Respuesta completa de MP
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 
-  @@index([userId])
-  @@index([type, referenceId])
-  @@index([status])
-}
 
 // ============ E-COMMERCE: PRODUCTOS MULTI-TIPO ============
 
@@ -391,39 +381,93 @@ model Payment {
 enum ProductType {
   DIGITAL   // E-books, cursos digitales, etc.
   PHYSICAL  // Gafas, suplementos, obras de arte, etc.
+  SERVICE   // Consultorías, mentorías
+  RESTAURANT // Platos, bebidas, menú del día
 }
 
 // Modelo: Producto (Base)
 model Product {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String      @db.Text
-  productType ProductType
-  basePrice   Decimal     @db.Decimal(10, 2)  // Precio base (puede ser sobreescrito por variantes)
-  images      String[]    // Array de URLs de imágenes
-  specs       Json?       // Especificaciones flexibles: { "pages": 300, "weight": "1.5kg", "dimensions": "20x30cm" }
-  published   Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+  description    String      @db.Text
+  productType    ProductType
+  basePrice      Decimal     @db.Decimal(10, 2)
+  images         String[]
+  specs          Json?
+  
+  // Digital Product Fields
+  digitalFileUrl String?     // Privado (Minio)
+  previewUrl     String?     // Público (Minio)
+
+  // Operativo Restaurante
+  isAvailable    Boolean     @default(true) // Kill switch operativo
+
+  published      Boolean     @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   // Relaciones
-  variants    ProductVariant[]
+  variants       ProductVariant[]
+  modifierGroups ModifierGroup[]
+  categories     CategoriesOnProducts[]
+  likes          ProductLike[]
+  comments       ProductComment[]
   
   @@index([published, productType])
   @@index([slug])
+  @@index([published, isAvailable]) // Optimizacion Menu publico
+}
+
+model CategoriesOnProducts {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+}
+
+// ============ SOCIAL FEATURES (Instagram-style) ============
+model ProductLike {
+  id        String   @id @default(cuid())
+  productId String
+  userPhone String   // Acts as user ID for guests
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userPhone])
+  @@index([productId])
+}
+
+model ProductComment {
+  id        String   @id @default(cuid())
+  productId String
+  userPhone String   // Acts as user ID for guests
+  userName  String?  // Optional name provided by user
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  
+  // Moderation/Status
+  isApproved Boolean @default(true) 
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 // Modelo: Variante de Producto (Lo que realmente se compra)
 model ProductVariant {
   id          String   @id @default(cuid())
   productId   String
-  sku         String   @unique  // Código único de inventario
-  name        String?  // Nombre descriptivo (Ej: "Gafas Rojas - Talla M")
-  price       Decimal  @db.Decimal(10, 2)  // Precio específico de esta variante
-  stock       Int      @default(0)  // Stock disponible (-1 = ilimitado para digitales)
-  attributes  Json?    // Atributos dinámicos: { "color": "red", "size": "M", "flavor": "chocolate" }
-  isDefault   Boolean  @default(false)  // TRUE para productos sin variantes (E-book)
+  sku         String   @unique
+  name        String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  attributes  Json?
+  isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -435,50 +479,186 @@ model ProductVariant {
   @@index([sku])
 }
 
+// ============ RESTAURANTE: MODIFICADORES ============
+
+model ModifierGroup {
+  id          String     @id @default(cuid())
+  name        String     // "Elige tu acompañamiento"
+  minSelect   Int        @default(0)
+  maxSelect   Int        @default(1)
+  productId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  modifiers   Modifier[]
+
+  @@index([productId])
+}
+
+model Modifier {
+  id              String   @id @default(cuid())
+  name            String   // "Papas Fritas", "Sin cebolla"
+  priceAdjustment Decimal  @default(0) @db.Decimal(10, 2)
+  stock           Int?     // null = sin límite de inventario
+  isAvailable     Boolean  @default(true) // Kill switch operativo
+  groupId         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  group           ModifierGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  orderItems      OrderItemModifier[]
+
+  @@index([groupId])
+}
+
 // ============ ÓRDENES DE COMPRA ============
 
 enum OrderStatus {
   PENDING    // Esperando pago
   APPROVED   // Pago aprobado
   PROCESSING // En preparación (físicos)
+  PREPARING  // En cocina (restaurante)
+  READY      // Listo para servir (restaurante)
+  SERVED     // Servido en mesa (restaurante)
   SHIPPED    // Enviado (físicos)
   DELIVERED  // Entregado/Completado
   CANCELLED  // Cancelado
   REFUNDED   // Reembolsado
 }
 
+enum OrderType {
+  DINE_IN    // Comer en mesa
+  TAKE_AWAY  // Para llevar (recogida)
+  DELIVERY   // Domicilio
+}
+
 model Order {
   id            String      @id @default(cuid())
-  userId        String
+  userId        String?     // Opcional para Guest/Mesa
   orderNumber   String      @unique  // Ej: ORD-2026-0001
   totalAmount   Decimal     @db.Decimal(10, 2)
   status        OrderStatus @default(PENDING)
+  orderType     OrderType   @default(DINE_IN)
   mpPaymentId   String?     // ID de Mercado Pago
-  shippingData  Json?       // { "address": "...", "city": "...", "phone": "..." }
+  shippingData  Json?       // { "address": "...", "city": "..." }
+  tableNumber   String?     // Número de mesa (solo DINE_IN)
+  
+  // Guest / CRM fields
+  customerName  String?
+  customerPhone String?
+  notes         String?     // Notas generales de la orden
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   // Relaciones
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
+  payments      Payment[]
 
   @@index([userId])
   @@index([status])
   @@index([orderNumber])
+  @@index([orderType])
+  @@index([status, createdAt]) // Optimizacion dashboard/admin queries
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  variantId  String
-  quantity   Int      @default(1)
-  price      Decimal  @db.Decimal(10, 2)  // Precio al momento de la compra
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  orderId     String
+  variantId   String
+  quantity    Int      @default(1)
+  price       Decimal  @db.Decimal(10, 2)  // Precio unitario calculado server-side
+  isPaid      Boolean  @default(false)     // Control de pagos parciales
+  productName String   // Snapshot: nombre del producto al momento de compra
+  variantName String?  // Snapshot: nombre de la variante (ej: "Rojo XL")
+  notes       String?  // "Sin sal", "Alergia al maní", "Salsa aparte"
+  isPrepared  Boolean  @default(false) // Control de KDS
+  createdAt   DateTime @default(now())
 
   // Relaciones
-  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  order      Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant    ProductVariant      @relation(fields: [variantId], references: [id])
+  modifiers  OrderItemModifier[]
 
   @@index([orderId])
   @@index([variantId])
+  @@index([orderId, isPrepared]) // Optimizacion KDS filtering
+}
+
+model OrderItemModifier {
+  id              String   @id @default(cuid())
+  orderItemId     String
+  modifierId      String
+  modifierName    String   // Snapshot del nombre al momento de compra
+  priceAdjustment Decimal  @db.Decimal(10, 2) // Snapshot del precio
+  quantity        Int      @default(1)         // "Doble Extra Queso" = 2
+
+  orderItem       OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifier        Modifier  @relation(fields: [modifierId], references: [id])
+
+
+
+  @@index([orderItemId])
+}
+
+// Modelo: Pagos (Parciales o Totales)
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  amount        Decimal  @db.Decimal(10, 2)
+  method        String   // 'CASH', 'CARD', 'TRANSFER', 'OTHER'
+  reference     String?  // Auth code, transaction ID
+  createdAt     DateTime @default(now())
+
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+}
+
+// ============ CRM ============
+model Lead {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  source    String?  // Origen (Facebook, Google, etc.)
+  notes     String?  @db.Text
+  status    String   @default("new") // new, contacted, converted, lost
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============ TENANT CONFIGURATION ============
+model Tenant {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  dbName     String
+  name       String?
+  status     String   @default("ACTIVE")
+  plan       String   @default("free")
+  ownerEmail String?
+  notes      String?
+
+  // Configuration
+  design     Json?    // jsonb matches Json
+  features   String[] // text[] matches String[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ============ CONFIGURACIÓN DEL SISTEMA (MULTI-TENANT) ============
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   // Ej: "SMTP_CONFIG"
+  value       Json     // Ej: { host: "...", user: "..." }
+  isPublic    Boolean  @default(false)
+  
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([key])
 }

@@ -2,25 +2,46 @@
 
 import { API_BASE, TENANT_ID } from "@/lib/config"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 
-export async function createOrder(data: any, items: any[], tableId: string | null) {
+// Strict TypeScript schema to prevent malicious or flawed payloads (No arrays of any allowed)
+const CreateOrderSchema = z.object({
+    orderType: z.enum(["DINE_IN", "PICKUP", "DELIVERY"]),
+    tableId: z.string().nullable().optional(),
+    items: z.array(z.object({
+        variantId: z.string().min(1, "Variante inválida"),
+        quantity: z.number().int().min(1, "Cantidad debe ser al menos 1"),
+        modifiers: z.array(z.object({
+            id: z.string().or(z.object({ id: z.string() })).transform(val => typeof val === 'string' ? val : val.id).optional(),
+            modifierId: z.string().optional(),
+            quantity: z.number().int().min(1).default(1)
+        })).optional().default([])
+    })).min(1, "La orden debe contener al menos un elemento")
+})
+
+export async function createOrder(data: unknown, items: unknown, tableId: string | null = null) {
     try {
-        console.log("Processing order...", { data, itemsCount: items.length, tableId })
+        // Enforce strict type validation using Zod
+        const parsed = CreateOrderSchema.parse({
+            orderType: (data as any)?.orderType,
+            tableId,
+            items: items
+        })
 
-        // 1. Map items to Backend DTO
-        const orderItems = items.map(item => ({
+        // 1. Map validated items to Backend DTO
+        const orderItems = parsed.items.map(item => ({
             variantId: item.variantId,
             quantity: item.quantity,
-            modifiers: item.modifiers?.map((mod: any) => ({
-                modifierId: mod.id,
-                quantity: 1 // Default to 1 for now
+            modifiers: item.modifiers?.map(mod => ({
+                modifierId: mod.modifierId || mod.id,
+                quantity: mod.quantity
             })) || []
         }))
 
         // 2. Construct Payload
         const payload = {
-            orderType: tableId ? "DINE_IN" : data.orderType,
-            tableNumber: tableId || undefined,
+            orderType: parsed.tableId ? "DINE_IN" : parsed.orderType,
+            tableNumber: parsed.tableId || undefined,
             items: orderItems,
             // Customer Info (API might need update to store this in Order or User)
             // For now, valid 'CreateOrderDto' only has items, orderType, tableNumber.

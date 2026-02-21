@@ -33,6 +33,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../../dropdown-menu"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../../select"
 import { PriceDisplay } from "../../price-display"
 import { MoreHorizontal, ArrowUpDown, Pencil, Trash2, Eye, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "../../lib/utils"
@@ -48,6 +55,7 @@ export interface ProductTableData {
     price: number
     stock: number | string
     published: boolean
+    isAvailable: boolean
     createdAt: Date
 }
 
@@ -56,6 +64,7 @@ export interface ProductsTableProps {
     onEdit?: (product: ProductTableData) => void
     onDelete?: (productId: string) => void
     onView?: (product: ProductTableData) => void
+    onToggleAvailable?: (productId: string, isAvailable: boolean) => void
 }
 
 // ============================================
@@ -70,10 +79,13 @@ const productTypeBadge: Record<string, { label: string; variant: "default" | "se
 // ============================================
 // Column Definitions
 // ============================================
+import { Switch } from "../../switch"
+
 function getColumns(
     onEdit?: (product: ProductTableData) => void,
     onDelete?: (productId: string) => void,
-    onView?: (product: ProductTableData) => void
+    onView?: (product: ProductTableData) => void,
+    onToggleAvailable?: (productId: string, isAvailable: boolean) => void
 ): ColumnDef<ProductTableData>[] {
     return [
         {
@@ -111,16 +123,19 @@ function getColumns(
             ),
         },
         {
-            accessorKey: "type",
-            header: "Tipo",
-            cell: ({ row }) => {
-                const type = row.original.type
-                const config = productTypeBadge[type] || productTypeBadge.PHYSICAL
-                return <Badge variant={config.variant}>{config.label}</Badge>
-            },
-            filterFn: (row, id, value) => {
-                return value.includes(row.getValue(id))
-            },
+            accessorKey: "isAvailable",
+            header: "Disponible",
+            cell: ({ row }) => (
+                <Switch
+                    checked={row.original.isAvailable}
+                    onCheckedChange={(checked) => {
+                        if (onToggleAvailable) {
+                            onToggleAvailable(row.original.id, checked)
+                        }
+                    }}
+                    aria-label="Toggle availability"
+                />
+            ),
         },
         {
             accessorKey: "price",
@@ -220,12 +235,12 @@ function getColumns(
 // ============================================
 // ProductsTable Component
 // ============================================
-export function ProductsTable({ data, onEdit, onDelete, onView }: ProductsTableProps) {
+export function ProductsTable({ data, onEdit, onDelete, onView, onToggleAvailable }: ProductsTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [globalFilter, setGlobalFilter] = useState("")
 
-    const columns = getColumns(onEdit, onDelete, onView)
+    const columns = getColumns(onEdit, onDelete, onView, onToggleAvailable)
 
     const table = useReactTable({
         data,
@@ -253,16 +268,21 @@ export function ProductsTable({ data, onEdit, onDelete, onView }: ProductsTableP
     return (
         <div className="space-y-4">
             {/* Toolbar: Search Filter */}
-            <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar productos..."
-                        value={globalFilter}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
-                        className="pl-9"
-                    />
+            {/* Toolbar: Search & Filters */}
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div className="relative w-full sm:flex-1 sm:max-w-sm">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar productos..."
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            className="pl-9 w-full"
+                        />
+                    </div>
                 </div>
+
+                {/* Count */}
                 <div className="text-sm text-muted-foreground">
                     {table.getFilteredRowModel().rows.length} producto(s)
                 </div>

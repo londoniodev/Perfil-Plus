@@ -41,7 +41,9 @@ export async function updateOrderStatus(
             redirect("/login")
         }
 
-        if (user.role !== "ADMIN") {
+        // Check permissions (waiter, kitchen, admin, cashier)
+        const allowedRoles = ["ADMIN", "WAITER", "KITCHEN", "CASHIER"]
+        if (!user.role || !allowedRoles.includes(user.role)) {
             return {
                 success: false,
                 error: "No tienes permisos para realizar esta acción"
@@ -51,30 +53,50 @@ export async function updateOrderStatus(
         // 2. Validar datos
         const validated = updateOrderStatusSchema.parse(data)
 
-        // 3. Verificar que la orden existe
-        const order = await prisma.order.findUnique({
-            where: { id: validated.orderId }
+        // 3. Call API (Backend logic: Stock, SSE, etc.)
+        // We need to fetch with the user's token (if available) or tenant context.
+        // Since this is a server action, we might not have the raw token easily if it's not in the session.
+        // But api.ts handles headers. Let's see if we can use the library wrapper.
+        // The library 'updateOrderStatus' at '@/lib/api' is designed for client-side mainly (uses localStorage).
+        // For server-side, we should call the API URL directly or use a server-compatible wrapper.
+        // Let's use fetch directly here to ensure control headers.
+
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
+        const TENANT = process.env.NEXT_PUBLIC_TENANT_ID || "default" // Should come from config
+
+        // IMPORTANT: We need the JWT to authenticate against the API if it's protected.
+        // If getSessionUser returns a token, use it. If not, this is tricky.
+        // Assuming session contains accessToken.
+
+        // However, existing 'lib/api' is client-side specific (localStorage).
+        // Let's try to adapt logic to call external API.
+
+        /* 
+           NOTE: The original code used direct DB access, bypassing the NestJS service logic.
+           Now we MUST call the NestJS API endpoint: PATCH /admin/orders/:id/status
+        */
+
+        const res = await fetch(`${API_BASE}/admin/orders/${validated.orderId}/status`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "x-tenant-id": TENANT,
+                "Authorization": `Bearer ${user.accessToken || ""}`
+            },
+            body: JSON.stringify({ status: validated.status })
         })
 
-        if (!order) {
+        if (!res.ok) {
+            const errorText = await res.text()
             return {
                 success: false,
-                error: "Orden no encontrada"
+                error: `API Error: ${errorText}`
             }
         }
 
-        // 4. Actualizar estado
-        await prisma.order.update({
-            where: { id: validated.orderId },
-            data: {
-                status: validated.status,
-                updatedAt: new Date()
-            }
-        })
-
         // 5. Revalidar rutas
         revalidatePath("/admin/orders")
-        revalidatePath("/dashboard/compras") // Usuario ve cambio en su panel
+        revalidatePath("/dashboard/compras")
 
         return { success: true }
 

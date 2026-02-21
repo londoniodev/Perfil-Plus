@@ -30,6 +30,14 @@ export interface TenantConfigValue {
     theme?: string;
     primary_color?: string;
     api_key_openai?: string;
+    social?: {
+        whatsapp?: string;
+        instagram?: string;
+        facebook?: string;
+        twitter?: string;
+        youtube?: string;
+        tiktok?: string;
+    };
 }
 
 /**
@@ -54,7 +62,14 @@ export interface FlattenedTenantConfig {
     smtp_port: number;
     smtp_secure: boolean;
     smtp_user: string;
+    smtp_user: string;
     smtp_pass: string;
+    social_whatsapp: string;
+    social_instagram: string;
+    social_facebook: string;
+    social_twitter: string;
+    social_youtube: string;
+    social_tiktok: string;
 }
 
 /**
@@ -79,7 +94,14 @@ export function flattenTenantConfig(config: TenantConfigValue): FlattenedTenantC
         smtp_port: config.smtp?.port || 587,
         smtp_secure: config.smtp?.secure || false,
         smtp_user: config.smtp?.auth?.user || "",
+        smtp_user: config.smtp?.auth?.user || "",
         smtp_pass: config.smtp?.auth?.pass || "",
+        social_whatsapp: config.social?.whatsapp || "",
+        social_instagram: config.social?.instagram || "",
+        social_facebook: config.social?.facebook || "",
+        social_twitter: config.social?.twitter || "",
+        social_youtube: config.social?.youtube || "",
+        social_tiktok: config.social?.tiktok || "",
     };
 }
 
@@ -113,6 +135,14 @@ export function unflattenTenantConfig(flat: FlattenedTenantConfig): TenantConfig
             blog: flat.enable_blog,
             store: flat.enable_store,
             lms: flat.enable_lms,
+        },
+        social: {
+            whatsapp: flat.social_whatsapp,
+            instagram: flat.social_instagram,
+            facebook: flat.social_facebook,
+            twitter: flat.social_twitter,
+            youtube: flat.social_youtube,
+            tiktok: flat.social_tiktok,
         },
     };
 }

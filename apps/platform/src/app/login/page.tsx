@@ -22,7 +22,10 @@ function LoginForm() {
         try {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": "mauro" // TODO: Esto debería ser dinámico o configurado
+                },
                 body: JSON.stringify(credentials),
             });
 

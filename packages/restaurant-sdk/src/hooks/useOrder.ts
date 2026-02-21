@@ -61,7 +61,7 @@ export function useOrder() {
                 throw new Error(data.message || 'Error al crear la orden')
             }
 
-            return { success: true, orderId: data.orderNumber || data.id }
+            return { success: true, orderId: data.id, orderNumber: data.orderNumber }
         } catch (err) {
             console.error(err)
             const errorMessage = err instanceof Error ? err.message : "Error creando la orden"

@@ -122,10 +122,6 @@ export default function MenuClient({
             clearCart()
 
             if (paymentMethod === "MERCADOPAGO") {
-                // TODO: Handle MercadoPago redirection via backend
-                // alert("Redirigiendo a MercadoPago...")
-                // window.location.href = `/api/checkout/mercadopago?orderId=${result.orderId}`;
-                alert(`✅ Orden Creada. Redireccionando a Mercado Pago...`)
                 try {
                     const res = await fetch(`/api/checkout/mercadopago`, {
                         method: "POST",
@@ -136,13 +132,15 @@ export default function MenuClient({
                     if (data.init_point) {
                         window.location.href = data.init_point
                     } else {
-                        alert("❌ Error obteniendo link de pago")
+                        console.error("MP Response:", data)
+                        alert(`❌ Error obteniendo link de pago: ${data.error || 'Unknown'}`)
                     }
                 } catch (e) {
+                    console.error("MP Fetch Error:", e)
                     alert("❌ Error conectando c/ MercadoPago")
                 }
             } else {
-                alert(`✅ Orden creada exitosamente! ID: ${result.orderId}`)
+                alert(`✅ Orden creada exitosamente! #${(result as any).orderNumber || result.orderId}`)
             }
         } else {
             // @ts-ignore

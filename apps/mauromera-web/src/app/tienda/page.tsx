@@ -8,8 +8,14 @@ export const dynamic = 'force-dynamic' // Para asegurar que siempre muestre stoc
 
 export default async function TiendaPage() {
     // Fetch de datos (Server Side)
+    // Filtramos los productos de restaurante ya que la tienda es para productos físicos, digitales o de servicio
     const products = await prisma.product.findMany({
-        where: { published: true },
+        where: {
+            published: true,
+            productType: {
+                not: "RESTAURANT" as any
+            }
+        },
         orderBy: { createdAt: 'desc' },
     })
 
@@ -33,7 +39,7 @@ export default async function TiendaPage() {
                             // Importante: Prisma devuelve Decimal, UI espera number/string.
                             // Convertimos a Number para evitar warnings de serialización de Next.js
                             price={Number(product.basePrice)}
-                            productType={product.productType}
+                            productType={product.productType as "DIGITAL" | "PHYSICAL" | "SERVICE"}
                         />
                     </Link>
                 ))}

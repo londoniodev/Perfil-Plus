@@ -1,5 +1,5 @@
 
-import { Injectable, ConflictException, UnauthorizedException, BadRequestException, Scope } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException, Scope, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -12,6 +12,7 @@ import { randomUUID } from 'crypto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
+    private readonly logger = new Logger('AuthService-DEBUG');
     constructor(
         private prisma: PrismaService,
         private prismaContext: PrismaContext,
@@ -68,6 +69,13 @@ export class AuthService {
         const MAX_FAILED_ATTEMPTS = 5;
         const LOCKOUT_DURATION_MINUTES = 15;
 
+        // === DEBUG LOGS (TEMPORARY) ===
+        const tenantId = this.prismaContext.getTenantId();
+        this.logger.warn(`[LOGIN-DEBUG] TenantID from header: "${tenantId}"`);
+        this.logger.warn(`[LOGIN-DEBUG] Email received: "${dto.email}" → lowered: "${dto.email.toLowerCase()}"`);
+        this.logger.warn(`[LOGIN-DEBUG] Password received length: ${dto.password?.length}`);
+        // === END DEBUG ===
+
         // Buscar usuario
         const user = await this.prisma.client.user.findUnique({
             where: { email: dto.email.toLowerCase() },
@@ -88,6 +96,14 @@ export class AuthService {
                 },
             },
         });
+
+        // === DEBUG: User found? ===
+        this.logger.warn(`[LOGIN-DEBUG] User found: ${!!user}`);
+        if (user) {
+            this.logger.warn(`[LOGIN-DEBUG] User ID: ${user.id}, Role: ${user.role}`);
+            this.logger.warn(`[LOGIN-DEBUG] Stored hash prefix: ${user.password?.substring(0, 20)}...`);
+        }
+        // === END DEBUG ===
 
         if (!user) {
             throw new UnauthorizedException('Credenciales inválidas');
@@ -111,6 +127,7 @@ export class AuthService {
 
         // Verificar contraseña
         const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+        this.logger.warn(`[LOGIN-DEBUG] Password valid: ${isPasswordValid}`);
 
         if (!isPasswordValid) {
             // Incrementar contador de intentos fallidos

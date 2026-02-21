@@ -62,7 +62,6 @@ export interface FlattenedTenantConfig {
     smtp_port: number;
     smtp_secure: boolean;
     smtp_user: string;
-    smtp_user: string;
     smtp_pass: string;
     social_whatsapp: string;
     social_instagram: string;
@@ -93,7 +92,6 @@ export function flattenTenantConfig(config: TenantConfigValue): FlattenedTenantC
         smtp_host: config.smtp?.host || "",
         smtp_port: config.smtp?.port || 587,
         smtp_secure: config.smtp?.secure || false,
-        smtp_user: config.smtp?.auth?.user || "",
         smtp_user: config.smtp?.auth?.user || "",
         smtp_pass: config.smtp?.auth?.pass || "",
         social_whatsapp: config.social?.whatsapp || "",

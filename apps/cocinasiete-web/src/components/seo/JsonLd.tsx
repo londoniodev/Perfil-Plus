@@ -1,28 +1,20 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://mauromera.com';
+import { siteConfig } from '@/config/site';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url;
 
 // ============================================================================
 // SCHEMAS GLOBALES
 // ============================================================================
 
-// Schema para Mauro Mera como persona pública
+// Schema para la persona (Opcional, puede quedar vacío si no es marca personal, pero dejaremos los campos genéricos por ahora)
 export function PersonSchema() {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'Person',
-        name: 'Mauricio Mera',
-        alternateName: 'Mauro Mera',
-        description: 'Psicólogo, consultor organizacional y coach. Acompaño a personas, equipos y organizaciones a tomar decisiones conscientes.',
+        name: siteConfig.name,
+        description: siteConfig.description,
         url: SITE_URL,
-        image: `${SITE_URL}/images/hero/mauro_hero.png`,
-        jobTitle: ['Psicólogo', 'Consultor Organizacional', 'Coach'],
-        knowsAbout: [
-            'Psicología Organizacional',
-            'Liderazgo',
-            'Coaching',
-            'Cultura Organizacional',
-            'Psicoterapia',
-            'Orientación Vocacional',
-        ],
+        image: siteConfig.ogImage || `${SITE_URL}/images/branding/menu_logo.png`,
         sameAs: [
             'https://wa.me/573183771838',
         ],
@@ -41,11 +33,11 @@ export function OrganizationSchema() {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'ProfessionalService',
-        name: 'Mauro Mera',
-        description: 'Consultoría organizacional, coaching y psicoterapia. Acompañamiento profesional para personas, equipos y organizaciones.',
+        name: siteConfig.name,
+        description: siteConfig.description,
         url: SITE_URL,
         logo: `${SITE_URL}/images/branding/menu_logo.png`,
-        image: `${SITE_URL}/images/hero/mauro_hero.png`,
+        image: siteConfig.ogImage || `${SITE_URL}/images/branding/menu_logo.png`,
         telephone: '+573183771838',
         priceRange: '$$',
         address: {
@@ -86,19 +78,19 @@ export function WebSiteSchema() {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'Mauro Mera',
-        description: 'Psicología, cultura y decisiones conscientes',
+        name: siteConfig.name,
+        description: siteConfig.description,
         url: SITE_URL,
         inLanguage: 'es',
         publisher: {
-            '@type': 'Person',
-            name: 'Mauricio Mera',
+            '@type': 'Organization',
+            name: siteConfig.name,
         },
         potentialAction: {
             '@type': 'SearchAction',
             target: {
                 '@type': 'EntryPoint',
-                urlTemplate: `${SITE_URL}/blog?search={search_term_string}`,
+                urlTemplate: `${SITE_URL}/?search={search_term_string}`,
             },
             'query-input': 'required name=search_term_string',
         },

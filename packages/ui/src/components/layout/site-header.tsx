@@ -133,8 +133,8 @@ interface DesktopNavLinksProps {
 
 function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "text-base font-medium transition-colors hover:text-fuchsia-400",
-        currentPath === path ? "text-fuchsia-500 font-bold" : "text-foreground/80"
+        "text-base font-medium transition-colors hover:text-primary/80",
+        currentPath === path ? "text-primary font-bold" : "text-foreground/80"
     );
 
     return (
@@ -145,12 +145,12 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
                     href={link.href}
                     className={cn(
                         linkClass(link.href),
-                        "relative py-1 px-1"
+                        "relative py-1 px-1 hover:text-primary transition-colors"
                     )}
                 >
                     {link.label}
                     {currentPath === link.href && (
-                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-fuchsia-500 rounded-full animate-in fade-in slide-in-from-left-1 duration-300" />
+                        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full animate-in fade-in slide-in-from-left-1 duration-300" />
                     )}
                 </Link>
             ))}
@@ -193,8 +193,8 @@ interface MobileNavLinksProps {
 
 function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, profileUrl }: MobileNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-fuchsia-500/5 transition-colors",
-        currentPath === path ? "text-fuchsia-500 bg-fuchsia-500/10 font-bold" : "text-foreground"
+        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border/50 hover:bg-primary/5 transition-colors",
+        currentPath === path ? "text-primary bg-primary/10 font-bold" : "text-foreground"
     );
 
     return (
@@ -210,10 +210,10 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
                     )}
                 >
                     {currentPath === link.href && (
-                        <span className="absolute left-0 top-0 w-1.5 h-full bg-fuchsia-500" />
+                        <span className="absolute left-0 top-0 w-1.5 h-full bg-primary" />
                     )}
                     <span className={cn(currentPath === link.href ? "pl-2" : "")}>{link.label}</span>
-                    <IconArrowRight size={18} className={cn("transition-all", currentPath === link.href ? "text-fuchsia-500 translate-x-1" : "text-muted-foreground opacity-50")} />
+                    <IconArrowRight size={18} className={cn("transition-all", currentPath === link.href ? "text-primary translate-x-1" : "text-muted-foreground opacity-50")} />
                 </Link>
             ))}
 

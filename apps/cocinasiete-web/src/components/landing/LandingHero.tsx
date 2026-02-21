@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function LandingHero() {
     return (
@@ -34,12 +35,12 @@ export function LandingHero() {
                     <p className="text-base text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
                         Almuerza rico, saludable y sin preocupaciones donde quiera que estés: oficina o casa.
                     </p>
-                    <div className="flex flex-col gap-4">
-                        <button className="w-full bg-cs-primary hover:bg-emerald-500 text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg shadow-emerald-200 dark:shadow-none transform transition hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
+                        <Link href="/tienda" className="bg-cs-primary hover:bg-emerald-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-cs-primary/30 transition duration-300 flex items-center justify-center gap-2 group w-full sm:w-auto">
                             HAZ TU PEDIDO
-                            <span className="material-icons-round">arrow_forward</span>
-                        </button>
-                        <p className="text-xs text-center text-gray-400 dark:text-gray-500">
+                            <span className="material-icons-round text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </Link>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
                             Entregas programadas • Sin costo de envío
                         </p>
                     </div>

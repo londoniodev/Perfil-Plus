@@ -1,5 +1,4 @@
 import {
-  LandingNav,
   LandingHero,
   LandingPlanes,
   LandingTestimonios,
@@ -11,7 +10,6 @@ import {
 export default function Home() {
   return (
     <div className="bg-white dark:bg-cs-bg-dark text-gray-800 dark:text-gray-100 font-sans antialiased transition-colors duration-200">
-      <LandingNav />
       <LandingHero />
       <LandingPlanes />
       <LandingTestimonios />

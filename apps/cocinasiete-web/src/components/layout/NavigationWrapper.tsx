@@ -23,11 +23,8 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
     // Menú público del restaurante - sin header/footer
     const isMenuPage = pathname === "/menu" || pathname?.endsWith("/menu");
 
-    // Landing page tiene su propio Nav/Footer personalizado
-    const isLandingPage = pathname === "/";
-
-    // Dashboard, Auth, Menu and Landing pages don't show Header/Footer
-    if (isDashboard || isAuthPage || isMenuPage || isLandingPage) {
+    // Dashboard, Auth and Menu pages don't show Header/Footer
+    if (isDashboard || isAuthPage || isMenuPage) {
         return <>{children}</>;
     }
 

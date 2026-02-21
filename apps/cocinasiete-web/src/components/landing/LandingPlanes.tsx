@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function LandingPlanes() {
     return (
         <section className="py-12 bg-cs-surface-light dark:bg-cs-surface-dark">
@@ -40,9 +42,9 @@ export function LandingPlanes() {
                                 Entrega puntual 12:30 PM
                             </li>
                         </ul>
-                        <button className="w-full py-3 rounded-xl border-2 border-cs-primary text-cs-primary font-bold hover:bg-cs-primary hover:text-white transition-colors">
+                        <Link href="/tienda" className="block text-center w-full py-3 rounded-xl border-2 border-cs-primary text-cs-primary font-bold hover:bg-cs-primary hover:text-white transition-colors">
                             Ver Menú Oficina
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Plan Hogar */}
@@ -68,9 +70,9 @@ export function LandingPlanes() {
                                 Envases ecológicos
                             </li>
                         </ul>
-                        <button className="w-full py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold hover:border-cs-primary hover:text-cs-primary transition-colors">
+                        <Link href="/tienda" className="block text-center w-full py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold hover:border-cs-primary hover:text-cs-primary transition-colors">
                             Ver Menú Hogar
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

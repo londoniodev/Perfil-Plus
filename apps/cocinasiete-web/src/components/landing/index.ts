@@ -1,4 +1,3 @@
-export { LandingNav } from "./LandingNav";
 export { LandingHero } from "./LandingHero";
 export { LandingPlanes } from "./LandingPlanes";
 export { LandingTestimonios } from "./LandingTestimonios";

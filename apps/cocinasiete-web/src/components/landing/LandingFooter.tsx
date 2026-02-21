@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function LandingFooter() {
     return (
         <footer className="bg-cs-surface-light dark:bg-cs-surface-dark pt-12 pb-8 border-t border-gray-200 dark:border-gray-800">
@@ -7,19 +9,19 @@ export function LandingFooter() {
                         <h4 className="font-bold text-gray-900 dark:text-white mb-4">Compañía</h4>
                         <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/acerca-de">
                                     Acerca de
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/carreras">
                                     Carreras
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/blog">
                                     Blog
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -27,19 +29,19 @@ export function LandingFooter() {
                         <h4 className="font-bold text-gray-900 dark:text-white mb-4">Soporte</h4>
                         <ul className="space-y-2 text-sm text-gray-500 dark:text-gray-400">
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/ayuda">
                                     Ayuda
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/contacto">
                                     Contacto
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="hover:text-cs-primary transition-colors" href="#">
+                                <Link className="hover:text-cs-primary transition-colors" href="/privacidad">
                                     Privacidad
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -48,12 +50,12 @@ export function LandingFooter() {
                 <div className="flex justify-between items-center pt-8 border-t border-gray-200 dark:border-gray-700">
                     <span className="text-xl font-bold text-cs-primary font-display">Cocinasiete</span>
                     <div className="flex space-x-4">
-                        <a className="text-gray-400 hover:text-cs-primary transition-colors" href="#">
+                        <Link className="text-gray-400 hover:text-cs-primary transition-colors" href="https://facebook.com/cocinasiete" target="_blank" rel="noopener noreferrer">
                             <span className="material-icons-round">facebook</span>
-                        </a>
-                        <a className="text-gray-400 hover:text-cs-primary transition-colors" href="#">
+                        </Link>
+                        <Link className="text-gray-400 hover:text-cs-primary transition-colors" href="https://instagram.com/cocinasiete" target="_blank" rel="noopener noreferrer">
                             <span className="material-icons-round">camera_alt</span>
-                        </a>
+                        </Link>
                     </div>
                 </div>
 

@@ -334,6 +334,7 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                                     onChange={(e) => updateSetting("api_key_openai", e.target.value)}
                                     className="bg-slate-800/50 border-slate-700 font-mono text-sm"
                                     autoComplete="new-password"
+                                />
                             </div>
                         </TabsContent>
 

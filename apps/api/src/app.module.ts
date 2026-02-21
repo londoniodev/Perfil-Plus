@@ -151,7 +151,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
-      exclude: ['/api/(.*)'],
+      exclude: ['/api/{*path}'],
     }),
   ],
   controllers: [AppController],

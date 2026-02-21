@@ -60,7 +60,7 @@ export async function POST(req: Request) {
                     failure: `${baseUrl}/menu?payment=failure`,
                     pending: `${baseUrl}/menu?payment=pending`
                 },
-                auto_return: "approved",
+                auto_return: baseUrl.startsWith("https") ? "approved" : undefined,
                 notification_url: notificationUrl
             }
         });

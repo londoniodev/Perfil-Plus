@@ -18,7 +18,6 @@ import {
     Palette,
     Puzzle,
     Mail,
-    Mail,
     Code,
     Share2
 } from "lucide-react";

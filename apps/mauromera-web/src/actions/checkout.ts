@@ -57,26 +57,32 @@ export async function placeOrder(
         // 2. Validar inputs con Zod (SEGURIDAD)
         const validated = placeOrderSchema.parse({ cartItems, shippingData })
 
-        // 3. Obtener configuración de Mercado Pago desde la DB
-        const storeSettings = await prisma.storeSettings.findFirst()
-
-        if (!storeSettings?.mpAccessToken) {
-            return {
-                success: false,
-                error: "La tienda no está configurada para procesar pagos. Contacte al administrador."
-            }
-        }
-
-        // 3.1. Obtener configuración de moneda del Tenant
+        // 3. Obtener configuración del Tenant (incluyendo MercadoPago y Moneda)
         const tenantConfig = await prisma.systemSetting.findUnique({
             where: { key: "TENANT_CONFIG" }
         })
 
         let currencyId = "COP" // Default
+        let mpAccessToken = ""
+
         if (tenantConfig?.value && typeof tenantConfig.value === "object" && !Array.isArray(tenantConfig.value)) {
-            const config = tenantConfig.value as Record<string, unknown>
+            const config = tenantConfig.value as Record<string, any>
+
+            // Extraer moneda
             if (typeof config.currency === "string" && config.currency.length === 3) {
                 currencyId = config.currency
+            }
+
+            // Extraer token de MercadoPago
+            if (config.mercadopago && typeof config.mercadopago.accessToken === "string") {
+                mpAccessToken = config.mercadopago.accessToken
+            }
+        }
+
+        if (!mpAccessToken) {
+            return {
+                success: false,
+                error: "La tienda no está configurada para procesar pagos. Contacte al administrador."
             }
         }
 
@@ -210,7 +216,7 @@ export async function placeOrder(
 
         // 7. Crear preferencia de Mercado Pago
         const client = new MercadoPagoConfig({
-            accessToken: storeSettings.mpAccessToken
+            accessToken: mpAccessToken
         })
         const preference = new Preference(client)
 

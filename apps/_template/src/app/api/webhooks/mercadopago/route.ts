@@ -13,9 +13,21 @@ export async function POST(req: Request) {
         const dataId = url.searchParams.get("data.id") || url.searchParams.get("id");
 
         if (actionStr === "payment" && dataId) {
-            const accessToken = process.env.MP_ACCESS_TOKEN;
+            // Obtener credenciales de MP desde la base de datos (TENANT_CONFIG)
+            const tenantConfig = await prisma.systemSetting.findUnique({
+                where: { key: "TENANT_CONFIG" }
+            })
+
+            let accessToken = ""
+
+            if (tenantConfig?.value && typeof tenantConfig.value === "object" && !Array.isArray(tenantConfig.value)) {
+                const config = tenantConfig.value as Record<string, any>
+                if (config.mercadopago && typeof config.mercadopago.accessToken === "string") {
+                    accessToken = config.mercadopago.accessToken
+                }
+            }
             if (!accessToken) {
-                console.error("Missing MP_ACCESS_TOKEN for webhook processing");
+                console.error("Missing MP_ACCESS_TOKEN from TENANT_CONFIG for webhook processing");
                 return NextResponse.json({ error: "No credentials" }, { status: 500 });
             }
 

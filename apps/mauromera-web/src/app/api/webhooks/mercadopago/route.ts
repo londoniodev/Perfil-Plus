@@ -32,18 +32,29 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing payment ID" }, { status: 400 })
         }
 
-        // 4. Obtener credenciales de MP desde la base de datos
-        const storeSettings = await prisma.storeSettings.findFirst()
+        // 4. Obtener credenciales de MP desde la base de datos (TENANT_CONFIG)
+        const tenantConfig = await prisma.systemSetting.findUnique({
+            where: { key: "TENANT_CONFIG" }
+        })
 
-        if (!storeSettings?.mpAccessToken) {
-            console.error("[MP Webhook] No hay credenciales de MP configuradas")
+        let mpAccessToken = ""
+
+        if (tenantConfig?.value && typeof tenantConfig.value === "object" && !Array.isArray(tenantConfig.value)) {
+            const config = tenantConfig.value as Record<string, any>
+            if (config.mercadopago && typeof config.mercadopago.accessToken === "string") {
+                mpAccessToken = config.mercadopago.accessToken
+            }
+        }
+
+        if (!mpAccessToken) {
+            console.error("[MP Webhook] No hay credenciales de MP configuradas en TENANT_CONFIG")
             return NextResponse.json({ error: "Store not configured" }, { status: 500 })
         }
 
         // 5. Verificar el pago directamente con la API de Mercado Pago
         // NUNCA confiar solo en el payload del webhook
         const client = new MercadoPagoConfig({
-            accessToken: storeSettings.mpAccessToken
+            accessToken: mpAccessToken
         })
         const payment = new Payment(client)
 

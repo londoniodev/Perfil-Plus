@@ -8,7 +8,7 @@ import {
 
 export default function Home() {
   return (
-    <div className="bg-white dark:bg-cs-bg-dark text-gray-800 dark:text-gray-100 font-sans antialiased transition-colors duration-200">
+    <div className="bg-white  text-gray-800  font-sans antialiased transition-colors duration-200">
       <LandingHero />
       <LandingPlanes />
       <LandingTestimonios />

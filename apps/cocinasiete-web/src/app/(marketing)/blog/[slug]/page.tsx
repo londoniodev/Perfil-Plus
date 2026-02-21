@@ -166,7 +166,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
               <div
                 className={`
-                       prose prose-slate lg:prose-lg dark:prose-invert max-w-none font-sans
+                       prose prose-slate lg:prose-lg  max-w-none font-sans
                        prose-headings:font-bold prose-headings:tracking-tight
                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
                        prose-img:rounded-xl prose-img:shadow-md

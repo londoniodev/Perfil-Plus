@@ -6,7 +6,17 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_URL
 
 // Tenant ID para arquitectura multi-tenant
 // Tenant ID para arquitectura multi-tenant
-export const TENANT_ID = (process.env.NEXT_PUBLIC_TENANT_ID?.trim()) || 'mauro';
+// Enforce explicit NEXT_PUBLIC_TENANT_ID in production builds
+const envTenantId = process.env.NEXT_PUBLIC_TENANT_ID?.trim();
+
+if (!envTenantId && process.env.NODE_ENV === 'production') {
+    throw new Error(
+        "❌ [FATAL ERROR] Missing NEXT_PUBLIC_TENANT_ID environment variable.\n" +
+        "You must provide this variable as a build-time argument in Dokploy/Vercel."
+    );
+}
+
+export const TENANT_ID = envTenantId || 'mauro';
 
 // Headers por defecto para todas las peticiones a la API
 export function getApiHeaders(additionalHeaders?: HeadersInit): HeadersInit {

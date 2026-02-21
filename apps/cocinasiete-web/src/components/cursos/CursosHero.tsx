@@ -3,13 +3,13 @@ import Link from "next/link";
 export function CursosHero() {
     return (
         <header className="px-6 pt-10 pb-8 text-center">
-            <h1 className="font-display font-extrabold text-3xl md:text-4xl text-cs-secondary dark:text-cs-secondary mb-4 leading-tight">
+            <h1 className="font-display font-extrabold text-3xl md:text-4xl text-cs-secondary  mb-4 leading-tight">
                 Capacitaciones para tu equipo
             </h1>
-            <p className="text-gray-900 dark:text-gray-100 font-semibold text-lg mb-2">
+            <p className="text-gray-900  font-semibold text-lg mb-2">
                 Aprende con los expertos de Cocinasiete
             </p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 leading-relaxed max-w-[280px] mx-auto">
+            <p className="text-gray-500  text-sm mb-8 leading-relaxed max-w-[280px] mx-auto">
                 Cursos especializados para restaurantes, bares y negocios gastronómicos.
             </p>
             <Link

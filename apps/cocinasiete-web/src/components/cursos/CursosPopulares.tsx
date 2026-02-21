@@ -25,23 +25,23 @@ export async function CursosPopulares() {
 
     return (
         <section className="px-6 mb-8">
-            <h3 className="font-display font-bold text-xl text-gray-900 dark:text-gray-100 mb-5">
+            <h3 className="font-display font-bold text-xl text-gray-900  mb-5">
                 Populares esta semana
             </h3>
             <div className="grid gap-5">
                 {popularCourses.map((course) => (
-                    <article key={course.id} className="bg-white dark:bg-cs-surface-dark rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-none border border-transparent dark:border-gray-800 overflow-hidden flex flex-col group cursor-pointer hover:border-cs-primary/50 transition-colors">
+                    <article key={course.id} className="bg-white  rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]  border border-transparent  overflow-hidden flex flex-col group cursor-pointer hover:border-cs-primary/50 transition-colors">
                         {/* Course Image Header */}
-                        <div className="h-40 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+                        <div className="h-40 bg-gray-200  relative overflow-hidden">
                             <Image
                                 src={course.image}
                                 alt={`Curso de ${course.title}`}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className="absolute top-3 right-3 bg-white dark:bg-gray-900 rounded-lg px-2 py-1 flex items-center gap-1 shadow-sm">
+                            <div className="absolute top-3 right-3 bg-white  rounded-lg px-2 py-1 flex items-center gap-1 shadow-sm">
                                 <span className="material-icons-round text-cs-secondary text-sm">star</span>
-                                <span className="text-xs font-bold text-gray-900 dark:text-gray-100">{course.rating}</span>
+                                <span className="text-xs font-bold text-gray-900 ">{course.rating}</span>
                             </div>
                             <div className={`absolute bottom-3 left-3 ${course.categoryColor} text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide`}>
                                 {course.category}
@@ -50,10 +50,10 @@ export async function CursosPopulares() {
 
                         {/* Course Content */}
                         <div className="p-4 flex flex-col flex-grow">
-                            <h4 className="font-display font-bold text-lg text-gray-900 dark:text-gray-100 leading-snug mb-2 group-hover:text-cs-primary transition-colors">
+                            <h4 className="font-display font-bold text-lg text-gray-900  leading-snug mb-2 group-hover:text-cs-primary transition-colors">
                                 {course.title}
                             </h4>
-                            <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs mb-3 gap-3">
+                            <div className="flex items-center text-gray-500  text-xs mb-3 gap-3">
                                 <div className="flex items-center gap-1">
                                     <span className="material-icons-outlined text-sm leading-none">schedule</span>
                                     <span>{course.duration}</span>
@@ -73,7 +73,7 @@ export async function CursosPopulares() {
                                             className="object-cover"
                                         />
                                     </div>
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    <span className="text-xs font-medium text-gray-500 ">
                                         {course.instructor}
                                     </span>
                                 </div>

@@ -87,14 +87,14 @@ function SuccessState({ orderId, paymentId }: { orderId: string | null, paymentI
         <div className="text-center space-y-6">
             {/* Ícono de Éxito */}
             <div className="flex justify-center">
-                <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-6">
-                    <CheckCircle2 className="h-16 w-16 text-green-600 dark:text-green-400" />
+                <div className="rounded-full bg-green-100  p-6">
+                    <CheckCircle2 className="h-16 w-16 text-green-600 " />
                 </div>
             </div>
 
             {/* Título */}
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-green-600 dark:text-green-400">
+                <h1 className="text-3xl font-bold text-green-600 ">
                     ¡Pago Exitoso!
                 </h1>
                 <p className="text-lg text-muted-foreground">
@@ -148,14 +148,14 @@ function PendingState({ orderId, paymentId }: { orderId: string | null, paymentI
         <div className="text-center space-y-6">
             {/* Ícono de Espera */}
             <div className="flex justify-center">
-                <div className="rounded-full bg-yellow-100 dark:bg-yellow-900/20 p-6">
-                    <Clock className="h-16 w-16 text-yellow-600 dark:text-yellow-400" />
+                <div className="rounded-full bg-yellow-100  p-6">
+                    <Clock className="h-16 w-16 text-yellow-600 " />
                 </div>
             </div>
 
             {/* Título */}
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                <h1 className="text-3xl font-bold text-yellow-600 ">
                     Pago en Proceso
                 </h1>
                 <p className="text-lg text-muted-foreground">
@@ -174,7 +174,7 @@ function PendingState({ orderId, paymentId }: { orderId: string | null, paymentI
             )}
 
             {/* Mensaje */}
-            <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4 text-sm">
+            <div className="bg-yellow-50  border border-yellow-200  rounded-lg p-4 text-sm">
                 <p className="text-muted-foreground">
                     Estamos esperando la confirmación de tu entidad bancaria.
                     Te notificaremos por correo electrónico cuando el pago sea confirmado.
@@ -205,14 +205,14 @@ function RejectedState() {
         <div className="text-center space-y-6">
             {/* Ícono de Error */}
             <div className="flex justify-center">
-                <div className="rounded-full bg-red-100 dark:bg-red-900/20 p-6">
-                    <XCircle className="h-16 w-16 text-red-600 dark:text-red-400" />
+                <div className="rounded-full bg-red-100  p-6">
+                    <XCircle className="h-16 w-16 text-red-600 " />
                 </div>
             </div>
 
             {/* Título */}
             <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-red-600 dark:text-red-400">
+                <h1 className="text-3xl font-bold text-red-600 ">
                     Pago No Completado
                 </h1>
                 <p className="text-lg text-muted-foreground">
@@ -221,7 +221,7 @@ function RejectedState() {
             </div>
 
             {/* Mensaje */}
-            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-lg p-4 text-sm space-y-2">
+            <div className="bg-red-50  border border-red-200  rounded-lg p-4 text-sm space-y-2">
                 <p className="text-muted-foreground">
                     El pago fue rechazado por tu entidad bancaria o fue cancelado.
                 </p>

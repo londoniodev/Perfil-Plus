@@ -47,10 +47,12 @@ export default function NewTenantPage() {
         smtpUser: "",
         smtpPass: "",
         smtpSecure: false,
-        // Features
         blogEnabled: true,
         storeEnabled: true,
         lmsEnabled: false,
+        portfolioEnabled: false,
+        whatsappEnabled: false,
+        restaurantEnabled: false,
     });
 
     const handleSlugify = (name: string) => {
@@ -320,6 +322,39 @@ export default function NewTenantPage() {
                                             id="lms"
                                             checked={formData.lmsEnabled}
                                             onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, lmsEnabled: checked as boolean }))}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="portfolio" className="text-base">Portafolio</Label>
+                                            <p className="text-sm text-muted-foreground">Sistema de proyectos y casos de uso</p>
+                                        </div>
+                                        <Checkbox
+                                            id="portfolio"
+                                            checked={formData.portfolioEnabled}
+                                            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, portfolioEnabled: checked as boolean }))}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="restaurant" className="text-base">Restaurante / POS</Label>
+                                            <p className="text-sm text-muted-foreground">Menú digital con QR, monitor de cocina y app de meseros</p>
+                                        </div>
+                                        <Checkbox
+                                            id="restaurant"
+                                            checked={formData.restaurantEnabled}
+                                            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, restaurantEnabled: checked as boolean }))}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="whatsapp" className="text-base">Bot WhatsApp (CRM)</Label>
+                                            <p className="text-sm text-muted-foreground">Automatización de ventas y respuesta automática</p>
+                                        </div>
+                                        <Checkbox
+                                            id="whatsapp"
+                                            checked={formData.whatsappEnabled}
+                                            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, whatsappEnabled: checked as boolean }))}
                                         />
                                     </div>
                                 </div>

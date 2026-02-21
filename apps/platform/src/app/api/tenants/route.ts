@@ -24,6 +24,9 @@ interface CreateTenantBody {
     blogEnabled?: boolean;
     storeEnabled?: boolean;
     lmsEnabled?: boolean;
+    portfolioEnabled?: boolean;
+    whatsappEnabled?: boolean;
+    restaurantEnabled?: boolean;
 }
 
 export async function GET() {
@@ -56,6 +59,9 @@ export async function POST(request: NextRequest) {
             blogEnabled,
             storeEnabled,
             lmsEnabled,
+            portfolioEnabled,
+            whatsappEnabled,
+            restaurantEnabled,
         } = body;
 
         // Validate slug
@@ -97,6 +103,9 @@ export async function POST(request: NextRequest) {
         if (blogEnabled !== false) initialFeatures.push('blog');
         if (storeEnabled !== false) initialFeatures.push('shop'); // store -> shop
         if (lmsEnabled === true) initialFeatures.push('lms');
+        if (portfolioEnabled === true) initialFeatures.push('portfolio');
+        if (whatsappEnabled === true) initialFeatures.push('bot-whatsapp');
+        if (restaurantEnabled === true) initialFeatures.push('restaurant');
 
         // 1. Create tenant record (DEPLOYING status)
         const tenant = await prismaManagement.tenant.create({
@@ -128,6 +137,9 @@ export async function POST(request: NextRequest) {
                 blog: blogEnabled !== false,
                 store: storeEnabled !== false,
                 lms: lmsEnabled === true,
+                portfolio: portfolioEnabled === true,
+                whatsapp: whatsappEnabled === true,
+                restaurant: restaurantEnabled === true,
             },
         };
 
@@ -162,6 +174,9 @@ interface TenantConfigValue {
         blog: boolean;
         store: boolean;
         lms: boolean;
+        portfolio: boolean;
+        whatsapp: boolean;
+        restaurant: boolean;
     };
 }
 

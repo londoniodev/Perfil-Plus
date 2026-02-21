@@ -122,7 +122,12 @@ export function ProductModal({
                 delete group[modifier.id]
             } else {
                 const currentCount = Object.keys(group).length
-                if (currentCount >= maxSelect) return prev
+                if (currentCount >= maxSelect) {
+                    if (maxSelect === 1) {
+                        return { ...prev, [groupId]: { [modifier.id]: { price: modifier.price, qty: 1, name: modifier.name } } }
+                    }
+                    return prev
+                }
                 group[modifier.id] = { price: modifier.price, qty: 1, name: modifier.name }
             }
             return { ...prev, [groupId]: group }
@@ -130,6 +135,17 @@ export function ProductModal({
     }
 
     const handleAdd = () => {
+        if (product.modifierGroups) {
+            for (const group of product.modifierGroups) {
+                const selectedInGroup = selectedModifiers[group.id] ? Object.keys(selectedModifiers[group.id]).length : 0;
+                const minSelections = (group as any).minSelect ?? (group as any).minSelections ?? 0;
+                if (selectedInGroup < minSelections) {
+                    alert(`Por favor selecciona al menos ${minSelections} opción(es) para ${group.name}`);
+                    return;
+                }
+            }
+        }
+
         const flatModifiers = Object.values(selectedModifiers).flatMap(group =>
             Object.entries(group).map(([id, data]) => ({
                 modifierId: id,
@@ -354,6 +370,54 @@ export function ProductModal({
                                     </div>
                                 </div>
                             )}
+
+                            {/* Modifier Groups Section */}
+                            {product.modifierGroups && product.modifierGroups.length > 0 && (
+                                <div className="mb-6 space-y-4">
+                                    {product.modifierGroups.map((group: any) => {
+                                        const minSelections = group.minSelect ?? group.minSelections ?? 0;
+                                        const maxSelections = group.maxSelect ?? group.maxSelections ?? 1;
+
+                                        return (
+                                            <div key={group.id} className="p-3 bg-black/5 dark:bg-white/5 rounded-xl">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <p className="text-xs font-bold uppercase text-gray-900 dark:text-white">{group.name}</p>
+                                                    <p className="text-[10px] font-bold uppercase text-red-500 bg-red-500/10 px-2 py-0.5 rounded-sm">
+                                                        {minSelections > 0 ? `Requerido (Mín. ${minSelections})` : 'Opcional'}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {group.modifiers?.map((mod: any) => {
+                                                        const groupSelections = selectedModifiers[group.id] || {};
+                                                        const isSelected = !!groupSelections[mod.id];
+
+                                                        return (
+                                                            <button
+                                                                key={mod.id}
+                                                                onClick={() => toggleModifier(group.id, mod, maxSelections)}
+                                                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${isSelected ? 'border-[#ec6d13] bg-[#ec6d13]/10 text-[#ec6d13]' : 'border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'}`}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#ec6d13] bg-[#ec6d13]' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                                        {isSelected && maxSelections === 1 && <div className="w-2 h-2 rounded-full bg-white" />}
+                                                                        {isSelected && maxSelections > 1 && <div className="w-2 h-2 bg-white rotate-45" style={{ clipPath: 'polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%)' }} />}
+                                                                    </div>
+                                                                    <span>{mod.name}</span>
+                                                                </div>
+                                                                <span className="text-xs font-medium text-gray-500">
+                                                                    {Number(mod.price) > 0 ? `+$${Number(mod.price).toFixed(2)}` : ''}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+
+
 
                             {/* Comments Section */}
                             <div className="border-t border-gray-200 dark:border-white/5 pt-6 mb-8 relative group">

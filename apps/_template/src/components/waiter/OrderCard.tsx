@@ -14,6 +14,7 @@ interface OrderCardProps {
 export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: OrderCardProps) {
     const statusColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
         PENDING: "secondary",
+        APPROVED: "secondary",
         KITCHEN: "default",
         READY: "outline",
         COMPLETED: "outline",
@@ -22,12 +23,14 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
 
     const nextStatus: Record<string, string> = {
         PENDING: "KITCHEN",
+        APPROVED: "KITCHEN",
         KITCHEN: "READY",
         READY: "COMPLETED",
     }
 
     const statusLabels: Record<string, string> = {
         PENDING: "Pendiente",
+        APPROVED: "Pagado (Pendiente)",
         KITCHEN: "En Cocina",
         READY: "Listo",
         COMPLETED: "Completado",
@@ -41,6 +44,9 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
                     <div>
                         <CardTitle className="text-xl flex items-center gap-2">
                             Mesa {(order as any).tableId || (order as any).tableNumber || "N/A"}
+                            {order.status === 'APPROVED' && (
+                                <Badge className="bg-green-500 hover:bg-green-600 ml-2">Pagado (MercadoPago)</Badge>
+                            )}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground mt-1 font-mono">#{order.id.slice(-4)} • {order.customerName}</p>
                     </div>
@@ -113,9 +119,9 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
                                 size="lg"
                                 onClick={() => onUpdateStatus(order.id, nextStatus[order.status])}
                                 disabled={isUpdating}
-                                className={`flex-1 font-bold shadow-none ring-0 focus:ring-0 ${order.status === 'PENDING' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                                className={`flex-1 font-bold shadow-none ring-0 focus:ring-0 ${(order.status === 'PENDING' || order.status === 'APPROVED') ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700 text-white'}`}
                             >
-                                {order.status === 'PENDING' ? <><Utensils className="w-4 h-4 mr-2" /> A Cocina</> :
+                                {(order.status === 'PENDING' || order.status === 'APPROVED') ? <><Utensils className="w-4 h-4 mr-2" /> A Cocina</> :
                                     order.status === 'KITCHEN' ? <><CheckCircle2 className="w-4 h-4 mr-2" /> Marcar Listo</> :
                                         <><CheckCircle2 className="w-4 h-4 mr-2" /> Servido</>}
                             </Button>

@@ -65,6 +65,10 @@ export class CreateOrderDto {
     @IsOptional()
     notes?: string;
 
+    @IsString()
+    @IsOptional()
+    paymentMethod?: string;
+
     @IsOptional()
     shippingData?: any; // JSON with address, city
 

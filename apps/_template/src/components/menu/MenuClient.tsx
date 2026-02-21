@@ -105,21 +105,45 @@ export default function MenuClient({
         setIsNamePromptOpen(true)
     }
 
-    const handleConfirmOrder = async (customerName: string) => {
+    const handleConfirmOrder = async (customerName: string, paymentMethod: "CASH" | "MERCADOPAGO") => {
         const orderData = {
             cart,
             total: total(),
             customer: { name: customerName, phone: "0000000000" },
-            tableId: table || undefined
+            tableId: table || undefined,
+            paymentMethod: paymentMethod
         }
 
         const result = await createOrder(slug, orderData)
 
         if (result.success) {
-            alert(`✅ Orden creada exitosamente! ID: ${result.orderId}`)
             setIsNamePromptOpen(false)
             setIsCartOpen(false)
             clearCart()
+
+            if (paymentMethod === "MERCADOPAGO") {
+                // TODO: Handle MercadoPago redirection via backend
+                // alert("Redirigiendo a MercadoPago...")
+                // window.location.href = `/api/checkout/mercadopago?orderId=${result.orderId}`;
+                alert(`✅ Orden Creada. Redireccionando a Mercado Pago...`)
+                try {
+                    const res = await fetch(`/api/checkout/mercadopago`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ orderId: result.orderId })
+                    })
+                    const data = await res.json()
+                    if (data.init_point) {
+                        window.location.href = data.init_point
+                    } else {
+                        alert("❌ Error obteniendo link de pago")
+                    }
+                } catch (e) {
+                    alert("❌ Error conectando c/ MercadoPago")
+                }
+            } else {
+                alert(`✅ Orden creada exitosamente! ID: ${result.orderId}`)
+            }
         } else {
             // @ts-ignore
             alert(`❌ Error al crear orden: ${result.error}`)

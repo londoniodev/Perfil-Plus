@@ -192,7 +192,7 @@ export class OrdersService {
                             // New Fields
                             customerName: dto.customerName || null,
                             customerPhone: dto.customerPhone || null,
-                            notes: dto.notes || null,
+                            notes: dto.paymentMethod ? `${dto.notes ? dto.notes + ' | ' : ''}[Pago: ${dto.paymentMethod}]` : (dto.notes || null),
                             shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
 
                             items: {

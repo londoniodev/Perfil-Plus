@@ -12,6 +12,7 @@ interface OrderData {
         tableNumber?: string
         notes?: string
     }
+    paymentMethod?: string
 }
 
 export function useOrder() {
@@ -41,7 +42,8 @@ export function useOrder() {
                 customerName: orderData.customer?.name || "Invitado",
                 customerPhone: orderData.customer?.phone,
                 notes: orderData.customer?.notes,
-                tableNumber: orderData.customer?.tableNumber
+                tableNumber: orderData.customer?.tableNumber,
+                paymentMethod: orderData.paymentMethod
             }
 
             const response = await fetch(`${apiUrl}/orders`, {

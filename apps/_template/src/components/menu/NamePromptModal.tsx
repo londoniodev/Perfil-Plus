@@ -11,10 +11,11 @@ export function NamePromptModal({
 }: {
     isOpen: boolean
     onClose: () => void
-    onConfirm: (name: string) => void
+    onConfirm: (name: string, paymentMethod: "CASH" | "MERCADOPAGO") => void
     isSubmitting: boolean
 }) {
     const [name, setName] = useState("")
+    const [paymentMethod, setPaymentMethod] = useState<"CASH" | "MERCADOPAGO">("CASH")
 
     if (!isOpen) return null
 
@@ -32,9 +33,32 @@ export function NamePromptModal({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre (Ej: Juan)"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-6 focus:outline-none focus:border-[#ec6d13]"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-4 focus:outline-none focus:border-[#ec6d13]"
                     autoFocus
                 />
+
+                <p className="text-gray-400 text-sm mb-2">Método de Pago</p>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                        onClick={() => setPaymentMethod("CASH")}
+                        className={`py-3 rounded-xl font-medium border transition-colors flex flex-col items-center justify-center gap-1 ${paymentMethod === "CASH"
+                                ? "bg-white/10 border-[#ec6d13] text-[#ec6d13]"
+                                : "bg-white/5 border-transparent text-gray-400 hover:text-white"
+                            }`}
+                    >
+                        <span>Efectivo</span>
+                    </button>
+                    <button
+                        onClick={() => setPaymentMethod("MERCADOPAGO")}
+                        className={`py-3 rounded-xl font-medium border transition-colors flex flex-col items-center justify-center gap-1 ${paymentMethod === "MERCADOPAGO"
+                                ? "bg-white/10 border-[#009EE3] text-[#009EE3]"
+                                : "bg-white/5 border-transparent text-gray-400 hover:text-white"
+                            }`}
+                    >
+                        <span>Transferencia</span>
+                        <span className="text-[10px] opacity-70">(MercadoPago)</span>
+                    </button>
+                </div>
                 <div className="flex gap-3">
                     <button
                         onClick={onClose}
@@ -43,7 +67,7 @@ export function NamePromptModal({
                         Cancelar
                     </button>
                     <button
-                        onClick={() => onConfirm(name)}
+                        onClick={() => onConfirm(name, paymentMethod)}
                         disabled={!name.trim() || isSubmitting}
                         className="flex-1 py-3 rounded-xl font-semibold bg-[#ec6d13] hover:bg-[#d55f0e] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                     >

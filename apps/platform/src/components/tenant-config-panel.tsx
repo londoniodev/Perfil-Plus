@@ -256,6 +256,7 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                                     { key: "enable_blog", label: "Blog", desc: "Sistema de artículos" },
                                     { key: "enable_store", label: "Tienda", desc: "E-commerce" },
                                     { key: "enable_lms", label: "LMS", desc: "Cursos y lecciones" },
+                                    { key: "enable_restaurant", label: "Restaurante", desc: "Sistema de pedidos para restaurantes" },
                                 ].map((feature) => (
                                     <div key={feature.key} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-700/50">
                                         <div>

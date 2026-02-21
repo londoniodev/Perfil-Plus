@@ -26,6 +26,7 @@ export interface TenantConfigValue {
         blog?: boolean;
         store?: boolean;
         lms?: boolean;
+        restaurant?: boolean;
     };
     theme?: string;
     primary_color?: string;
@@ -52,6 +53,7 @@ export interface FlattenedTenantConfig {
     enable_blog: boolean;
     enable_store: boolean;
     enable_lms: boolean;
+    enable_restaurant: boolean;
     api_key_openai: string;
     mp_public_key: string;
     mp_access_token: string;
@@ -83,6 +85,7 @@ export function flattenTenantConfig(config: TenantConfigValue): FlattenedTenantC
         enable_blog: config.features?.blog !== false,
         enable_store: config.features?.store !== false,
         enable_lms: config.features?.lms === true,
+        enable_restaurant: config.features?.restaurant === true,
         api_key_openai: config.api_key_openai || "",
         mp_public_key: config.mercadopago?.publicKey || "",
         mp_access_token: config.mercadopago?.accessToken || "",
@@ -133,6 +136,7 @@ export function unflattenTenantConfig(flat: FlattenedTenantConfig): TenantConfig
             blog: flat.enable_blog,
             store: flat.enable_store,
             lms: flat.enable_lms,
+            restaurant: flat.enable_restaurant,
         },
         social: {
             whatsapp: flat.social_whatsapp,

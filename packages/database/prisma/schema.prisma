@@ -137,10 +137,11 @@ model Post {
 }
 
 model Category {
-  id    String @id @default(cuid())
-  name  String @unique
-  slug  String @unique
-  posts CategoriesOnPosts[]
+  id       String @id @default(cuid())
+  name     String @unique
+  slug     String @unique
+  posts    CategoriesOnPosts[]
+  products CategoriesOnProducts[]
 }
 
 model CategoriesOnPosts {
@@ -410,9 +411,51 @@ model Product {
   // Relaciones
   variants       ProductVariant[]
   modifierGroups ModifierGroup[]
+  categories     CategoriesOnProducts[]
+  likes          ProductLike[]
+  comments       ProductComment[]
   
   @@index([published, productType])
   @@index([slug])
+  @@index([published, isAvailable]) // Optimizacion Menu publico
+}
+
+model CategoriesOnProducts {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+}
+
+// ============ SOCIAL FEATURES (Instagram-style) ============
+model ProductLike {
+  id        String   @id @default(cuid())
+  productId String
+  userPhone String   // Acts as user ID for guests
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userPhone])
+  @@index([productId])
+}
+
+model ProductComment {
+  id        String   @id @default(cuid())
+  productId String
+  userPhone String   // Acts as user ID for guests
+  userName  String?  // Optional name provided by user
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  
+  // Moderation/Status
+  isApproved Boolean @default(true) 
+
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 // Modelo: Variante de Producto (Lo que realmente se compra)
@@ -518,6 +561,7 @@ model Order {
   @@index([status])
   @@index([orderNumber])
   @@index([orderType])
+  @@index([status, createdAt]) // Optimizacion dashboard/admin queries
 }
 
 model OrderItem {
@@ -529,8 +573,8 @@ model OrderItem {
   isPaid      Boolean  @default(false)     // Control de pagos parciales
   productName String   // Snapshot: nombre del producto al momento de compra
   variantName String?  // Snapshot: nombre de la variante (ej: "Rojo XL")
-  isPrepared  Boolean  @default(false)     // Control de cocina (KDS)
   notes       String?  // "Sin sal", "Alergia al maní", "Salsa aparte"
+  isPrepared  Boolean  @default(false) // Control de KDS
   createdAt   DateTime @default(now())
 
   // Relaciones
@@ -540,6 +584,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([variantId])
+  @@index([orderId, isPrepared]) // Optimizacion KDS filtering
 }
 
 model OrderItemModifier {

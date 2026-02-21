@@ -135,6 +135,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 if (configValue.features.blog) featuresList.push('blog');
                 if (configValue.features.store) featuresList.push('shop'); // store -> shop
                 if (configValue.features.lms) featuresList.push('lms');
+                if (configValue.features.restaurant) featuresList.push('restaurant');
 
                 updateData.features = featuresList;
             }

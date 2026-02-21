@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 export async function updateTenantBranding(data: any) {
     try {
-        const headersList = headers();
+        const headersList = await headers();
         const tenantHeader = headersList.get('x-tenant-id');
         // Usamos el tenant que indique el middleware, o en fallback la constante de variables de entorno, o 'cocina-siete'.
         // Aquí la magia es que el middleware resolvió mediante el subdominio si era cocina-siete o cocinasiete

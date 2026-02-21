@@ -3,7 +3,13 @@ import { PrismaClient } from "@alvarosky/database-management";
 import { TENANT_ID } from "@/lib/config";
 import { AdminPageWrapper } from "@alvarosky/ui";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: process.env.MANAGEMENT_DATABASE_URL,
+        },
+    },
+});
 
 import { headers } from "next/headers";
 
@@ -11,7 +17,9 @@ async function getTenantDesign() {
     try {
         const headersList = await headers();
         const tenantHeader = headersList.get('x-tenant-id');
-        const slug = tenantHeader || TENANT_ID || 'cocinasiete';
+
+        const isLocalDefault = !tenantHeader || tenantHeader === 'default';
+        const slug = isLocalDefault ? TENANT_ID : tenantHeader;
 
         const tenant = await prisma.tenant.findUnique({
             where: { slug: slug },

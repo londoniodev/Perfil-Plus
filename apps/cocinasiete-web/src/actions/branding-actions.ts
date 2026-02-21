@@ -5,15 +5,22 @@ import { TENANT_ID } from "@/lib/config";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: process.env.MANAGEMENT_DATABASE_URL,
+        },
+    },
+});
 
 export async function updateTenantBranding(data: any) {
     try {
         const headersList = await headers();
         const tenantHeader = headersList.get('x-tenant-id');
-        // Usamos el tenant que indique el middleware, o en fallback la constante de variables de entorno, o 'cocina-siete'.
-        // Aquí la magia es que el middleware resolvió mediante el subdominio si era cocina-siete o cocinasiete
-        const slugToUpdate = tenantHeader || TENANT_ID || 'cocina-siete';
+
+        // El middleware local sin dominios inyecta 'default', por lo tanto en local forzamos la variable TENANT_ID de config
+        const isLocalDefault = !tenantHeader || tenantHeader === 'default';
+        const slugToUpdate = isLocalDefault ? TENANT_ID : tenantHeader;
 
         // Log para que veas en caso de que vuelva a fallar exactamente qué intentaba buscar
         console.log(`[Branding Action] Intentando actualizar el tenant slug: ${slugToUpdate}`);

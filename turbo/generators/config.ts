@@ -1,5 +1,5 @@
 import { PlopTypes } from "@turbo/gen";
-import fs from "fs-extra";
+import fs from "fs";
 import path from "path";
 
 // TAREA 1: Definición Centralizada
@@ -8,10 +8,45 @@ const AVAILABLE_FEATURES = [
     { name: 'Blog / Noticias', value: 'blog' },
     { name: 'LMS (Cursos)', value: 'lms' },
     { name: 'Portafolio', value: 'portfolio' },
+    { name: 'Restaurante / POS', value: 'restaurant' }, // <--- Módulo de Restaurante
     { name: 'Bot WhatsApp (CRM)', value: 'bot-whatsapp' }, // Nueva feature piloto
 ];
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
+    // Retry wrapper for Windows EBUSY locks
+    const safeRm = async (targetPath: string, retries = 5, delayMs = 300) => {
+        for (let i = 0; i < retries; i++) {
+            try {
+                if (fs.existsSync(targetPath)) {
+                    await fs.promises.rm(targetPath, { recursive: true, force: true });
+                }
+                return;
+            } catch (err: any) {
+                if (err.code === 'EBUSY' || err.code === 'ENOTEMPTY' || err.code === 'EPERM') {
+                    await new Promise(res => setTimeout(res, delayMs));
+                } else {
+                    throw err;
+                }
+            }
+        }
+        console.warn(`[Warining] No se pudo borrar ${targetPath} después de reintentos.`);
+    };
+
+    const safeCp = async (src: string, dest: string, retries = 5, delayMs = 300, options: any = {}) => {
+        for (let i = 0; i < retries; i++) {
+            try {
+                await fs.promises.cp(src, dest, options);
+                return;
+            } catch (err: any) {
+                if (err.code === 'EBUSY' || err.code === 'EPERM') {
+                    await new Promise(res => setTimeout(res, delayMs));
+                } else {
+                    throw err;
+                }
+            }
+        }
+        throw new Error(`Fallback error copying ${src} to ${dest}`);
+    };
 
     // Helper para arrays (Handlebars)
     plop.setHelper('includes', function (array: any, value: string) {
@@ -186,8 +221,9 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         const destDir = path.join(process.cwd(), "apps", name);
 
         try {
-            await fs.copy(srcDir, destDir, {
-                filter: (src) => {
+            await safeCp(srcDir, destDir, 5, 200, {
+                recursive: true,
+                filter: (src: string) => {
                     const basename = path.basename(src);
                     return basename !== "node_modules" && basename !== ".next" && basename !== ".turbo" && basename !== ".git" && basename !== "dist";
                 }
@@ -215,7 +251,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 for (const p of pathsToRemove) {
                     const fullPath = path.join(p);
                     if (fs.existsSync(fullPath)) {
-                        await fs.remove(fullPath);
+                        await safeRm(fullPath);
                         removals.push(p);
                     }
                 }
@@ -253,6 +289,18 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 path.join(libDir, "whatsapp"),
             ]);
 
+            // Restaurant Cleanup
+            await removeIfMissing("restaurant", [
+                path.join(adminDir, "restaurant"),
+                path.join(dashboardDir, "kitchen"),
+                path.join(dashboardDir, "waiter"),
+                path.join(appDir, "(public)", "menu"),
+                path.join(appDir, "(public)", "[slug]", "menu"),
+                path.join(process.cwd(), "apps", name, "src", "components", "menu"),
+                path.join(process.cwd(), "apps", name, "src", "components", "waiter"),
+                path.join(process.cwd(), "apps", name, "src", "components", "kitchen"),
+            ]);
+
 
             if (removals.length === 0) return "No se requirió limpieza de features.";
             return `Features limpiadas: ${removals.map(p => path.basename(p)).join(", ")}`;
@@ -281,6 +329,18 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 pathsToCopy = [
                     "src/app/(dashboard)/whatsapp",
                     "src/lib/whatsapp"
+                ];
+                break;
+            case 'restaurant':
+                pathsToCopy = [
+                    "src/app/(dashboard)/admin/restaurant",
+                    "src/app/(dashboard)/kitchen",
+                    "src/app/(dashboard)/waiter",
+                    "src/app/(public)/menu",
+                    "src/app/(public)/[slug]/menu",
+                    "src/components/menu",
+                    "src/components/waiter",
+                    "src/components/kitchen"
                 ];
                 break;
             case 'store':
@@ -323,7 +383,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
                 const destPath = path.join(targetDir, relativePath);
 
                 if (fs.existsSync(sourcePath)) {
-                    await fs.copy(sourcePath, destPath);
+                    await safeCp(sourcePath, destPath, 5, 200, { recursive: true });
                     copiedCount++;
                 } else {
                     console.warn(`Feature source not found: ${sourcePath}`);

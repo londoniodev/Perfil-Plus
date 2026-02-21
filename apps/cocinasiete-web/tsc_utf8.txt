@@ -1,0 +1,1 @@
+﻿../../packages/restaurant-sdk/src/hooks/useWaiterOrders.ts(5,39): error TS2307: Cannot find module '@alvarosky/database' or its corresponding type declarations.

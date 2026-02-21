@@ -69,6 +69,23 @@ export default function MenuClient({
 
     useEffect(() => {
         handleCategoryScroll()
+
+        // Check for MercadoPago redirect status
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search)
+            const paymentStatus = params.get('payment')
+            if (paymentStatus === 'success') {
+                alert('✅ ¡Pago realizado con éxito! Tu orden ha sido pagada y ya está en cocina.')
+                // Remove parameter from URL to prevent showing alert again on reload
+                window.history.replaceState({}, document.title, window.location.pathname)
+            } else if (paymentStatus === 'failure') {
+                alert('❌ El pago no pudo ser procesado o fue rechazado.')
+                window.history.replaceState({}, document.title, window.location.pathname)
+            } else if (paymentStatus === 'pending') {
+                alert('⏳ El pago está pendiente de confirmación.')
+                window.history.replaceState({}, document.title, window.location.pathname)
+            }
+        }
     }, [])
 
     // Filter products

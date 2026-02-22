@@ -20,39 +20,39 @@ export function NamePromptModal({
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-[#221810] border border-white/10 rounded-2xl p-6 w-full max-w-sm"
+                className="bg-white border border-slate-200 shadow-2xl rounded-2xl p-6 w-full max-w-sm"
             >
-                <h3 className="text-xl font-bold text-white mb-2">Una cosa más...</h3>
-                <p className="text-gray-400 text-sm mb-4">¿A nombre de quién registramos el pedido?</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Una cosa más...</h3>
+                <p className="text-slate-500 text-sm mb-4">¿A nombre de quién registramos el pedido?</p>
                 <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre (Ej: Juan)"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-4 focus:outline-none focus:border-[#ec6d13]"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 mb-4 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-slate-400 font-medium"
                     autoFocus
                 />
 
-                <p className="text-gray-400 text-sm mb-2">Método de Pago</p>
+                <p className="text-slate-500 text-sm mb-2 font-medium">Método de Pago</p>
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <button
                         onClick={() => setPaymentMethod("CASH")}
-                        className={`py-3 rounded-xl font-medium border transition-colors flex flex-col items-center justify-center gap-1 ${paymentMethod === "CASH"
-                                ? "bg-white/10 border-[#ec6d13] text-[#ec6d13]"
-                                : "bg-white/5 border-transparent text-gray-400 hover:text-white"
+                        className={`py-3 rounded-xl font-medium border-2 transition-colors flex flex-col items-center justify-center gap-1 shadow-sm ${paymentMethod === "CASH"
+                            ? "bg-primary/5 border-primary text-primary"
+                            : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50"
                             }`}
                     >
                         <span>Efectivo</span>
                     </button>
                     <button
                         onClick={() => setPaymentMethod("MERCADOPAGO")}
-                        className={`py-3 rounded-xl font-medium border transition-colors flex flex-col items-center justify-center gap-1 ${paymentMethod === "MERCADOPAGO"
-                                ? "bg-white/10 border-[#009EE3] text-[#009EE3]"
-                                : "bg-white/5 border-transparent text-gray-400 hover:text-white"
+                        className={`py-3 rounded-xl font-medium border-2 transition-colors flex flex-col items-center justify-center gap-1 shadow-sm ${paymentMethod === "MERCADOPAGO"
+                            ? "bg-[#009EE3]/5 border-[#009EE3] text-[#009EE3]"
+                            : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50"
                             }`}
                     >
                         <span>Transferencia</span>
@@ -62,14 +62,14 @@ export function NamePromptModal({
                 <div className="flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 rounded-xl font-medium bg-white/5 hover:bg-white/10 text-white transition-colors"
+                        className="flex-1 py-3 rounded-xl font-bold bg-slate-100 border border-slate-200 hover:bg-slate-200 hover:border-slate-300 text-slate-700 transition-colors shadow-sm"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={() => onConfirm(name, paymentMethod)}
                         disabled={!name.trim() || isSubmitting}
-                        className="flex-1 py-3 rounded-xl font-semibold bg-[#ec6d13] hover:bg-[#d55f0e] text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 py-3 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/25"
                     >
                         {isSubmitting ? (
                             <>

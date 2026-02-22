@@ -1,53 +1,82 @@
 import Link from "next/link";
-import { prisma } from "@alvarosky/database";
+import { Theme } from "@/types/lms";
 
-export async function CursosCategorias() {
-    const themes = await prisma.theme.findMany({
-        where: { published: true },
-        orderBy: { order: "asc" },
-        include: { _count: { select: { courses: true } } },
-    });
+interface Props {
+    themes: Theme[];
+}
 
+// Material-style icon mapping for each theme slug keyword
+const iconMap: Record<string, { icon: string; color: "primary" | "secondary" }> = {
+    "negocios": { icon: "📊", color: "primary" },
+    "salubridad": { icon: "🧼", color: "secondary" },
+    "higiene": { icon: "🧼", color: "secondary" },
+    "culinaria": { icon: "🍳", color: "primary" },
+    "tecnicas": { icon: "🔪", color: "primary" },
+    "cocina": { icon: "🍳", color: "primary" },
+    "barismo": { icon: "🍸", color: "secondary" },
+    "ventas": { icon: "📈", color: "primary" },
+    "servicio": { icon: "🤝", color: "secondary" },
+    "panaderia": { icon: "🍞", color: "primary" },
+    "pasteleria": { icon: "🎂", color: "secondary" },
+    "nutricion": { icon: "🥗", color: "primary" },
+};
+
+function getIconForTheme(slug: string) {
+    for (const [key, val] of Object.entries(iconMap)) {
+        if (slug.includes(key)) return val;
+    }
+    return { icon: "📚", color: "primary" as const };
+}
+
+export function CursosCategorias({ themes }: Props) {
     if (themes.length === 0) return null;
 
-    // Icon mapping by common theme slugs
-    const iconMap: Record<string, string> = {
-        higiene: "🧼",
-        cocina: "🍳",
-        admin: "📊",
-        barismo: "🍸",
-        ventas: "📈",
-        servicio: "🤝",
-        panaderia: "🍞",
-        pasteleria: "🎂",
-        nutricion: "🥗",
-    };
-
     return (
-        <section className="container mx-auto px-4 mb-12">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Categorías</h2>
+        <section className="mb-8">
+            <div className="flex items-center justify-between px-6 mb-4">
+                <h3 className="font-bold text-lg text-foreground">
+                    Categorías
+                </h3>
+                <Link
+                    href="/formacion"
+                    className="text-xs font-bold text-primary hover:underline"
+                >
+                    Ver todas
+                </Link>
             </div>
-            <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar">
-                {themes.map((theme) => (
-                    <Link
-                        key={theme.id}
-                        href={`/cursos?tema=${theme.slug}`}
-                        className="flex-shrink-0 flex flex-col items-center gap-3 group cursor-pointer transition-transform hover:scale-105"
-                    >
-                        <div className="w-16 h-16 rounded-2xl bg-card border border-border flex items-center justify-center text-2xl group-hover:bg-primary/15 group-hover:border-primary/40 transition-colors duration-300">
-                            {iconMap[theme.slug] || "📚"}
-                        </div>
-                        <div className="text-center">
-                            <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors block">
-                                {theme.title}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground/60">
-                                {theme._count.courses} curso{theme._count.courses !== 1 ? "s" : ""}
-                            </span>
-                        </div>
-                    </Link>
-                ))}
+            <div className="flex overflow-x-auto gap-3 px-6 pb-4 no-scrollbar">
+                {themes.map((theme) => {
+                    const { icon, color } = getIconForTheme(theme.slug);
+                    const bgClass =
+                        color === "primary"
+                            ? "bg-primary/10 group-hover:bg-primary"
+                            : "bg-amber-500/10 group-hover:bg-amber-500";
+
+                    return (
+                        <Link
+                            key={theme.id}
+                            href={`/formacion/${theme.slug}`}
+                            className="flex-shrink-0 flex flex-col items-center gap-2 group cursor-pointer"
+                        >
+                            <div
+                                className={`w-16 h-16 rounded-2xl ${bgClass} flex items-center justify-center text-2xl group-hover:text-white transition-colors duration-200`}
+                            >
+                                {icon}
+                            </div>
+                            <div className="text-center">
+                                <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors block max-w-[72px] truncate">
+                                    {theme.title.split(" ")[0]}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground/60">
+                                    {theme._count?.courses ?? 0} curso
+                                    {(theme._count?.courses ?? 0) !== 1
+                                        ? "s"
+                                        : ""}
+                                </span>
+                            </div>
+                        </Link>
+                    );
+                })}
             </div>
         </section>
     );

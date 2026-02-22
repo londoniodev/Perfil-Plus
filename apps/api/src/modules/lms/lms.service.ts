@@ -44,7 +44,7 @@ export class LmsService {
         return { message: 'Tema eliminado correctamente' };
     }
 
-    async findAllThemes(includeUnpublished = false) {
+    async findAllThemes(includeUnpublished = false, includeCourses = false) {
         const where = includeUnpublished ? {} : { published: true };
         return this.prisma.client.theme.findMany({
             where,
@@ -52,6 +52,13 @@ export class LmsService {
             include: {
                 _count: { select: { courses: true } },
                 evaluation: { select: { id: true } },
+                ...(includeCourses ? {
+                    courses: {
+                        where: { published: true },
+                        orderBy: { order: 'asc' as const },
+                        include: { _count: { select: { lessons: true } } },
+                    },
+                } : {}),
             },
         });
     }

@@ -4,7 +4,7 @@ import { siteConfig } from "@/config/site";
 export function Footer() {
     const footerLinks = [
         { label: "Inicio", href: "/" },
-        { label: "Portafolio", href: "/portafolio" },
+        { label: "Empresas", href: "/empresas" },
         { label: "Servicios", href: "/servicios" },
         { label: "Blog", href: "/blog" },
         {

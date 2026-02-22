@@ -32,9 +32,9 @@ export class LmsController {
     // Themes
     @Get('themes')
     @Public()
-    async getThemes(@CurrentUser() user?: any) {
-        const hasSubscription = user?.hasActiveSubscription || false;
-        return this.lmsService.findAllThemes(false);
+    async getThemes(@Query('include') include?: string) {
+        const includeCourses = include === 'courses';
+        return this.lmsService.findAllThemes(false, includeCourses);
     }
 
     @Get('themes/:slug')

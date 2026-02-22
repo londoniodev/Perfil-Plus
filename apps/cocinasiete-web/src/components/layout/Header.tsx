@@ -15,8 +15,7 @@ export function Header() {
         { label: "Empresas", href: "/empresas" },
         { label: "Cursos", href: "/cursos" },
         { label: "Blog", href: "/blog" },
-        { label: "Tienda", href: "/tienda" },
-        { label: "Servicios", href: "/servicios" },
+        { label: "Tienda", href: "/menu" },
     ];
 
     return (

@@ -39,7 +39,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const recentPosts = posts.slice(1);
 
   return (
-    <main className="min-h-screen bg-background pb-20">
+    <main className="min-h-screen bg-zinc-50 pb-20">
       {/* ─── Hero Section ─── */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 overflow-hidden">
         {/* Gradient background accent */}
@@ -49,10 +49,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-b from-zinc-900 to-zinc-700 bg-clip-text text-transparent">
               Nuestro Blog
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-zinc-600">
               Explora recetas, consejos y gestión.
             </p>
           </div>
@@ -68,9 +68,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         {/* ─── Empty State ─── */}
         {posts.length === 0 && (
           <div className="text-center py-20">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center border border-border">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white flex items-center justify-center border border-zinc-200">
               <svg
-                className="w-10 h-10 text-muted-foreground"
+                className="w-10 h-10 text-zinc-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -83,10 +83,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold mb-2">
+            <h2 className="text-xl font-semibold mb-2 text-zinc-900">
               No hay artículos disponibles
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-zinc-600">
               Pronto publicaremos contenido interesante. ¡Vuelve pronto!
             </p>
           </div>
@@ -97,7 +97,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           <section className="mb-16">
             <Link
               href={`/blog/${featuredPost.slug}`}
-              className="group block relative rounded-2xl overflow-hidden border border-border bg-card hover:border-primary/40 transition-all duration-300"
+              className="group block relative rounded-2xl overflow-hidden border border-zinc-200 bg-white hover:border-primary/40 transition-all duration-300 shadow-sm"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
                 {/* Image */}
@@ -127,7 +127,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     </div>
                   )}
                   {/* Gradient overlay en mobile */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent md:hidden" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent md:hidden" />
                 </div>
 
                 {/* Content */}
@@ -137,17 +137,17 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       {featuredPost.categories[0].name}
                     </span>
                   )}
-                  <h2 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-3 text-zinc-900 group-hover:text-primary transition-colors line-clamp-2">
                     {featuredPost.title}
                   </h2>
-                  <p className="text-muted-foreground line-clamp-3 mb-6 leading-relaxed">
+                  <p className="text-zinc-600 line-clamp-3 mb-6 leading-relaxed">
                     {featuredPost.excerpt}
                   </p>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground/80">
+                  <div className="flex items-center gap-3 text-sm text-zinc-500">
+                    <span className="font-medium text-zinc-900">
                       {featuredPost.authorName}
                     </span>
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                    <span className="w-1 h-1 rounded-full bg-zinc-400" />
                     <time>
                       {new Date(featuredPost.createdAt).toLocaleDateString(
                         "es-ES",
@@ -160,7 +160,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     </time>
                     {featuredPost.readingTime && (
                       <>
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                        <span className="w-1 h-1 rounded-full bg-zinc-400" />
                         <span>{featuredPost.readingTime} min de lectura</span>
                       </>
                     )}
@@ -175,7 +175,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         {recentPosts.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">Recientes</h2>
+              <h2 className="text-2xl font-bold text-zinc-900">Recientes</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -183,7 +183,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 <Link
                   key={post.id}
                   href={`/blog/${post.slug}`}
-                  className="group block rounded-xl overflow-hidden border border-border bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
+                  className="group block rounded-xl overflow-hidden border border-zinc-200 bg-white hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 shadow-sm"
                 >
                   {/* Card Image */}
                   <div className="relative aspect-[16/10] overflow-hidden">
@@ -232,15 +232,15 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                         {post.categories[0].name}
                       </span>
                     )}
-                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                    <h3 className="font-semibold text-lg text-zinc-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                    <p className="text-sm text-zinc-600 line-clamp-2 mb-4 leading-relaxed">
                       {post.excerpt}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{post.authorName}</span>
-                      <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                    <div className="flex items-center gap-2 text-xs text-zinc-500">
+                      <span className="text-zinc-900">{post.authorName}</span>
+                      <span className="w-1 h-1 rounded-full bg-zinc-400" />
                       <time>
                         {new Date(post.createdAt).toLocaleDateString("es-ES", {
                           month: "short",
@@ -261,7 +261,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             {currentPage > 1 && (
               <Link
                 href={`/blog?page=${currentPage - 1}${category ? `&category=${category}` : ""}`}
-                className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-primary/10 hover:border-primary/40 transition-colors"
+                className="px-4 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-900 text-sm font-medium hover:bg-zinc-100 hover:border-zinc-300 transition-colors"
               >
                 ← Anterior
               </Link>
@@ -273,8 +273,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   key={pageNum}
                   href={`/blog?page=${pageNum}${category ? `&category=${category}` : ""}`}
                   className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${pageNum === currentPage
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-card hover:bg-primary/10 hover:border-primary/40"
+                    ? "bg-primary text-white"
+                    : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-100 hover:border-zinc-300"
                     }`}
                 >
                   {pageNum}
@@ -285,7 +285,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             {currentPage < totalPages && (
               <Link
                 href={`/blog?page=${currentPage + 1}${category ? `&category=${category}` : ""}`}
-                className="px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-primary/10 hover:border-primary/40 transition-colors"
+                className="px-4 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-900 text-sm font-medium hover:bg-zinc-100 hover:border-zinc-300 transition-colors"
               >
                 Siguiente →
               </Link>

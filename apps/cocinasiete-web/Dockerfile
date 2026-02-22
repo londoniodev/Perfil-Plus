@@ -28,7 +28,7 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 
 # Build-time arguments for Next.js public env vars
-ARG NEXT_PUBLIC_TENANT_ID=cocinasiete-web
+ARG NEXT_PUBLIC_TENANT_ID=cocinasiete
 ENV NEXT_PUBLIC_TENANT_ID=${NEXT_PUBLIC_TENANT_ID}
 
 ARG NEXT_PUBLIC_API_URL

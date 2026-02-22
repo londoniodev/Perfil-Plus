@@ -23,7 +23,7 @@ export interface FloatingBackButtonProps {
 export function FloatingBackButton({
     className,
     onClick,
-    variant = "gold"
+    variant = "default"
 }: FloatingBackButtonProps) {
     const colorClasses = variant === "gold"
         ? "bg-[#e8a838] hover:bg-[#d6982d] text-black"

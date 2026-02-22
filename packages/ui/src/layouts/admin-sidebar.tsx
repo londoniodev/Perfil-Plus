@@ -114,7 +114,7 @@ export function AdminSidebar({
         .substring(0, 2) || "U";
 
     return (
-        <Sidebar collapsible="icon" {...props}>
+        <Sidebar collapsible="icon" className="bg-white dark:bg-zinc-50 border-r" {...props}>
             {/* Header: Brand */}
             <SidebarHeader>
                 <SidebarMenu>
@@ -186,7 +186,7 @@ export function AdminSidebar({
                                                                 <SidebarMenuSubButton
                                                                     asChild
                                                                     isActive={pathname === subItem.href}
-                                                                    className="transition-colors duration-150"
+                                                                    className="transition-colors duration-150 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
                                                                 >
                                                                     <Link href={subItem.href}>
                                                                         <span>{subItem.title}</span>
@@ -208,7 +208,7 @@ export function AdminSidebar({
                                             asChild
                                             isActive={isActive(group.href!)}
                                             tooltip={group.title}
-                                            className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
+                                            className="transition-all duration-200 ease-in-out hover:translate-x-0.5 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
                                         >
                                             <Link href={group.href!}>
                                                 {Icon && <Icon className="size-4" />}

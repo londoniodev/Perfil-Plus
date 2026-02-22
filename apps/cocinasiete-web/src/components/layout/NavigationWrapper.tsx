@@ -10,7 +10,7 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
     const isDashboard = pathname?.startsWith("/perfil") ||
         pathname?.startsWith("/admin") ||
         pathname?.includes("/mis-compras") ||
-        pathname?.startsWith("/cursos") || // Mis Cursos (LMS)
+        pathname?.startsWith("/formacion") || // Mis Cursos (LMS)
         pathname?.startsWith("/suscripcion") ||
         pathname?.startsWith("/waiter") ||
         pathname?.startsWith("/kitchen") ||

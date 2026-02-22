@@ -63,7 +63,7 @@ export function SiteHeader({
                 <div className="lg:hidden ml-2">
                     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-foreground">
+                            <Button variant="ghost" size="icon" className={cn(!isScrolled ? "text-black" : "text-foreground")}>
                                 <IconMenu size={28} />
                                 <span className="sr-only">Menú</span>
                             </Button>

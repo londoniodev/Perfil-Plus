@@ -126,7 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     themes.forEach((theme) => {
         coursePages.push({
-            url: `${SITE_URL}/cursos/${theme.slug}`,
+            url: `${SITE_URL}/formacion/${theme.slug}`,
             lastModified: new Date(),
             changeFrequency: 'weekly' as const,
             priority: 0.6,
@@ -134,7 +134,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
         theme.courses?.forEach((course) => {
             coursePages.push({
-                url: `${SITE_URL}/cursos/${theme.slug}/${course.slug}`,
+                url: `${SITE_URL}/formacion/${theme.slug}/${course.slug}`,
                 lastModified: new Date(),
                 changeFrequency: 'weekly' as const,
                 priority: 0.5,

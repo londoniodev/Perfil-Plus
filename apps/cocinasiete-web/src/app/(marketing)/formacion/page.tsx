@@ -1,10 +1,21 @@
-import { Fill } from "@alvarosky/ui";
+import {
+    CursosHero,
+    CursosCategorias,
+    CursosPopulares,
+    CursosNuevos,
+} from "@/components/cursos";
 
-export default function FormacionPage() {
+export const dynamic = 'force-dynamic';
+
+export default function CursosPage() {
     return (
-        <Fill>
-            <h1 className="text-2xl font-bold mb-4">Formación</h1>
-            <p className="text-muted-foreground">Próximamente programas de formación.</p>
-        </Fill>
+        <div className="bg-white  font-sans antialiased transition-colors duration-200 pb-20">
+            <main className="max-w-md mx-auto relative min-h-screen">
+                <CursosHero />
+                <CursosCategorias />
+                <CursosPopulares />
+                <CursosNuevos />
+            </main>
+        </div>
     );
 }

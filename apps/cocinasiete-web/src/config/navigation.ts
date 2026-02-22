@@ -23,13 +23,13 @@ export const NAVIGATION_CONFIG: {
 } = {
     user: [
         { name: "Mi Panel", href: "/perfil", icon: IconHome },
-        { name: "Mis Cursos", href: "/cursos", icon: IconBook, feature: 'lms' },
+        { name: "Mis Cursos", href: "/formacion", icon: IconBook, feature: 'lms' },
         { name: "Mis Compras", href: "/compras", icon: IconGrid, feature: 'shop' },
         { name: "Suscripción", href: "/suscripcion", icon: IconCreditCard }, // Core feature? Or 'subscription'?
     ],
     admin: [
         { name: "Dashboard", href: "/perfil", icon: IconHome },
-        { name: "Gestionar Cursos", href: "/admin/cursos", icon: IconEdit, feature: 'lms' },
+        { name: "Gestionar Formación", href: "/admin/cursos", icon: IconEdit, feature: 'lms' },
         { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument, feature: 'blog' },
         { name: "Gestión de Productos", href: "/admin/products", icon: IconGrid, feature: 'shop' },
         { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers }, // Core admin feature

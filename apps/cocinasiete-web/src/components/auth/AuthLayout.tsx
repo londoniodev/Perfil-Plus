@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     return (
-        <div className="grid lg:grid-cols-2 min-h-screen w-full bg-background">
+        <div className="grid lg:grid-cols-2 min-h-screen w-full light-auth bg-background text-foreground">
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-muted items-end p-12 overflow-hidden">
                 <Image

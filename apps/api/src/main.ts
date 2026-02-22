@@ -73,7 +73,7 @@ async function bootstrap() {
       }
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id', 'Cache-Control'],
     credentials: true,
   });
 

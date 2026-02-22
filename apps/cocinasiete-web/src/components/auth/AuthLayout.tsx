@@ -15,8 +15,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-muted items-end p-12 overflow-hidden">
                 <Image
-                    src="/images/hero/mauro_hero.png" // Placeholder, user will change later
-                    alt="Mauro Mera"
+                    src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=80"
+                    alt="Plato gourmet saludable"
                     fill
                     style={{ objectFit: 'cover' }}
                     priority
@@ -25,7 +25,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                 />
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-12">
                     <div className="text-white text-2xl md:text-3xl font-light font-sans max-w-[90%] leading-relaxed tracking-wide">
-                        "Transformar el mundo empieza por cuidar el mundo interno."
+                        "La buena comida es el fundamento de la felicidad."
                     </div>
                 </div>
             </div>

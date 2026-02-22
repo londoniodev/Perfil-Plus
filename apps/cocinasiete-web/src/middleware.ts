@@ -99,7 +99,6 @@ export function middleware(request: NextRequest) {
 
     const protectedPaths = [
         '/perfil',
-        '/formacion',
         '/suscripcion',
         '/mis-compras',
         '/admin',

@@ -157,7 +157,7 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
 
             <div className="pl-4 border-l border-border flex gap-2">
                 {isLoggedIn ? (
-                    <Button asChild size="sm" className="bg-accent hover:bg-accent/90 text-white border-0">
+                    <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                         <Link href={profileUrl}>
                             <IconUser size={18} className="mr-2" />
                             Mi Panel
@@ -219,7 +219,7 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
 
             <div className="p-4 mt-auto">
                 {isLoggedIn ? (
-                    <Button asChild className="w-full justify-start bg-accent hover:bg-accent/90 text-white" size="lg">
+                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground" size="lg">
                         <Link href={profileUrl} onClick={onClick}>
                             <IconUser size={20} className="mr-2" />
                             Mi Panel

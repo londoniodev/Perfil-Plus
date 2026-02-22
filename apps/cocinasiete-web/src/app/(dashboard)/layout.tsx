@@ -6,21 +6,13 @@ import {
     AdminHeader,
     SidebarInset,
     SidebarProvider,
-    BrandProvider
 } from "@alvarosky/ui";
-import { PrismaClient } from "@alvarosky/database-management";
+import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/config-server";
 import { cookies } from "next/headers";
 import type { FeatureKey } from "@/config/sidebar.config";
 
-// --- Server Side Data Fetching ---
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.MANAGEMENT_DATABASE_URL,
-        },
-    },
-});
+// --- Server Side Data Fetching (uses singleton from lib/prisma.ts) ---
 
 async function getTenantData(tenantId: string) {
     try {
@@ -73,16 +65,14 @@ export default async function DashboardLayout({
     return (
         <AuthProvider>
             <DashboardProvider>
-                <BrandProvider settings={design as any}>
-                    <DashboardShell
-                        features={features}
-                        tenantName={tenantName}
-                        defaultOpen={defaultOpen}
-                        appName={tenantName}
-                    >
-                        {children}
-                    </DashboardShell>
-                </BrandProvider>
+                <DashboardShell
+                    features={features}
+                    tenantName={tenantName}
+                    defaultOpen={defaultOpen}
+                    appName={tenantName}
+                >
+                    {children}
+                </DashboardShell>
             </DashboardProvider>
         </AuthProvider>
     );

@@ -9,16 +9,8 @@ import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
-import { PrismaClient } from "@alvarosky/database-management";
+import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/config-server";
-
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.MANAGEMENT_DATABASE_URL,
-    },
-  },
-});
 
 async function getTenantDesign(tenantId: string) {
   try {

@@ -17,27 +17,16 @@
     --popover: 216 28% 11%;
     --popover-foreground: 210 20% 96%;
 
-    /* Azul Eléctrico (#5b8def - similar a HSL 220 81% 65%) */
-    --primary: 220 81% 65%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    /* Secundario (#64748b) */
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 210 40% 98%;
+    /* Primary, accent, secondary → inyectados por BrandProvider */
 
     --muted: 217 19% 27%;
     --muted-foreground: 215 20% 65%;
-
-    /* Dorado para acentos (#e8a838) */
-    --accent: 38 78% 56%;
-    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 19% 27%;
     --input: 217 19% 27%;
-    --ring: 224 76% 48%;
 
     /* Success (Green) */
     --success: 142 71% 45%;
@@ -52,26 +41,19 @@
 }
 
 .dark {
-    /* Mismos valores para asegurar consistencia */
+    /* Mismos valores estructurales para modo oscuro */
     --background: 210 25% 8%;
     --foreground: 210 20% 96%;
     --card: 216 28% 11%;
     --card-foreground: 210 20% 96%;
     --popover: 216 28% 11%;
     --popover-foreground: 210 20% 96%;
-    --primary: 220 81% 65%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 210 40% 98%;
     --muted: 217 19% 27%;
     --muted-foreground: 215 20% 65%;
-    --accent: 38 78% 56%;
-    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 19% 27%;
     --input: 217 19% 27%;
-    --ring: 224 76% 48%;
 }
 
 .light-auth {

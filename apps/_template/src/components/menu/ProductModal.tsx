@@ -248,7 +248,7 @@ export function ProductModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+                className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60]"
                 onClick={onClose}
             />
             {/* Main Modal Container */}
@@ -258,52 +258,52 @@ export function ProductModal({
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                className="fixed inset-0 sm:inset-x-0 sm:bottom-0 sm:top-auto sm:max-h-[96vh] bg-[#f8f7f6] dark:bg-[#221810] sm:rounded-t-3xl z-[70] overflow-hidden flex flex-col sm:border-t border-white/10"
+                className="fixed inset-0 sm:inset-x-0 sm:bottom-0 sm:top-auto sm:max-h-[96vh] bg-white sm:rounded-t-3xl z-[70] overflow-hidden flex flex-col sm:border-t border-slate-200 shadow-2xl shadow-black/10"
             >
                 {/* Header */}
-                <header className="flex items-center justify-between px-4 py-3 sticky top-0 z-20 bg-[#f8f7f6]/95 dark:bg-[#221810]/95 backdrop-blur-sm border-b border-gray-200 dark:border-white/10 shrink-0">
+                <header className="flex items-center justify-between px-4 py-3 sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200 shrink-0">
                     <div className="flex items-center gap-3">
-                        <button onClick={onClose} className="text-gray-600 dark:text-gray-300 -ml-1">
+                        <button onClick={onClose} className="text-slate-600 hover:text-slate-900 transition-colors -ml-1">
                             <ArrowLeft className="w-6 h-6" />
                         </button>
-                        <div className="text-lg font-bold text-gray-900 dark:text-white">Detalle</div>
+                        <div className="text-lg font-bold text-slate-900">Detalle</div>
                     </div>
                 </header>
 
                 {/* Main Content Area (Scrollable) */}
                 <main className="flex-1 overflow-y-auto pb-32">
-                    <article className="bg-[#f8f7f6] dark:bg-[#221810]">
+                    <article className="bg-[#f8f9fa]">
                         {/* User Header */}
-                        <div className="flex items-center justify-between px-4 py-3">
+                        <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100">
                             <div className="flex items-center gap-3">
                                 <div className="relative">
-                                    <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-[#ec6d13] to-orange-400">
-                                        <div className="w-full h-full rounded-full border-2 border-[#f8f7f6] dark:border-[#221810] overflow-hidden relative">
+                                    <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-primary to-primary/60">
+                                        <div className="w-full h-full rounded-full border-2 border-white overflow-hidden relative">
                                             <Image
                                                 src={restaurantLogo || '/placeholder.png'}
                                                 alt="Logo"
                                                 fill
                                                 sizes="40px"
-                                                className="object-cover"
+                                                className="object-cover bg-white"
                                             />
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-1">
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">{restaurantName}</h3>
-                                        <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500 text-white" />
+                                        <h3 className="text-sm font-bold text-slate-900">{restaurantName}</h3>
+                                        <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{product.name}</p>
+                                    <p className="text-xs text-slate-500">{product.name}</p>
                                 </div>
                             </div>
-                            <button className="text-gray-900 dark:text-white">
+                            <button className="text-slate-400 hover:text-slate-600 transition-colors">
                                 <MoreHorizontal className="w-6 h-6" />
                             </button>
                         </div>
 
                         {/* Hero Image */}
-                        <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800">
+                        <div className="relative w-full aspect-square bg-slate-100">
                             <Image
                                 src={product.images?.[0] || '/placeholder.png'}
                                 alt={product.name}
@@ -313,59 +313,60 @@ export function ProductModal({
                                 className="object-cover"
                             />
                             {/* Image Overlay Tags */}
-                            <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1">
-                                <Tag className="w-3 h-3 text-white" />
-                                <span className="text-white text-xs font-medium">{formatCurrency(unitPrice)}</span>
+                            <div className="absolute bottom-4 left-4 bg-white/90 shadow-sm backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1 border border-slate-200/50">
+                                <Tag className="w-3 h-3 text-slate-700" />
+                                <span className="text-slate-900 text-xs font-bold">{formatCurrency(unitPrice)}</span>
                             </div>
                         </div>
 
                         {/* Action Bar */}
-                        <div className="px-4 py-3">
-                            <div className="flex items-center justify-between mb-3">
+                        <div className="px-4 py-4 bg-white">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-4">
-                                    <button onClick={() => handleSocialAction("LIKE")} className={`transition-transform hover:scale-110 ${isLiked ? 'text-[#ec6d13]' : 'text-gray-900 dark:text-white'}`}>
+                                    <button onClick={() => handleSocialAction("LIKE")} className={`transition-transform hover:scale-110 ${isLiked ? 'text-primary' : 'text-slate-700 hover:text-slate-900'}`}>
                                         <ThumbsUp className={`w-7 h-7 ${isLiked ? 'fill-current' : ''}`} />
                                     </button>
-                                    <button onClick={() => textareaRef.current?.focus()} className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                                    <button onClick={() => textareaRef.current?.focus()} className="text-slate-700 hover:text-slate-900 transition-colors">
                                         <MessageSquare className="w-7 h-7" />
                                     </button>
-                                    <button onClick={handleShare} className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                                    <button onClick={handleShare} className="text-slate-700 hover:text-slate-900 transition-colors">
                                         <Share2 className="w-7 h-7" />
                                     </button>
                                 </div>
-                                <button onClick={() => setIsBookmarked(!isBookmarked)} className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300">
+                                <button onClick={() => setIsBookmarked(!isBookmarked)} className={`transition-colors hover:text-slate-900 ${isBookmarked ? 'text-primary' : 'text-slate-700'}`}>
                                     <Bookmark className={`w-7 h-7 ${isBookmarked ? 'fill-current' : ''}`} />
                                 </button>
                             </div>
 
                             {/* Likes */}
-                            <div className="flex items-center gap-2 mb-2">
-                                <p className="text-sm text-gray-900 dark:text-white font-bold">
-                                    {likesCount} me gusta
+                            <div className="flex items-center gap-2 mb-3">
+                                <p className="text-sm text-slate-900 font-bold">
+                                    {likesCount} {likesCount === 1 ? 'me gusta' : 'me gustas'}
                                 </p>
                             </div>
 
                             {/* Caption */}
-                            <div className="mb-4">
-                                <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
-                                    <span className="font-bold mr-1">{restaurantName}</span>
-                                    {product.description} <span className="text-[#ec6d13]/80">#delicioso #foodie</span>
+                            <div className="mb-6">
+                                <p className="text-sm text-slate-800 leading-relaxed">
+                                    <span className="font-bold mr-1 text-slate-900">{restaurantName}</span>
+                                    {product.description}{" "}
+                                    <span className="text-primary font-medium">#delicioso #foodie</span>
                                 </p>
                             </div>
 
                             {/* Modifiers Section (Integrated) */}
                             {product.variants && product.variants.length > 1 && (
-                                <div className="mb-6 space-y-3 p-3 bg-black/5 dark:bg-white/5 rounded-xl">
-                                    <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Elige una opción</p>
+                                <div className="mb-6 space-y-3 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                                    <p className="text-xs font-bold uppercase text-slate-500 tracking-wider">Elige una opción</p>
                                     <div className="space-y-2">
                                         {product.variants.map((variant: any) => (
                                             <button
                                                 key={variant.id}
                                                 onClick={() => setSelectedVariant(variant.id)}
-                                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${selectedVariant === variant.id ? 'border-[#ec6d13] bg-[#ec6d13]/10 text-[#ec6d13]' : 'border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'}`}
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm font-medium ${selectedVariant === variant.id ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
                                             >
                                                 <span>{variant.name}</span>
-                                                <span>{formatCurrency(Number(variant.price))}</span>
+                                                <span className={selectedVariant === variant.id ? "font-bold" : ""}>{formatCurrency(Number(variant.price))}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -380,10 +381,10 @@ export function ProductModal({
                                         const maxSelections = group.maxSelect ?? group.maxSelections ?? 1;
 
                                         return (
-                                            <div key={group.id} className="p-3 bg-black/5 dark:bg-white/5 rounded-xl">
+                                            <div key={group.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
                                                 <div className="flex justify-between items-center mb-3">
-                                                    <p className="text-xs font-bold uppercase text-gray-900 dark:text-white">{group.name}</p>
-                                                    <p className="text-[10px] font-bold uppercase text-red-500 bg-red-500/10 px-2 py-0.5 rounded-sm">
+                                                    <p className="text-xs font-bold uppercase text-slate-800 tracking-wider">{group.name}</p>
+                                                    <p className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm ${minSelections > 0 ? 'text-amber-700 bg-amber-100' : 'text-slate-500 bg-slate-200'}`}>
                                                         {minSelections > 0 ? `Requerido (Mín. ${minSelections})` : 'Opcional'}
                                                     </p>
                                                 </div>
@@ -396,16 +397,16 @@ export function ProductModal({
                                                             <button
                                                                 key={mod.id}
                                                                 onClick={() => toggleModifier(group.id, mod, maxSelections)}
-                                                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${isSelected ? 'border-[#ec6d13] bg-[#ec6d13]/10 text-[#ec6d13]' : 'border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'}`}
+                                                                className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm font-medium ${isSelected ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
                                                             >
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#ec6d13] bg-[#ec6d13]' : 'border-gray-300 dark:border-gray-600'}`}>
+                                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'border-primary bg-primary' : 'border-slate-300 bg-white'}`}>
                                                                         {isSelected && maxSelections === 1 && <div className="w-2 h-2 rounded-full bg-white" />}
                                                                         {isSelected && maxSelections > 1 && <div className="w-2 h-2 bg-white rotate-45" style={{ clipPath: 'polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%)' }} />}
                                                                     </div>
                                                                     <span>{mod.name}</span>
                                                                 </div>
-                                                                <span className="text-xs font-medium text-gray-500">
+                                                                <span className={`text-xs ${isSelected ? 'font-bold' : 'font-medium text-slate-500'}`}>
                                                                     {Number(mod.price) > 0 ? `+${formatCurrency(Number(mod.price))}` : ''}
                                                                 </span>
                                                             </button>
@@ -421,34 +422,34 @@ export function ProductModal({
 
 
                             {/* Comments Section */}
-                            <div className="border-t border-gray-200 dark:border-white/5 pt-6 mb-8 relative group">
-                                <h4 className="flex items-center gap-2 text-sm font-bold mb-4 text-gray-900 dark:text-white">
-                                    <MessageCircle className="w-4 h-4" />
+                            <div className="border-t border-slate-100 pt-6 mt-2 relative group">
+                                <h4 className="flex items-center gap-2 text-sm font-bold mb-4 text-slate-900 tracking-tight">
+                                    <MessageCircle className="w-4 h-4 text-slate-500" />
                                     Comentarios ({comments.length})
                                 </h4>
 
                                 <div className="space-y-4 mb-6 relative">
                                     {comments.length === 0 ? (
-                                        <div className="text-center py-8 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5">
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Aún no hay opiniones</p>
-                                            <p className="text-xs text-[#ec6d13] font-medium">¡Sé el primero en probarlo!</p>
+                                        <div className="text-center py-8 bg-slate-50 rounded-2xl border border-slate-100/50 shadow-sm">
+                                            <p className="text-sm text-slate-500 mb-2 font-medium">Aún no hay opiniones</p>
+                                            <p className="text-xs text-primary font-bold">¡Sé el primero en probarlo!</p>
                                         </div>
                                     ) : (
                                         <>
                                             {(isCommentsExpanded ? comments : comments.slice(0, 5)).map((comment) => (
-                                                <div key={comment.id} className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+                                                <div key={comment.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                                                     <div className="flex items-start justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-400 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white">
+                                                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-primary/50 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
                                                                 {comment.userName.charAt(0).toUpperCase()}
                                                             </div>
-                                                            <span className="font-bold text-sm text-gray-900 dark:text-white">{comment.userName}</span>
+                                                            <span className="font-bold text-sm text-slate-900">{comment.userName}</span>
                                                         </div>
-                                                        <span className="text-[10px] text-gray-400">
+                                                        <span className="text-[10px] text-slate-400 font-medium">
                                                             {new Date(comment.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed pl-8">
+                                                    <p className="text-sm text-slate-700 leading-relaxed pl-9">
                                                         {comment.content}
                                                     </p>
                                                 </div>
@@ -456,12 +457,12 @@ export function ProductModal({
 
                                             {/* Expand Overlay */}
                                             {!isCommentsExpanded && comments.length > 5 && (
-                                                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f8f7f6] dark:from-[#221810] via-[#f8f7f6]/95 dark:via-[#221810]/95 to-transparent flex items-end justify-center pb-0 z-10 pt-10">
+                                                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/95 to-transparent flex items-end justify-center pb-0 z-10 pt-10">
                                                     <button
                                                         onClick={() => setIsCommentsExpanded(true)}
-                                                        className="flex items-center gap-2 text-[#ec6d13] font-bold text-sm bg-white dark:bg-white/10 px-6 py-2.5 rounded-full shadow-lg backdrop-blur-md border border-gray-100 dark:border-white/5 hover:scale-105 transition-transform"
+                                                        className="flex items-center gap-2 text-primary font-bold text-sm bg-white px-6 py-2.5 rounded-full shadow-lg border border-slate-100 hover:scale-105 hover:shadow-xl transition-all"
                                                     >
-                                                        Ver más
+                                                        Ver más opiniones
                                                         <ChevronDown className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -472,7 +473,7 @@ export function ProductModal({
                                                 <div className="sticky bottom-4 flex justify-center z-20 py-4 transition-opacity duration-300">
                                                     <button
                                                         onClick={() => setIsCommentsExpanded(false)}
-                                                        className="flex items-center gap-2 text-white font-bold text-xs bg-black/80 dark:bg-white/10 px-4 py-2 rounded-full shadow-lg backdrop-blur-md hover:scale-105 transition-transform border border-white/10"
+                                                        className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-bold text-xs bg-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl border border-slate-200 hover:scale-105 transition-all"
                                                     >
                                                         Ver menos
                                                         <ChevronUp className="w-3 h-3" />
@@ -492,7 +493,7 @@ export function ProductModal({
                                         onChange={(e) => setCommentText(e.target.value)}
                                         placeholder="Escribe tu opinión..."
                                         rows={1}
-                                        className="w-full bg-black/5 dark:bg-white/10 border-none rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-[#ec6d13]/50 text-gray-900 dark:text-white placeholder:text-gray-500 resize-none overflow-hidden min-h-[44px]"
+                                        className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3.5 pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 placeholder:text-slate-500 resize-none overflow-hidden min-h-[48px] transition-all"
                                         style={{ maxHeight: '120px' }}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
@@ -504,39 +505,36 @@ export function ProductModal({
                                     <button
                                         onClick={() => handleSocialAction("COMMENT")}
                                         disabled={!commentText.trim()}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-[#ec6d13] text-white disabled:opacity-50 disabled:bg-gray-400 transition-colors"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-50 disabled:bg-slate-300 transition-colors shadow-sm"
                                     >
                                         <ArrowRight className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
-
-
                         </div>
 
                         {/* Divider */}
-                        <div className="h-px bg-gray-200 dark:bg-white/5 w-full my-2"></div>
+                        <div className="h-2 bg-slate-100 w-full mb-4 border-y border-slate-200"></div>
 
                         {/* Suggested Items */}
-                        <div className="px-4 py-4 mb-8">
-                            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Combina bien con</h4>
-                            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                        <div className="px-4 pb-8 mb-4">
+                            <h4 className="text-sm font-bold text-slate-900 mb-4 tracking-tight">Combina bien con</h4>
+                            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
                                 {suggestedProducts.map(item => (
-                                    <div key={item.id} className="flex-shrink-0 w-32 group cursor-pointer" onClick={() => {
+                                    <div key={item.id} className="flex-shrink-0 w-[140px] group cursor-pointer snap-start" onClick={() => {
                                         onProductSelect(item)
                                     }}>
-                                        <div className="w-32 h-32 rounded-xl overflow-hidden mb-2 relative bg-gray-800">
+                                        <div className="w-[140px] h-[140px] rounded-2xl overflow-hidden mb-3 relative bg-slate-100 border border-slate-200 shadow-sm">
                                             <Image
                                                 src={item.images?.[0] || '/placeholder.png'}
                                                 alt={item.name}
                                                 fill
                                                 sizes="150px"
-                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
                                         </div>
-                                        <p className="text-xs font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                                        <p className="text-xs text-[#ec6d13]">{formatCurrency(Number(item.basePrice))}</p>
+                                        <p className="text-sm font-bold text-slate-900 truncate mb-0.5 group-hover:text-primary transition-colors">{item.name}</p>
+                                        <p className="text-sm text-slate-500 font-medium">{formatCurrency(Number(item.basePrice))}</p>
                                     </div>
                                 ))}
                             </div>
@@ -546,20 +544,20 @@ export function ProductModal({
 
                 {/* Sticky Action Footer */}
                 <div className="absolute bottom-0 w-full z-30">
-                    <div className="bg-[#2d241c]/95 dark:bg-[#2d241c]/95 backdrop-blur-xl border-t border-white/10 px-4 py-4 pb-8 sm:pb-4 shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
+                    <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 px-4 py-4 pb-8 sm:pb-4 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
                         <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
-                            <div className="flex items-center gap-3 bg-white/10 rounded-xl p-1.5 h-12">
-                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-full flex items-center justify-center hover:bg-white/10 rounded-lg text-white"><Minus className="w-4 h-4" /></button>
-                                <span className="font-bold text-white w-4 text-center">{quantity}</span>
-                                <button onClick={() => setQuantity(q => q + 1)} className="w-8 h-full flex items-center justify-center hover:bg-white/10 rounded-lg text-white"><Plus className="w-4 h-4" /></button>
+                            <div className="flex items-center gap-3 bg-slate-100 rounded-xl p-1.5 h-14 border border-slate-200 shadow-inner">
+                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition-all"><Minus className="w-5 h-5" /></button>
+                                <span className="font-bold text-slate-900 w-6 text-center text-lg">{quantity}</span>
+                                <button onClick={() => setQuantity(q => q + 1)} className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition-all"><Plus className="w-5 h-5" /></button>
                             </div>
 
                             <button
                                 onClick={handleAdd}
-                                className="flex-1 bg-[#ec6d13] hover:bg-orange-600 text-white font-bold h-12 px-6 rounded-xl shadow-lg shadow-[#ec6d13]/30 flex items-center justify-between gap-2 transition-all active:scale-[0.98] whitespace-nowrap"
+                                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-6 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-between gap-2 transition-all active:scale-[0.98] whitespace-nowrap text-lg"
                             >
                                 <span>Añadir</span>
-                                <span>{formatCurrency(totalPrice)}</span>
+                                <span className="bg-black/10 px-2 py-1 rounded-lg text-sm">{formatCurrency(totalPrice)}</span>
                             </button>
                         </div>
                     </div>

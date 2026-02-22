@@ -61,6 +61,13 @@ export const sidebarConfig: SidebarConfig = {
                 href: "/admin/users",
                 icon: Users,
             },
+            {
+                title: "CRM",
+                icon: Users,
+                items: [
+                    { title: "Clientes (Leads)", href: "/admin/crm/clientes" },
+                ],
+            },
 
             {
                 title: "Configuración",

@@ -213,6 +213,11 @@ export class OrdersService {
                                     },
                                 })),
                             },
+                            deliveryAnalytics: {
+                                create: {
+                                    pendingAt: new Date(),
+                                }
+                            }
                         },
                         include: {
                             items: {
@@ -225,6 +230,32 @@ export class OrdersService {
                             },
                         },
                     });
+
+                    // 9. Capturar Lead si hay teléfono
+                    if (dto.customerPhone && dto.customerPhone !== "0000000000") {
+                        // Buscar si ya existe un lead con este teléfono
+                        const existingLead = await tx.lead.findFirst({
+                            where: { phone: dto.customerPhone }
+                        });
+
+                        if (!existingLead) {
+                            await tx.lead.create({
+                                data: {
+                                    phone: dto.customerPhone,
+                                    name: dto.customerName || null,
+                                    source: 'Menu Checkout',
+                                    status: 'new'
+                                }
+                            });
+                            this.logger.log(`Nuevo lead capturado: ${dto.customerPhone}`);
+                        } else if (dto.customerName && !existingLead.name) {
+                            // Actualizar nombre si no lo tenía
+                            await tx.lead.update({
+                                where: { id: existingLead.id },
+                                data: { name: dto.customerName }
+                            });
+                        }
+                    }
 
                     this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
 
@@ -329,6 +360,41 @@ export class OrdersService {
                 },
             });
 
+            // 3. Analytics Updates
+            // Fetch analytics separately to avoid type issues with nested includes
+            const analytics = await tx.orderDeliveryAnalytics.findUnique({
+                where: { orderId: orderId }
+            });
+
+            if (analytics) {
+                const now = new Date();
+                const analyticsUpdate: any = {};
+
+                if (dto.status === 'PREPARING' && !analytics.preparingAt) {
+                    analyticsUpdate.preparingAt = now;
+                    analyticsUpdate.timeToPrepare = Math.floor((now.getTime() - analytics.pendingAt.getTime()) / 1000);
+                } else if (dto.status === 'SHIPPED' && !analytics.shippedAt) {
+                    analyticsUpdate.shippedAt = now;
+                    if (analytics.preparingAt) {
+                        analyticsUpdate.timeToShip = Math.floor((now.getTime() - analytics.preparingAt.getTime()) / 1000);
+                    }
+                } else if (dto.status === 'DELIVERED' && !analytics.deliveredAt) {
+                    analyticsUpdate.deliveredAt = now;
+                    if (analytics.shippedAt) {
+                        analyticsUpdate.timeToDeliver = Math.floor((now.getTime() - analytics.shippedAt.getTime()) / 1000);
+                    } else if (analytics.preparingAt) {
+                        analyticsUpdate.timeToDeliver = Math.floor((now.getTime() - analytics.preparingAt.getTime()) / 1000);
+                    }
+                }
+
+                if (Object.keys(analyticsUpdate).length > 0) {
+                    await tx.orderDeliveryAnalytics.update({
+                        where: { id: analytics.id },
+                        data: analyticsUpdate
+                    });
+                }
+            }
+
             // SSE: notificar cambio de estado
             this.ordersGateway.emit(this.getTenantId(), {
                 type: 'status_changed',
@@ -361,6 +427,33 @@ export class OrdersService {
             },
             orderBy: { createdAt: 'desc' }
         });
+    }
+
+    // ============ TRACKING PÚBLICO ============
+    async getOrderForTracking(orderId: string) {
+        const order = await this.prisma.client.order.findUnique({
+            where: { id: orderId },
+            select: {
+                id: true,
+                orderNumber: true,
+                status: true,
+                totalAmount: true,
+                createdAt: true,
+                customerName: true,
+                items: {
+                    select: {
+                        productName: true,
+                        quantity: true
+                    }
+                }
+            }
+        });
+
+        if (!order) {
+            throw new NotFoundException('Orden no encontrada');
+        }
+
+        return order;
     }
 
     // ============ ADMIN: LISTAR ÓRDENES ============

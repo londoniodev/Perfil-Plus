@@ -24,6 +24,7 @@ const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.Prod
     loading: () => <div className="fixed inset-0 bg-white/50 z-50 flex items-center justify-center"><div className="animate-spin text-primary w-10 h-10 border-4 border-current border-t-transparent rounded-full" /></div>
 })
 const NamePromptModal = dynamic(() => import("./NamePromptModal").then(mod => mod.NamePromptModal), { ssr: false })
+const OrderConfirmationModal = dynamic(() => import("./OrderConfirmationModal").then(mod => mod.OrderConfirmationModal), { ssr: false })
 
 // ─────────────────────────────────────────────
 // Main Menu Client Component
@@ -45,6 +46,7 @@ export default function MenuClient({
     const [selectedProduct, setSelectedProduct] = useState<PublicProduct | null>(null)
     const [isCartOpen, setIsCartOpen] = useState(false)
     const [isNamePromptOpen, setIsNamePromptOpen] = useState(false)
+    const [orderConfirmation, setOrderConfirmation] = useState({ isOpen: false, orderId: "", orderNumber: "" })
     const [isFloatingCartVisible, setIsFloatingCartVisible] = useState(true)
     const [isSearchActive, setIsSearchActive] = useState(false)
     const [categoryScrollState, setCategoryScrollState] = useState<'start' | 'middle' | 'end'>('start')
@@ -117,11 +119,11 @@ export default function MenuClient({
         setIsNamePromptOpen(true)
     }
 
-    const handleConfirmOrder = async (customerName: string, paymentMethod: "CASH" | "MERCADOPAGO") => {
+    const handleConfirmOrder = async (phone: string, customerName: string, paymentMethod: "CASH" | "MERCADOPAGO") => {
         const orderData = {
             cart,
             total: total(),
-            customer: { name: customerName, phone: "0000000000" },
+            customer: { name: customerName || "Guest", phone: phone },
             tableId: table || undefined,
             paymentMethod: paymentMethod
         }
@@ -152,7 +154,11 @@ export default function MenuClient({
                     alert("❌ Error conectando c/ MercadoPago")
                 }
             } else {
-                alert(`✅ Orden creada exitosamente! #${(result as any).orderNumber || result.orderId}`)
+                setOrderConfirmation({
+                    isOpen: true,
+                    orderId: result.orderId,
+                    orderNumber: (result as any).orderNumber || result.orderId
+                })
             }
         } else {
             // @ts-ignore
@@ -577,6 +583,13 @@ export default function MenuClient({
                 onClose={() => setIsNamePromptOpen(false)}
                 onConfirm={handleConfirmOrder}
                 isSubmitting={isSubmitting}
+            />
+
+            <OrderConfirmationModal
+                isOpen={orderConfirmation.isOpen}
+                onClose={() => setOrderConfirmation(prev => ({ ...prev, isOpen: false }))}
+                orderId={orderConfirmation.orderId}
+                orderNumber={orderConfirmation.orderNumber}
             />
         </div>
     )

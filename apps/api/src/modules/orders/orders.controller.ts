@@ -31,6 +31,12 @@ export class OrdersController {
         return this.ordersService.findMyOrders(userId);
     }
 
+    @Get('track/:id')
+    @Public()
+    async trackOrder(@Param('id') id: string) {
+        return this.ordersService.getOrderForTracking(id);
+    }
+
     @Get('product/:productId/download')
     async downloadByProduct(
         @CurrentUser('id') userId: string,

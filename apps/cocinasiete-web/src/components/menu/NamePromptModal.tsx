@@ -11,9 +11,10 @@ export function NamePromptModal({
 }: {
     isOpen: boolean
     onClose: () => void
-    onConfirm: (name: string, paymentMethod: "CASH" | "MERCADOPAGO") => void
+    onConfirm: (phone: string, name: string, paymentMethod: "CASH" | "MERCADOPAGO") => void
     isSubmitting: boolean
 }) {
+    const [phone, setPhone] = useState("")
     const [name, setName] = useState("")
     const [paymentMethod, setPaymentMethod] = useState<"CASH" | "MERCADOPAGO">("CASH")
 
@@ -26,16 +27,32 @@ export function NamePromptModal({
                 animate={{ scale: 1, opacity: 1 }}
                 className="bg-white border border-slate-200 shadow-2xl rounded-2xl p-6 w-full max-w-sm"
             >
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Una cosa más...</h3>
-                <p className="text-slate-500 text-sm mb-4">¿A nombre de quién registramos el pedido?</p>
-                <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Tu nombre (Ej: Juan)"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 mb-4 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-slate-400 font-medium"
-                    autoFocus
-                />
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Finalizando pedido...</h3>
+
+                <div className="space-y-4 mb-6">
+                    <div>
+                        <label className="block text-slate-600 text-sm font-medium mb-1">Tu número de WhatsApp *</label>
+                        <input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="Ej: 0991234567"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-slate-400 font-medium"
+                            autoFocus
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-slate-600 text-sm font-medium mb-1">Tu nombre (Opcional)</label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Ej: Juan Pérez"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-slate-400 font-medium"
+                        />
+                    </div>
+                </div>
 
                 <p className="text-slate-500 text-sm mb-2 font-medium">Método de Pago</p>
                 <div className="grid grid-cols-2 gap-3 mb-6">
@@ -67,8 +84,8 @@ export function NamePromptModal({
                         Cancelar
                     </button>
                     <button
-                        onClick={() => onConfirm(name, paymentMethod)}
-                        disabled={!name.trim() || isSubmitting}
+                        onClick={() => onConfirm(phone, name, paymentMethod)}
+                        disabled={phone.length < 8 || isSubmitting}
                         className="flex-1 py-3 rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/25"
                     >
                         {isSubmitting ? (

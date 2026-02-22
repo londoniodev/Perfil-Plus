@@ -36,7 +36,7 @@ export default async function FormacionPage() {
     const themes = await getThemesWithCourses();
 
     return (
-        <main className="min-h-screen bg-background pb-20">
+        <main className="light min-h-screen bg-background pb-20">
             <CursosHero />
             <CursosCategorias themes={themes} />
             <CursosPopulares themes={themes} />

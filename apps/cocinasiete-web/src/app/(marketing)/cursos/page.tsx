@@ -41,7 +41,7 @@ export default async function CursosPage() {
     );
 
     return (
-        <main className="min-h-screen bg-background pb-20">
+        <main className="light min-h-screen bg-background pb-20">
             <CursosHero />
             {totalCourses === 0 ? (
                 <CursosEmpty />

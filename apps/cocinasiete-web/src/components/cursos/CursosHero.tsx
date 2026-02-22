@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function CursosHero() {
     return (
-        <header className="px-6 pt-16 pb-10 md:pt-20 md:pb-12 text-center relative overflow-hidden">
+        <header className="px-6 pt-32 pb-10 md:pt-40 md:pb-12 text-center relative overflow-hidden">
             {/* Gradient background accent */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />

@@ -56,7 +56,8 @@
     --input: 217 19% 27%;
 }
 
-.light-auth {
+.light-auth,
+.light {
     --background: 0 0% 100%;
     --foreground: 240 10% 4%;
     --card: 0 0% 100%;

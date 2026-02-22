@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     const description = post.metaDescription || post.excerpt;
 
     return {
-      title: `${title} | Blog - Mauro Mera`,
+      title: `${title} | Blog - Cocina Siete`,
       description,
       authors: [{ name: post.authorName }],
       openGraph: {
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   } catch {
     return {
-      title: "Artículo no encontrado | Blog - Mauro Mera",
+      title: "Artículo no encontrado | Blog - Cocina Siete",
     };
   }
 }
@@ -83,7 +83,7 @@ export default async function PostPage({ params }: PostPageProps) {
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Mauro Mera",
+      "name": "Cocina Siete",
       "url": SITE_URL
     },
     "datePublished": post.publishedAt || post.createdAt,

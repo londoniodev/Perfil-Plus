@@ -13,6 +13,10 @@ import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/config-server";
 
 async function getTenantDesign(tenantId: string) {
+  // Skip DB call during build time (static generation) — DB is not accessible in Docker build
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return null;
+  }
   try {
     const tenant = await prisma.tenant.findUnique({
       where: { slug: tenantId },

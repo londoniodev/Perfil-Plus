@@ -51,6 +51,9 @@ ENV MANAGEMENT_DATABASE_URL=${MANAGEMENT_DATABASE_URL}
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Signal to app code that we're in build phase (skip DB calls during static generation)
+ENV NEXT_PHASE=phase-production-build
+
 RUN pnpm run build
 
 # 3. Production Runner

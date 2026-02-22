@@ -10,6 +10,7 @@ import Image from "next/image"
 import { Search, Plus, Minus, Trash2, ShoppingCart, ChefHat, ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { PublicProduct, PublicCategory, SelectedModifier } from "@alvarosky/restaurant-sdk"
+import { formatCurrency } from "@/lib/utils"
 
 interface CreateOrderModalProps {
     isOpen: boolean
@@ -244,7 +245,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                                                     <div className="p-3 flex-1 flex flex-col gap-1">
                                                         <span className="font-medium text-sm line-clamp-2 leading-tight">{product.name}</span>
                                                         <span className="text-primary font-bold text-sm mt-auto">
-                                                            ${Number(product.variants?.[0]?.price ?? product.basePrice).toFixed(2)}
+                                                            {formatCurrency(Number(product.variants?.[0]?.price ?? product.basePrice))}
                                                         </span>
                                                     </div>
                                                 </button>
@@ -277,7 +278,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                                                 <div key={item.variantId} className="flex gap-3 items-start group">
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium">{item.productName}</p>
-                                                        <p className="text-xs text-muted-foreground">${item.price.toFixed(2)}</p>
+                                                        <p className="text-xs text-muted-foreground">{formatCurrency(item.price)}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2 bg-muted rounded-md p-0.5">
                                                         <button onClick={() => updateQuantity(item.variantId, -1)} className="p-1 hover:bg-background rounded disabled:opacity-50">
@@ -297,7 +298,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                                 <div className="p-4 border-t bg-muted/20 space-y-4">
                                     <div className="flex justify-between items-center text-lg font-bold">
                                         <span>Total</span>
-                                        <span>${cartTotal.toFixed(2)}</span>
+                                        <span>{formatCurrency(cartTotal)}</span>
                                     </div>
                                     <Button
                                         className="w-full h-12 text-lg"

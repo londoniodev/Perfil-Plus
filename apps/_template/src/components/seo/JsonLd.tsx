@@ -15,21 +15,18 @@ export function PersonSchema() {
         description: siteConfig.description,
         url: SITE_URL,
         image: siteConfig.ogImage || `${SITE_URL}/images/branding/menu_logo.png`,
-    };
-    sameAs: [
-        // urls de redes sociales
-    ],
         sameAs: [
+            // urls de redes sociales
             'https://wa.me/573183771838',
         ],
     };
 
-return (
-    <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-);
+    return (
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+    );
 }
 
 // Schema para la organización/marca

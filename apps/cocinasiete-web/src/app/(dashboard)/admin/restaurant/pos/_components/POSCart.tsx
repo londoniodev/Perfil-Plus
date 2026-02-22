@@ -3,6 +3,7 @@
 
 import { Button, ScrollArea, Separator, Badge } from "@alvarosky/ui"
 import { ShoppingCart, Plus, Minus, ChefHat } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 export interface CartItem {
     variantId: string
@@ -56,7 +57,7 @@ export function POSCart({ cart, tableId, tableName, onUpdateQuantity, onClearCar
                                 <div className="flex-1 text-sm bg-muted/30 p-2 rounded-lg h-auto min-h-[3rem] flex flex-col justify-center">
                                     <div className="flex justify-between font-medium items-start gap-2">
                                         <span className="whitespace-normal break-words leading-tight">{item.name}</span>
-                                        <span className="whitespace-nowrap font-mono">${(item.price * item.quantity).toLocaleString()}</span>
+                                        <span className="whitespace-nowrap font-mono">{formatCurrency(item.price * item.quantity)}</span>
                                     </div>
                                     {item.modifiers.length > 0 && (
                                         <div className="text-[10px] text-muted-foreground mt-1 bg-muted/50 px-1.5 py-0.5 rounded-sm">
@@ -106,7 +107,7 @@ export function POSCart({ cart, tableId, tableName, onUpdateQuantity, onClearCar
 
                 <div className="flex justify-between items-end">
                     <span className="font-semibold">Total</span>
-                    <span className="text-xl font-bold">${total.toLocaleString()}</span>
+                    <span className="text-xl font-bold">{formatCurrency(total)}</span>
                 </div>
 
                 <Button className="w-full" size="lg" onClick={onSendOrder} disabled={loading || cart.length === 0}>

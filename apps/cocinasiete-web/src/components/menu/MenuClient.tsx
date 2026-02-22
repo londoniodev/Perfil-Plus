@@ -21,6 +21,7 @@ import { Button } from "@alvarosky/ui"
 import { useCart, useOrder, useMenu, type PublicProduct, type PublicCategory, type ProductVariant } from "@alvarosky/restaurant-sdk"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { formatCurrency } from "@/lib/utils"
 
 // Lazy loaded modals to strip hundreds of KB from the initial JS bundle
 const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.ProductModal), {
@@ -458,7 +459,7 @@ export default function MenuClient({
                                 )}
                                 {/* Precio Overlay (opcional, estilo Instagram/Airbnb) */}
                                 {/* <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-sm font-medium">
-                                    ${parseFloat(product.basePrice.toString()).toFixed(2)}
+                                    {formatCurrency(parseFloat(product.basePrice.toString()))}
                                 </div> */}
                             </motion.div>
                         ))}
@@ -492,7 +493,7 @@ export default function MenuClient({
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold bg-black/10 px-2 py-1 rounded-lg">${totalPrice.toFixed(2)}</span>
+                                <span className="text-sm font-bold bg-black/10 px-2 py-1 rounded-lg">{formatCurrency(totalPrice)}</span>
                                 <ArrowRight className="w-4 h-4" />
                             </div>
                         </button>
@@ -565,7 +566,7 @@ export default function MenuClient({
                                         )}
                                         <div className="flex-1">
                                             <h4 className="font-bold text-lg">{item.name}</h4>
-                                            <p className="text-white/60 text-sm">${item.price.toFixed(2)}</p>
+                                            <p className="text-white/60 text-sm">{formatCurrency(item.price)}</p>
                                         </div>
                                         <div className="flex items-center gap-3 bg-white/5 rounded-lg p-1">
                                             <button onClick={() => item.quantity > 1 ? addItem({ ...item, quantity: -1 }) : removeItem(item.variantId)} className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-md"><Minus className="w-4 h-4" /></button>
@@ -580,7 +581,7 @@ export default function MenuClient({
                             <div className="p-6 bg-[#221810] border-t border-white/10 pb-10">
                                 <div className="flex justify-between items-center mb-6 text-xl font-bold">
                                     <span>Total</span>
-                                    <span>${total().toFixed(2)}</span>
+                                    <span>{formatCurrency(total())}</span>
                                 </div>
                                 <Button className="w-full h-14 text-lg font-bold bg-[#ec6d13] hover:bg-[#d55f0e] text-white rounded-xl" onClick={handleCheckout} disabled={isSubmitting || cart.length === 0}>
                                     {isSubmitting ? "Procesando..." : "Confirmar Pedido"}

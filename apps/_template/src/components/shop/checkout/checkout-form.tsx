@@ -22,6 +22,7 @@ import {
 import { UtensilsCrossed, Truck, ShoppingBag } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createOrder } from "@/lib/api"
+import { formatCurrency } from "@/lib/utils"
 
 // Schema Unificado con refinamiento
 const checkoutSchema = z.object({
@@ -214,7 +215,7 @@ export function CheckoutForm() {
                             </div>
 
                             <Button type="submit" className="w-full mt-6" size="lg" disabled={isSubmitting}>
-                                {isSubmitting ? "Procesando..." : `Confirmar Pedido - $${totalPrice().toFixed(2)}`}
+                                {isSubmitting ? "Procesando..." : `Confirmar Pedido - ${formatCurrency(totalPrice())}`}
                             </Button>
                         </form>
                     </CardContent>
@@ -234,13 +235,13 @@ export function CheckoutForm() {
                                     <p className="font-medium">{item.title} x{item.quantity}</p>
                                     {item.subtitle && <p className="text-muted-foreground text-xs">{item.subtitle}</p>}
                                 </div>
-                                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                                <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
                             </div>
                         ))}
                         <Separator />
                         <div className="flex justify-between items-center font-bold text-lg pt-2">
                             <span>Total</span>
-                            <span>${totalPrice().toFixed(2)}</span>
+                            <span>{formatCurrency(totalPrice())}</span>
                         </div>
                     </CardContent>
                 </Card>

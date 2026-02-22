@@ -3,6 +3,7 @@ import { Clock, CheckCircle2, XCircle, ChevronRight, Utensils } from "lucide-rea
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import type { WaiterOrder } from "@/types/waiter"
+import { formatCurrency } from "@/lib/utils"
 
 interface OrderCardProps {
     order: WaiterOrder
@@ -65,7 +66,7 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
                                     <span className="font-bold w-6 text-center">{item.quantity}x</span>
                                     <span className="font-bold leading-tight">{item.productName || "Producto"}</span>
                                 </span>
-                                <span className="text-muted-foreground ml-2">${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                                <span className="text-muted-foreground ml-2">{formatCurrency(Number(item.price) * item.quantity)}</span>
                             </div>
                             {item.modifiers && item.modifiers.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1 pl-8">
@@ -92,7 +93,7 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
                 <Separator className="my-3" />
                 <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${Number((order as any).totalAmount || (order as any).total || 0).toFixed(2)}</span>
+                    <span>{formatCurrency(Number((order as any).totalAmount || (order as any).total || 0))}</span>
                 </div>
             </CardContent>
             <CardFooter className="pt-2 flex w-full gap-2">

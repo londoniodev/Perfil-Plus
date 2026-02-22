@@ -20,9 +20,11 @@ export function PriceDisplay({
     const numericPrice = Number(price)
     const numericSalePrice = salePrice ? Number(salePrice) : undefined
 
-    const formatter = new Intl.NumberFormat('en-US', {
+    const formatter = new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     })
 
     // Lógica de Descuento

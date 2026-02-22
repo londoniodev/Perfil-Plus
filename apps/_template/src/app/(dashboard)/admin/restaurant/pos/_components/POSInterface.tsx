@@ -8,6 +8,7 @@ import { Button, Card, Input, ScrollArea, useToast, Sheet, SheetContent, SheetTr
 import { Search, ShoppingCart, ArrowLeft, Loader2, Plus } from "lucide-react"
 import { POSCart, type CartItem } from "./POSCart"
 import { ProductSelectionDialog } from "./ProductSelectionDialog"
+import { formatCurrency } from "@/lib/utils"
 
 interface POSInterfaceProps {
     products: POSProduct[]
@@ -153,7 +154,7 @@ export function POSInterface({ products, tableId, tableName }: POSInterfaceProps
                                         {product.name}
                                     </h3>
                                     <p className="text-primary font-bold text-sm mt-2">
-                                        ${product.variants[0]?.price.toLocaleString()}
+                                        {formatCurrency(product.variants[0]?.price)}
                                     </p>
                                 </div>
                             </Card>
@@ -189,7 +190,7 @@ export function POSInterface({ products, tableId, tableName }: POSInterfaceProps
                                 </div>
                                 <span className="font-bold">Ver Pedido</span>
                                 <span className="font-mono bg-black/20 px-2 py-1 rounded text-sm">
-                                    ${total.toLocaleString()}
+                                    {formatCurrency(total)}
                                 </span>
                             </div>
                         </Button>

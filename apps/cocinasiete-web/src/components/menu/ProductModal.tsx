@@ -21,6 +21,7 @@ import {
 import Image from "next/image"
 import type { PublicProduct } from "@alvarosky/restaurant-sdk"
 import { PhoneAuthModal } from "./PhoneAuthModal"
+import { formatCurrency } from "@/lib/utils"
 
 export function ProductModal({
     slug,
@@ -314,7 +315,7 @@ export function ProductModal({
                             {/* Image Overlay Tags */}
                             <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1">
                                 <Tag className="w-3 h-3 text-white" />
-                                <span className="text-white text-xs font-medium">${unitPrice.toFixed(2)}</span>
+                                <span className="text-white text-xs font-medium">{formatCurrency(unitPrice)}</span>
                             </div>
                         </div>
 
@@ -364,7 +365,7 @@ export function ProductModal({
                                                 className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${selectedVariant === variant.id ? 'border-[#ec6d13] bg-[#ec6d13]/10 text-[#ec6d13]' : 'border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'}`}
                                             >
                                                 <span>{variant.name}</span>
-                                                <span>${Number(variant.price).toFixed(2)}</span>
+                                                <span>{formatCurrency(Number(variant.price))}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -405,7 +406,7 @@ export function ProductModal({
                                                                     <span>{mod.name}</span>
                                                                 </div>
                                                                 <span className="text-xs font-medium text-gray-500">
-                                                                    {Number(mod.price) > 0 ? `+$${Number(mod.price).toFixed(2)}` : ''}
+                                                                    {Number(mod.price) > 0 ? `+${formatCurrency(Number(mod.price))}` : ''}
                                                                 </span>
                                                             </button>
                                                         );
@@ -535,7 +536,7 @@ export function ProductModal({
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
                                         </div>
                                         <p className="text-xs font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                                        <p className="text-xs text-[#ec6d13]">${Number(item.basePrice).toFixed(2)}</p>
+                                        <p className="text-xs text-[#ec6d13]">{formatCurrency(Number(item.basePrice))}</p>
                                     </div>
                                 ))}
                             </div>
@@ -558,7 +559,7 @@ export function ProductModal({
                                 className="flex-1 bg-[#ec6d13] hover:bg-orange-600 text-white font-bold h-12 px-6 rounded-xl shadow-lg shadow-[#ec6d13]/30 flex items-center justify-between gap-2 transition-all active:scale-[0.98] whitespace-nowrap"
                             >
                                 <span>Añadir</span>
-                                <span>${totalPrice.toFixed(2)}</span>
+                                <span>{formatCurrency(totalPrice)}</span>
                             </button>
                         </div>
                     </div>

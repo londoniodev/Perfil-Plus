@@ -14,6 +14,7 @@ import { es } from "date-fns/locale"
 import type { WaiterOrder } from "@/types/waiter"
 import type { Table } from "@/actions/admin/tables"
 import { useOrderEvents } from "@/hooks/use-order-events"
+import { formatCurrency } from "@/lib/utils"
 import dynamic from "next/dynamic"
 
 const CreateOrderModal = dynamic(() => import("./CreateOrderModal").then(mod => mod.CreateOrderModal), {
@@ -78,7 +79,7 @@ function OrderCard({ order, onAction, busy, tableName }: {
                     {order.items.map((item, i) => (
                         <div key={i} className="flex justify-between">
                             <span><span className="font-semibold mr-1">{item.quantity}×</span>{item.productName}</span>
-                            <span className="text-muted-foreground">${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                            <span className="text-muted-foreground">{formatCurrency(Number(item.price) * item.quantity)}</span>
                         </div>
                     ))}
                 </div>
@@ -92,7 +93,7 @@ function OrderCard({ order, onAction, busy, tableName }: {
                 <Separator className="my-2" />
                 <div className="flex justify-between font-bold text-base">
                     <span>Total</span>
-                    <span>${Number(order.totalAmount).toFixed(2)}</span>
+                    <span>{formatCurrency(Number(order.totalAmount))}</span>
                 </div>
             </CardContent>
 

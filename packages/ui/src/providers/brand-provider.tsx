@@ -77,12 +77,14 @@ export function BrandProvider({
                 light: {
                     ...base.light,
                     "--primary": custom,
+                    "--primary-foreground": "0 0% 100%",
                     "--ring": custom,
                     ...(sidebarColors ? sidebarColors.light : {})
                 } as any,
                 dark: {
                     ...base.dark,
                     "--primary": custom,
+                    "--primary-foreground": "0 0% 100%",
                     "--ring": custom,
                     ...(sidebarColors ? sidebarColors.dark : {})
                 } as any

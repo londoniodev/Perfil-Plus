@@ -9,6 +9,29 @@ import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
+import { PrismaClient } from "@alvarosky/database-management";
+import { getTenantId } from "@/lib/config-server";
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.MANAGEMENT_DATABASE_URL,
+    },
+  },
+});
+
+async function getTenantDesign(tenantId: string) {
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug: tenantId },
+      select: { design: true },
+    });
+    return tenant?.design ?? null;
+  } catch (e) {
+    console.error("Error fetching tenant design:", e);
+    return null;
+  }
+}
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -74,11 +97,14 @@ export const viewport: Viewport = {
   themeColor: "#09090b", // Dark theme match
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenantId = await getTenantId();
+  const design = await getTenantDesign(tenantId);
+
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
@@ -92,7 +118,7 @@ export default function RootLayout({
           enableSystem={false}
           forcedTheme="dark"
         >
-          <BrandProvider>
+          <BrandProvider settings={design as any}>
             <GlobalSchemas />
             <ToastProvider>
               <NavigationWrapper footer={<Footer />}>

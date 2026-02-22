@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import {
     CursosHero,
     CursosCategorias,
@@ -5,17 +6,21 @@ import {
     CursosNuevos,
 } from "@/components/cursos";
 
-export const dynamic = 'force-dynamic';
+export const metadata: Metadata = {
+    title: "Cursos | Cocina Siete",
+    description:
+        "Capacitaciones especializadas para restaurantes, bares y negocios gastronómicos. Aprende con los expertos de Cocinasiete.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default function CursosPage() {
     return (
-        <div className="bg-white  font-sans antialiased transition-colors duration-200 pb-20">
-            <main className="max-w-md mx-auto relative min-h-screen">
-                <CursosHero />
-                <CursosCategorias />
-                <CursosPopulares />
-                <CursosNuevos />
-            </main>
-        </div>
+        <main className="min-h-screen bg-background pb-20">
+            <CursosHero />
+            <CursosCategorias />
+            <CursosPopulares />
+            <CursosNuevos />
+        </main>
     );
 }

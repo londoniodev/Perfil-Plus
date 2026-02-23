@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Check, Clock, Package, Truck, XCircle } from "lucide-react"
-import { API_BASE } from "@/lib/config"
+import { API_BASE, TENANT_ID } from "@/lib/config"
 
 type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'READY' | 'SERVED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED'
 
@@ -36,7 +36,11 @@ export function OrderTrackerClient({ orderId }: { orderId: string }) {
         let interval: NodeJS.Timeout
         const fetchOrder = async () => {
             try {
-                const res = await fetch(`${API_BASE}/orders/track/${orderId}`)
+                const res = await fetch(`${API_BASE}/orders/track/${orderId}`, {
+                    headers: {
+                        'x-tenant-id': TENANT_ID
+                    }
+                })
                 if (!res.ok) {
                     if (res.status === 404) throw new Error("Pedido no encontrado")
                     throw new Error("Error al consultar el pedido")

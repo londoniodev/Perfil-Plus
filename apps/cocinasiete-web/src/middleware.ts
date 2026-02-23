@@ -10,7 +10,8 @@ const BASE_DOMAINS = [
     'localhost',
     '127.0.0.1',
     'vercel.app',
-    'dokploy.com' // Ajustable si usas tu propio root domain proxy
+    'dokploy.com', // Ajustable si usas tu propio root domain proxy
+    'xn--alvarolondoo-khb.dev'
 ];
 
 function isBaseDomain(hostname: string): boolean {

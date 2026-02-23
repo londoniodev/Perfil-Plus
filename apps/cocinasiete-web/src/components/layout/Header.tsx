@@ -6,7 +6,12 @@ import { SiteHeader } from "@alvarosky/ui";
 import { CartSheet } from "@/components/shop/cart-sheet";
 import { siteConfig } from "@/config/site";
 
-export function Header() {
+interface HeaderProps {
+    tenantName?: string;
+    logoUrl?: string;
+}
+
+export function Header({ tenantName, logoUrl }: HeaderProps) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
 
@@ -18,10 +23,15 @@ export function Header() {
         { label: "Tienda", href: "/menu" },
     ];
 
+    const finalLogo = logoUrl || siteConfig.branding.logo;
+    // Si el logo es una URL externa (https://), marcar como unoptimized para Next/Image
+    const isExternal = finalLogo.startsWith("http");
+
     return (
         <SiteHeader
-            logo={siteConfig.branding.logo}
-            logoAlt={siteConfig.branding.logoAlt}
+            logo={finalLogo}
+            logoAlt={tenantName || siteConfig.branding.logoAlt}
+            logoUnoptimized={isExternal}
             links={navLinks}
             isAuthenticated={isAuthenticated}
             pathname={pathname}
@@ -29,4 +39,3 @@ export function Header() {
         />
     );
 }
-

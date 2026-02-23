@@ -9,88 +9,99 @@ import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
-import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/config-server";
+import { serverFetch } from "@/lib/api-server";
 
-async function getTenantDesign(tenantId: string) {
-  // Skip DB call during build time (static generation) — DB is not accessible in Docker build
+interface TenantBranding {
+  design: any;
+  name: string | null;
+  features: string[];
+}
+
+async function getTenantBranding(): Promise<TenantBranding | null> {
+  // Skip API call during build time — API is not accessible in Docker build
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return null;
   }
   try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug: tenantId },
-      select: { design: true },
-    });
-    return tenant?.design ?? null;
+    const branding = await serverFetch<TenantBranding>('/tenant/branding');
+    return branding ?? null;
   } catch (e) {
-    console.error("Error fetching tenant design:", e);
+    console.error("Error fetching tenant branding:", e);
     return null;
   }
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.name} | Almuerzos Saludables`,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: siteConfig.keywords,
-  authors: [{ name: siteConfig.name, url: siteConfig.url }],
-  creator: siteConfig.name,
-  publisher: siteConfig.name,
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  openGraph: {
-    type: "website",
-    locale: "es_CO",
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    title: `${siteConfig.name} | Almuerzos Saludables`,
+/**
+ * Metadata dinámica: el <title> y las etiquetas OG se alimentan del nombre
+ * del tenant obtenido desde la API, con fallback al siteConfig estático.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getTenantBranding();
+  const name = branding?.name || siteConfig.name;
+
+  return {
+    metadataBase: new URL(siteConfig.url),
+    title: {
+      default: `${name} | Almuerzos Saludables`,
+      template: `%s | ${name}`,
+    },
     description: siteConfig.description,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${siteConfig.name} - Almuerzos Saludables`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${siteConfig.name} | Almuerzos Saludables`,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    keywords: siteConfig.keywords,
+    authors: [{ name, url: siteConfig.url }],
+    creator: name,
+    publisher: name,
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    openGraph: {
+      type: "website",
+      locale: "es_CO",
+      url: siteConfig.url,
+      siteName: name,
+      title: `${name} | Almuerzos Saludables`,
+      description: siteConfig.description,
+      images: [
+        {
+          url: siteConfig.ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${name} - Almuerzos Saludables`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} | Almuerzos Saludables`,
+      description: siteConfig.description,
+      images: [siteConfig.ogImage],
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  alternates: {
-    canonical: SITE_URL,
-  },
-};
+    alternates: {
+      canonical: SITE_URL,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // App-like feel, no zoom
-  themeColor: "#09090b", // Dark theme match
+  userScalable: false,
+  themeColor: "#09090b",
 };
 
 export default async function RootLayout({
@@ -98,8 +109,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const tenantId = await getTenantId();
-  const design = await getTenantDesign(tenantId);
+  const branding = await getTenantBranding();
+  const tenantName = branding?.name || siteConfig.name;
+  const logoUrl = branding?.design?.logoUrl || siteConfig.branding.logo;
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -114,10 +126,14 @@ export default async function RootLayout({
           enableSystem={false}
           forcedTheme="dark"
         >
-          <BrandProvider settings={design as any}>
+          <BrandProvider settings={branding?.design as any}>
             <GlobalSchemas />
             <ToastProvider>
-              <NavigationWrapper footer={<Footer />}>
+              <NavigationWrapper
+                footer={<Footer tenantName={tenantName} logoUrl={logoUrl} />}
+                tenantName={tenantName}
+                logoUrl={logoUrl}
+              >
                 {children}
               </NavigationWrapper>
               <PwaInstallPrompt />
@@ -129,5 +145,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-

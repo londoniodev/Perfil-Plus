@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Check, Clock, Package, Truck, XCircle } from "lucide-react"
+import { API_BASE } from "@/lib/config"
 
 type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'READY' | 'SERVED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED'
 
@@ -35,7 +36,7 @@ export function OrderTrackerClient({ orderId }: { orderId: string }) {
         let interval: NodeJS.Timeout
         const fetchOrder = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/orders/track/${orderId}`)
+                const res = await fetch(`${API_BASE}/orders/track/${orderId}`)
                 if (!res.ok) {
                     if (res.status === 404) throw new Error("Pedido no encontrado")
                     throw new Error("Error al consultar el pedido")
@@ -135,8 +136,8 @@ export function OrderTrackerClient({ orderId }: { orderId: string }) {
                                             animate={{ scale: 1, opacity: 1 }}
                                             transition={{ delay: index * 0.1 }}
                                             className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-white transition-colors duration-500 ${isCompleted
-                                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
-                                                    : 'bg-slate-100 text-slate-400'
+                                                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
+                                                : 'bg-slate-100 text-slate-400'
                                                 }`}
                                         >
                                             <Icon className="w-5 h-5" />

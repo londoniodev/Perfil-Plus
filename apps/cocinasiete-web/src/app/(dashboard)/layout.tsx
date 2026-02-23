@@ -50,11 +50,11 @@ export default async function DashboardLayout({
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
-    const features = (dbFeatures || []).map((f) => {
+    const features = (dbFeatures || []).map((f: string) => {
         const lower = f.toLowerCase();
         if (lower === 'ecommerce') return 'shop';
         return lower as FeatureKey;
-    }).filter((f): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
+    }).filter((f: string): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
 
     return (
         <AuthProvider>

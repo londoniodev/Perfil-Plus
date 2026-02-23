@@ -7,6 +7,7 @@ import {
     SidebarTrigger,
 } from "../sidebar";
 import { Separator } from "../separator";
+import { ThemeToggle } from "../theme-toggle";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -147,12 +148,11 @@ export function AdminHeader({
                 ) : null}
             </div>
 
-            {/* Additional Actions (search, notifications, etc.) */}
-            {children && (
-                <div className="flex items-center gap-2 ml-auto">
-                    {children}
-                </div>
-            )}
+            {/* Theme Toggle + Additional Actions */}
+            <div className="flex items-center gap-1 ml-auto">
+                <ThemeToggle />
+                {children}
+            </div>
         </header>
     );
 }

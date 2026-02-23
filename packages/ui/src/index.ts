@@ -65,6 +65,7 @@ export * from "./filter-tabs";
 // Client Utilities
 export * from "./client-toast";
 export * from "./premium-lock";
+export * from "./theme-toggle";
 
 // Blog Components
 export * from "./components/blog/blog-card";

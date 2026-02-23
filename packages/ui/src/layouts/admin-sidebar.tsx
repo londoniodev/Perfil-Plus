@@ -114,7 +114,7 @@ export function AdminSidebar({
         .substring(0, 2) || "U";
 
     return (
-        <Sidebar collapsible="icon" className="bg-white dark:bg-zinc-50 border-r" {...props}>
+        <Sidebar collapsible="icon" className="border-r" {...props}>
             {/* Header: Brand */}
             <SidebarHeader>
                 <SidebarMenu>

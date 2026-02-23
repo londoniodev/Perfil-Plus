@@ -121,11 +121,12 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     const watchedRadius = form.watch("radius");
     const watchedPrimary = form.watch("primary");
 
-
     // Logic for Custom Hex
     const isCustomPrimary = watchedPrimary && !themes[watchedPrimary as keyof typeof themes];
     const [customHex, setCustomHex] = useState<string>(
-        isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
+        isCustomPrimary && watchedPrimary.startsWith("#") ? watchedPrimary : (
+            isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
+        )
     );
 
     const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +134,8 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
         setCustomHex(hex);
         // Only update form if valid hex
         if (/^#[0-9A-F]{6}$/i.test(hex)) {
-            form.setValue("primary", hexToHSL(hex), { shouldDirty: true });
+            // Guardamos el HEX exacto para evitar payload rejects the WAF o URLErrors con '%'
+            form.setValue("primary", hex, { shouldDirty: true });
         }
     };
 

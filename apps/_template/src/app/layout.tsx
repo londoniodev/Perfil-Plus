@@ -112,17 +112,18 @@ export default async function RootLayout({
 }>) {
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
+  // Color fallback
+  const primaryColor = design?.primary || "zinc";
 
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          forcedTheme="dark"
+          defaultTheme="light"
+          enableSystem={true}
         >
-          <BrandProvider settings={design as any}>
+          <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
             <GlobalSchemas />
             <ToastProvider>
               <NavigationWrapper footer={<Footer />}>

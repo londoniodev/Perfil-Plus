@@ -93,9 +93,8 @@ export default function RootLayout({
       <body className={`${getFontVariables()} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          forcedTheme="dark"
+          defaultTheme="light"
+          enableSystem={true}
         >
           <BrandProvider settings={{ primary: "fuchsia" }}>
             <GlobalSchemas />

@@ -1,7 +1,15 @@
 import { SiteFooter } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 
-export function Footer() {
+interface FooterProps {
+    tenantName?: string;
+    logoUrl?: string;
+}
+
+export function Footer({ tenantName, logoUrl }: FooterProps) {
+    const displayName = tenantName || siteConfig.name;
+    const finalLogo = logoUrl || siteConfig.branding.logo;
+
     const footerLinks = [
         { label: "Inicio", href: "/" },
         { label: "Empresas", href: "/empresas" },
@@ -17,11 +25,11 @@ export function Footer() {
 
     return (
         <SiteFooter
-            logo={siteConfig.branding.logo}
-            logoAlt={siteConfig.branding.logoAlt}
-            tagline="Transformar el mundo empieza por cuidar el mundo interno."
+            logo={finalLogo}
+            logoAlt={displayName}
+            tagline={`${displayName} — Tu plataforma de confianza.`}
             links={footerLinks}
-            companyName={siteConfig.name}
+            companyName={displayName}
         />
     );
 }

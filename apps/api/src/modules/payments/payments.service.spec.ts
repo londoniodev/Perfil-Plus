@@ -125,7 +125,9 @@ describe('PaymentsService', () => {
 
         // Instanciación manual porque PaymentsService usa Scope.REQUEST
         // y NestJS no permite resolverlo con Test.createTestingModule
+        const mockRequest = { tenantId: 'test-tenant', headers: {} } as any;
         service = new PaymentsService(
+            mockRequest,
             mockPrisma as any,
             mockConfig as any,
             mockEmail as any,

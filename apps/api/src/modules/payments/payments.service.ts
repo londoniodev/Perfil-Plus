@@ -1,9 +1,11 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, Scope, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, Scope, InternalServerErrorException, Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import * as crypto from 'crypto';
+import type { Request } from 'express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentsService {
@@ -13,6 +15,7 @@ export class PaymentsService {
     private paymentClient: Payment | null = null;
 
     constructor(
+        @Inject(REQUEST) private readonly request: Request,
         private prisma: PrismaService,
         private config: ConfigService,
         private emailService: EmailService,
@@ -20,10 +23,14 @@ export class PaymentsService {
         // Initialization moved to async method
     }
 
+    private getTenantId(): string {
+        return (this.request as any).tenantId || (this.request.headers['x-tenant-id'] as string) || 'default';
+    }
+
     private async getMercadoPagoConfig() {
         try {
-            const setting = await this.prisma.client.systemSetting.findUnique({
-                where: { key: 'MERCADOPAGO_CONFIG' },
+            const setting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: this.getTenantId(), key: 'MERCADOPAGO_CONFIG' },
             });
 
             if (!setting || !setting.value) {
@@ -50,8 +57,8 @@ export class PaymentsService {
 
     private async getTenantCurrency(): Promise<string> {
         try {
-            const setting = await this.prisma.client.systemSetting.findUnique({
-                where: { key: 'TENANT_CONFIG' },
+            const setting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: this.getTenantId(), key: 'TENANT_CONFIG' },
             });
 
             if (!setting || !setting.value) {
@@ -138,7 +145,7 @@ export class PaymentsService {
             throw new BadRequestException('Mercado Pago no está configurado');
         }
 
-        const user = await this.prisma.client.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { subscription: true },
         });
@@ -187,7 +194,7 @@ export class PaymentsService {
             const response = await this.preference.create({ body: preferenceData });
 
             // Crear o actualizar registro de suscripción como pendiente
-            await this.prisma.client.subscription.upsert({
+            await this.prisma.subscription.upsert({
                 where: { userId },
                 create: {
                     userId,
@@ -210,7 +217,7 @@ export class PaymentsService {
     }
 
     async cancelSubscription(userId: string) {
-        const subscription = await this.prisma.client.subscription.findUnique({
+        const subscription = await this.prisma.subscription.findUnique({
             where: { userId },
         });
 
@@ -223,7 +230,7 @@ export class PaymentsService {
         }
 
         // Actualizar estado a CANCELLED
-        await this.prisma.client.subscription.update({
+        await this.prisma.subscription.update({
             where: { userId },
             data: { status: 'CANCELLED' },
         });
@@ -232,7 +239,7 @@ export class PaymentsService {
     }
 
     async getSubscriptionStatus(userId: string) {
-        const subscription = await this.prisma.client.subscription.findUnique({
+        const subscription = await this.prisma.subscription.findUnique({
             where: { userId },
         });
 
@@ -255,7 +262,7 @@ export class PaymentsService {
 
         if (!this.preference) throw new BadRequestException('Mercado Pago no configurado');
 
-        const user = await this.prisma.client.user.findUnique({ where: { id: userId } });
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (!user) throw new NotFoundException('Usuario no encontrado');
 
         const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
@@ -267,7 +274,7 @@ export class PaymentsService {
         const preferenceItems: any[] = [];
 
         for (const item of items) {
-            const variant = await this.prisma.client.productVariant.findUnique({
+            const variant = await this.prisma.productVariant.findUnique({
                 where: { id: item.variantId },
                 include: { product: true }
             });
@@ -304,8 +311,9 @@ export class PaymentsService {
         }
 
         // 2. Create Order (PENDING)
-        const order = await this.prisma.client.order.create({
+        const order = await this.prisma.order.create({
             data: {
+                tenantId: this.getTenantId(),
                 userId,
                 orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Simple generator
                 totalAmount,
@@ -417,7 +425,7 @@ export class PaymentsService {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
 
-        await this.prisma.client.subscription.upsert({
+        await this.prisma.subscription.upsert({
             where: { userId },
             create: {
                 userId,
@@ -440,7 +448,7 @@ export class PaymentsService {
 
         // Send confirmation email (non-blocking - don't fail if email fails)
         try {
-            const user = await this.prisma.client.user.findUnique({
+            const user = await this.prisma.user.findUnique({
                 where: { id: userId },
                 select: { email: true, name: true },
             });
@@ -461,7 +469,7 @@ export class PaymentsService {
 
     private async approveOrder(orderId: string, mpPaymentId: string) {
         // 1. Update Order Status
-        const order = await this.prisma.client.order.findUnique({
+        const order = await this.prisma.order.findUnique({
             where: { id: orderId },
             include: { user: true, items: true }
         });
@@ -471,7 +479,7 @@ export class PaymentsService {
             return;
         }
 
-        await this.prisma.client.order.update({
+        await this.prisma.order.update({
             where: { id: orderId },
             data: {
                 status: 'APPROVED',
@@ -500,7 +508,7 @@ export class PaymentsService {
                 // Ideally we should include productType in OrderItem snapshot or fetch variant again.
 
                 // Fetch variant to get slug/type
-                const variant = await this.prisma.client.productVariant.findUnique({
+                const variant = await this.prisma.productVariant.findUnique({
                     where: { id: item.variantId },
                     include: { product: true }
                 });
@@ -530,7 +538,7 @@ export class PaymentsService {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + months);
 
-        await this.prisma.client.subscription.upsert({
+        await this.prisma.subscription.upsert({
             where: { userId },
             create: {
                 userId,
@@ -554,7 +562,7 @@ export class PaymentsService {
     // ==================== USER SUBSCRIPTION CHECK ====================
 
     async hasActiveSubscription(userId: string): Promise<boolean> {
-        const subscription = await this.prisma.client.subscription.findUnique({
+        const subscription = await this.prisma.subscription.findUnique({
             where: { userId },
         });
         return subscription?.status === 'ACTIVE';
@@ -564,12 +572,12 @@ export class PaymentsService {
 
     async getPaymentStats() {
         const [activeSubscriptions, totalEbookPurchases, pendingSubscriptions] = await Promise.all([
-            this.prisma.client.subscription.count({ where: { status: 'ACTIVE' } }),
-            this.prisma.client.purchase.count({ where: { status: 'approved' } }),
-            this.prisma.client.subscription.count({ where: { status: 'PENDING' } }),
+            this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+            this.prisma.purchase.count({ where: { status: 'approved' } }),
+            this.prisma.subscription.count({ where: { status: 'PENDING' } }),
         ]);
 
-        const recentSubscriptions = await this.prisma.client.subscription.findMany({
+        const recentSubscriptions = await this.prisma.subscription.findMany({
             where: { status: 'ACTIVE' },
             take: 10,
             orderBy: { startDate: 'desc' },

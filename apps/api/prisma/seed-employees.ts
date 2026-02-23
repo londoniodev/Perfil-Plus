@@ -58,22 +58,32 @@ async function seedEmployeesForConnection(prisma: PrismaClient, contextName: str
 
     for (const emp of employees) {
         try {
-            await prisma.user.upsert({
+            const existing = await prisma.user.findFirst({
                 where: { email: emp.email },
-                update: {
-                    password: hashedPassword,
-                    role: emp.role as any, // Cast to any to avoid TS issues if types are old
-                    emailVerified: true,
-                },
-                create: {
-                    email: emp.email,
-                    name: emp.name,
-                    password: hashedPassword,
-                    role: emp.role as any,
-                    emailVerified: true,
-                    avatar: emp.avatar,
-                },
             });
+
+            if (existing) {
+                await prisma.user.update({
+                    where: { id: existing.id },
+                    data: {
+                        password: hashedPassword,
+                        role: emp.role as any,
+                        emailVerified: true,
+                    },
+                });
+            } else {
+                await prisma.user.create({
+                    data: {
+                        tenantId: 'default',
+                        email: emp.email,
+                        name: emp.name,
+                        password: hashedPassword,
+                        role: emp.role as any,
+                        emailVerified: true,
+                        avatar: emp.avatar,
+                    },
+                });
+            }
             log(`   ✅ ${emp.name} (${emp.role}) created/updated.`);
         } catch (error: any) {
             log(`   ❌ Failed to seed ${emp.email}: ${error.message.split('\n')[0]}`);

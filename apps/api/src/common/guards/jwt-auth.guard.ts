@@ -46,7 +46,7 @@ export class JwtAuthGuard implements CanActivate {
             // If global (e.g. /profile), we might need a different DB strategy or master DB.
             // Assuming for now Auth is tenant-scoped as per previous analysis.
 
-            const user = await this.prisma.client.user.findUnique({
+            const user = await this.prisma.user.findUnique({
                 where: { id: payload.sub },
                 select: {
                     id: true,

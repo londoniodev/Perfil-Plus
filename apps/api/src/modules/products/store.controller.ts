@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Public } from '../../common/decorators/public.decorator';
+import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { ProductType } from '@prisma/client';
 
 @Controller('store/products')
@@ -18,7 +19,7 @@ export class StoreController {
 
     @Public()
     @Get(':slug')
-    async findOne(@Param('slug') slug: string) {
-        return this.productsService.findOnePublished(slug);
+    async findOne(@Param('slug') slug: string, @CurrentTenant() tenantId: string) {
+        return this.productsService.findOnePublished(slug, tenantId);
     }
 }

@@ -14,22 +14,22 @@ export class LmsService {
 
     // ==================== THEMES ====================
 
-    async createTheme(dto: CreateThemeDto) {
+    async createTheme(dto: CreateThemeDto, tenantId: string) {
         const slug = this.generateSlug(dto.title);
-        return this.prisma.client.theme.create({
-            data: { ...dto, slug },
+        return this.prisma.theme.create({
+            data: { ...dto, slug, tenantId },
             include: { _count: { select: { courses: true } } },
         });
     }
 
     async updateTheme(id: string, dto: UpdateThemeDto) {
-        const theme = await this.prisma.client.theme.findUnique({ where: { id } });
+        const theme = await this.prisma.theme.findUnique({ where: { id } });
         if (!theme) throw new NotFoundException('Tema no encontrado');
 
         const data: any = { ...dto };
         if (dto.title) data.slug = this.generateSlug(dto.title);
 
-        return this.prisma.client.theme.update({
+        return this.prisma.theme.update({
             where: { id },
             data,
             include: { _count: { select: { courses: true } } },
@@ -37,16 +37,16 @@ export class LmsService {
     }
 
     async deleteTheme(id: string) {
-        const theme = await this.prisma.client.theme.findUnique({ where: { id } });
+        const theme = await this.prisma.theme.findUnique({ where: { id } });
         if (!theme) throw new NotFoundException('Tema no encontrado');
 
-        await this.prisma.client.theme.delete({ where: { id } });
+        await this.prisma.theme.delete({ where: { id } });
         return { message: 'Tema eliminado correctamente' };
     }
 
     async findAllThemes(includeUnpublished = false, includeCourses = false) {
         const where = includeUnpublished ? {} : { published: true };
-        return this.prisma.client.theme.findMany({
+        return this.prisma.theme.findMany({
             where,
             orderBy: { order: 'asc' },
             include: {
@@ -64,7 +64,7 @@ export class LmsService {
     }
 
     async findThemeBySlug(slug: string, hasSubscription = false) {
-        const theme = await this.prisma.client.theme.findUnique({
+        const theme = await this.prisma.theme.findFirst({
             where: { slug },
             include: {
                 courses: {
@@ -91,7 +91,7 @@ export class LmsService {
     }
 
     async findThemeById(id: string) {
-        const theme = await this.prisma.client.theme.findUnique({
+        const theme = await this.prisma.theme.findUnique({
             where: { id },
             include: {
                 courses: {
@@ -107,22 +107,22 @@ export class LmsService {
 
     // ==================== COURSES ====================
 
-    async createCourse(dto: CreateCourseDto) {
+    async createCourse(dto: CreateCourseDto, tenantId: string) {
         const slug = this.generateSlug(dto.title);
-        return this.prisma.client.course.create({
-            data: { ...dto, slug },
+        return this.prisma.course.create({
+            data: { ...dto, slug, tenantId },
             include: { theme: { select: { id: true, title: true } } },
         });
     }
 
     async updateCourse(id: string, dto: UpdateCourseDto) {
-        const course = await this.prisma.client.course.findUnique({ where: { id } });
+        const course = await this.prisma.course.findUnique({ where: { id } });
         if (!course) throw new NotFoundException('Curso no encontrado');
 
         const data: any = { ...dto };
         if (dto.title) data.slug = this.generateSlug(dto.title);
 
-        return this.prisma.client.course.update({
+        return this.prisma.course.update({
             where: { id },
             data,
             include: { theme: { select: { id: true, title: true } } },
@@ -130,15 +130,15 @@ export class LmsService {
     }
 
     async deleteCourse(id: string) {
-        const course = await this.prisma.client.course.findUnique({ where: { id } });
+        const course = await this.prisma.course.findUnique({ where: { id } });
         if (!course) throw new NotFoundException('Curso no encontrado');
 
-        await this.prisma.client.course.delete({ where: { id } });
+        await this.prisma.course.delete({ where: { id } });
         return { message: 'Curso eliminado correctamente' };
     }
 
     async findCourseBySlug(slug: string, userId?: string) {
-        const course = await this.prisma.client.course.findUnique({
+        const course = await this.prisma.course.findFirst({
             where: { slug },
             include: {
                 theme: { select: { id: true, title: true, slug: true } },
@@ -162,7 +162,7 @@ export class LmsService {
 
         // Si hay usuario, obtener su progreso
         if (userId) {
-            const progress = await this.prisma.client.userProgress.findMany({
+            const progress = await this.prisma.userProgress.findMany({
                 where: {
                     userId,
                     lesson: { courseId: course.id },
@@ -189,7 +189,7 @@ export class LmsService {
     }
 
     async findCourseById(id: string) {
-        const course = await this.prisma.client.course.findUnique({
+        const course = await this.prisma.course.findUnique({
             where: { id },
             include: {
                 theme: { select: { id: true, title: true } },
@@ -202,22 +202,22 @@ export class LmsService {
 
     // ==================== LESSONS ====================
 
-    async createLesson(dto: CreateLessonDto) {
+    async createLesson(dto: CreateLessonDto, tenantId: string) {
         const slug = this.generateSlug(dto.title);
-        return this.prisma.client.lesson.create({
+        return this.prisma.lesson.create({
             data: { ...dto, slug },
             include: { course: { select: { id: true, title: true } } },
         });
     }
 
     async updateLesson(id: string, dto: UpdateLessonDto) {
-        const lesson = await this.prisma.client.lesson.findUnique({ where: { id } });
+        const lesson = await this.prisma.lesson.findUnique({ where: { id } });
         if (!lesson) throw new NotFoundException('Lección no encontrada');
 
         const data: any = { ...dto };
         if (dto.title) data.slug = this.generateSlug(dto.title);
 
-        return this.prisma.client.lesson.update({
+        return this.prisma.lesson.update({
             where: { id },
             data,
             include: { course: { select: { id: true, title: true } } },
@@ -225,17 +225,17 @@ export class LmsService {
     }
 
     async deleteLesson(id: string) {
-        const lesson = await this.prisma.client.lesson.findUnique({ where: { id } });
+        const lesson = await this.prisma.lesson.findUnique({ where: { id } });
         if (!lesson) throw new NotFoundException('Lección no encontrada');
 
-        await this.prisma.client.lesson.delete({ where: { id } });
+        await this.prisma.lesson.delete({ where: { id } });
         return { message: 'Lección eliminada correctamente' };
     }
 
     async findLessonBySlug(courseSlug: string, lessonSlug: string, userId?: string, hasSubscription = false) {
         // En lugar de buscar el curso primero, buscamos la lección directamente con el curso incluido
         // Esto optimiza la consulta y evita problemas si el lessonSlug es único
-        const lesson = await this.prisma.client.lesson.findFirst({
+        const lesson = await this.prisma.lesson.findFirst({
             where: {
                 slug: lessonSlug,
                 course: { slug: courseSlug },
@@ -266,12 +266,12 @@ export class LmsService {
 
         // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
         const [prev, next] = await Promise.all([
-            this.prisma.client.lesson.findFirst({
+            this.prisma.lesson.findFirst({
                 where: { courseId: lesson.course.id, order: { lt: lesson.order }, published: true },
                 orderBy: { order: 'desc' },
                 select: { slug: true, title: true },
             }),
-            this.prisma.client.lesson.findFirst({
+            this.prisma.lesson.findFirst({
                 where: { courseId: lesson.course.id, order: { gt: lesson.order }, published: true },
                 orderBy: { order: 'asc' },
                 select: { slug: true, title: true },
@@ -281,7 +281,7 @@ export class LmsService {
         // Obtener progreso del usuario si existe
         let userProgress: { completed: boolean; watchedTime: number } | null = null;
         if (userId) {
-            const progress = await this.prisma.client.userProgress.findUnique({
+            const progress = await this.prisma.userProgress.findUnique({
                 where: { userId_lessonId: { userId, lessonId: lesson.id } },
             });
             if (progress) {
@@ -299,7 +299,7 @@ export class LmsService {
     // ============ ATTACHMENTS ============
 
     async addLessonAttachment(lessonId: string, dto: CreateLessonAttachmentDto) {
-        const lesson = await this.prisma.client.lesson.findUnique({
+        const lesson = await this.prisma.lesson.findUnique({
             where: { id: lessonId },
         });
 
@@ -307,7 +307,7 @@ export class LmsService {
             throw new NotFoundException('Lección no encontrada');
         }
 
-        return this.prisma.client.lessonAttachment.create({
+        return this.prisma.lessonAttachment.create({
             data: {
                 lessonId,
                 ...dto,
@@ -317,7 +317,7 @@ export class LmsService {
 
     async removeLessonAttachment(attachmentId: string) {
         // Verificar si existe
-        const attachment = await this.prisma.client.lessonAttachment.findUnique({
+        const attachment = await this.prisma.lessonAttachment.findUnique({
             where: { id: attachmentId },
         });
 
@@ -325,13 +325,13 @@ export class LmsService {
             throw new NotFoundException('Adjunto no encontrado');
         }
 
-        return this.prisma.client.lessonAttachment.delete({
+        return this.prisma.lessonAttachment.delete({
             where: { id: attachmentId },
         });
     }
 
     async findLessonById(id: string) {
-        const lesson = await this.prisma.client.lesson.findUnique({
+        const lesson = await this.prisma.lesson.findUnique({
             where: { id },
             include: {
                 attachments: true,
@@ -345,7 +345,7 @@ export class LmsService {
     // ==================== PROGRESS ====================
 
     async updateProgress(userId: string, lessonId: string, dto: UpdateProgressDto) {
-        const lesson = await this.prisma.client.lesson.findUnique({ where: { id: lessonId } });
+        const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId } });
         if (!lesson) throw new NotFoundException('Lección no encontrada');
 
         const data: any = {
@@ -357,7 +357,7 @@ export class LmsService {
             data.completedAt = new Date();
         }
 
-        return this.prisma.client.userProgress.upsert({
+        return this.prisma.userProgress.upsert({
             where: { userId_lessonId: { userId, lessonId } },
             create: {
                 userId,
@@ -370,7 +370,7 @@ export class LmsService {
     }
 
     async getUserProgress(userId: string) {
-        const progress = await this.prisma.client.userProgress.findMany({
+        const progress = await this.prisma.userProgress.findMany({
             where: { userId },
             include: {
                 lesson: {
@@ -400,7 +400,7 @@ export class LmsService {
         for (const p of progress) {
             const courseId = p.lesson.course.id;
             if (!courseProgress.has(courseId)) {
-                const totalLessons = await this.prisma.client.lesson.count({
+                const totalLessons = await this.prisma.lesson.count({
                     where: { courseId, published: true },
                 });
                 courseProgress.set(courseId, {

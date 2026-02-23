@@ -10,41 +10,62 @@ async function main() {
         return;
     }
 
-    console.log('🌱 Iniciando siembra de datos en LOCAL...');
+    console.log('🌱 Iniciando siembra de datos...');
+
+    // 0. Crear Tenant por defecto
+    await prisma.tenant.upsert({
+        where: { slug: 'localhost' }, // Usamos el slug que suele usar el frontend
+        update: {},
+        create: {
+            id: 'default',
+            slug: 'localhost',
+            dbName: 'web-projects=public',
+            name: 'Tenant Base',
+        }
+    });
+    console.log('🏢 Tenant Base asegurado');
 
     // 1. Asegurar Usuario Admin (Para pruebas de UI)
     const email = 'admin@mauromera.com';
     const hashedPassword = await bcrypt.hash('Admin123!', 10);
 
-    const adminUser = await prisma.user.upsert({
-        where: { email },
-        update: { role: 'ADMIN' },
-        create: {
-            email,
-            password: hashedPassword,
-            name: 'Admin Tester',
-            role: 'ADMIN',
-            emailVerified: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'
-        }
-    });
-    console.log('👤 Usuario Admin asegurado:', adminUser.email);
+    const existingAdmin = await prisma.user.findFirst({ where: { email } });
+    if (existingAdmin) {
+        await prisma.user.update({ where: { id: existingAdmin.id }, data: { role: 'ADMIN' } });
+    } else {
+        await prisma.user.create({
+            data: {
+                tenantId: 'default',
+                email,
+                password: hashedPassword,
+                name: 'Admin Tester',
+                role: 'ADMIN',
+                emailVerified: true,
+                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'
+            }
+        });
+    }
+    console.log('👤 Usuario Admin asegurado:', email);
 
     // 1.5 Crear Usuario Estudiante (Rol USER por defecto)
     const studentEmail = "alumno@mauromera.com";
-    const studentUser = await prisma.user.upsert({
-        where: { email: studentEmail },
-        update: {}, // Si existe, no hace nada
-        create: {
-            email: studentEmail,
-            name: "Alumno Demo",
-            password: hashedPassword, // Reutilizamos el hash por simplicidad (Admin123!)
-            role: 'USER', // <--- Importante: Rol normal
-            emailVerified: true,
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-        }
-    });
-    console.log('🎓 Usuario Estudiante asegurado:', studentUser.email);
+    const existingStudent = await prisma.user.findFirst({ where: { email: studentEmail } });
+    if (existingStudent) {
+        // Si existe, no hace nada
+    } else {
+        await prisma.user.create({
+            data: {
+                tenantId: 'default',
+                email: studentEmail,
+                name: "Alumno Demo",
+                password: hashedPassword,
+                role: 'USER',
+                emailVerified: true,
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+            }
+        });
+    }
+    console.log('🎓 Usuario Estudiante asegurado:', studentEmail);
 
     // 1.6 Crear Empleados de Restaurante (Mesero, Cocina, Caja)
     const employees = [
@@ -54,51 +75,62 @@ async function main() {
     ];
 
     for (const emp of employees) {
-        const user = await prisma.user.upsert({
-            where: { email: emp.email },
-            update: { role: emp.role },
-            create: {
-                email: emp.email,
-                name: emp.name,
-                password: hashedPassword, // Admin123!
-                role: emp.role,
-                emailVerified: true,
-                avatar: emp.avatar,
-            },
-        });
-        console.log(`🧑‍🍳 Empleado ${emp.role} asegurado: ${user.email}`);
+        const existingEmp = await prisma.user.findFirst({ where: { email: emp.email } });
+        if (existingEmp) {
+            await prisma.user.update({
+                where: { id: existingEmp.id },
+                data: { role: emp.role },
+            });
+        } else {
+            await prisma.user.create({
+                data: {
+                    tenantId: 'default',
+                    email: emp.email,
+                    name: emp.name,
+                    password: hashedPassword,
+                    role: emp.role,
+                    emailVerified: true,
+                    avatar: emp.avatar,
+                },
+            });
+        }
+        console.log(`🧑‍🍳 Empleado ${emp.role} asegurado: ${emp.email}`);
     }
 
     // 2. Crear Tema con Cursos y Lecciones
-    const theme = await prisma.theme.upsert({
-        where: { slug: 'liderazgo-consciente-test' },
-        update: {},
-        create: {
-            title: 'Liderazgo Consciente',
-            slug: 'liderazgo-consciente-test',
-            description: 'Un programa profundo para transformar tu manera de dirigir equipos y gestionar el talento humano con consciencia y estrategia.',
-            coverImage: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',
-            published: true,
-            order: 1
-        }
-    });
+    let theme = await prisma.theme.findFirst({ where: { slug: 'liderazgo-consciente-test' } });
+    if (!theme) {
+        theme = await prisma.theme.create({
+            data: {
+                tenantId: 'default',
+                title: 'Liderazgo Consciente',
+                slug: 'liderazgo-consciente-test',
+                description: 'Un programa profundo para transformar tu manera de dirigir equipos y gestionar el talento humano con consciencia y estrategia.',
+                coverImage: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',
+                published: true,
+                order: 1
+            }
+        });
+    }
     console.log('📚 Tema creado:', theme.title);
 
     // 3. Crear Curso dentro del Tema
-    const course = await prisma.course.upsert({
-        where: { slug: 'fundamentos-del-liderazgo-test' },
-        update: {},
-        create: {
-            themeId: theme.id,
-            title: 'Fundamentos del Liderazgo',
-            slug: 'fundamentos-del-liderazgo-test',
-            description: 'Aprende las bases del liderazgo efectivo y cómo aplicarlo en tu vida personal y profesional.',
-            coverImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&q=80',
-            published: true,
-            isFree: true,
-            order: 1
-        }
-    });
+    let course = await prisma.course.findFirst({ where: { slug: 'fundamentos-del-liderazgo-test' } });
+    if (!course) {
+        course = await prisma.course.create({
+            data: {
+                tenantId: 'default',
+                themeId: theme.id,
+                title: 'Fundamentos del Liderazgo',
+                slug: 'fundamentos-del-liderazgo-test',
+                description: 'Aprende las bases del liderazgo efectivo y cómo aplicarlo en tu vida personal y profesional.',
+                coverImage: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&q=80',
+                published: true,
+                isFree: true,
+                order: 1
+            }
+        });
+    }
     console.log('📖 Curso creado:', course.title);
 
     // 4. Crear Lecciones dentro del Curso
@@ -131,19 +163,10 @@ async function main() {
     ];
 
     for (const lesson of lessons) {
-        await prisma.lesson.upsert({
-            where: {
-                courseId_slug: {
-                    courseId: course.id,
-                    slug: lesson.slug
-                }
-            },
-            update: {},
-            create: {
-                courseId: course.id,
-                ...lesson
-            }
-        });
+        const existingLesson = await prisma.lesson.findFirst({ where: { courseId: course.id, slug: lesson.slug } });
+        if (!existingLesson) {
+            await prisma.lesson.create({ data: { courseId: course.id, ...lesson } });
+        }
     }
     console.log('📝 Lecciones creadas:', lessons.length);
 
@@ -170,9 +193,9 @@ async function main() {
     ];
 
     for (const post of posts) {
-        const existingPost = await prisma.post.findUnique({ where: { slug: post.slug } });
+        const existingPost = await prisma.post.findFirst({ where: { slug: post.slug } });
         if (!existingPost) {
-            await prisma.post.create({ data: post });
+            await prisma.post.create({ data: { tenantId: 'default', ...post } });
         }
     }
     console.log('📰 Blog posts creados:', posts.length);
@@ -184,10 +207,10 @@ async function main() {
     console.log('\n🛒 Creando productos de e-commerce...');
 
     // 7.1 Digital Product (Guide)
-    const productDigital = await prisma.product.upsert({
-        where: { slug: 'guia-liderazgo-consciente' },
-        update: {},
-        create: {
+    const existingDigital = await prisma.product.findFirst({ where: { slug: 'guia-liderazgo-consciente' } });
+    const productDigital = existingDigital || await prisma.product.create({
+        data: {
+            tenantId: 'default',
             name: 'Guía Completa de Liderazgo Consciente',
             slug: 'guia-liderazgo-consciente',
             description: 'Una guía práctica con ejercicios y reflexiones para desarrollar tu potencial como líder consciente. Incluye casos de estudio reales, herramientas aplicables y ejercicios de autoevaluación.',
@@ -195,18 +218,14 @@ async function main() {
             basePrice: 29.99,
             images: ['https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800'],
             published: true,
-            specs: {
-                pages: 120,
-                format: 'PDF + ePub',
-                language: 'Español',
-                fileSize: '5MB'
-            },
+            specs: { pages: 120, format: 'PDF + ePub', language: 'Español', fileSize: '5MB' },
             variants: {
                 create: {
+                    tenantId: 'default',
                     sku: 'LID-DIGITAL-001',
                     name: 'Descarga Digital',
                     price: 29.99,
-                    stock: -1, // Ilimitado
+                    stock: -1,
                     isDefault: true,
                     attributes: { format: 'Digital', deliveryTime: 'Inmediato' }
                 }
@@ -216,10 +235,10 @@ async function main() {
     console.log('   ✓ Producto Digital creado:', productDigital.name);
 
     // 7.2 Gafas Físicas con Variantes
-    const productGafas = await prisma.product.upsert({
-        where: { slug: 'gafas-urban-style' },
-        update: {},
-        create: {
+    const existingGafas = await prisma.product.findFirst({ where: { slug: 'gafas-urban-style' } });
+    const productGafas = existingGafas || await prisma.product.create({
+        data: {
+            tenantId: 'default',
             name: 'Gafas Urban Style',
             slug: 'gafas-urban-style',
             description: 'Diseño moderno con protección UV400 y marco ligero de policarbonato. Perfectas para uso diario y actividades al aire libre.',
@@ -230,29 +249,12 @@ async function main() {
                 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=800'
             ],
             published: true,
-            specs: {
-                material: 'Policarbonato',
-                uv: 'UV400',
-                weight: '25g',
-                warranty: '1 Año'
-            },
+            specs: { material: 'Policarbonato', uv: 'UV400', weight: '25g', warranty: '1 Año' },
             variants: {
                 createMany: {
                     data: [
-                        {
-                            sku: 'GAFA-BLK',
-                            name: 'Negro Matte',
-                            price: 89.00,
-                            stock: 10,
-                            attributes: { color: 'Black' }
-                        },
-                        {
-                            sku: 'GAFA-TRT',
-                            name: 'Tortoise',
-                            price: 95.00,
-                            stock: 5,
-                            attributes: { color: 'Tortoise' }
-                        }
+                        { tenantId: 'default', sku: 'GAFA-BLK', name: 'Negro Matte', price: 89.00, stock: 10, attributes: { color: 'Black' } },
+                        { tenantId: 'default', sku: 'GAFA-TRT', name: 'Tortoise', price: 95.00, stock: 5, attributes: { color: 'Tortoise' } }
                     ]
                 }
             }
@@ -261,10 +263,10 @@ async function main() {
     console.log('   ✓ Gafas creadas:', productGafas.name);
 
     // 7.3 Suplementos con Sabores (Más variantes)
-    const productSuplemento = await prisma.product.upsert({
-        where: { slug: 'proteina-premium-isolate' },
-        update: {},
-        create: {
+    const existingSuplemento = await prisma.product.findFirst({ where: { slug: 'proteina-premium-isolate' } });
+    const productSuplemento = existingSuplemento || await prisma.product.create({
+        data: {
+            tenantId: 'default',
             name: 'Proteína Premium Isolate',
             slug: 'proteina-premium-isolate',
             description: 'Proteína aislada de suero de alta calidad con 25g de proteína por servida. Sin azúcares añadidos y baja en carbohidratos.',
@@ -272,36 +274,13 @@ async function main() {
             basePrice: 45.00,
             images: ['https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=800'],
             published: true,
-            specs: {
-                servings: '30 porciones',
-                proteinPerServing: '25g',
-                flavor: 'Multiple',
-                weight: '1kg'
-            },
+            specs: { servings: '30 porciones', proteinPerServing: '25g', flavor: 'Multiple', weight: '1kg' },
             variants: {
                 createMany: {
                     data: [
-                        {
-                            sku: 'PROT-CHOCO',
-                            name: 'Sabor Chocolate',
-                            price: 45.00,
-                            stock: 15,
-                            attributes: { flavor: 'Chocolate' }
-                        },
-                        {
-                            sku: 'PROT-VAIN',
-                            name: 'Sabor Vainilla',
-                            price: 45.00,
-                            stock: 12,
-                            attributes: { flavor: 'Vainilla' }
-                        },
-                        {
-                            sku: 'PROT-FRES',
-                            name: 'Sabor Fresa',
-                            price: 47.00,
-                            stock: 8,
-                            attributes: { flavor: 'Fresa' }
-                        }
+                        { tenantId: 'default', sku: 'PROT-CHOCO', name: 'Sabor Chocolate', price: 45.00, stock: 15, attributes: { flavor: 'Chocolate' } },
+                        { tenantId: 'default', sku: 'PROT-VAIN', name: 'Sabor Vainilla', price: 45.00, stock: 12, attributes: { flavor: 'Vainilla' } },
+                        { tenantId: 'default', sku: 'PROT-FRES', name: 'Sabor Fresa', price: 47.00, stock: 8, attributes: { flavor: 'Fresa' } }
                     ]
                 }
             }
@@ -570,7 +549,7 @@ async function main() {
 
     let restaurantCount = 0;
     for (const prod of restaurantProducts) {
-        const existing = await prisma.product.findUnique({ where: { slug: prod.slug } });
+        const existing = await prisma.product.findFirst({ where: { slug: prod.slug } });
         if (existing) {
             console.log(`   ⏭️  Ya existe: ${prod.name}`);
             restaurantCount++;
@@ -579,6 +558,7 @@ async function main() {
 
         const created = await prisma.product.create({
             data: {
+                tenantId: 'default',
                 name: prod.name,
                 slug: prod.slug,
                 description: prod.description,
@@ -591,6 +571,7 @@ async function main() {
                 variants: {
                     createMany: {
                         data: prod.variants.map(v => ({
+                            tenantId: 'default',
                             sku: v.sku,
                             name: v.name,
                             price: v.price,
@@ -606,6 +587,7 @@ async function main() {
         for (const mod of prod.modifiers) {
             await prisma.modifierGroup.create({
                 data: {
+                    tenantId: 'default',
                     name: mod.groupName,
                     minSelect: mod.minSelect,
                     maxSelect: mod.maxSelect,
@@ -613,6 +595,7 @@ async function main() {
                     modifiers: {
                         createMany: {
                             data: mod.items.map(item => ({
+                                tenantId: 'default',
                                 name: item.name,
                                 priceAdjustment: item.price,
                             })),
@@ -642,7 +625,7 @@ async function main() {
     for (const table of tables) {
         const exists = await prisma.table.findFirst({ where: { label: table.label } });
         if (!exists) {
-            await prisma.table.create({ data: table });
+            await prisma.table.create({ data: { tenantId: 'default', ...table } });
             tablesCreated++;
         }
     }

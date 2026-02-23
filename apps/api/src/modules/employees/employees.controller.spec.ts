@@ -47,7 +47,7 @@ describe('EmployeesController', () => {
             const expected = { id: '1', ...dto };
             mockService.create.mockResolvedValue(expected);
 
-            const result = await controller.create(dto);
+            const result = await controller.create(dto, 'test-tenant');
 
             expect(result).toEqual(expected);
             expect(mockService.create).toHaveBeenCalledWith(dto);
@@ -59,7 +59,7 @@ describe('EmployeesController', () => {
             const employees = [{ id: '1', name: 'A' }, { id: '2', name: 'B' }];
             mockService.findAll.mockResolvedValue(employees);
 
-            const result = await controller.findAll();
+            const result = await controller.findAll('test-tenant');
 
             expect(result).toEqual(employees);
             expect(mockService.findAll).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('EmployeesController', () => {
             const employee = { id: '1', name: 'A', role: 'WAITER' };
             mockService.findOne.mockResolvedValue(employee);
 
-            const result = await controller.findOne('1');
+            const result = await controller.findOne('1', 'test-tenant');
 
             expect(result).toEqual(employee);
             expect(mockService.findOne).toHaveBeenCalledWith('1');
@@ -84,7 +84,7 @@ describe('EmployeesController', () => {
             const expected = { id: '1', name: 'Updated', role: 'WAITER' };
             mockService.update.mockResolvedValue(expected);
 
-            const result = await controller.update('1', dto);
+            const result = await controller.update('1', dto, 'test-tenant');
 
             expect(result).toEqual(expected);
             expect(mockService.update).toHaveBeenCalledWith('1', dto);
@@ -96,7 +96,7 @@ describe('EmployeesController', () => {
             const expected = { message: 'Empleado eliminado correctamente' };
             mockService.remove.mockResolvedValue(expected);
 
-            const result = await controller.remove('1');
+            const result = await controller.remove('1', 'test-tenant');
 
             expect(result).toEqual(expected);
             expect(mockService.remove).toHaveBeenCalledWith('1');

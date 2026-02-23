@@ -8,13 +8,14 @@ export class BlogService {
 
     // ==================== POSTS ====================
 
-    async createPost(dto: CreatePostDto) {
+    async createPost(dto: CreatePostDto, tenantId: string) {
         const slug = this.generateSlug(dto.title);
         const readingTime = dto.readingTime || this.calculateReadingTime(dto.content);
 
         // Crear el post primero
-        const post = await this.prisma.client.post.create({
+        const post = await this.prisma.post.create({
             data: {
+                tenantId,
                 title: dto.title,
                 slug,
                 excerpt: dto.excerpt,
@@ -32,7 +33,7 @@ export class BlogService {
 
         // Conectar categoría si existe
         if (dto.categoryId) {
-            await this.prisma.client.categoriesOnPosts.create({
+            await this.prisma.categoriesOnPosts.create({
                 data: {
                     postId: post.id,
                     categoryId: dto.categoryId,
@@ -42,7 +43,7 @@ export class BlogService {
 
         // Conectar tags si existen
         if (dto.tagIds?.length) {
-            await this.prisma.client.tagsOnPosts.createMany({
+            await this.prisma.tagsOnPosts.createMany({
                 data: dto.tagIds.map((tagId) => ({
                     postId: post.id,
                     tagId,
@@ -54,7 +55,7 @@ export class BlogService {
     }
 
     async updatePost(id: string, dto: UpdatePostDto) {
-        const existingPost = await this.prisma.client.post.findUnique({ where: { id } });
+        const existingPost = await this.prisma.post.findUnique({ where: { id } });
         if (!existingPost) {
             throw new NotFoundException('Post no encontrado');
         }
@@ -82,16 +83,16 @@ export class BlogService {
         if (dto.metaDescription !== undefined) updateData.metaDescription = dto.metaDescription;
 
         // Actualizar el post
-        await this.prisma.client.post.update({
+        await this.prisma.post.update({
             where: { id },
             data: updateData,
         });
 
         // Actualizar categoría si se proporciona
         if (dto.categoryId !== undefined) {
-            await this.prisma.client.categoriesOnPosts.deleteMany({ where: { postId: id } });
+            await this.prisma.categoriesOnPosts.deleteMany({ where: { postId: id } });
             if (dto.categoryId) {
-                await this.prisma.client.categoriesOnPosts.create({
+                await this.prisma.categoriesOnPosts.create({
                     data: { postId: id, categoryId: dto.categoryId },
                 });
             }
@@ -99,9 +100,9 @@ export class BlogService {
 
         // Actualizar tags si se proporcionan
         if (dto.tagIds !== undefined) {
-            await this.prisma.client.tagsOnPosts.deleteMany({ where: { postId: id } });
+            await this.prisma.tagsOnPosts.deleteMany({ where: { postId: id } });
             if (dto.tagIds.length) {
-                await this.prisma.client.tagsOnPosts.createMany({
+                await this.prisma.tagsOnPosts.createMany({
                     data: dto.tagIds.map((tagId) => ({ postId: id, tagId })),
                 });
             }
@@ -111,12 +112,12 @@ export class BlogService {
     }
 
     async deletePost(id: string) {
-        const post = await this.prisma.client.post.findUnique({ where: { id } });
+        const post = await this.prisma.post.findUnique({ where: { id } });
         if (!post) {
             throw new NotFoundException('Post no encontrado');
         }
 
-        await this.prisma.client.post.delete({ where: { id } });
+        await this.prisma.post.delete({ where: { id } });
         return { message: 'Post eliminado correctamente' };
     }
 
@@ -129,7 +130,7 @@ export class BlogService {
         }
 
         const [posts, total] = await Promise.all([
-            this.prisma.client.post.findMany({
+            this.prisma.post.findMany({
                 where,
                 skip,
                 take: limit,
@@ -140,7 +141,7 @@ export class BlogService {
                     attachments: true,
                 },
             }),
-            this.prisma.client.post.count({ where }),
+            this.prisma.post.count({ where }),
         ]);
 
         const transformedPosts = posts.map((post) => ({
@@ -173,7 +174,7 @@ export class BlogService {
         }
 
         const [posts, total] = await Promise.all([
-            this.prisma.client.post.findMany({
+            this.prisma.post.findMany({
                 where,
                 skip,
                 take: limit,
@@ -192,7 +193,7 @@ export class BlogService {
                     tags: { include: { tag: true } },
                 },
             }),
-            this.prisma.client.post.count({ where }),
+            this.prisma.post.count({ where }),
         ]);
 
         const transformedPosts = posts.map((post) => ({
@@ -212,9 +213,9 @@ export class BlogService {
         };
     }
 
-    async findPostBySlug(slug: string, hasSubscription = false) {
-        const post = await this.prisma.client.post.findUnique({
-            where: { slug },
+    async findPostBySlug(slug: string, hasSubscription = false, tenantId?: string) {
+        const post = await this.prisma.post.findFirst({
+            where: { slug, ...(tenantId ? { tenantId } : {}) },
             include: {
                 categories: { include: { category: true } },
                 tags: { include: { tag: true } },
@@ -250,7 +251,7 @@ export class BlogService {
     }
 
     async findPostById(id: string) {
-        const post = await this.prisma.client.post.findUnique({
+        const post = await this.prisma.post.findUnique({
             where: { id },
             include: {
                 categories: { include: { category: true } },
@@ -273,12 +274,12 @@ export class BlogService {
     // ==================== ATTACHMENTS ====================
 
     async addAttachment(postId: string, dto: CreateAttachmentDto) {
-        const post = await this.prisma.client.post.findUnique({ where: { id: postId } });
+        const post = await this.prisma.post.findUnique({ where: { id: postId } });
         if (!post) {
             throw new NotFoundException('Post no encontrado');
         }
 
-        return this.prisma.client.postAttachment.create({
+        return this.prisma.postAttachment.create({
             data: {
                 postId,
                 name: dto.name,
@@ -291,7 +292,7 @@ export class BlogService {
     }
 
     async removeAttachment(attachmentId: string) {
-        const attachment = await this.prisma.client.postAttachment.findUnique({
+        const attachment = await this.prisma.postAttachment.findUnique({
             where: { id: attachmentId },
         });
 
@@ -299,12 +300,12 @@ export class BlogService {
             throw new NotFoundException('Adjunto no encontrado');
         }
 
-        await this.prisma.client.postAttachment.delete({ where: { id: attachmentId } });
+        await this.prisma.postAttachment.delete({ where: { id: attachmentId } });
         return { message: 'Adjunto eliminado correctamente', fileUrl: attachment.fileUrl };
     }
 
     async findAttachmentsByPostId(postId: string) {
-        return this.prisma.client.postAttachment.findMany({
+        return this.prisma.postAttachment.findMany({
             where: { postId },
             orderBy: { createdAt: 'asc' },
         });
@@ -312,11 +313,12 @@ export class BlogService {
 
     // ==================== CATEGORIES ====================
 
-    async createCategory(dto: CreateCategoryDto) {
+    async createCategory(dto: CreateCategoryDto, tenantId: string) {
         const slug = this.generateSlug(dto.name);
 
-        return this.prisma.client.category.create({
+        return this.prisma.category.create({
             data: {
+                tenantId,
                 name: dto.name,
                 slug,
             },
@@ -324,7 +326,7 @@ export class BlogService {
     }
 
     async findAllCategories() {
-        return this.prisma.client.category.findMany({
+        return this.prisma.category.findMany({
             orderBy: { name: 'asc' },
             include: {
                 _count: { select: { posts: true } },
@@ -333,27 +335,28 @@ export class BlogService {
     }
 
     async deleteCategory(id: string) {
-        const category = await this.prisma.client.category.findUnique({ where: { id } });
+        const category = await this.prisma.category.findUnique({ where: { id } });
         if (!category) {
             throw new NotFoundException('Categoría no encontrada');
         }
 
-        await this.prisma.client.category.delete({ where: { id } });
+        await this.prisma.category.delete({ where: { id } });
         return { message: 'Categoría eliminada correctamente' };
     }
 
     // ==================== TAGS ====================
 
-    async createTag(dto: CreateTagDto) {
-        return this.prisma.client.tag.create({
+    async createTag(dto: CreateTagDto, tenantId: string) {
+        return this.prisma.tag.create({
             data: {
+                tenantId,
                 name: dto.name,
             },
         });
     }
 
     async findAllTags() {
-        return this.prisma.client.tag.findMany({
+        return this.prisma.tag.findMany({
             orderBy: { name: 'asc' },
             include: {
                 _count: { select: { posts: true } },
@@ -362,12 +365,12 @@ export class BlogService {
     }
 
     async deleteTag(id: string) {
-        const tag = await this.prisma.client.tag.findUnique({ where: { id } });
+        const tag = await this.prisma.tag.findUnique({ where: { id } });
         if (!tag) {
             throw new NotFoundException('Tag no encontrado');
         }
 
-        await this.prisma.client.tag.delete({ where: { id } });
+        await this.prisma.tag.delete({ where: { id } });
         return { message: 'Tag eliminado correctamente' };
     }
 

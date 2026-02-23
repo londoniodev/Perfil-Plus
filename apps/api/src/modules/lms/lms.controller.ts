@@ -19,7 +19,7 @@ import {
     CreateQuestionDto,
     CreateLessonAttachmentDto,
 } from './dto';
-import { Public, CurrentUser, Roles } from '../../common/decorators';
+import { Public, CurrentUser, Roles, CurrentTenant } from '../../common/decorators';
 
 // ==================== PUBLIC LMS CONTROLLER ====================
 @Controller('lms')
@@ -120,8 +120,8 @@ export class AdminLmsController {
     }
 
     @Post('themes')
-    async createTheme(@Body() dto: CreateThemeDto) {
-        return this.lmsService.createTheme(dto);
+    async createTheme(@Body() dto: CreateThemeDto, @CurrentTenant() tenantId: string) {
+        return this.lmsService.createTheme(dto, tenantId);
     }
 
     @Patch('themes/:id')
@@ -141,8 +141,8 @@ export class AdminLmsController {
     }
 
     @Post('courses')
-    async createCourse(@Body() dto: CreateCourseDto) {
-        return this.lmsService.createCourse(dto);
+    async createCourse(@Body() dto: CreateCourseDto, @CurrentTenant() tenantId: string) {
+        return this.lmsService.createCourse(dto, tenantId);
     }
 
     @Patch('courses/:id')
@@ -162,8 +162,8 @@ export class AdminLmsController {
     }
 
     @Post('lessons')
-    async createLesson(@Body() dto: CreateLessonDto) {
-        return this.lmsService.createLesson(dto);
+    async createLesson(@Body() dto: CreateLessonDto, @CurrentTenant() tenantId: string) {
+        return this.lmsService.createLesson(dto, tenantId);
     }
 
     @Patch('lessons/:id')

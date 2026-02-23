@@ -45,7 +45,7 @@ export class OrdersService {
 
         for (let i = 0; i < MAX_RETRIES; i++) {
             try {
-                return await this.prisma.client.$transaction(async (tx) => {
+                return await this.prisma.$transaction(async (tx) => {
                     // Generar orderNumber único
                     const orderCount = await tx.order.count();
                     const year = new Date().getFullYear();
@@ -181,7 +181,7 @@ export class OrdersService {
                     // 8. Crear la orden
                     const order = await tx.order.create({
                         data: {
-                            // @ts-ignore
+                            tenantId: this.getTenantId(),
                             userId: userId || null, // Allow null for Guest
                             orderNumber,
                             totalAmount,
@@ -244,9 +244,10 @@ export class OrdersService {
                         if (!existingLead) {
                             await tx.lead.create({
                                 data: {
+                                    tenantId: this.getTenantId(),
                                     phone: dto.customerPhone,
                                     name: dto.customerName || null,
-                                    email: null, // Required field in Prisma schema until properly synced
+                                    email: null,
                                     source: 'Menu Checkout',
                                     status: 'new'
                                 }
@@ -289,7 +290,7 @@ export class OrdersService {
 
     // ============ CAMBIO DE ESTADO (Kitchen Display / Mesero) ============
     async updateStatus(orderId: string, dto: UpdateOrderStatusDto, userRole: Role) {
-        const order = await this.prisma.client.order.findUnique({
+        const order = await this.prisma.order.findUnique({
             where: { id: orderId },
         });
 
@@ -300,7 +301,7 @@ export class OrdersService {
         // Validate Transition
         validateOrderTransition(order.status, dto.status, userRole);
 
-        return await this.prisma.client.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx) => {
             // 0. Verificar estado actual para evitar doble cancelación/devolución
             if (order.status === 'CANCELLED') {
                 throw new BadRequestException('Esta orden ya fue cancelada anteriormente.');
@@ -412,7 +413,7 @@ export class OrdersService {
 
     // ============ MIS ÓRDENES ============
     async findMyOrders(userId: string) {
-        return await this.prisma.client.order.findMany({
+        return await this.prisma.order.findMany({
             where: {
                 userId,
                 status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING', 'PREPARING', 'READY', 'SERVED'] }
@@ -435,7 +436,7 @@ export class OrdersService {
 
     // ============ TRACKING PÚBLICO ============
     async getOrderForTracking(orderId: string) {
-        const order = await this.prisma.client.order.findUnique({
+        const order = await this.prisma.order.findUnique({
             where: { id: orderId },
             select: {
                 id: true,
@@ -470,7 +471,7 @@ export class OrdersService {
             const completedStatuses: OrderStatus[] = ['SERVED', 'DELIVERED', 'SHIPPED', 'CANCELLED', 'REFUNDED'];
 
             const [activeOrders, recentCompleted] = await Promise.all([
-                this.prisma.client.order.findMany({
+                this.prisma.order.findMany({
                     where: { status: { in: activeStatuses } },
                     include: {
                         user: { select: { id: true, name: true, email: true } },
@@ -483,7 +484,7 @@ export class OrdersService {
                     },
                     orderBy: { createdAt: 'desc' },
                 }),
-                this.prisma.client.order.findMany({
+                this.prisma.order.findMany({
                     where: { status: { in: completedStatuses } },
                     include: {
                         user: { select: { id: true, name: true, email: true } },
@@ -502,7 +503,7 @@ export class OrdersService {
             return [...activeOrders, ...recentCompleted].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         }
 
-        return await this.prisma.client.order.findMany({
+        return await this.prisma.order.findMany({
             where: status ? { status } : undefined,
             include: {
                 user: { select: { id: true, name: true, email: true } },
@@ -524,7 +525,7 @@ export class OrdersService {
         let order;
 
         if (orderId) {
-            order = await this.prisma.client.order.findFirst({
+            order = await this.prisma.order.findFirst({
                 where: {
                     id: orderId,
                     userId,
@@ -541,7 +542,7 @@ export class OrdersService {
                 }
             });
         } else {
-            const validOrder = await this.prisma.client.order.findFirst({
+            const validOrder = await this.prisma.order.findFirst({
                 where: {
                     userId,
                     status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
@@ -562,7 +563,7 @@ export class OrdersService {
             throw new ForbiddenException('No tienes permiso para acceder a este producto o no has comprado este ítem.');
         }
 
-        const product = await this.prisma.client.product.findUnique({
+        const product = await this.prisma.product.findUnique({
             where: { id: productId },
             select: { digitalFileUrl: true, productType: true }
         });
@@ -584,7 +585,7 @@ export class OrdersService {
 
     // ============ PAGOS (CAJA) ============
     async createPayment(orderId: string, dto: CreatePaymentDto) {
-        return await this.prisma.client.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx) => {
             const order = await tx.order.findUnique({
                 where: { id: orderId },
                 include: { items: true }
@@ -651,7 +652,7 @@ export class OrdersService {
     // ============ KITCHEN CONTROL (isPrepared) ============
     async toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean) {
         // 1. Verificar que el item pertenece a la orden
-        const item = await this.prisma.client.orderItem.findFirst({
+        const item = await this.prisma.orderItem.findFirst({
             where: { id: itemId, orderId },
         });
 
@@ -660,7 +661,7 @@ export class OrdersService {
         }
 
         // 2. Actualizar estado
-        const updatedItem = await this.prisma.client.orderItem.update({
+        const updatedItem = await this.prisma.orderItem.update({
             where: { id: itemId },
             data: { isPrepared },
         });

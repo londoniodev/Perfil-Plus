@@ -26,12 +26,12 @@ export class ProductsService {
     };
 
     // ============ CREAR PRODUCTO ============
-    async create(data: CreateProductDto) {
+    async create(data: CreateProductDto, tenantId: string) {
         const { sku, stock, modifierGroups, ...productData } = data;
 
-        // Validar slug único
-        const existing = await this.prisma.client.product.findUnique({
-            where: { slug: data.slug },
+        // Validar slug único en este tenant
+        const existing = await this.prisma.product.findFirst({
+            where: { tenantId, slug: data.slug },
         });
 
         if (existing) {
@@ -39,9 +39,10 @@ export class ProductsService {
         }
 
         // Transacción para crear producto + variante default + modifier groups
-        return await this.prisma.client.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx) => {
             const product = await tx.product.create({
                 data: {
+                    tenantId,
                     name: productData.name,
                     slug: productData.slug,
                     description: productData.description,
@@ -50,7 +51,6 @@ export class ProductsService {
                     images: productData.images,
                     specs: productData.specs || {},
                     published: productData.published || false,
-                    // Digital fields
                     digitalFileUrl: productData.digitalFileUrl,
                     previewUrl: productData.previewUrl,
                 },
@@ -61,6 +61,7 @@ export class ProductsService {
 
             await tx.productVariant.create({
                 data: {
+                    tenantId,
                     productId: product.id,
                     sku: defaultSku,
                     price: productData.basePrice,
@@ -75,12 +76,14 @@ export class ProductsService {
                 for (const group of modifierGroups) {
                     await tx.modifierGroup.create({
                         data: {
+                            tenantId,
                             productId: product.id,
                             name: group.name,
                             minSelect: group.minSelect ?? 0,
                             maxSelect: group.maxSelect ?? 1,
                             modifiers: {
                                 create: group.modifiers.map((mod) => ({
+                                    tenantId,
                                     name: mod.name,
                                     priceAdjustment: mod.priceAdjustment ?? 0,
                                     stock: mod.stock ?? null,
@@ -104,8 +107,8 @@ export class ProductsService {
     }
 
     // ============ ACTUALIZAR PRODUCTO ============
-    async update(id: string, data: CreateProductDto) {
-        const existing = await this.prisma.client.product.findUnique({
+    async update(id: string, data: CreateProductDto, tenantId: string) {
+        const existing = await this.prisma.product.findUnique({
             where: { id },
         });
 
@@ -115,7 +118,7 @@ export class ProductsService {
 
         const { sku, stock, modifierGroups, ...productData } = data;
 
-        return await this.prisma.client.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx) => {
             // Actualizar producto base
             await tx.product.update({
                 where: { id },
@@ -145,12 +148,14 @@ export class ProductsService {
                     for (const group of modifierGroups) {
                         await tx.modifierGroup.create({
                             data: {
+                                tenantId,
                                 productId: id,
                                 name: group.name,
                                 minSelect: group.minSelect ?? 0,
                                 maxSelect: group.maxSelect ?? 1,
                                 modifiers: {
                                     create: group.modifiers.map((mod) => ({
+                                        tenantId,
                                         name: mod.name,
                                         priceAdjustment: mod.priceAdjustment ?? 0,
                                         stock: mod.stock ?? null,
@@ -176,7 +181,7 @@ export class ProductsService {
     // ============ DESCARGAS DIGITALES ============
     async getProductDownloadUrl(productId: string, userId: string) {
         // 1. Verify Active Subscription (Priority Access)
-        const subscription = await this.prisma.client.subscription.findUnique({
+        const subscription = await this.prisma.subscription.findUnique({
             where: { userId },
         });
 
@@ -185,7 +190,7 @@ export class ProductsService {
             // Pass through to download
         } else {
             // 2. Verify Purchase (if no subscription)
-            const hasPurchased = await this.prisma.client.order.findFirst({
+            const hasPurchased = await this.prisma.order.findFirst({
                 where: {
                     userId,
                     status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
@@ -198,7 +203,7 @@ export class ProductsService {
             });
 
             // Check deprecated Purchase table as fallback (for migration compatibility)
-            const hasLegacyPurchase = !hasPurchased && await this.prisma.client.purchase.findFirst({
+            const hasLegacyPurchase = !hasPurchased && await this.prisma.purchase.findFirst({
                 where: {
                     userId,
                     status: 'approved',
@@ -212,7 +217,7 @@ export class ProductsService {
         }
 
         // 3. Get Product File URL
-        const product = await this.prisma.client.product.findUnique({
+        const product = await this.prisma.product.findUnique({
             where: { id: productId },
             select: { digitalFileUrl: true, productType: true }
         });
@@ -232,7 +237,7 @@ export class ProductsService {
 
     // ============ QUERIES ============
     async findAllAdmin() {
-        return await this.prisma.client.product.findMany({
+        return await this.prisma.product.findMany({
             orderBy: { createdAt: 'desc' },
             include: {
                 variants: true,
@@ -243,7 +248,7 @@ export class ProductsService {
     }
 
     async findAllPublished(type?: ProductType, allVariants: boolean = false) {
-        return await this.prisma.client.product.findMany({
+        return await this.prisma.product.findMany({
             where: {
                 published: true,
                 ...(type ? { productType: type } : {}),
@@ -259,9 +264,9 @@ export class ProductsService {
         });
     }
 
-    async findOnePublished(slug: string) {
-        const product = await this.prisma.client.product.findUnique({
-            where: { slug },
+    async findOnePublished(slug: string, tenantId: string) {
+        const product = await this.prisma.product.findFirst({
+            where: { tenantId, slug },
             include: {
                 variants: true,
                 ...this.modifierGroupsInclude,
@@ -276,7 +281,7 @@ export class ProductsService {
     }
 
     async findOne(id: string) {
-        const product = await this.prisma.client.product.findUnique({
+        const product = await this.prisma.product.findUnique({
             where: { id },
             include: {
                 variants: true,

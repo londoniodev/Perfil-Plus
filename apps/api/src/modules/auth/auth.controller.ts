@@ -4,7 +4,7 @@ import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto';
-import { Public, CurrentUser } from '../../common/decorators';
+import { Public, CurrentUser, CurrentTenant } from '../../common/decorators';
 
 // Cookie configuration
 // Cookie configuration helpers
@@ -37,8 +37,9 @@ export class AuthController {
         @Body() dto: RegisterDto,
         @Res({ passthrough: true }) res: Response,
         @Req() req: Request,
+        @CurrentTenant() tenantId: string,
     ) {
-        const result = await this.authService.register(dto);
+        const result = await this.authService.register(dto, tenantId);
 
         // Establecer cookies (Primary method for same-domain/proxied)
         const hostname = req.get('host') || req.hostname;
@@ -61,8 +62,9 @@ export class AuthController {
         @Body() dto: LoginDto,
         @Res({ passthrough: true }) res: Response,
         @Req() req: Request,
+        @CurrentTenant() tenantId: string,
     ) {
-        const result = await this.authService.login(dto);
+        const result = await this.authService.login(dto, tenantId);
 
         const hostname = req.get('host') || req.hostname;
 
@@ -129,8 +131,8 @@ export class AuthController {
     @Public()
     @Post('forgot-password')
     @HttpCode(HttpStatus.OK)
-    async forgotPassword(@Body('email') email: string) {
-        return this.authService.forgotPassword(email);
+    async forgotPassword(@Body('email') email: string, @CurrentTenant() tenantId: string) {
+        return this.authService.forgotPassword(email, tenantId);
     }
 
     @Public()
@@ -159,8 +161,8 @@ export class AuthController {
     @Public()
     @Post('resend-verification')
     @HttpCode(HttpStatus.OK)
-    async resendVerification(@Body('email') email: string) {
-        return this.authService.resendVerificationEmail(email);
+    async resendVerification(@Body('email') email: string, @CurrentTenant() tenantId: string) {
+        return this.authService.resendVerificationEmail(email, tenantId);
     }
 
     // ============ Cookie Helpers ============

@@ -448,7 +448,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(MOCK_ORDER);
             mockClient.order.update.mockResolvedValue(updatedOrder);
 
-            const result = await service.updateStatus('order-1', { status: 'PREPARING' as any });
+            const result = await service.updateStatus('order-1', { status: 'PREPARING' as any }, 'ADMIN' as any);
 
             expect(mockClient.order.update).toHaveBeenCalledWith({
                 where: { id: 'order-1' },
@@ -467,7 +467,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(null);
 
             await expect(
-                service.updateStatus('no-existe', { status: 'PREPARING' as any }),
+                service.updateStatus('no-existe', { status: 'PREPARING' as any }, 'ADMIN' as any),
             ).rejects.toThrow(NotFoundException);
         });
     });
@@ -607,7 +607,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(pendingOrder);
             mockClient.order.update.mockResolvedValue(preparingOrder);
 
-            const result = await service.updateStatus('order-1', { status: 'PREPARING' as any });
+            const result = await service.updateStatus('order-1', { status: 'PREPARING' as any }, 'ADMIN' as any);
             expect(result.status).toBe('PREPARING');
         });
 
@@ -617,7 +617,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(preparingOrder);
             mockClient.order.update.mockResolvedValue(readyOrder);
 
-            const result = await service.updateStatus('order-1', { status: 'READY' as any });
+            const result = await service.updateStatus('order-1', { status: 'READY' as any }, 'ADMIN' as any);
             expect(result.status).toBe('READY');
         });
 
@@ -627,7 +627,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(readyOrder);
             mockClient.order.update.mockResolvedValue(servedOrder);
 
-            const result = await service.updateStatus('order-1', { status: 'SERVED' as any });
+            const result = await service.updateStatus('order-1', { status: 'SERVED' as any }, 'ADMIN' as any);
             expect(result.status).toBe('SERVED');
         });
 
@@ -637,7 +637,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(preparingOrder);
             mockClient.order.update.mockResolvedValue(cancelledOrder);
 
-            const result = await service.updateStatus('order-1', { status: 'CANCELLED' as any });
+            const result = await service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any);
             expect(result.status).toBe('CANCELLED');
         });
 
@@ -664,7 +664,7 @@ describe('OrdersService', () => {
             // Mock para findUnique de cada modifier para recuperar su stock original
             mockClient.modifier.findUnique.mockResolvedValue({ id: 'mod-1', stock: 10 });
 
-            await service.updateStatus('order-1', { status: 'CANCELLED' as any });
+            await service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any);
 
             // Verifica incremento de stock de la variante (2 unidades)
             expect(mockClient.productVariant.update).toHaveBeenCalledWith({
@@ -890,7 +890,7 @@ describe('OrdersService', () => {
             mockTx.order.findUnique.mockResolvedValue(orderWithVariantStock);
             mockTx.order.update.mockResolvedValue({ ...MOCK_ORDER, status: 'CANCELLED' });
 
-            await service.updateStatus('order-1', { status: 'CANCELLED' as any });
+            await service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any);
 
             // Verificar que se incrementó stock de la variante
             expect(mockTx.productVariant.update).toHaveBeenCalledWith({
@@ -922,7 +922,7 @@ describe('OrdersService', () => {
             // El modificador original en la DB tiene stock controlado
             mockTx.modifier.findUnique.mockResolvedValue({ id: 'mod-1', stock: 19 });
 
-            await service.updateStatus('order-1', { status: 'CANCELLED' as any });
+            await service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any);
 
             // Verificar que se incrementó stock del modificador
             expect(mockTx.modifier.update).toHaveBeenCalledWith({
@@ -949,7 +949,7 @@ describe('OrdersService', () => {
             mockTx.order.findUnique.mockResolvedValue(orderDigital);
             mockTx.order.update.mockResolvedValue({ ...MOCK_ORDER, status: 'CANCELLED' });
 
-            await service.updateStatus('order-1', { status: 'CANCELLED' as any });
+            await service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any);
 
             // No debería incrementar stock
             expect(mockTx.productVariant.update).not.toHaveBeenCalled();
@@ -959,10 +959,10 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue({ ...MOCK_ORDER, status: 'CANCELLED' });
 
             await expect(
-                service.updateStatus('order-1', { status: 'CANCELLED' as any }),
+                service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any),
             ).rejects.toThrow(BadRequestException);
             await expect(
-                service.updateStatus('order-1', { status: 'CANCELLED' as any }),
+                service.updateStatus('order-1', { status: 'CANCELLED' as any }, 'ADMIN' as any),
             ).rejects.toThrow(/ya fue cancelada/);
         });
     });
@@ -1000,7 +1000,7 @@ describe('OrdersService', () => {
             mockClient.order.findUnique.mockResolvedValue(MOCK_ORDER);
             mockClient.order.update.mockResolvedValue({ ...MOCK_ORDER, status: 'PREPARING' });
 
-            await service.updateStatus('order-1', { status: 'PREPARING' as any });
+            await service.updateStatus('order-1', { status: 'PREPARING' as any }, 'ADMIN' as any);
 
             const mockGateway = (service as any).ordersGateway;
             expect(mockGateway.emit).toHaveBeenCalledWith(

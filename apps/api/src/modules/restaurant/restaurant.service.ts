@@ -10,28 +10,36 @@ export class RestaurantService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) { }
 
+    private async getTenantIdBySlug(slug: string): Promise<string> {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { slug },
+            select: { id: true },
+        });
+        if (!tenant) {
+            throw new NotFoundException('Restaurant not found');
+        }
+        return tenant.id;
+    }
+
     async getPublicMenu(slug: string) {
         // 0. Check Cache
         const cacheKey = `public_menu:${slug}`;
-        // const cachedMenu = await this.cacheManager.get(cacheKey);
-        // if (cachedMenu) {
-        //     return cachedMenu;
-        // }
 
-        // 1. Find Tenant (from Master DB)
-        const tenant = await this.prisma.getTenantBySlug(slug);
+        // 1. Find Tenant
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { slug },
+        });
 
         if (!tenant) {
             throw new NotFoundException('Restaurant not found');
         }
 
-        // 2. Connect to Tenant DB
-        const tenantClient = await this.prisma.getTenantClient(slug);
+        const tenantId = tenant.id;
 
-        // 3. Find Categories (In Tenant DB)
-        // Filter: Only categories that have at least one active product
-        const categories = await tenantClient.category.findMany({
+        // 2. Find Categories (filtered by tenant via products)
+        const categories = await this.prisma.category.findMany({
             where: {
+                tenantId,
                 products: {
                     some: {
                         product: {
@@ -49,9 +57,10 @@ export class RestaurantService {
             orderBy: { name: 'asc' },
         });
 
-        // 4. Find Products (In Tenant DB) — incluir categorías via pivot table
-        const products = await tenantClient.product.findMany({
+        // 3. Find Products
+        const products = await this.prisma.product.findMany({
             where: {
+                tenantId,
                 published: true,
                 isAvailable: true,
             },
@@ -70,18 +79,13 @@ export class RestaurantService {
             },
         });
 
-        // 4b. Fetch Tenant Config (SystemSetting)
-        const systemSetting = await tenantClient.systemSetting.findUnique({
-            where: { key: 'TENANT_CONFIG' }
+        // 4. Fetch Tenant Config (SystemSetting)
+        const systemSetting = await this.prisma.systemSetting.findFirst({
+            where: { tenantId, key: 'TENANT_CONFIG' }
         });
 
         const tenantConfig = systemSetting?.value as any || {};
         const contact = tenantConfig.contact || {};
-
-        // Debug: Inspect raw categories
-        if (products.length > 0) {
-            console.log("Raw Product Categories (Before Map):", JSON.stringify(products[0].categories, null, 2));
-        }
 
         // 5. Transform Data for Public SDK
         const publicProducts = products.map(product => ({
@@ -120,11 +124,10 @@ export class RestaurantService {
                 userName: c.userName || "Anónimo",
                 content: c.content,
                 createdAt: c.createdAt,
-                // We don't expose phone number
             })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         }));
 
-        // 5. Build Response
+        // 6. Build Response
         const response = {
             restaurant: {
                 name: tenant.name || "Restaurant",
@@ -135,8 +138,7 @@ export class RestaurantService {
                 social: {
                     instagram: contact.instagram ? `https://instagram.com/${contact.instagram.replace('@', '')}` : undefined,
                     facebook: contact.facebook ? (contact.facebook.startsWith('http') ? contact.facebook : `https://facebook.com/${contact.facebook}`) : undefined,
-                    whatsapp: contact.whatsapp, // Frontend handles wa.me/
-                    // twitter, tiktok, youtube if they exist in contact
+                    whatsapp: contact.whatsapp,
                     twitter: contact.twitter ? `https://x.com/${contact.twitter.replace('@', '')}` : undefined,
                     tiktok: contact.tiktok ? `https://tiktok.com/@${contact.tiktok.replace('@', '')}` : undefined,
                     youtube: contact.youtube ? `https://youtube.com/${contact.youtube}` : undefined,
@@ -148,16 +150,16 @@ export class RestaurantService {
             products: publicProducts,
         };
 
-        // 6. Set Cache (5 minutes)
+        // 7. Set Cache (5 minutes)
         await this.cacheManager.set(cacheKey, response, 300000);
 
         return response;
     }
 
     async toggleLike(slug: string, productId: string, userPhone: string) {
-        const tenantClient = await this.prisma.getTenantClient(slug);
-
-        const existingLike = await tenantClient.productLike.findUnique({
+        // slug is used for public API identification but we don't need tenantId here
+        // since productLike is scoped by productId which already belongs to a tenant
+        const existingLike = await this.prisma.productLike.findUnique({
             where: {
                 productId_userPhone: {
                     productId,
@@ -167,12 +169,12 @@ export class RestaurantService {
         });
 
         if (existingLike) {
-            await tenantClient.productLike.delete({
+            await this.prisma.productLike.delete({
                 where: { id: existingLike.id }
             });
             return { liked: false };
         } else {
-            await tenantClient.productLike.create({
+            await this.prisma.productLike.create({
                 data: {
                     productId,
                     userPhone
@@ -183,15 +185,13 @@ export class RestaurantService {
     }
 
     async addComment(slug: string, productId: string, userPhone: string, content: string, userName?: string) {
-        const tenantClient = await this.prisma.getTenantClient(slug);
-
-        const comment = await tenantClient.productComment.create({
+        const comment = await this.prisma.productComment.create({
             data: {
                 productId,
                 userPhone,
                 content,
                 userName,
-                isApproved: true // Auto-approve for now
+                isApproved: true
             }
         });
 
@@ -204,9 +204,7 @@ export class RestaurantService {
     }
 
     async checkLikeStatus(slug: string, productId: string, userPhone: string) {
-        const tenantClient = await this.prisma.getTenantClient(slug);
-
-        const count = await tenantClient.productLike.count({
+        const count = await this.prisma.productLike.count({
             where: {
                 productId,
                 userPhone

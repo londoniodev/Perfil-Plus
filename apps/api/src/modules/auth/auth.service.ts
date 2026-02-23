@@ -1,29 +1,27 @@
 
-import { Injectable, ConflictException, UnauthorizedException, BadRequestException, Scope } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PrismaContext } from '../../prisma/prisma-context.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
 import { randomUUID } from 'crypto';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
-        private prismaContext: PrismaContext,
         private jwtService: JwtService,
         private configService: ConfigService,
         private emailService: EmailService,
     ) { }
 
-    async register(dto: RegisterDto) {
-        // Verificar si el email ya existe
-        const existingUser = await this.prisma.client.user.findUnique({
-            where: { email: dto.email.toLowerCase() },
+    async register(dto: RegisterDto, tenantId: string) {
+        // Verificar si el email ya existe en este tenant
+        const existingUser = await this.prisma.user.findFirst({
+            where: { tenantId, email: dto.email.toLowerCase() },
         });
 
         if (existingUser) {
@@ -34,8 +32,9 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(dto.password, 12);
 
         // Crear usuario
-        const user = await this.prisma.client.user.create({
+        const user = await this.prisma.user.create({
             data: {
+                tenantId,
                 email: dto.email.toLowerCase(),
                 password: hashedPassword,
                 name: dto.name,
@@ -55,7 +54,7 @@ export class AuthService {
         await this.sendVerificationEmail(user.id, user.email, user.name);
 
         // Generar tokens (el usuario puede loguearse pero no está verificado)
-        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name);
+        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name, tenantId);
 
         return {
             user,
@@ -64,13 +63,13 @@ export class AuthService {
         };
     }
 
-    async login(dto: LoginDto) {
+    async login(dto: LoginDto, tenantId: string) {
         const MAX_FAILED_ATTEMPTS = 5;
         const LOCKOUT_DURATION_MINUTES = 15;
 
         // Buscar usuario
-        const user = await this.prisma.client.user.findUnique({
-            where: { email: dto.email.toLowerCase() },
+        const user = await this.prisma.user.findFirst({
+            where: { tenantId, email: dto.email.toLowerCase() },
             select: {
                 id: true,
                 email: true,
@@ -103,7 +102,7 @@ export class AuthService {
 
         // Si el bloqueo ya expiró, resetear el contador
         if (user.lockedUntil && new Date() >= user.lockedUntil) {
-            await this.prisma.client.user.update({
+            await this.prisma.user.update({
                 where: { id: user.id },
                 data: { failedLoginAttempts: 0, lockedUntil: null },
             });
@@ -125,7 +124,7 @@ export class AuthService {
                 updateData.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
             }
 
-            await this.prisma.client.user.update({
+            await this.prisma.user.update({
                 where: { id: user.id },
                 data: updateData,
             });
@@ -144,14 +143,14 @@ export class AuthService {
 
         // Login exitoso: resetear contador de intentos fallidos
         if (user.failedLoginAttempts > 0 || user.lockedUntil) {
-            await this.prisma.client.user.update({
+            await this.prisma.user.update({
                 where: { id: user.id },
                 data: { failedLoginAttempts: 0, lockedUntil: null },
             });
         }
 
         // Generar tokens
-        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name);
+        const tokens = await this.generateTokens(user.id, user.email, user.role, user.name, tenantId);
 
         // Remover campos sensibles de la respuesta
         const { password: _, failedLoginAttempts: __, lockedUntil: ___, ...userWithoutSensitive } = user;
@@ -172,7 +171,7 @@ export class AuthService {
         const tokenHash = this.hashToken(token);
 
         // Buscar token
-        const verificationToken = await this.prisma.client.emailVerificationToken.findUnique({
+        const verificationToken = await this.prisma.emailVerificationToken.findUnique({
             where: { token: tokenHash },
             include: { user: true },
         });
@@ -184,20 +183,20 @@ export class AuthService {
         // Verificar expiración
         if (new Date() > verificationToken.expiresAt) {
             // Eliminar token expirado
-            await this.prisma.client.emailVerificationToken.delete({
+            await this.prisma.emailVerificationToken.delete({
                 where: { id: verificationToken.id },
             });
             throw new BadRequestException('El token ha expirado. Solicita uno nuevo.');
         }
 
         // Marcar email como verificado
-        await this.prisma.client.user.update({
+        await this.prisma.user.update({
             where: { id: verificationToken.userId },
             data: { emailVerified: true },
         });
 
         // Eliminar token usado
-        await this.prisma.client.emailVerificationToken.delete({
+        await this.prisma.emailVerificationToken.delete({
             where: { id: verificationToken.id },
         });
 
@@ -207,9 +206,9 @@ export class AuthService {
         };
     }
 
-    async resendVerificationEmail(email: string) {
-        const user = await this.prisma.client.user.findUnique({
-            where: { email: email.toLowerCase() },
+    async resendVerificationEmail(email: string, tenantId: string) {
+        const user = await this.prisma.user.findFirst({
+            where: { tenantId, email: email.toLowerCase() },
         });
 
         if (!user) {
@@ -222,7 +221,7 @@ export class AuthService {
         }
 
         // Rate limiting: máximo 3 tokens en la última hora
-        const recentTokens = await this.prisma.client.emailVerificationToken.count({
+        const recentTokens = await this.prisma.emailVerificationToken.count({
             where: {
                 userId: user.id,
                 createdAt: { gte: new Date(Date.now() - 3600000) }, // última hora
@@ -234,7 +233,7 @@ export class AuthService {
         }
 
         // Eliminar tokens anteriores de este usuario
-        await this.prisma.client.emailVerificationToken.deleteMany({
+        await this.prisma.emailVerificationToken.deleteMany({
             where: { userId: user.id },
         });
 
@@ -252,7 +251,7 @@ export class AuthService {
         const tokenHash = this.hashToken(rawToken);
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
-        await this.prisma.client.emailVerificationToken.create({
+        await this.prisma.emailVerificationToken.create({
             data: {
                 token: tokenHash,
                 userId,
@@ -270,7 +269,7 @@ export class AuthService {
 
     async refreshToken(refreshToken: string) {
         // Buscar refresh token en la base de datos
-        const storedToken = await this.prisma.client.refreshToken.findUnique({
+        const storedToken = await this.prisma.refreshToken.findUnique({
             where: { token: refreshToken },
             include: { user: true },
         });
@@ -282,12 +281,12 @@ export class AuthService {
         // Verificar si ha expirado
         if (new Date() > storedToken.expiresAt) {
             // Eliminar token expirado
-            await this.prisma.client.refreshToken.deleteMany({ where: { id: storedToken.id } });
+            await this.prisma.refreshToken.deleteMany({ where: { id: storedToken.id } });
             throw new UnauthorizedException('Refresh token expirado');
         }
 
         // Eliminar el token usado (rotación de tokens)
-        await this.prisma.client.refreshToken.deleteMany({ where: { id: storedToken.id } });
+        await this.prisma.refreshToken.deleteMany({ where: { id: storedToken.id } });
 
         // Generar nuevos tokens
         const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email, storedToken.user.role, storedToken.user.name);
@@ -298,7 +297,7 @@ export class AuthService {
     async logout(userId: string, refreshToken?: string) {
         if (refreshToken) {
             // Eliminar solo el token específico
-            await this.prisma.client.refreshToken.deleteMany({
+            await this.prisma.refreshToken.deleteMany({
                 where: {
                     userId,
                     token: refreshToken,
@@ -306,7 +305,7 @@ export class AuthService {
             });
         } else {
             // Eliminar todos los refresh tokens del usuario (logout de todos los dispositivos)
-            await this.prisma.client.refreshToken.deleteMany({
+            await this.prisma.refreshToken.deleteMany({
                 where: { userId },
             });
         }
@@ -315,7 +314,7 @@ export class AuthService {
     }
 
     async getMe(userId: string) {
-        const user = await this.prisma.client.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
@@ -347,8 +346,7 @@ export class AuthService {
         };
     }
 
-    private async generateTokens(userId: string, email: string, role?: string, name?: string) {
-        const tenantId = this.prismaContext.getTenantId();
+    private async generateTokens(userId: string, email: string, role?: string, name?: string, tenantId?: string) {
         const accessTokenPayload = { sub: userId, email, role, name, tenantId };
 
         // Generar tokens (Default 1 hora si no hay variable de entorno)
@@ -363,7 +361,7 @@ export class AuthService {
         expiresAt.setDate(expiresAt.getDate() + refreshTokenExpiresIn);
 
         // Guardar refresh token en la base de datos
-        await this.prisma.client.refreshToken.create({
+        await this.prisma.refreshToken.create({
             data: {
                 token: refreshTokenValue,
                 userId,
@@ -377,9 +375,9 @@ export class AuthService {
             expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
         };
     }
-    async forgotPassword(email: string) {
-        const user = await this.prisma.client.user.findUnique({
-            where: { email: email.toLowerCase() },
+    async forgotPassword(email: string, tenantId: string) {
+        const user = await this.prisma.user.findFirst({
+            where: { tenantId, email: email.toLowerCase() },
         });
 
         if (!user) {
@@ -393,11 +391,11 @@ export class AuthService {
         const expiresAt = new Date(Date.now() + 3600000); // 1 hour
 
         // Save token (invalidate previous ones)
-        await this.prisma.client.passwordResetToken.deleteMany({
+        await this.prisma.passwordResetToken.deleteMany({
             where: { userId: user.id },
         });
 
-        await this.prisma.client.passwordResetToken.create({
+        await this.prisma.passwordResetToken.create({
             data: {
                 token: tokenHash,
                 userId: user.id,
@@ -414,7 +412,7 @@ export class AuthService {
     async resetPassword(token: string, newPassword: string) {
         const tokenHash = this.hashToken(token);
 
-        const resetToken = await this.prisma.client.passwordResetToken.findUnique({
+        const resetToken = await this.prisma.passwordResetToken.findUnique({
             where: { token: tokenHash },
             include: { user: true },
         });
@@ -424,14 +422,14 @@ export class AuthService {
         }
 
         if (new Date() > resetToken.expiresAt) {
-            await this.prisma.client.passwordResetToken.delete({ where: { id: resetToken.id } });
+            await this.prisma.passwordResetToken.delete({ where: { id: resetToken.id } });
             throw new BadRequestException('El token ha expirado. Solicita uno nuevo.');
         }
 
         // Update password
         const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-        await this.prisma.client.user.update({
+        await this.prisma.user.update({
             where: { id: resetToken.userId },
             data: {
                 password: hashedPassword,
@@ -442,12 +440,12 @@ export class AuthService {
         });
 
         // Delete used token
-        await this.prisma.client.passwordResetToken.delete({
+        await this.prisma.passwordResetToken.delete({
             where: { id: resetToken.id },
         });
 
         // Revoke all sessions (security best practice)
-        await this.prisma.client.refreshToken.deleteMany({
+        await this.prisma.refreshToken.deleteMany({
             where: { userId: resetToken.userId },
         });
 

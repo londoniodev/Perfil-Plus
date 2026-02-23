@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { CurrentTenant } from '../../common/decorators';
 
 @Controller('admin/products')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -13,13 +14,13 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Post()
-    create(@Body() createProductDto: CreateProductDto) {
-        return this.productsService.create(createProductDto);
+    create(@Body() createProductDto: CreateProductDto, @CurrentTenant() tenantId: string) {
+        return this.productsService.create(createProductDto, tenantId);
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() updateProductDto: CreateProductDto) {
-        return this.productsService.update(id, updateProductDto);
+    update(@Param('id') id: string, @Body() updateProductDto: CreateProductDto, @CurrentTenant() tenantId: string) {
+        return this.productsService.update(id, updateProductDto, tenantId);
     }
 
     @Get()

@@ -10,7 +10,7 @@ const STAFF_ROLES: Role[] = [Role.WAITER, Role.KITCHEN, Role.CASHIER];
 export class EmployeesService {
     constructor(private prisma: PrismaService) { }
 
-    async create(dto: CreateEmployeeDto) {
+    async create(dto: CreateEmployeeDto, tenantId: string) {
         // Validar que el rol sea de staff
         if (!STAFF_ROLES.includes(dto.role)) {
             throw new BadRequestException(
@@ -19,8 +19,8 @@ export class EmployeesService {
         }
 
         // Verificar email duplicado
-        const existing = await this.prisma.client.user.findUnique({
-            where: { email: dto.email.toLowerCase() },
+        const existing = await this.prisma.user.findFirst({
+            where: { tenantId, email: dto.email.toLowerCase() },
         });
 
         if (existing) {
@@ -30,8 +30,9 @@ export class EmployeesService {
         // Hash de contraseña
         const hashedPassword = await bcrypt.hash(dto.password, 12);
 
-        const employee = await this.prisma.client.user.create({
+        const employee = await this.prisma.user.create({
             data: {
+                tenantId,
                 email: dto.email.toLowerCase(),
                 password: hashedPassword,
                 name: dto.name,
@@ -52,9 +53,10 @@ export class EmployeesService {
         return employee;
     }
 
-    async findAll() {
-        const users = await this.prisma.client.user.findMany({
+    async findAll(tenantId: string) {
+        const users = await this.prisma.user.findMany({
             where: {
+                tenantId,
                 role: { in: STAFF_ROLES },
             },
             orderBy: { createdAt: 'desc' },
@@ -73,9 +75,9 @@ export class EmployeesService {
         return users;
     }
 
-    async findOne(id: string) {
-        const employee = await this.prisma.client.user.findUnique({
-            where: { id },
+    async findOne(id: string, tenantId: string) {
+        const employee = await this.prisma.user.findFirst({
+            where: { id, tenantId },
             select: {
                 id: true,
                 email: true,
@@ -98,9 +100,9 @@ export class EmployeesService {
         return employee;
     }
 
-    async update(id: string, dto: UpdateEmployeeDto) {
+    async update(id: string, dto: UpdateEmployeeDto, tenantId: string) {
         // Verificar que existe y es staff
-        await this.findOne(id);
+        await this.findOne(id, tenantId);
 
         // Si se cambia el rol, validar que sea de staff
         if (dto.role && !STAFF_ROLES.includes(dto.role)) {
@@ -109,7 +111,7 @@ export class EmployeesService {
             );
         }
 
-        const updated = await this.prisma.client.user.update({
+        const updated = await this.prisma.user.update({
             where: { id },
             data: {
                 ...(dto.name && { name: dto.name }),
@@ -129,11 +131,11 @@ export class EmployeesService {
         return updated;
     }
 
-    async remove(id: string) {
+    async remove(id: string, tenantId: string) {
         // Verificar que existe y es staff
-        await this.findOne(id);
+        await this.findOne(id, tenantId);
 
-        await this.prisma.client.user.delete({
+        await this.prisma.user.delete({
             where: { id },
         });
 

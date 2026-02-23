@@ -12,7 +12,6 @@ import { join } from 'path';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
-import { PrismaContext } from './prisma/prisma-context.service';
 
 // Core modules
 import { PrismaModule } from './prisma';
@@ -45,8 +44,7 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
         NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
 
         // Database
-        DATABASE_URL: Joi.string().required(), // Master DB for tenant lookup
-        DATABASE_URL_BASE: Joi.string().required(),
+        DATABASE_URL: Joi.string().required(),
 
         // JWT
         JWT_SECRET: Joi.string().required(),

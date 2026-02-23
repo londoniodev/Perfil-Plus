@@ -10,46 +10,51 @@ async function main() {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 1. Admin User
-    // Assuming london.dev@outlook.com based on common pattern, assuming user typo or shorthand
     const adminEmail = 'london.dev@outlook.com';
 
-    const admin = await prisma.user.upsert({
-        where: { email: adminEmail },
-        update: {
-            password: hashedPassword,
-            role: 'ADMIN',
-            emailVerified: true
-        },
-        create: {
-            email: adminEmail,
-            name: 'London Dev',
-            password: hashedPassword,
-            role: 'ADMIN',
-            emailVerified: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=London'
-        }
-    });
-    console.log('✅ Admin creado:', admin.email);
+    const existingAdmin = await prisma.user.findFirst({ where: { email: adminEmail } });
+    if (existingAdmin) {
+        await prisma.user.update({
+            where: { id: existingAdmin.id },
+            data: { password: hashedPassword, role: 'ADMIN', emailVerified: true },
+        });
+    } else {
+        await prisma.user.create({
+            data: {
+                tenantId: 'default',
+                email: adminEmail,
+                name: 'London Dev',
+                password: hashedPassword,
+                role: 'ADMIN',
+                emailVerified: true,
+                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=London'
+            }
+        });
+    }
+    console.log('✅ Admin creado:', adminEmail);
 
     // 2. Normal User
     const userEmail = 'gambito0202@gmail.com';
-    const user = await prisma.user.upsert({
-        where: { email: userEmail },
-        update: {
-            password: hashedPassword,
-            role: 'USER',
-            emailVerified: true
-        },
-        create: {
-            email: userEmail,
-            name: 'Gambito User',
-            password: hashedPassword,
-            role: 'USER',
-            emailVerified: true,
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gambito'
-        }
-    });
-    console.log('✅ User creado:', user.email);
+    const existingUser = await prisma.user.findFirst({ where: { email: userEmail } });
+    if (existingUser) {
+        await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { password: hashedPassword, role: 'USER', emailVerified: true },
+        });
+    } else {
+        await prisma.user.create({
+            data: {
+                tenantId: 'default',
+                email: userEmail,
+                name: 'Gambito User',
+                password: hashedPassword,
+                role: 'USER',
+                emailVerified: true,
+                avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gambito'
+            }
+        });
+    }
+    console.log('✅ User creado:', userEmail);
 }
 
 main()

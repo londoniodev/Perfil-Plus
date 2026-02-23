@@ -37,11 +37,15 @@ export class EmailService {
         private prisma: PrismaService,
     ) { }
 
+    private getTenantId(): string {
+        return (this.request as any).tenantId || (this.request.headers['x-tenant-id'] as string) || 'default';
+    }
+
     private async getFrontendUrl(): Promise<string> {
         // 1. Intentar obtener de la configuración del Tenant (DB)
         try {
-            const setting = await this.prisma.client.systemSetting.findUnique({
-                where: { key: 'FRONTEND_URL' },
+            const setting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: this.getTenantId(), key: 'FRONTEND_URL' },
             });
             if (typeof setting?.value === 'string') {
                 return setting.value;
@@ -68,8 +72,8 @@ export class EmailService {
         let smtpConfig: SmtpConfig | null = null;
 
         try {
-            const setting = await this.prisma.client.systemSetting.findUnique({
-                where: { key: 'SMTP_CONFIG' },
+            const setting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: this.getTenantId(), key: 'SMTP_CONFIG' },
             });
 
             if (setting?.value) {

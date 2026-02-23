@@ -159,7 +159,7 @@ describe('ProductsService', () => {
             mockClient.productVariant.create.mockResolvedValue(mockVariant);
             mockClient.modifierGroup.create.mockResolvedValue(mockModifierGroup);
 
-            const result = await service.create(createDto);
+            const result = await service.create(createDto, 'test-tenant');
 
             // Verifica que se buscó slug duplicado
             expect(mockClient.product.findUnique).toHaveBeenCalledWith({
@@ -207,13 +207,13 @@ describe('ProductsService', () => {
         it('debería lanzar BadRequestException si el slug ya existe', async () => {
             mockClient.product.findUnique.mockResolvedValue(mockProduct);
 
-            await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
+            await expect(service.create(createDto, 'test-tenant')).rejects.toThrow(BadRequestException);
         });
 
         it('debería incluir mensaje descriptivo en error de slug duplicado', async () => {
             mockClient.product.findUnique.mockResolvedValue(mockProduct);
 
-            await expect(service.create(createDto)).rejects.toThrow('El slug del producto ya existe');
+            await expect(service.create(createDto, 'test-tenant')).rejects.toThrow('El slug del producto ya existe');
         });
 
         it('debería crear producto SIN modifier groups (e-commerce normal)', async () => {
@@ -225,7 +225,7 @@ describe('ProductsService', () => {
             mockClient.product.create.mockResolvedValue(mockProduct);
             mockClient.productVariant.create.mockResolvedValue(mockVariant);
 
-            const result = await service.create(dtoSinModifiers);
+            const result = await service.create(dtoSinModifiers, 'test-tenant');
 
             expect(mockClient.modifierGroup.create).not.toHaveBeenCalled();
             expect(result!.modifierGroups).toEqual([]);
@@ -249,7 +249,7 @@ describe('ProductsService', () => {
             mockClient.productVariant.create.mockResolvedValue(mockVariant);
             mockClient.modifierGroup.create.mockResolvedValue({});
 
-            await service.create(dtoDefaults);
+            await service.create(dtoDefaults, 'test-tenant');
 
             expect(mockClient.modifierGroup.create).toHaveBeenCalledWith({
                 data: expect.objectContaining({
@@ -297,7 +297,7 @@ describe('ProductsService', () => {
             mockClient.modifierGroup.deleteMany.mockResolvedValue({ count: 1 });
             mockClient.modifierGroup.create.mockResolvedValue({});
 
-            const result = await service.update('prod-1', updateDto);
+            const result = await service.update('prod-1', updateDto, 'test-tenant');
 
             // Verifica que se borraron los modifier groups existentes
             expect(mockClient.modifierGroup.deleteMany).toHaveBeenCalledWith({
@@ -318,8 +318,8 @@ describe('ProductsService', () => {
         it('debería lanzar NotFoundException si el producto no existe', async () => {
             mockClient.product.findUnique.mockResolvedValueOnce(null);
 
-            await expect(service.update('no-existe', updateDto)).rejects.toThrow(NotFoundException);
-            await expect(service.update('no-existe', updateDto)).rejects.toThrow('Producto no encontrado');
+            await expect(service.update('no-existe', updateDto, 'test-tenant')).rejects.toThrow(NotFoundException);
+            await expect(service.update('no-existe', updateDto, 'test-tenant')).rejects.toThrow('Producto no encontrado');
         });
     });
 
@@ -411,7 +411,7 @@ describe('ProductsService', () => {
         it('debería retornar producto publicado por slug', async () => {
             mockClient.product.findUnique.mockResolvedValue(mockProductComplete);
 
-            const result = await service.findOnePublished('hamburguesa-clasica');
+            const result = await service.findOnePublished('hamburguesa-clasica', 'test-tenant');
 
             expect(result).toEqual(mockProductComplete);
             expect(mockClient.product.findUnique).toHaveBeenCalledWith(
@@ -424,13 +424,13 @@ describe('ProductsService', () => {
         it('debería lanzar NotFoundException si el producto no existe', async () => {
             mockClient.product.findUnique.mockResolvedValue(null);
 
-            await expect(service.findOnePublished('no-existe')).rejects.toThrow(NotFoundException);
+            await expect(service.findOnePublished('no-existe', 'test-tenant')).rejects.toThrow(NotFoundException);
         });
 
         it('debería lanzar NotFoundException si el producto no está publicado', async () => {
             mockClient.product.findUnique.mockResolvedValue({ ...mockProductComplete, published: false });
 
-            await expect(service.findOnePublished('hamburguesa-clasica')).rejects.toThrow(NotFoundException);
+            await expect(service.findOnePublished('hamburguesa-clasica', 'test-tenant')).rejects.toThrow(NotFoundException);
         });
     });
 

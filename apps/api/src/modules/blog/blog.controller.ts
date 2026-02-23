@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreatePostDto, UpdatePostDto, CreateCategoryDto, CreateTagDto, CreateAttachmentDto } from './dto';
-import { Public, CurrentUser, Roles } from '../../common/decorators';
+import { Public, CurrentUser, Roles, CurrentTenant } from '../../common/decorators';
 
 // ==================== PUBLIC BLOG CONTROLLER ====================
 @Controller('blog')
@@ -75,8 +75,8 @@ export class AdminBlogController {
     }
 
     @Post('posts')
-    async createPost(@Body() dto: CreatePostDto) {
-        return this.blogService.createPost(dto);
+    async createPost(@Body() dto: CreatePostDto, @CurrentTenant() tenantId: string) {
+        return this.blogService.createPost(dto, tenantId);
     }
 
     @Patch('posts/:id')
@@ -110,8 +110,8 @@ export class AdminBlogController {
 
     // Categories
     @Post('categories')
-    async createCategory(@Body() dto: CreateCategoryDto) {
-        return this.blogService.createCategory(dto);
+    async createCategory(@Body() dto: CreateCategoryDto, @CurrentTenant() tenantId: string) {
+        return this.blogService.createCategory(dto, tenantId);
     }
 
     @Delete('categories/:id')
@@ -121,8 +121,8 @@ export class AdminBlogController {
 
     // Tags
     @Post('tags')
-    async createTag(@Body() dto: CreateTagDto) {
-        return this.blogService.createTag(dto);
+    async createTag(@Body() dto: CreateTagDto, @CurrentTenant() tenantId: string) {
+        return this.blogService.createTag(dto, tenantId);
     }
 
     @Delete('tags/:id')

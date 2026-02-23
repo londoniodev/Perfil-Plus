@@ -1,0 +1,302 @@
+﻿
+src/modules/auth/auth.controller.ts(41,47):
+ error TS2554: Expected 2 arguments, but 
+got 1.
+src/modules/auth/auth.controller.ts(65,47):
+ error TS2554: Expected 2 arguments, but 
+got 1.
+src/modules/auth/auth.service.ts(211,13): 
+error TS2322: Type '{ email: string; }' is 
+not assignable to type 
+'UserWhereUniqueInput'.
+src/modules/auth/auth.service.ts(380,13): 
+error TS2322: Type '{ email: string; }' is 
+not assignable to type 
+'UserWhereUniqueInput'.
+src/modules/blog/blog.service.ts(17,13): 
+error TS2322: Type '{ title: string; slug: 
+string; excerpt: string; content: string; 
+coverImage: string | undefined; published: 
+boolean; isPremium: boolean; authorName: 
+string; publishedAt: Date | null; 
+metaTitle: string | undefined; 
+metaDescription: string | undefined; 
+readingTime: number; }' is not assignable 
+to type '(Without<PostCreateInput, 
+PostUncheckedCreateInput> & 
+PostUncheckedCreateInput) | (Without<...> 
+& PostCreateInput)'.
+src/modules/blog/blog.service.ts(217,13): 
+error TS2322: Type '{ slug: string; }' is 
+not assignable to type 
+'PostWhereUniqueInput'.
+src/modules/blog/blog.service.ts(235,30): 
+error TS2339: Property 'categories' does 
+not exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; published: boolean; content: 
+string; title: string; coverImage: string 
+| null; excerpt: string; isPremium: 
+boolean; ... 4 more ...; readingTime: 
+number | null; }'.
+src/modules/blog/blog.service.ts(236,24): 
+error TS2339: Property 'tags' does not 
+exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; published: boolean; content: 
+string; title: string; coverImage: string 
+| null; excerpt: string; isPremium: 
+boolean; ... 4 more ...; readingTime: 
+number | null; }'.
+src/modules/blog/blog.service.ts(319,13): 
+error TS2322: Type '{ name: string; slug: 
+string; }' is not assignable to type 
+'(Without<CategoryCreateInput, 
+CategoryUncheckedCreateInput> & 
+CategoryUncheckedCreateInput) | 
+(Without<...> & CategoryCreateInput)'.
+src/modules/blog/blog.service.ts(349,13): 
+error TS2322: Type '{ name: string; }' is 
+not assignable to type 
+'(Without<TagCreateInput, 
+TagUncheckedCreateInput> & 
+TagUncheckedCreateInput) | 
+(Without<TagUncheckedCreateInput, 
+TagCreateInput> & TagCreateInput)'.
+src/modules/email/email.service.ts(44,17): 
+error TS2322: Type '{ key: string; }' is 
+not assignable to type 
+'SystemSettingWhereUniqueInput'.
+src/modules/email/email.service.ts(72,17): 
+error TS2322: Type '{ key: string; }' is 
+not assignable to type 
+'SystemSettingWhereUniqueInput'.
+src/modules/employees/employees.service.ts(
+23,13): error TS2322: Type '{ email: 
+string; }' is not assignable to type 
+'UserWhereUniqueInput'.
+src/modules/employees/employees.service.ts(
+34,13): error TS2322: Type '{ email: 
+string; password: string; name: string; 
+role: $Enums.Role; avatar: string | 
+undefined; emailVerified: true; }' is not 
+assignable to type 
+'(Without<UserCreateInput, 
+UserUncheckedCreateInput> & 
+UserUncheckedCreateInput) | (Without<...> 
+& UserCreateInput)'.
+src/modules/leads/leads.service.ts(11,13): 
+error TS2322: Type 'CreateLeadDto' is not 
+assignable to type 
+'(Without<LeadCreateInput, 
+LeadUncheckedCreateInput> & 
+LeadUncheckedCreateInput) | (Without<...> 
+& LeadCreateInput)'.
+src/modules/lms/lms.service.ts(20,13): 
+error TS2322: Type '{ slug: string; title: 
+string; description: string; coverImage?: 
+string; order?: number; published?: 
+boolean; }' is not assignable to type 
+'(Without<ThemeCreateInput, 
+ThemeUncheckedCreateInput> & 
+ThemeUncheckedCreateInput) | (Without<...> 
+& ThemeCreateInput)'.
+src/modules/lms/lms.service.ts(68,13): 
+error TS2322: Type '{ slug: string; }' is 
+not assignable to type 
+'ThemeWhereUniqueInput'.
+src/modules/lms/lms.service.ts(87,19): 
+error TS2339: Property 'courses' does not 
+exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; order: number; description: 
+string; published: boolean; title: string; 
+coverImage: string | null; }'.
+src/modules/lms/lms.service.ts(87,35): 
+error TS2339: Property 'courses' does not 
+exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; order: number; description: 
+string; published: boolean; title: string; 
+coverImage: string | null; }'.
+src/modules/lms/lms.service.ts(113,13): 
+error TS2322: Type '{ slug: string; 
+themeId: string; title: string; 
+description: string; coverImage?: string; 
+order?: number; isFree?: boolean; 
+published?: boolean; }' is not assignable 
+to type '(Without<CourseCreateInput, 
+CourseUncheckedCreateInput> & 
+CourseUncheckedCreateInput) | 
+(Without<...> & CourseCreateInput)'.
+src/modules/lms/lms.service.ts(142,13): 
+error TS2322: Type '{ slug: string; }' is 
+not assignable to type 
+'CourseWhereUniqueInput'.
+src/modules/lms/lms.service.ts(177,33): 
+error TS2339: Property 'lessons' does not 
+exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; order: number; description: 
+string; published: boolean; title: string; 
+coverImage: string | null; themeId: 
+string; isFree: boolean; }'.
+src/modules/lms/lms.service.ts(183,35): 
+error TS2339: Property 'lessons' does not 
+exist on type '{ id: string; tenantId: 
+string; createdAt: Date; updatedAt: Date; 
+slug: string; order: number; description: 
+string; published: boolean; title: string; 
+coverImage: string | null; themeId: 
+string; isFree: boolean; }'.
+src/modules/orders/orders.controller.spec.t
+s(265,45): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.controller.spec.t
+s(276,45): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.controller.spec.t
+s(287,45): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(4
+51,42): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(4
+70,25): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(6
+10,42): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(6
+20,42): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(6
+30,42): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(6
+40,42): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(6
+67,27): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(8
+93,27): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(9
+25,27): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(9
+52,27): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(9
+62,25): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(9
+65,25): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.spec.ts(1
+003,27): error TS2554: Expected 3 
+arguments, but got 2.
+src/modules/orders/orders.service.ts(183,25
+): error TS2322: Type '{ userId: string | 
+null; orderNumber: string; totalAmount: 
+Prisma.Decimal; status: 
+$Enums.OrderStatus; orderType: 
+$Enums.OrderType; tableNumber: string | 
+null; ... 4 more ...; items: { ...; }; }' 
+is not assignable to type 
+'(Without<OrderCreateInput, 
+OrderUncheckedCreateInput> & 
+OrderUncheckedCreateInput) | (Without<...> 
+& OrderCreateInput)'.
+src/modules/orders/orders.service.ts(246,33
+): error TS2322: Type '{ phone: string; 
+name: string | null; email: null; source: 
+string; status: string; }' is not 
+assignable to type 
+'(Without<LeadCreateInput, 
+LeadUncheckedCreateInput> & 
+LeadUncheckedCreateInput) | (Without<...> 
+& LeadCreateInput)'.
+src/modules/payments/payments.service.ts(26
+,17): error TS2322: Type '{ key: string; 
+}' is not assignable to type 
+'SystemSettingWhereUniqueInput'.
+src/modules/payments/payments.service.ts(54
+,17): error TS2322: Type '{ key: string; 
+}' is not assignable to type 
+'SystemSettingWhereUniqueInput'.
+src/modules/payments/payments.service.ts(30
+8,13): error TS2322: Type '{ userId: 
+string; orderNumber: string; totalAmount: 
+number; status: "PENDING"; items: { 
+create: any[]; }; }' is not assignable to 
+type '(Without<OrderCreateInput, 
+OrderUncheckedCreateInput> & 
+OrderUncheckedCreateInput) | (Without<...> 
+& OrderCreateInput)'.
+src/modules/products/products.service.ts(34
+,13): error TS2322: Type '{ slug: string; 
+}' is not assignable to type 
+'ProductWhereUniqueInput'.
+src/modules/products/products.service.ts(44
+,17): error TS2322: Type '{ name: string; 
+slug: string; description: string; 
+productType: $Enums.ProductType; 
+basePrice: number; images: string[]; 
+specs: any; published: boolean; 
+digitalFileUrl: string | undefined; 
+previewUrl: string | undefined; }' is not 
+assignable to type 
+'(Without<ProductCreateInput, 
+ProductUncheckedCreateInput> & 
+ProductUncheckedCreateInput) | 
+(Without<...> & ProductCreateInput)'.
+src/modules/products/products.service.ts(63
+,17): error TS2322: Type '{ productId: 
+string; sku: string; price: number; stock: 
+number; isDefault: true; name: string; }' 
+is not assignable to type 
+'(Without<ProductVariantCreateInput, 
+ProductVariantUncheckedCreateInput> & 
+ProductVariantUncheckedCreateInput) | 
+(Without<...> & 
+ProductVariantCreateInput)'.
+src/modules/products/products.service.ts(83
+,33): error TS2322: Type '{ name: string; 
+priceAdjustment: number; stock: number | 
+null; isAvailable: boolean; }[]' is not 
+assignable to type 
+'(Without<ModifierCreateWithoutGroupInput, 
+ModifierUncheckedCreateWithoutGroupInput> 
+& 
+ModifierUncheckedCreateWithoutGroupInput) 
+| (Without<...> & 
+ModifierCreateWithoutGroupInput) | 
+ModifierCreateWithoutGroupInput[] | 
+ModifierUncheckedCreateWithoutGroupInput[] 
+| undefined'.
+src/modules/products/products.service.ts(15
+3,37): error TS2322: Type '{ name: string; 
+priceAdjustment: number; stock: number | 
+null; isAvailable: boolean; }[]' is not 
+assignable to type 
+'(Without<ModifierCreateWithoutGroupInput, 
+ModifierUncheckedCreateWithoutGroupInput> 
+& 
+ModifierUncheckedCreateWithoutGroupInput) 
+| (Without<...> & 
+ModifierCreateWithoutGroupInput) | 
+ModifierCreateWithoutGroupInput[] | 
+ModifierUncheckedCreateWithoutGroupInput[] 
+| undefined'.
+src/modules/products/products.service.ts(26
+4,13): error TS2322: Type '{ slug: string; 
+}' is not assignable to type 
+'ProductWhereUniqueInput'.
+src/modules/users/users.service.ts(81,13): 
+error TS2322: Type '{ email: string; }' is 
+not assignable to type 
+'UserWhereUniqueInput'.
+
+

@@ -5,7 +5,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { OrderStatus, OrderType } from '@prisma/client';
+import { OrderStatus, OrderType, Role } from '@prisma/client';
 
 // ============ MOCK DATA ============
 
@@ -262,9 +262,9 @@ describe('AdminOrdersController', () => {
             const updatedOrder = { ...mockOrder, status: 'PREPARING' };
             mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-            const result = await controller.updateStatus('order-1', dto);
+            const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
 
-            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto);
+            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto, Role.ADMIN);
             expect(result.status).toBe('PREPARING');
         });
 
@@ -273,9 +273,9 @@ describe('AdminOrdersController', () => {
             const updatedOrder = { ...mockOrder, status: 'READY' };
             mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-            const result = await controller.updateStatus('order-1', dto);
+            const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
 
-            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto);
+            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto, Role.ADMIN);
             expect(result.status).toBe('READY');
         });
 
@@ -284,9 +284,9 @@ describe('AdminOrdersController', () => {
             const updatedOrder = { ...mockOrder, status: 'SERVED' };
             mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-            const result = await controller.updateStatus('order-1', dto);
+            const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
 
-            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto);
+            expect(mockOrdersService.updateStatus).toHaveBeenCalledWith('order-1', dto, Role.ADMIN);
             expect(result.status).toBe('SERVED');
         });
     });

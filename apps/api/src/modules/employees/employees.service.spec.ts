@@ -66,7 +66,7 @@ describe('EmployeesService', () => {
                 createdAt: new Date(),
             });
 
-            const result = await service.create(validDto);
+            const result = await service.create(validDto, 'test-tenant');
 
             expect(result.id).toBe('emp-1');
             expect(result.role).toBe('WAITER');
@@ -85,20 +85,20 @@ describe('EmployeesService', () => {
 
         it('debe rechazar roles que no son de staff (USER)', async () => {
             await expect(
-                service.create({ ...validDto, role: 'USER' as any }),
+                service.create({ ...validDto, role: 'USER' as any }, 'test-tenant'),
             ).rejects.toThrow(BadRequestException);
         });
 
         it('debe rechazar roles que no son de staff (ADMIN)', async () => {
             await expect(
-                service.create({ ...validDto, role: 'ADMIN' as any }),
+                service.create({ ...validDto, role: 'ADMIN' as any }, 'test-tenant'),
             ).rejects.toThrow(BadRequestException);
         });
 
         it('debe rechazar email duplicado', async () => {
             mockClient.user.findUnique.mockResolvedValue({ id: 'existing' });
 
-            await expect(service.create(validDto)).rejects.toThrow(ConflictException);
+            await expect(service.create(validDto, 'test-tenant')).rejects.toThrow(ConflictException);
         });
 
         it('debe convertir email a lowercase', async () => {
@@ -112,7 +112,7 @@ describe('EmployeesService', () => {
                 ...validDto,
                 email: 'JUAN@Restaurant.COM',
                 role: 'KITCHEN' as any,
-            });
+            }, 'test-tenant');
 
             expect(mockClient.user.findUnique).toHaveBeenCalledWith({
                 where: { email: 'juan@restaurant.com' },
@@ -126,7 +126,7 @@ describe('EmployeesService', () => {
                 role: 'CASHIER', avatar: null, createdAt: new Date(),
             });
 
-            const result = await service.create({ ...validDto, role: 'CASHIER' as any });
+            const result = await service.create({ ...validDto, role: 'CASHIER' as any }, 'test-tenant');
             expect(result.role).toBe('CASHIER');
         });
     });
@@ -141,7 +141,7 @@ describe('EmployeesService', () => {
             ];
             mockClient.user.findMany.mockResolvedValue(staffUsers);
 
-            const result = await service.findAll();
+            const result = await service.findAll('test-tenant');
 
             expect(result).toHaveLength(2);
             expect(mockClient.user.findMany).toHaveBeenCalledWith(
@@ -154,7 +154,7 @@ describe('EmployeesService', () => {
         it('debe retornar array vacío si no hay empleados', async () => {
             mockClient.user.findMany.mockResolvedValue([]);
 
-            const result = await service.findAll();
+            const result = await service.findAll('test-tenant');
             expect(result).toEqual([]);
         });
     });
@@ -168,14 +168,14 @@ describe('EmployeesService', () => {
                 role: 'WAITER', avatar: null, createdAt: new Date(), updatedAt: new Date(),
             });
 
-            const result = await service.findOne('emp-1');
+            const result = await service.findOne('emp-1', 'test-tenant');
             expect(result.id).toBe('emp-1');
         });
 
         it('debe lanzar NotFoundException si no existe', async () => {
             mockClient.user.findUnique.mockResolvedValue(null);
 
-            await expect(service.findOne('no-exist')).rejects.toThrow(NotFoundException);
+            await expect(service.findOne('no-exist', 'test-tenant')).rejects.toThrow(NotFoundException);
         });
 
         it('debe lanzar NotFoundException si el usuario no es staff', async () => {
@@ -184,7 +184,7 @@ describe('EmployeesService', () => {
                 avatar: null, createdAt: new Date(), updatedAt: new Date(),
             });
 
-            await expect(service.findOne('user-1')).rejects.toThrow(NotFoundException);
+            await expect(service.findOne('user-1', 'test-tenant')).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -205,7 +205,7 @@ describe('EmployeesService', () => {
                 role: 'WAITER', avatar: null, updatedAt: new Date(),
             });
 
-            const result = await service.update('emp-1', { name: 'Nuevo Nombre' });
+            const result = await service.update('emp-1', { name: 'Nuevo Nombre' }, 'test-tenant');
             expect(result.name).toBe('Nuevo Nombre');
         });
 
@@ -215,19 +215,19 @@ describe('EmployeesService', () => {
                 role: 'KITCHEN', avatar: null, updatedAt: new Date(),
             });
 
-            const result = await service.update('emp-1', { role: 'KITCHEN' as any });
+            const result = await service.update('emp-1', { role: 'KITCHEN' as any }, 'test-tenant');
             expect(result.role).toBe('KITCHEN');
         });
 
         it('debe rechazar cambio a rol no-staff', async () => {
             await expect(
-                service.update('emp-1', { role: 'ADMIN' as any }),
+                service.update('emp-1', { role: 'ADMIN' as any }, 'test-tenant'),
             ).rejects.toThrow(BadRequestException);
         });
 
         it('debe rechazar cambio a rol USER', async () => {
             await expect(
-                service.update('emp-1', { role: 'USER' as any }),
+                service.update('emp-1', { role: 'USER' as any }, 'test-tenant'),
             ).rejects.toThrow(BadRequestException);
         });
     });
@@ -242,7 +242,7 @@ describe('EmployeesService', () => {
             });
             mockClient.user.delete.mockResolvedValue({});
 
-            const result = await service.remove('emp-1');
+            const result = await service.remove('emp-1', 'test-tenant');
             expect(result.message).toBe('Empleado eliminado correctamente');
             expect(mockClient.user.delete).toHaveBeenCalledWith({ where: { id: 'emp-1' } });
         });
@@ -250,7 +250,7 @@ describe('EmployeesService', () => {
         it('debe lanzar NotFoundException si no existe', async () => {
             mockClient.user.findUnique.mockResolvedValue(null);
 
-            await expect(service.remove('no-exist')).rejects.toThrow(NotFoundException);
+            await expect(service.remove('no-exist', 'test-tenant')).rejects.toThrow(NotFoundException);
         });
     });
 });

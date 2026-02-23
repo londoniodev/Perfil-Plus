@@ -8,12 +8,14 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('tenant')
 export class TenantController {
     constructor(private readonly tenantService: TenantService) { }
 
     @Public()
+    @SkipThrottle()
     @Get('identify')
     async identifyTenant(@Query('domain') domain: string) {
         return this.tenantService.identifyTenant(domain);
@@ -29,6 +31,7 @@ export class TenantController {
 
     // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.
     @Public()
+    @SkipThrottle()
     @Get('branding')
     async getTenantBranding(@CurrentTenant() tenantId: string) {
         return this.tenantService.getTenantBranding(tenantId);

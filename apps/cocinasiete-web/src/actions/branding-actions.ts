@@ -1,7 +1,7 @@
 "use server";
 
 import { serverFetch } from "@/lib/api-server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function updateTenantBranding(data: any) {
     try {
@@ -14,7 +14,10 @@ export async function updateTenantBranding(data: any) {
             body: JSON.stringify({ design: data })
         });
 
-        revalidatePath("/"); // Revalidate everything to apply new theme
+        revalidatePath("/", "layout"); // Revalidate everything to apply new theme everywhere
+        // @ts-ignore - Bypass Next.js 16 type restrictiveness
+        revalidateTag("tenant-branding"); // Invalidar la caché the 5 mins
+
         return { success: true };
     } catch (e) {
         console.error("Error updating branding:", e);

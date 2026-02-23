@@ -18,7 +18,7 @@ function isBaseDomain(hostname: string): boolean {
     return BASE_DOMAINS.some(domain => host === domain || host.endsWith(`.${domain}`));
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const hostname = request.headers.get('host') || '';
     const cleanHostname = hostname.split(':')[0];

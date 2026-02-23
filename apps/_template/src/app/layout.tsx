@@ -18,7 +18,12 @@ async function getTenantDesign(tenantId: string) {
     return null;
   }
   try {
-    const data = await serverFetch<any>('/tenant/branding');
+    const data = await serverFetch<any>('/tenant/branding', {
+      next: {
+        revalidate: 300,
+        tags: ['tenant-branding'],
+      }
+    });
 
     // Fallback robusto en caso de que la data venga incompleta o la API falle silenciosamente sin error
     return data?.design ?? {

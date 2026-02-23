@@ -30,12 +30,17 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        const fetchOptions: RequestInit = {
             ...options,
             headers,
-            // Las Server Actions suelen requerir no cachear las mutaciones
-            cache: options?.cache ?? 'no-store',
-        });
+        };
+
+        // Las Server Actions suelen requerir no cachear las mutaciones
+        if (!options?.cache && !options?.next) {
+            fetchOptions.cache = 'no-store';
+        }
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
 
         if (!response.ok) {
             let errorMessage = `API Error: ${response.status} ${response.statusText}`;

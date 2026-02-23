@@ -23,7 +23,12 @@ async function getTenantBranding(): Promise<TenantBranding | null> {
     return null;
   }
   try {
-    const branding = await serverFetch<TenantBranding>('/tenant/branding');
+    const branding = await serverFetch<TenantBranding>('/tenant/branding', {
+      next: {
+        revalidate: 300,            // Cache por 5 minutos
+        tags: ['tenant-branding'],  // Etiqueta the revalidación manual
+      }
+    });
     return branding ?? null;
   } catch (e) {
     console.error("Error fetching tenant branding:", e);

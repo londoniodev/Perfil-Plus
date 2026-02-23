@@ -12,7 +12,7 @@ export async function toggleProductAvailability(productId: string, isAvailable: 
             return { success: false, error: "No autorizado" }
         }
 
-        await serverFetch(`/products/${productId}/availability`, {
+        await serverFetch(`/admin/products/${productId}/availability`, {
             method: 'PATCH',
             body: JSON.stringify({ isAvailable })
         })

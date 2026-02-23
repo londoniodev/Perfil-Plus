@@ -201,6 +201,23 @@ export class ProductsService {
         });
     }
 
+    // ============ ACTUALIZAR DISPONIBILIDAD ============
+    async updateAvailability(id: string, isAvailable: boolean, tenantId: string) {
+        const existing = await this.prisma.product.findUnique({
+            where: { id },
+            select: { tenantId: true }
+        });
+
+        if (!existing || existing.tenantId !== tenantId) {
+            throw new NotFoundException('Producto no encontrado en este tenant');
+        }
+
+        return this.prisma.product.update({
+            where: { id },
+            data: { isAvailable }
+        });
+    }
+
     // ============ DESCARGAS DIGITALES ============
     async getProductDownloadUrl(productId: string, userId: string) {
         // 1. Verify Active Subscription (Priority Access)

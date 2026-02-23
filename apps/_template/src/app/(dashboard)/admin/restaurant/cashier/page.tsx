@@ -180,17 +180,17 @@ export default function CashierPage() {
 
     return (
         <div className="p-6 space-y-6 max-w-5xl mx-auto">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Caja & Facturación</h1>
-                    <p className="text-muted-foreground">Gestiona pagos parciales y cierres de cuenta.</p>
+                    <p className="text-muted-foreground break-words">Gestiona pagos parciales y cierres de cuenta.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex w-full md:w-auto gap-2">
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button
                                 variant="outline"
-                                className="border-primary/50 text-primary hover:bg-primary/10"
+                                className="w-1/2 md:w-auto border-primary/50 text-primary hover:bg-primary/10"
                                 onClick={async () => {
                                     setFetchingZ(true);
                                     const res = await getZReport();
@@ -253,7 +253,7 @@ export default function CashierPage() {
                         </DialogContent>
                     </Dialog>
 
-                    <Button variant="outline" onClick={fetchOrders} disabled={!!processing}>
+                    <Button variant="outline" onClick={fetchOrders} disabled={!!processing} className="w-1/2 md:w-auto">
                         <RefreshCcw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Actualizar
                     </Button>

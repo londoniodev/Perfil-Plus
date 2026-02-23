@@ -2,7 +2,7 @@ import { Controller, Get, Patch, Delete, Post, Body, Query, Param, ParseIntPipe,
 import { UsersService } from './users.service';
 import { PaymentsService } from '../payments/payments.service';
 import { UpdateUserDto } from './dto';
-import { CurrentUser, Roles } from '../../common/decorators';
+import { CurrentUser, CurrentTenant, Roles } from '../../common/decorators';
 import { Role } from '@prisma/client';
 
 @Controller('users')
@@ -33,15 +33,15 @@ export class AdminUsersController {
     ) { }
 
     @Get()
-    @Get()
     async findAll(
+        @CurrentTenant() tenantId: string,
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
         @Query('search') search?: string,
         @Query('role') role?: Role,
         @Query('subscription') subscription?: string,
     ) {
-        return this.usersService.findAll(page, limit, search, role, subscription);
+        return this.usersService.findAll(tenantId, page, limit, search, role, subscription);
     }
 
     @Get(':id')

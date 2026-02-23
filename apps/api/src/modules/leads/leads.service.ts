@@ -12,8 +12,8 @@ export class LeadsService {
         });
     }
 
-    async findAll(query: LeadQueryDto) {
-        const where: any = {};
+    async findAll(query: LeadQueryDto, tenantId: string) {
+        const where: any = { tenantId };
 
         if (query.source) {
             where.source = query.source;
@@ -35,14 +35,16 @@ export class LeadsService {
         });
     }
 
-    async getStats() {
+    async getStats(tenantId: string) {
         const [total, bySource, recentLeads] = await Promise.all([
-            this.prisma.lead.count(),
+            this.prisma.lead.count({ where: { tenantId } }),
             this.prisma.lead.groupBy({
                 by: ['source'],
+                where: { tenantId },
                 _count: { id: true },
             }),
             this.prisma.lead.findMany({
+                where: { tenantId },
                 take: 10,
                 orderBy: { createdAt: 'desc' },
             }),
@@ -53,7 +55,7 @@ export class LeadsService {
         lastWeek.setDate(lastWeek.getDate() - 7);
 
         const thisWeek = await this.prisma.lead.count({
-            where: { createdAt: { gte: lastWeek } },
+            where: { tenantId, createdAt: { gte: lastWeek } },
         });
 
         return {

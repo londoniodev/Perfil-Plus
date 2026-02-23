@@ -21,14 +21,14 @@ export class LeadsController {
     // Admin endpoints
     @Get()
     @Roles('ADMIN')
-    async findAll(@Query() query: LeadQueryDto) {
-        return this.leadsService.findAll(query);
+    async findAll(@Query() query: LeadQueryDto, @CurrentTenant() tenantId: string) {
+        return this.leadsService.findAll(query, tenantId);
     }
 
     @Get('stats')
     @Roles('ADMIN')
-    async getStats() {
-        return this.leadsService.getStats();
+    async getStats(@CurrentTenant() tenantId: string) {
+        return this.leadsService.getStats(tenantId);
     }
 
     @Delete(':id')

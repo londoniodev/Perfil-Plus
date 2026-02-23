@@ -89,10 +89,10 @@ export class UsersService {
     }
 
     // Admin: Lista de usuarios
-    async findAll(page = 1, limit = 20, search?: string, role?: Role, subscription?: string) {
+    async findAll(tenantId: string, page = 1, limit = 20, search?: string, role?: Role, subscription?: string) {
         const skip = (page - 1) * limit;
 
-        const where: any = {};
+        const where: any = { tenantId };
 
         // Búsqueda por nombre o email
         if (search) {

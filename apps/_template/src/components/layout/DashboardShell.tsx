@@ -38,7 +38,7 @@ export function DashboardShell({ children, features, tenantName, defaultOpen, ap
             <DashboardSidebar features={features} tenantName={tenantName} />
             <SidebarInset>
                 <AdminHeader appName={appName} breadcrumbs={breadcrumbs} />
-                <main className="flex flex-1 flex-col min-h-screen bg-background dark:bg-[#121212]">
+                <main className="flex flex-1 flex-col min-h-screen bg-background">
                     {children}
                 </main>
             </SidebarInset>

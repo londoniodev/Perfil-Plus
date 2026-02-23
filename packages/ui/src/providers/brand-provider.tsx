@@ -132,20 +132,6 @@ export function BrandProvider({
         // 1. Inject Radius
         root.style.setProperty("--radius", `${config.radius}rem`)
 
-        // 2. Inject Density (Currently just mapping spacial variables if needed, 
-        // effectively handled by component 'size' props in consumption)
-        // Future: could adjust --sidebar-width etc.
-
-        // 3. Inject Colors
-        // We need to inject both light and dark variants. 
-        // Shadcn uses CSS variables like --primary: 222.2 47.4% 11.2%; 
-        // The .dark class overrides these values.
-
-        // Strategy: We inject a <style> tag or modify style properties directly.
-        // Modifying style properties on :root handles the "default" (light) mode.
-        // For dark mode, we can't easily set variables solely for .dark selector via inline styles on root.
-        // SOLUTION: We construct a style block.
-
         const cssContent = `
             :root {
                 ${Object.entries(theme.light).map(([key, value]) => `${key}: ${value};`).join(' ')}
@@ -167,12 +153,15 @@ export function BrandProvider({
 
         styleEl.textContent = cssContent
 
-        // Cleanup function (optional, but good practice if provider unmounts)
-        return () => {
-            // We might persist it or remove it. Better to leave it to avoid FOUC on nav.
-        }
+    }, [config.primary, config.radius, primaryThemeKey, isCustomColor]);
 
-    }, [config.primary, config.radius, primaryThemeKey, isCustomColor])
+    // Apply specific color theme (Light / Dark / System)
+    const { setTheme } = require("next-themes").useTheme();
+    React.useEffect(() => {
+        if (config.mode && ["light", "dark", "system"].includes(config.mode)) {
+            setTheme(config.mode);
+        }
+    }, [config.mode, setTheme]);
 
     return <>{children}</>
 }

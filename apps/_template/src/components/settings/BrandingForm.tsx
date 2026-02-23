@@ -95,6 +95,7 @@ const brandingSchema = z.object({
     primary: z.string(),
     radius: z.number().min(0).max(2),
     density: z.enum(["default", "compact", "spacious"]),
+    mode: z.enum(["light", "dark", "system"]).default("system"),
 });
 
 type BrandingFormValues = z.infer<typeof brandingSchema>;
@@ -108,12 +109,13 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     const colorInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<BrandingFormValues>({
-        resolver: zodResolver(brandingSchema),
+        resolver: zodResolver(brandingSchema) as any,
         defaultValues: {
             primary: "zinc",
             radius: 0.5,
             density: "default",
-            ...defaultValues,
+            mode: "system",
+            ...(defaultValues as any),
         },
     });
 
@@ -243,6 +245,32 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
 
                                 <FormField
                                     control={form.control}
+                                    name="mode"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Esquema de Color (Tema)</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value || "system"}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona el tema por defecto" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="system">Sincronizar con el Sistema</SelectItem>
+                                                    <SelectItem value="light">Claro (Light)</SelectItem>
+                                                    <SelectItem value="dark">Oscuro (Dark)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Elige si tu panel y sistema administrativo será oscuro o claro por defecto.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
                                     name="radius"
                                     render={({ field }) => (
                                         <FormItem>
@@ -309,7 +337,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div
-                            className="flex flex-col gap-4 p-6 rounded-lg bg-background border shadow-sm transition-all duration-300"
+                            className="flex flex-col gap-4 p-6 rounded-lg bg-background border shadow-sm transition-all duration-300 relative"
                             style={{
                                 borderRadius: `${watchedRadius}rem`,
                                 // Note: Colors are hard to preview exactly without a provider wrapper,

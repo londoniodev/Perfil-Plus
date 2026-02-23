@@ -38,7 +38,7 @@ import {
     AvatarImage
 } from "@alvarosky/ui";
 import { toast } from "sonner";
-import { TENANT_ID } from "@/lib/config";
+import { TENANT_ID, API_BASE } from "@/lib/config";
 
 
 type Employee = {
@@ -79,7 +79,7 @@ export function EmployeesClient() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const API_URL = "http://localhost:3001/api/admin/employees"; // Adjust if needed via env
+    const API_URL = `${API_BASE}/admin/employees`;
 
     const fetchEmployees = async () => {
         try {

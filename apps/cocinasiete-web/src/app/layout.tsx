@@ -23,12 +23,30 @@ async function getTenantBranding(): Promise<TenantBranding | null> {
     return null;
   }
   try {
-    const branding = await serverFetch<TenantBranding>('/tenant/branding', {
+    // IMPORTANTE: Usamos fetch nativo en lugar de serverFetch porque:
+    // 1. El endpoint /tenant/branding es @Public() y NO requiere JWT/cookies
+    // 2. serverFetch llama a cookies() que marca el fetch como dinámico,
+    //    impidiendo el cache ISR y causando errores en páginas estáticas
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+    const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default';
+
+    const response = await fetch(`${API_URL}/tenant/branding`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-tenant-id': tenantId,
+      },
       next: {
         revalidate: 300,            // Cache por 5 minutos
-        tags: ['tenant-branding'],  // Etiqueta the revalidación manual
+        tags: ['tenant-branding'],  // Etiqueta de revalidación manual
       }
     });
+
+    if (!response.ok) {
+      console.error(`Branding API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const branding = await response.json();
     return branding ?? null;
   } catch (e) {
     console.error("Error fetching tenant branding:", e);

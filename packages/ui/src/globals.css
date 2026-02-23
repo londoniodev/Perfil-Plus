@@ -10,7 +10,7 @@
 @layer base {
     :root {
         /* Light Mode (Zinc) - With Depth */
-        --background: 0 0% 97.5%;
+        --background: 220 14% 96%;
         --foreground: 240 10% 3.9%;
         --card: 0 0% 100%;
         --card-foreground: 240 10% 3.9%;
@@ -26,8 +26,8 @@
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
-        --border: 240 5.9% 87%;
-        --input: 240 5.9% 87%;
+        --border: 220 13% 84%;
+        --input: 220 13% 84%;
         --ring: 240 10% 3.9%;
         --radius: 0.5rem;
 
@@ -53,9 +53,9 @@
         /* Dark Mode (Zinc) - With Depth */
         --background: 240 5.9% 10%;
         --foreground: 0 0% 98%;
-        --card: 240 5.9% 12%;
+        --card: 240 5.9% 13%;
         --card-foreground: 0 0% 98%;
-        --popover: 240 5.9% 12%;
+        --popover: 240 5.9% 13%;
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;
         --primary-foreground: 240 5.9% 10%;
@@ -67,10 +67,10 @@
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        
+
         /* CRITICAL: Subtle borders (NOT white/bright) */
-        --border: 240 3.7% 18%;
-        --input: 240 3.7% 18%;
+        --border: 240 3.7% 20%;
+        --input: 240 3.7% 20%;
         --ring: 240 4.9% 83.9%;
 
         /* Chart Colors (Dark Mode) */
@@ -123,6 +123,7 @@
     0% {
         transform: translateX(0);
     }
+
     100% {
         transform: translateX(-50%);
     }
@@ -132,26 +133,31 @@
     0% {
         transform: translateX(-50%);
     }
+
     100% {
         transform: translateX(0);
     }
 }
 
 @keyframes float {
+
     0%,
     100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-15px);
     }
 }
 
 @keyframes pulse-glow {
+
     0%,
     100% {
         box-shadow: 0 0 20px rgba(91, 141, 239, 0.2);
     }
+
     50% {
         box-shadow: 0 0 40px rgba(91, 141, 239, 0.5);
     }
@@ -162,6 +168,7 @@
         opacity: 0;
         transform: translateX(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);

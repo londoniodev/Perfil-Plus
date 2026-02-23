@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Switch, Label, FilterTabs } from "@alvarosky/ui"
-import { Loader2, ExternalLink, Check, Info, DollarSign, Palette, Puzzle, Mail, Code, MapPin } from "lucide-react"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch, Label } from "@alvarosky/ui"
+import { Loader2, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
 import { ImageUploader } from "@alvarosky/ui"
@@ -87,7 +87,6 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [activeTab, setActiveTab] = useState<string>("general")
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
@@ -148,20 +147,16 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 })}
                 className="space-y-6"
             >
-                <FilterTabs
-                    tabs={[
-                        { id: "general", label: "General" },
-                        { id: "finance", label: "Finanzas" },
-                        { id: "email", label: "Email" },
-                        { id: "apis", label: "API's" },
-                    ]}
-                    activeTab={activeTab}
-                    onChange={setActiveTab}
-                />
+                <Tabs defaultValue="general" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="finance">Finanzas</TabsTrigger>
+                        <TabsTrigger value="email">Email</TabsTrigger>
+                        <TabsTrigger value="apis">API's</TabsTrigger>
+                    </TabsList>
 
-                <div className="mt-6">
                     {/* General/Contacto */}
-                    {activeTab === "general" && (
+                    <TabsContent value="general">
                         <Card className="p-6 space-y-6">
                             <div className="space-y-4 max-w-2xl">
                                 <h3 className="text-lg font-semibold">Informacion del Negocio</h3>
@@ -271,10 +266,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 </div>
                             </div>
                         </Card>
-                    )}
+                    </TabsContent>
 
                     {/* Finanzas */}
-                    {activeTab === "finance" && (
+                    <TabsContent value="finance">
                         <Card className="p-6 space-y-6">
                             <div className="space-y-4 max-w-2xl">
                                 <div className="space-y-4">
@@ -321,10 +316,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 </div>
                             </div>
                         </Card>
-                    )}
+                    </TabsContent>
 
                     {/* Email */}
-                    {activeTab === "email" && (
+                    <TabsContent value="email">
                         <Card className="p-6 space-y-6 max-w-2xl">
                             <h3 className="text-lg font-semibold">Configuracion SMTP</h3>
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -406,10 +401,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 />
                             </div>
                         </Card>
-                    )}
+                    </TabsContent>
 
                     {/* APIs */}
-                    {activeTab === "apis" && (
+                    <TabsContent value="apis">
                         <Card className="p-6 space-y-4 max-w-2xl">
                             <h3 className="text-lg font-semibold">API Internas</h3>
                             <FormField
@@ -426,8 +421,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 )}
                             />
                         </Card>
-                    )}
-                </div>
+                    </TabsContent>
+                </Tabs>
 
                 {/* Botón de Guardar */}
                 <div className="flex gap-4 pt-4">

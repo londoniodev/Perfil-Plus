@@ -77,6 +77,7 @@ function LoginForm() {
 
   const onSubmit = async (values: LoginValues) => {
     try {
+      console.log('Login attempt:', { email: values.email, API_BASE, TENANT_ID });
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {

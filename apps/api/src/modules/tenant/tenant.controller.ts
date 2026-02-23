@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards, Query } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -7,6 +7,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
+import { CreateTenantDto } from './dto/create-tenant.dto';
 
 @Controller('tenant')
 export class TenantController {
@@ -16,6 +17,14 @@ export class TenantController {
     @Get('identify')
     async identifyTenant(@Query('domain') domain: string) {
         return this.tenantService.identifyTenant(domain);
+    }
+
+    // Endpoint SaaS the aprovisionamiento automático the Tenants
+    @Post()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN) // Sólo administradores globales thel SaaS pueden crear inquilinos en producción.
+    async createTenant(@Body() createDto: CreateTenantDto) {
+        return this.tenantService.create(createDto);
     }
 
     // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.

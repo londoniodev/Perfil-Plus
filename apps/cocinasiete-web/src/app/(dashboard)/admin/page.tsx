@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth-server";
-import { PrismaClient } from "@alvarosky/database-management";
 import { getTenantId } from "@/lib/config-server";
+import { serverFetch } from "@/lib/api-server";
 import { getDashboardStats, type DashboardStats } from "@/actions/admin/dashboard";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
@@ -21,18 +21,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const prisma = new PrismaClient();
-
-async function getTenantData(tenantId: string) {
+async function getTenantData() {
     try {
-        const tenant = await prisma.tenant.findUnique({
-            where: { slug: tenantId },
-            select: {
-                features: true,
-                design: true,
-                name: true,
-            }
-        });
+        const tenant = await serverFetch<any>('/tenant/branding');
         return tenant || { features: [], design: null, name: null };
     } catch (e) {
         console.error("Error fetching tenant config:", e);
@@ -67,7 +58,7 @@ export default async function AdminDashboardPage() {
     }
 
     const tenantId = await getTenantId();
-    const tenant = await getTenantData(tenantId);
+    const tenant = await getTenantData();
     const stats = await getDashboardStats(tenant.features || []);
 
     // Check if this is first-time setup (no features enabled)

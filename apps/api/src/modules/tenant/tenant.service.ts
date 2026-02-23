@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
+import { CreateTenantDto } from './dto/create-tenant.dto';
 
 @Injectable()
 export class TenantService {
@@ -9,12 +10,36 @@ export class TenantService {
     constructor(private readonly prisma: PrismaService) { }
 
     /**
+     * Crea un nuevo Tenant asegurando los valores por defecto "Plug & Play".
+     */
+    async create(createDto: CreateTenantDto) {
+        const defaultFeatures = ['RESTAURANT', 'POS', 'INVENTORY', 'SHOP', 'ANALYTICS', 'SETTINGS'];
+        const defaultDesign = {
+            colors: { primary: "#000000", secondary: "#ffffff" },
+            radius: 0.5
+        };
+
+        const newTenant = await this.prisma.tenant.create({
+            data: {
+                ...createDto,
+                dbName: 'web-projects', // Estandarizado en Monorepo
+                status: 'ACTIVE',
+                plan: 'free',
+                features: defaultFeatures,
+                design: defaultDesign
+            }
+        });
+
+        this.logger.log(`Nuevo Tenant creado exitosamente "Plug & Play": ${newTenant.slug}`);
+        return newTenant;
+    }
+
+    /**
      * Obtiene la apariencia del tenant para la inicialización pública de la aplicación (app/layout.tsx en frontend)
      */
     async getTenantBranding(tenantId: string) {
-        // INFO: Prisma aun detecta id local como Number xq falta la migracion final a CUID(String). Convertimos cast aca temp:
-        const tenant = await this.prisma.tenant.findUnique({
-            where: { id: tenantId as any },
+        const tenant = await this.prisma.tenant.findFirst({
+            where: { slug: tenantId },
             select: {
                 design: true,
                 name: true,
@@ -56,7 +81,7 @@ export class TenantService {
      */
     async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
         const updatedTenant = await this.prisma.tenant.update({
-            where: { id: tenantId as any },
+            where: { slug: tenantId },
             data: {
                 design: updateDto.design !== undefined ? updateDto.design : undefined,
             },

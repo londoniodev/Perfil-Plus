@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation"
-import { PrismaClient } from "@prisma/client"
 import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
-
-const prisma = new PrismaClient()
+import { serverFetch } from "@/lib/api-server"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }> // En Next.js 15+, params es una Promise
@@ -13,15 +11,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     // Await params (requerido en Next.js 15+)
     const { slug } = await params
 
-    // Fetch seguro con Variantes
-    const product = await prisma.product.findUnique({
-        where: { slug },
-        include: {
-            variants: {
-                orderBy: { price: 'asc' }
-            }
-        }
-    })
+    // Fetch seguro con Variantes a través de Múltitenant API
+    let product;
+    try {
+        product = await serverFetch<any>(`/store/products/${slug}`);
+    } catch (e) {
+        console.error("Error fetching store product:", e);
+    }
 
     if (!product) {
         return notFound()

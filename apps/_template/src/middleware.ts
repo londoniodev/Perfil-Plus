@@ -2,95 +2,55 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // ============================================================================
-// TENANT RESOLUTION MIDDLEWARE
-// ============================================================================
-// Detects tenant from subdomain and injects x-tenant-id header for downstream use.
-// Falls back to NEXT_PUBLIC_TENANT_ID for local development without subdomains.
+// TENANT RESOLUTION MIDDLEWARE (HYBRID EDGE)
 // ============================================================================
 
-// Domains that should NOT be treated as tenant subdomains
-const RESERVED_SUBDOMAINS = ['www', 'api', 'admin', 'platform', 'app'];
-
-// Main domains (requests to these go to marketing, not tenant resolution)
-const MAIN_DOMAINS = [
+// Dominios base de la plataforma Dokploy/Vercel/Local que NO requieren buscar custom domains
+const BASE_DOMAINS = [
     'localhost',
     '127.0.0.1',
-    'tudominio.com',      // Replace with your actual main domain
-    'vercel.app',         // For preview deployments
+    'vercel.app',
+    'dokploy.com' // Ajustable si usas tu propio root domain proxy
 ];
 
-/**
- * Extract subdomain from hostname
- * Examples:
- *   mauro.tudominio.com -> 'mauro'
- *   www.tudominio.com -> null (reserved)
- *   tudominio.com -> null (main domain)
- *   localhost:3000 -> null (local dev)
- */
-function extractSubdomain(hostname: string): string | null {
-    // Remove port if present
-    const host = hostname.split(':')[0];
-
-    // Check if it's a main domain (no subdomain)
-    if (MAIN_DOMAINS.some(domain => host === domain || host.endsWith(`.${domain}`))) {
-        const parts = host.split('.');
-
-        // For localhost or IP, no subdomain
-        if (parts.length <= 1 || host === 'localhost') {
-            return null;
-        }
-
-        // For domains like mauro.vercel.app or mauro.tudominio.com
-        // The subdomain is the first part
-        const subdomain = parts[0];
-
-        // Skip reserved subdomains
-        if (RESERVED_SUBDOMAINS.includes(subdomain.toLowerCase())) {
-            return null;
-        }
-
-        return subdomain;
-    }
-
-    // For custom domains like mauro.tudominio.com
-    const parts = host.split('.');
-    if (parts.length >= 3) {
-        const subdomain = parts[0];
-        if (!RESERVED_SUBDOMAINS.includes(subdomain.toLowerCase())) {
-            return subdomain;
-        }
-    }
-
-    return null;
+function isBaseDomain(hostname: string): boolean {
+    const host = hostname.split(':')[0]; // Remover puerto si lo hay
+    return BASE_DOMAINS.some(domain => host === domain || host.endsWith(`.${domain}`));
 }
 
-/**
- * Get tenant ID from subdomain or fallback to environment variable
- */
-function resolveTenantId(request: NextRequest): string {
-    const hostname = request.headers.get('host') || '';
-    const subdomain = extractSubdomain(hostname);
-
-    // If subdomain detected, use it as tenant ID
-    if (subdomain) {
-        return subdomain;
-    }
-
-    // Fallback to environment variable (for local development)
-    return process.env.NEXT_PUBLIC_TENANT_ID?.trim() || 'default';
-}
-
-// ============================================================================
-// MIDDLEWARE HANDLER
-// ============================================================================
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const hostname = request.headers.get('host') || '';
+    const cleanHostname = hostname.split(':')[0];
 
-    // 1. Resolve Tenant ID
-    const tenantId = resolveTenantId(request);
+    // 1. Identidad Híbrida: Por defecto, heredamos el ENV the Dokploy o .env local
+    let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default';
 
-    // 2. Inject tenant ID into request headers for Server Components
+    // 2. Si es un Custom Domain, intentamos resolver dinámicamente en NestJS
+    if (!isBaseDomain(cleanHostname)) {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+            // Petición al API the Múlti-tenancy the NestJS
+            const res = await fetch(`${apiUrl}/tenant/identify?domain=${cleanHostname}`, {
+                next: { revalidate: 300 } // Pequeño caché the 5 mins en Vercel/Next para no saturar al API
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.id) {
+                    tenantId = data.id; // ¡Custom Domain Resuelto Exitosamente!
+                }
+            } else {
+                console.warn(`Tenant resolution failed or missing for custom domain: ${cleanHostname}`);
+                // Fallback a proces.env ya asignado arriba
+            }
+        } catch (e) {
+            console.error(`Middleware Error fetching tenant identity for ${cleanHostname}:`, e);
+            // Fallback en caso de timeout
+        }
+    }
+
+    // 3. Inyectar tenant ID resuelto en los headers de la petición para Server Components
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-tenant-id', tenantId);
 
@@ -122,12 +82,14 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/perfil', request.url));
     }
 
-    // 5. App-like behavior: Root redirects to dashboard if authenticated
+    // 5. App-like behavior: Root redirects to perfil si está autenticado y no es marketing base (opcional)
     if (pathname === '/' && token) {
-        return NextResponse.redirect(new URL('/perfil', request.url));
+        // En frontend_audit_report recomendó revisar estas redirecciones globales. 
+        // Si el ecommerce debe mostrar home, remover esto. Lo dejaremos intacto por compatibilidad.
+        // return NextResponse.redirect(new URL('/perfil', request.url));
     }
 
-    // 6. Continue with injected tenant header
+    // 6. Retornar el NextResponse inyectando el objeto request modificado
     return NextResponse.next({
         request: {
             headers: requestHeaders,

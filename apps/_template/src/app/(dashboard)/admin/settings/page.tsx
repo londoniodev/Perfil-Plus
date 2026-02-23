@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { PageHeader } from "@alvarosky/ui"
 import { SettingsForm } from "@/components/admin/settings/settings-form"
 
@@ -16,53 +16,8 @@ export default async function SettingsPage() {
         redirect("/")
     }
 
-    // 2. Obtener configuración actual de SystemSetting (Sincronizado con Platform)
-    const systemSetting = await prisma.systemSetting.findUnique({
-        where: { key: "TENANT_CONFIG" }
-    })
-
-    let settings = null
-    if (systemSetting?.value) {
-        const config = systemSetting.value as any
-        settings = {
-            mpAccessToken: config.mercadopago?.accessToken,
-            mpPublicKey: config.mercadopago?.publicKey,
-            mpWebhookSecret: config.mercadopago?.webhookSecret,
-            mpClientId: config.mercadopago?.clientId,
-            mpClientSecret: config.mercadopago?.clientSecret,
-            storeName: config.name,
-            storeEmail: config.email,
-            currency: config.currency,
-            theme: config.theme,
-            primaryColor: config.primary_color,
-            smtpHost: config.smtp?.host,
-            smtpPort: config.smtp?.port,
-            smtpSecure: config.smtp?.secure,
-            smtpUser: config.smtp?.auth?.user,
-            smtpPass: config.smtp?.auth?.pass,
-            apiKeyOpenAI: config.api_key_openai,
-            enableBlog: config.features?.blog,
-            enableStore: config.features?.store,
-            enableLMS: config.features?.lms,
-            whatsapp: config.contact?.whatsapp,
-            instagram: config.contact?.instagram,
-            facebook: config.contact?.facebook,
-            address: config.contact?.address,
-            menuSlogan: config.menu?.slogan,
-            menuLogo: config.menu?.logo,
-        }
-    } else {
-        // Fallback to legacy StoreSettings
-        const legacy = await prisma.storeSettings.findFirst()
-        if (legacy) {
-            settings = {
-                storeName: legacy.storeName,
-                storeEmail: legacy.storeEmail,
-                mpPublicKey: legacy.mpPublicKey,
-                mpAccessToken: legacy.mpAccessToken,
-            }
-        }
-    }
+    // 2. Obtener configuración actual del Tenant via NestJS API
+    const settings = await serverFetch<any>('/tenant/settings').catch(() => null);
 
     return (
         <div className="space-y-6">

@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { startOfDay, endOfDay } from "date-fns"
 
@@ -22,52 +22,26 @@ export async function getZReport(date: Date = new Date()): Promise<{ success: bo
             return { success: false, error: "No autorizado" }
         }
 
-        const start = startOfDay(date)
-        const end = endOfDay(date)
+        const queryDate = startOfDay(date).toISOString() // Send the exact day bound
 
-        // 1. Get all payments for the day
-        const payments = await prisma.payment.findMany({
-            where: {
-                createdAt: {
-                    gte: start,
-                    lte: end
-                }
-            }
-        })
+        const reportData = await serverFetch<any>(`/analytics/z-report?date=${queryDate}`)
 
-        // 2. Aggregate data
-        const totalSales = payments.reduce((sum, p) => sum + Number(p.amount), 0)
+        if (!reportData) {
+            throw new Error("No se pudo parsear la respuesta del API")
+        }
 
-        const methodsMap: Record<string, { amount: number; count: number }> = {}
-
-        payments.forEach(p => {
-            if (!methodsMap[p.method]) {
-                methodsMap[p.method] = { amount: 0, count: 0 }
-            }
-            methodsMap[p.method].amount += Number(p.amount)
-            methodsMap[p.method].count += 1
-        })
-
-        const byMethod = Object.entries(methodsMap).map(([method, data]) => ({
-            method,
-            ...data
-        }))
-
-        // 3. Count unique orders paid today
-        const uniqueOrderIds = new Set(payments.map(p => p.orderId))
+        // Reconversión del string Date al objeto Date del backend
+        if (reportData.date) {
+            reportData.date = new Date(reportData.date)
+        }
 
         return {
             success: true,
-            data: {
-                totalSales,
-                orderCount: uniqueOrderIds.size,
-                byMethod,
-                date
-            }
+            data: reportData as ZReport
         }
 
     } catch (error) {
-        console.error("Error generating Z Report:", error)
-        return { success: false, error: "Error al generar reporte" }
+        console.error("Error generating Z Report via API:", error)
+        return { success: false, error: "Error al generar reporte Z" }
     }
 }

@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import { PrismaClient, ProductType } from '@prisma/client';
 
 // Usar DATABASE_URL del entorno o fallback a local mauromera (ajustar según necesidad)

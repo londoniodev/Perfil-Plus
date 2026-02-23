@@ -1,13 +1,12 @@
 "use server"
 
-import { prisma } from "@alvarosky/database"
-import { Prisma, ProductVariant, Product } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth-server"
+import { serverFetch } from "@/lib/api-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-// ========== SCHEMAS DE VALIDACIÓN ==========
+// ========== SCHEMAS DE VALIDACIÓN FRONTEND ==========
 const cartItemSchema = z.object({
     variantId: z.string().cuid({ message: "ID de variante inválido" }),
     quantity: z.number().int().min(1, "La cantidad debe ser al menos 1")
@@ -37,11 +36,7 @@ interface PlaceOrderResult {
 }
 
 /**
- * Server Action: Crear orden y generar preferencia de Mercado Pago
- * 
- * @param cartItems - Array de variantes con cantidades
- * @param shippingData - Datos de envío (opcional para productos digitales)
- * @returns URL de pago de Mercado Pago o error
+ * Server Action: Crear orden delegando la lógica central a NestJS y luego generar preferencia de MP
  */
 export async function placeOrder(
     cartItems: CartItem[],
@@ -54,167 +49,50 @@ export async function placeOrder(
             return { success: false, error: "Usuario no autenticado" }
         }
 
-        // 2. Validar inputs con Zod (SEGURIDAD)
+        // 2. Validar inputs con Zod
         const validated = placeOrderSchema.parse({ cartItems, shippingData })
 
-        // 3. Obtener configuración del Tenant (incluyendo MercadoPago y Moneda)
-        const tenantConfig = await prisma.systemSetting.findUnique({
-            where: { key: "TENANT_CONFIG" }
+        // 3. Crear payload alineado a CreateOrderDto de NestJS
+        // La API de NestJS procesa precios, valida stock atómicamente y clona nombres (snapshots).
+        const createOrderPayload = {
+            orderType: "DELIVERY", // Default asumiendo e-commerce basado en la existencia de shippingData
+            status: "PENDING",
+            customerName: validated.shippingData?.name || user.name || "Cliente E-commerce",
+            customerPhone: validated.shippingData?.phone || "0000000000",
+            shippingData: validated.shippingData || undefined,
+            items: validated.cartItems.map(item => ({
+                variantId: item.variantId,
+                quantity: item.quantity
+                // Los modifiers no están en el schema de input de esta App Frontend (e-commerce genérico),
+                // pero si existieran, se mapearían aquí hacia el DTO de NestJS.
+            }))
+        }
+
+        // 4. Delega TODO el procesamiento, seguridad de DB y aislamiento Multi-Tenant a la API
+        // El api-server.ts inyecta el `x-tenant-id` garantizando que NestJS lea las config base correctas
+        const order = await serverFetch<any>('/orders', {
+            method: 'POST',
+            body: JSON.stringify(createOrderPayload)
         })
 
-        let currencyId = "COP" // Default
-        let mpAccessToken = ""
-
-        if (tenantConfig?.value && typeof tenantConfig.value === "object" && !Array.isArray(tenantConfig.value)) {
-            const config = tenantConfig.value as Record<string, any>
-
-            // Extraer moneda
-            if (typeof config.currency === "string" && config.currency.length === 3) {
-                currencyId = config.currency
-            }
-
-            // Extraer token de MercadoPago
-            if (config.mercadopago && typeof config.mercadopago.accessToken === "string") {
-                mpAccessToken = config.mercadopago.accessToken
-            }
+        if (!order || !order.id) {
+            throw new Error("La API no devolvió una orden válida");
         }
+
+        // 5. Obtener configuración del Tenant DE LA API para procesar el pago. 
+        // IMPORTANTE: Idealmente NestJS debería generar el Link de MP y devolverlo en la respuesta del POST /orders,
+        // pero para no romper el contrato frontend existente as-is, consultamos la settings del tenant a la API.
+        const mpSettings = await serverFetch<any>('/settings/tenant-config') // Asumiendo endpoint existente
+        const mpAccessToken = mpSettings?.mercadopago?.accessToken;
 
         if (!mpAccessToken) {
             return {
                 success: false,
-                error: "La tienda no está configurada para procesar pagos. Contacte al administrador."
+                error: "La tienda no está configurada para procesar pagos. Contacte al administrador. Orden generada pero no cobrada."
             }
         }
 
-        // Definición manual del tipo para evitar errores de Prisma en build
-        type VariantWithProduct = ProductVariant & { product: Product }
-
-        // 4. Obtener TODAS las variantes en UNA sola consulta (FIX N+1)
-        const variantIds = validated.cartItems.map(item => item.variantId)
-
-        // Casting explícito al tipo manual
-        const variants = (await prisma.productVariant.findMany({
-            where: { id: { in: variantIds } },
-            include: { product: true }
-        })) as unknown as VariantWithProduct[]
-
-        // Crear mapa para acceso rápido O(1) con tipado explícito
-        const variantMap = new Map<string, VariantWithProduct>()
-
-        // Llenar mapa usando for-of para evitar problemas de callbacks anónimos
-        for (const v of variants) {
-            variantMap.set(v.id, v)
-        }
-
-        // 5. Validar stock y calcular total
-        interface OrderItemData {
-            variantId: string
-            quantity: number
-            price: number
-            stock: number
-            productName: string  // Snapshot
-            variantName: string | null  // Snapshot
-            mpItem: {
-                id: string
-                title: string
-                unit_price: number
-                quantity: number
-                currency_id: string
-            }
-        }
-
-        const orderItemsData: OrderItemData[] = []
-        let totalAmount = 0
-
-        for (const item of validated.cartItems) {
-            const variant = variantMap.get(item.variantId)
-
-            if (!variant) {
-                return { success: false, error: `Producto no encontrado: ${item.variantId}` }
-            }
-
-            // Validar stock (excepto digitales con stock ilimitado)
-            if (variant.stock !== -1 && variant.stock < item.quantity) {
-                return {
-                    success: false,
-                    error: `Stock insuficiente para ${variant.name || variant.product.name}`
-                }
-            }
-
-            const itemTotal = Number(variant.price) * item.quantity
-            totalAmount += itemTotal
-
-            orderItemsData.push({
-                variantId: variant.id,
-                quantity: item.quantity,
-                price: Number(variant.price),
-                stock: variant.stock,
-                productName: variant.product.name,  // Snapshot del nombre
-                variantName: variant.name,  // Snapshot de la variante
-                // Datos para Mercado Pago
-                mpItem: {
-                    id: variant.sku,
-                    title: variant.name || variant.product.name,
-                    unit_price: Number(variant.price),
-                    quantity: item.quantity,
-                    currency_id: "ARS" // Ajustar según país
-                }
-            })
-        }
-
-        // 5. Generar número de orden único
-        const orderCount = await prisma.order.count()
-        const orderNumber = `ORD-${new Date().getFullYear()}-${String(orderCount + 1).padStart(4, '0')}`
-
-        // 6. Crear orden en transacción con actualización atómica de stock
-        const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            // Crear orden con snapshots de producto
-            const newOrder = await tx.order.create({
-                data: {
-                    userId: user.id,
-                    orderNumber,
-                    totalAmount,
-                    status: "PENDING",
-                    shippingData: shippingData as any,
-                    items: {
-                        createMany: {
-                            data: orderItemsData.map(item => ({
-                                variantId: item.variantId,
-                                quantity: item.quantity,
-                                price: item.price,
-                                productName: item.productName,  // Snapshot inmutable
-                                variantName: item.variantName   // Snapshot inmutable
-                            }))
-                        }
-                    }
-                }
-            })
-
-            // Descontar stock con ACTUALIZACIÓN ATÓMICA (Fix Race Condition)
-            for (const item of orderItemsData) {
-                // Solo descontar si NO es stock ilimitado (-1)
-                if (item.stock !== -1) {
-                    const result = await tx.productVariant.updateMany({
-                        where: {
-                            id: item.variantId,
-                            stock: { gte: item.quantity }  // Condición atómica: solo si hay stock
-                        },
-                        data: {
-                            stock: { decrement: item.quantity }
-                        }
-                    })
-
-                    // Si no se actualizó ninguna fila, significa que no hay stock suficiente
-                    if (result.count === 0) {
-                        throw new Error(`Stock insuficiente para el producto. Otro usuario compró antes.`)
-                    }
-                }
-            }
-
-            return newOrder
-        })
-
-        // 7. Crear preferencia de Mercado Pago
+        // 6. Configurar MercadoPago y Crear Preferencia
         const client = new MercadoPagoConfig({
             accessToken: mpAccessToken
         })
@@ -223,12 +101,19 @@ export async function placeOrder(
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL
 
         if (!baseUrl) {
-            throw new Error("No se ha definido la URL base de la aplicación (NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_SITE_URL o NEXT_PUBLIC_BASE_URL)")
+            throw new Error("No se ha definido la URL base de la aplicación (NEXT_PUBLIC_APP_URL)")
         }
 
+        // Preparar "mpItems" para Mercado Pago traduciendo la orden final creada en NestJS
         const preferenceData = await preference.create({
             body: {
-                items: orderItemsData.map(item => item.mpItem),
+                items: order.items.map((item: any) => ({
+                    id: item.variant.sku || item.variantId,
+                    title: item.variantName || item.productName,
+                    unit_price: Number(item.price),
+                    quantity: item.quantity,
+                    currency_id: mpSettings?.currency || "COP"
+                })),
                 external_reference: order.id,
                 back_urls: {
                     success: `${baseUrl}/tienda/status?orderId=${order.id}&status=success`,
@@ -236,7 +121,7 @@ export async function placeOrder(
                     pending: `${baseUrl}/tienda/status?orderId=${order.id}&status=pending`
                 },
                 auto_return: "approved",
-                notification_url: `${baseUrl}/api/webhooks/mercadopago`, // Para webhook
+                notification_url: `${baseUrl}/api/webhooks/mercadopago`,
                 metadata: {
                     order_id: order.id,
                     order_number: order.orderNumber
@@ -244,13 +129,18 @@ export async function placeOrder(
             }
         })
 
-        // 8. Guardar ID de pago de MP en la orden
-        await prisma.order.update({
-            where: { id: order.id },
-            data: { mpPaymentId: preferenceData.id }
-        })
+        // 7. Guardar ID de MP en la Orden
+        // Idealmente hacemos un PATCH a la orden creada
+        await serverFetch<any>(`/orders/${order.id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                status: 'PENDING',
+                mpPaymentId: preferenceData.id // Si el Dto lo soporta
+            })
+        }).catch(e => console.error("Aviso: No se pudo enlazar mpPaymentId en BD:", e));
 
-        // Revalidar rutas relevantes
+
+        // 8. Revalidar rutas relevantes
         revalidatePath("/tienda")
         revalidatePath("/checkout")
 

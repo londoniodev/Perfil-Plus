@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
@@ -58,7 +58,7 @@ interface UpdateSettingsResult {
 }
 
 /**
- * Server Action: Actualizar configuración de la tienda
+ * Server Action: Actualizar configuración de la tienda delegándolo a NestJS
  */
 export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateSettingsResult> {
     try {
@@ -79,20 +79,10 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
         // 2. Validar datos
         const validated = settingsSchema.parse(data)
 
-        // 3. Obtener configuración actual para mergear
-        const tenantConfigSetting = await prisma.systemSetting.findUnique({
-            where: { key: "TENANT_CONFIG" }
-        })
-
-        let currentConfig: any = {}
-        if (tenantConfigSetting?.value) {
-            currentConfig = typeof tenantConfigSetting.value === "string"
-                ? JSON.parse(tenantConfigSetting.value)
-                : tenantConfigSetting.value
-        }
+        // 3. Para no romper la lógica actual del form, obtenemos los settings primero desde la DB mediante la API
+        const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
         // 4. Preparar nuevos objetos de configuración
-        // NOTA: Nombre, Email, Moneda y Features (Módulos) están bloqueados para admins de tenant
         const newConfig = {
             ...currentConfig,
             theme: validated.theme ?? currentConfig.theme,
@@ -131,86 +121,20 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
             }
         }
 
-        // 5. Guardar en SystemSetting (Split Keys)
-
-        // TENANT_CONFIG
-        await prisma.systemSetting.upsert({
-            where: { key: "TENANT_CONFIG" },
-            create: {
-                id: crypto.randomUUID(),
-                key: "TENANT_CONFIG",
-                value: newConfig,
-                isPublic: false
-            },
-            update: {
-                value: newConfig
-            }
+        // 5. Enviar el config unificado a NestJS para que procese el guardado en SystemSettings
+        await serverFetch('/settings/tenant-config', {
+            method: 'PATCH',
+            body: JSON.stringify(newConfig)
         })
 
-        // SMTP_CONFIG (Flattened for EmailService)
-        if (newConfig.smtp) {
-            const smtpConfigForService = {
-                ...newConfig.smtp,
-                user: newConfig.smtp.auth?.user,
-                pass: newConfig.smtp.auth?.pass,
-            }
-            await prisma.systemSetting.upsert({
-                where: { key: "SMTP_CONFIG" },
-                create: {
-                    id: crypto.randomUUID(),
-                    key: "SMTP_CONFIG",
-                    value: smtpConfigForService,
-                    isPublic: false
-                },
-                update: {
-                    value: smtpConfigForService
-                }
-            })
-        }
-
-        // MERCADOPAGO_CONFIG
-        if (newConfig.mercadopago) {
-            await prisma.systemSetting.upsert({
-                where: { key: "MERCADOPAGO_CONFIG" },
-                create: {
-                    id: crypto.randomUUID(),
-                    key: "MERCADOPAGO_CONFIG",
-                    value: newConfig.mercadopago,
-                    isPublic: false
-                },
-                update: {
-                    value: newConfig.mercadopago
-                }
-            })
-        }
-
-        // 6. Sincronizar con legacy StoreSettings (Opcional)
-        // Solo sincronizamos campos permitidos para el admin de tenant
-        const legacySettings = await prisma.storeSettings.findFirst()
-        const legacyData = {
-            mpPublicKey: newConfig.mercadopago?.publicKey,
-            mpAccessToken: newConfig.mercadopago?.accessToken,
-        }
-
-        if (legacySettings) {
-            await prisma.storeSettings.update({
-                where: { id: legacySettings.id },
-                data: legacyData
-            })
-        } else {
-            await prisma.storeSettings.create({
-                data: legacyData
-            })
-        }
-
-        // 7. Revalidar rutas
+        // 6. Revalidar rutas
         revalidatePath("/admin/settings")
         revalidatePath("/admin")
         revalidatePath("/")
 
         return { success: true }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error updating settings:", error)
 
         if (error instanceof z.ZodError) {
@@ -222,7 +146,7 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
 
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Error desconocido"
+            error: error.message || "Error desconocido"
         }
     }
 }

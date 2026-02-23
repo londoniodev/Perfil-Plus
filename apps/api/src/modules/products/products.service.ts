@@ -27,7 +27,8 @@ export class ProductsService {
 
     // ============ CREAR PRODUCTO ============
     async create(data: CreateProductDto, tenantId: string) {
-        const { sku, stock, modifierGroups, ...productData } = data;
+        // Extraemos properties transaccionales hijas
+        const { sku, stock, modifierGroups, categories, variants, ...productData } = data;
 
         // Validar slug único en este tenant
         const existing = await this.prisma.product.findFirst({
@@ -38,7 +39,7 @@ export class ProductsService {
             throw new BadRequestException('El slug del producto ya existe');
         }
 
-        // Transacción para crear producto + variante default + modifier groups
+        // Transacción para crear producto + variantes + modifier groups + categorías
         return await this.prisma.$transaction(async (tx) => {
             const product = await tx.product.create({
                 data: {
@@ -53,23 +54,45 @@ export class ProductsService {
                     published: productData.published || false,
                     digitalFileUrl: productData.digitalFileUrl,
                     previewUrl: productData.previewUrl,
+                    categories: categories && categories.length > 0 ? {
+                        create: categories.map(categoryId => ({
+                            categoryId
+                        }))
+                    } : undefined,
                 },
             });
 
-            // Crear variante default
-            const defaultSku = sku || `${product.slug}-${Math.random().toString(36).substring(7)}`;
+            // Si envían array de variantes explícitas (e.g., producto físico con colores/tallas)
+            if (variants && variants.length > 0) {
+                // Crear variantes enviadas inyectando el tenantId explícito
+                await tx.productVariant.createMany({
+                    data: variants.map((v, i) => ({
+                        tenantId,
+                        productId: product.id,
+                        sku: v.sku || `${product.slug}-${Math.random().toString(36).substring(7)}`,
+                        name: v.name || 'Standard',
+                        price: v.price ?? productData.basePrice,
+                        stock: v.stock ?? 0,
+                        isDefault: v.isDefault ?? (i === 0),
+                        attributes: v.attributes ?? undefined,
+                    })),
+                });
+            } else {
+                // Crear variante default fallback si no se manda array
+                const defaultSku = sku || `${product.slug}-${Math.random().toString(36).substring(7)}`;
 
-            await tx.productVariant.create({
-                data: {
-                    tenantId,
-                    productId: product.id,
-                    sku: defaultSku,
-                    price: productData.basePrice,
-                    stock: productData.productType === ProductType.DIGITAL ? -1 : (stock || 0),
-                    isDefault: true,
-                    name: 'Standard',
-                },
-            });
+                await tx.productVariant.create({
+                    data: {
+                        tenantId,
+                        productId: product.id,
+                        sku: defaultSku,
+                        price: productData.basePrice,
+                        stock: productData.productType === ProductType.DIGITAL ? -1 : (stock || 0),
+                        isDefault: true,
+                        name: 'Standard',
+                    },
+                });
+            }
 
             // Crear modifier groups si se envían (restaurante)
             if (modifierGroups && modifierGroups.length > 0) {
@@ -88,7 +111,7 @@ export class ProductsService {
                                     priceAdjustment: mod.priceAdjustment ?? 0,
                                     stock: mod.stock ?? null,
                                     isAvailable: mod.isAvailable ?? true,
-                                })),
+                                }))
                             },
                         },
                     });
@@ -96,8 +119,8 @@ export class ProductsService {
             }
 
             // Retornar producto completo con relaciones
-            return await tx.product.findUnique({
-                where: { id: product.id },
+            return await tx.product.findFirst({
+                where: { id: product.id, tenantId },
                 include: {
                     variants: true,
                     ...this.modifierGroupsInclude,

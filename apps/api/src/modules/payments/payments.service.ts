@@ -24,7 +24,10 @@ export class PaymentsService {
     }
 
     private getTenantId(): string {
-        return (this.request as any).tenantId || (this.request.headers['x-tenant-id'] as string) || 'default';
+        return (this.request as any).tenantId ||
+            (this.request.headers['x-tenant-id'] as string) ||
+            (this.request.query['tenantId'] as string) ||
+            'default';
     }
 
     private async getMercadoPagoConfig() {
@@ -182,7 +185,7 @@ export class PaymentsService {
                 pending: `${frontendUrl}/suscripcion/pendiente`,
             },
             auto_return: 'approved' as const,
-            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook`,
+            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook?tenantId=${this.getTenantId()}`,
             external_reference: userId,
             metadata: {
                 userId,
@@ -334,7 +337,7 @@ export class PaymentsService {
                 pending: `${frontendUrl}/checkout?status=pending`,
             },
             auto_return: 'approved' as const,
-            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook`,
+            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook?tenantId=${this.getTenantId()}`,
             external_reference: order.id,
             metadata: {
                 userId,
@@ -469,10 +472,17 @@ export class PaymentsService {
 
     private async approveOrder(orderId: string, mpPaymentId: string) {
         // 1. Update Order Status
+        const tenantId = this.getTenantId();
         const order = await this.prisma.order.findUnique({
-            where: { id: orderId },
+            where: { id: orderId }, // Si tienes @@unique compuesto, asegúrate de ajustarlo aquí (ej. tenantId_id)
             include: { user: true, items: true }
         });
+
+        // Anti-IDOR Check: Validar que la orden pertenece al tenant
+        if (order && order.tenantId !== tenantId) {
+            this.logger.error(`Security Breach Attempt: Order ${orderId} does not belong to tenant ${tenantId}`);
+            return;
+        }
 
         if (!order || order.status === 'APPROVED' || order.status === 'DELIVERED') {
             this.logger.warn(`Order ${orderId} already approved or not found.`);
@@ -480,7 +490,7 @@ export class PaymentsService {
         }
 
         await this.prisma.order.update({
-            where: { id: orderId },
+            where: { id: orderId }, // Asume que ID es primary key aislada, el check previo protege el Row-Level
             data: {
                 status: 'APPROVED',
                 mpPaymentId

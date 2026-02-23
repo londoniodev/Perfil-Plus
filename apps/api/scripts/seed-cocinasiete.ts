@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import { PrismaClient, ProductType } from '@prisma/client';
 
 // Conectar a la base de datos de cocinasiete

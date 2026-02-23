@@ -3,6 +3,31 @@ import { Type } from 'class-transformer';
 import { ProductType } from '@prisma/client';
 import { CreateModifierGroupDto } from './create-modifier-group.dto';
 
+export class CreateProductVariantDto {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    sku?: string;
+
+    @IsNumber()
+    @IsOptional()
+    price?: number;
+
+    @IsNumber()
+    @IsOptional()
+    stock?: number;
+
+    @IsBoolean()
+    @IsOptional()
+    isDefault?: boolean;
+
+    @IsOptional()
+    attributes?: any;
+}
+
 export class CreateProductDto {
     @IsString()
     name: string;
@@ -47,6 +72,17 @@ export class CreateProductDto {
     @IsOptional()
     sku?: string;
 
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    categories?: string[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateProductVariantDto)
+    @IsOptional()
+    variants?: CreateProductVariantDto[];
+
     // Restaurante: Grupos de modificadores (opcional)
     @IsArray()
     @ValidateNested({ each: true })
@@ -54,4 +90,3 @@ export class CreateProductDto {
     @IsOptional()
     modifierGroups?: CreateModifierGroupDto[];
 }
-

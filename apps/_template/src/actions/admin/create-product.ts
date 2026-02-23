@@ -1,7 +1,7 @@
 "use server"
 
-import { prisma, Prisma } from "@alvarosky/database"
 import { getSessionUser } from "@/lib/auth-server"
+import { serverFetch } from "@/lib/api-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
@@ -36,12 +36,12 @@ const modifierGroupSchema = z.object({
 const productSchema = z.object({
     name: z.string().min(1, "El nombre es requerido"),
     description: z.string().min(1, "La descripción es requerida"),
-    productType: z.enum(["DIGITAL", "PHYSICAL", "RESTAURANT"]), // Agregado RESTAURANT
+    productType: z.enum(["DIGITAL", "PHYSICAL", "RESTAURANT"]),
     basePrice: z.number().min(0, "El precio debe ser mayor a 0"),
     images: z.array(z.string()).optional().default([]),
     specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
-    categories: z.array(z.string()).optional(), // New category field
+    categories: z.array(z.string()).optional(),
     variants: z.array(variantSchema).optional(),
     modifierGroups: z.array(modifierGroupSchema).optional()
 })
@@ -55,7 +55,7 @@ interface CreateProductResult {
 }
 
 /**
- * Server Action: Crear producto con sus variantes
+ * Server Action: Crear producto delegando al API centralizado de NestJS
  */
 export async function createProduct(data: CreateProductInput): Promise<CreateProductResult> {
     try {
@@ -76,7 +76,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         // 2. Validar datos
         const validated = productSchema.parse(data)
 
-        // 3. Generar slug único desde el nombre
+        // 3. Generar slug único base desde el nombre (el API manejará validación de si choca)
         const baseSlug = validated.name
             .toLowerCase()
             .normalize("NFD")
@@ -84,122 +84,46 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "")
 
-        // Verificar si el slug ya existe
-        let slug = baseSlug
-        let counter = 1
-        while (await prisma.product.findUnique({ where: { slug } })) {
-            slug = `${baseSlug}-${counter}`
-            counter++
+        // Extraer la primera variante si hay, para mandar a Nest su stock y sku (dado que NestJS asume 1 default en la creación inicial)
+        const principalVariant = validated.variants?.[0];
+
+        // 4. Transformar payload para consumo HTTP (NestJS DTO)
+        const payload = {
+            name: validated.name,
+            slug: baseSlug,
+            description: validated.description,
+            productType: validated.productType,
+            basePrice: validated.basePrice,
+            images: validated.images,
+            specs: validated.specs,
+            published: validated.published,
+            // NOTA: El endpoint asume creación de variante única inicial. 
+            // Inyectamos params root si corresponden o default.
+            stock: principalVariant?.stock ?? (validated.productType === "DIGITAL" ? -1 : 0),
+            sku: principalVariant?.sku,
+            modifierGroups: validated.modifierGroups,
+            // Categorías y demás arrays de variantes adicionales podrían requerir endpoints subsiguientes si NestJS 
+            // no los soporta masivamente en el Dto POST /products
         }
 
-        // 4. Preparar especificaciones según tipo
-        let specs = validated.specs || {}
-
-        if (validated.productType === "DIGITAL") {
-            // Los specs para digitales vienen en data.specs
-            // Ejemplo: { downloadUrl, pages, format }
-        } else {
-            // Los specs para físicos vienen en data.specs
-            // Ejemplo: { weight, dimensions }
-        }
-
-        // 5. Preparar variantes
-        let variantsData: typeof validated.variants = []
-
-        if (validated.productType === "DIGITAL" || validated.productType === "RESTAURANT") {
-            // Producto digital o restaurante: crear 1 variante por defecto
-            variantsData = [{
-                name: "Standard",
-                sku: undefined, // Se generará automáticamente
-                price: validated.basePrice,
-                stock: -1, // Ilimitado
-                isDefault: true,
-                attributes: undefined
-            }]
-        } else {
-            // Producto físico: usar las variantes proporcionadas
-            if (!validated.variants || validated.variants.length === 0) {
-                return {
-                    success: false,
-                    error: "Los productos físicos requieren al menos una variante"
-                }
-            }
-            variantsData = validated.variants
-        }
-
-        // 6. Crear producto + variantes + modificadores en transacción
-        const product = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            // Crear producto
-            const newProduct = await tx.product.create({
-                data: {
-                    name: validated.name,
-                    slug,
-                    description: validated.description,
-                    productType: validated.productType as any,
-                    basePrice: validated.basePrice,
-                    images: validated.images,
-                    specs,
-                    published: validated.published,
-                    categories: validated.categories && validated.categories.length > 0 ? {
-                        create: validated.categories.map(catId => ({
-                            categoryId: catId
-                        }))
-                    } : undefined
-                }
-            })
-
-            // Preparar datos de variantes para inserción por lotes
-            const variantsToCreate = (variantsData ?? []).map((variant, i) => ({
-                productId: newProduct.id,
-                sku: variant.sku || `${newProduct.id.slice(0, 8).toUpperCase()}-${i + 1}`,
-                name: variant.name ?? undefined,
-                price: variant.price ?? validated.basePrice,
-                stock: variant.stock ?? 0,
-                attributes: variant.attributes ?? undefined,
-                isDefault: variant.isDefault ?? ((variantsData ?? []).length === 1)
-            }))
-
-            // Crear todas las variantes
-            await tx.productVariant.createMany({
-                data: variantsToCreate
-            })
-
-            // Crear grupos de modificadores (Restaurante)
-            if (validated.modifierGroups && validated.modifierGroups.length > 0) {
-                for (const group of validated.modifierGroups) {
-                    await tx.modifierGroup.create({
-                        data: {
-                            productId: newProduct.id,
-                            name: group.name,
-                            minSelect: group.minSelect,
-                            maxSelect: group.maxSelect,
-                            modifiers: {
-                                create: group.modifiers.map(mod => ({
-                                    name: mod.name,
-                                    priceAdjustment: mod.priceAdjustment,
-                                    stock: mod.stock === 0 ? null : mod.stock, // 0 suele enviarse como null/infinito en UI a veces, ajustar según lógica de negocio. Aquí asumimos que si viene stock, se usa.
-                                    isAvailable: mod.isAvailable
-                                }))
-                            }
-                        }
-                    })
-                }
-            }
-
-            return newProduct
+        // 5. Llamar a NestJS a través del nuevo cliente Server
+        // serverFetch inyectará de forma segura el x-tenant-id desde el middleware de Next
+        const newProduct = await serverFetch<any>('/products', {
+            method: 'POST',
+            body: JSON.stringify(payload)
         })
 
-        // 7. Revalidar rutas
+        // 6. Revalidar rutas
         revalidatePath("/admin/products")
         revalidatePath("/tienda")
 
         return {
             success: true,
-            productId: product.id
+            productId: newProduct.id
         }
 
     } catch (error) {
-        console.error("Error creating product:", error)
+        console.error("Error creating product via API:", error)
 
         if (error instanceof z.ZodError) {
             return {

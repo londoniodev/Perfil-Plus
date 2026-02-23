@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { PriceDisplay, AdminPageWrapper } from "@alvarosky/ui"
 import { OrdersTableClient } from "./orders-table-client"
 
@@ -16,33 +16,9 @@ export default async function OrdersPage() {
         redirect("/")
     }
 
-    // 2. Obtener órdenes con relaciones
-    const orders = await prisma.order.findMany({
-        include: {
-            user: {
-                select: {
-                    email: true,
-                    name: true
-                }
-            },
-            items: {
-                include: {
-                    variant: {
-                        include: {
-                            product: {
-                                select: {
-                                    name: true,
-                                    images: true,
-                                    productType: true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
+    // 2. Obtener órdenes con relaciones desde NestJS API (Multi-Tenant seguro)
+    const ordersRes = await serverFetch<any[]>('/admin/orders');
+    const orders = Array.isArray(ordersRes) ? ordersRes : [];
 
     // 3. Transform data for table to match OrderData from @alvarosky/ui
     const tableData = orders.map(order => ({
@@ -56,7 +32,7 @@ export default async function OrdersPage() {
             email: order.user.email
         } : null,
         shippingData: {}, // Map if available in prisma schema
-        items: order.items.map(item => ({
+        items: order.items ? order.items.map((item: any) => ({
             id: item.id,
             quantity: item.quantity,
             price: Number(item.price),
@@ -67,7 +43,7 @@ export default async function OrdersPage() {
                     images: item.variant.product.images
                 }
             }
-        }))
+        })) : []
     }))
 
     // 4. Calculate stats

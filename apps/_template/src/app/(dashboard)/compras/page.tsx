@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { PageHeader, Badge, PriceDisplay, AdaptiveImage, Button } from "@alvarosky/ui"
 import { Package, Download, Truck, Clock, ShoppingBag, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
@@ -13,22 +13,9 @@ export default async function ComprasPage() {
         redirect("/login")
     }
 
-    // 2. Consultar órdenes del usuario con relaciones completas
-    const orders = await prisma.order.findMany({
-        where: { userId: user.id },
-        include: {
-            items: {
-                include: {
-                    variant: {
-                        include: {
-                            product: true
-                        }
-                    }
-                }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
+    // 2. Consultar órdenes del usuario mediante Headless API
+    const ordersRes = await serverFetch<any[]>('/orders/my-orders').catch(() => []);
+    const orders = Array.isArray(ordersRes) ? ordersRes : [];
 
     return (
         <div className="container py-12">

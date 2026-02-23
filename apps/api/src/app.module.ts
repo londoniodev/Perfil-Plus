@@ -30,6 +30,11 @@ import { EmployeesModule } from './modules/employees/employees.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
+import { SettingsModule } from './modules/settings/settings.module';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { TablesModule } from './modules/tables/tables.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 // Interceptors
 // Interceptors removed
@@ -151,6 +156,16 @@ import { JwtAuthGuard, RolesGuard } from './common/guards';
       serveRoot: '/uploads',
       exclude: ['/api/{*path}'],
     }),
+
+    SettingsModule,
+
+    TenantModule,
+
+    CategoriesModule,
+
+    TablesModule,
+
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

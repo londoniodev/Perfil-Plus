@@ -3,7 +3,6 @@
 // ============================================================================
 
 import { headers } from 'next/headers';
-import { TENANT_ID } from './config';
 
 /**
  * Get tenant ID from request headers (Server Components only)
@@ -19,7 +18,7 @@ export async function getTenantId(): Promise<string> {
     } catch {
         // headers() not available (context issue)
     }
-    return TENANT_ID;
+    return process.env.NEXT_PUBLIC_TENANT_ID || 'default';
 }
 
 /**

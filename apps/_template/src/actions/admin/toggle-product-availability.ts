@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { revalidatePath } from "next/cache"
 
@@ -12,17 +12,17 @@ export async function toggleProductAvailability(productId: string, isAvailable: 
             return { success: false, error: "No autorizado" }
         }
 
-        await prisma.product.update({
-            where: { id: productId },
-            data: { isAvailable }
+        await serverFetch(`/products/${productId}/availability`, {
+            method: 'PATCH',
+            body: JSON.stringify({ isAvailable })
         })
 
         revalidatePath("/admin/products")
         revalidatePath("/admin/restaurant/menu")
 
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error toggling product availability:", error)
-        return { success: false, error: "Error al actualizar disponibilidad" }
+        return { success: false, error: error.message || "Error al actualizar disponibilidad" }
     }
 }

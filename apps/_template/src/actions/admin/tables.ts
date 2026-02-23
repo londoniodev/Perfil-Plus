@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
@@ -27,10 +27,8 @@ const tableSchema = z.object({
 
 export async function getTables() {
     try {
-        const tables = await prisma.table.findMany({
-            orderBy: { label: 'asc' } // Simple alphanumeric sort for now
-        })
-        return tables
+        const tables = await serverFetch<Table[]>('/tables')
+        return tables || []
     } catch (error) {
         console.error("Error fetching tables:", error)
         return []
@@ -49,37 +47,37 @@ export async function upsertTable(data: z.infer<typeof tableSchema>) {
 
         if (validated.id) {
             // Update
-            await prisma.table.update({
-                where: { id: validated.id },
-                data: {
+            await serverFetch(`/tables/${validated.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
                     label: validated.label,
                     capacity: validated.capacity,
                     status: validated.status,
                     x: validated.x,
                     y: validated.y
-                }
+                })
             })
         } else {
             // Create
-            await prisma.table.create({
-                data: {
+            await serverFetch('/tables', {
+                method: 'POST',
+                body: JSON.stringify({
                     label: validated.label,
                     capacity: validated.capacity,
                     status: validated.status,
                     x: validated.x,
                     y: validated.y,
-                    // Generate pseudo-QR for now
-                    qrCode: `https://example.com/menu?table=${encodeURIComponent(validated.label)}`
-                }
+                    // QR could be generated logic handled at Backend securely
+                })
             })
         }
 
         revalidatePath("/admin/restaurant/tables")
         revalidatePath("/admin/restaurant/pos")
         return { success: true }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Upsert Table Error:", error)
-        const message = error instanceof Error ? error.message : "Error desconocido"
+        const message = error.message || "Error desconocido"
         return { success: false, error: `Error al guardar: ${message}` }
     }
 }
@@ -89,7 +87,7 @@ export async function deleteTable(id: string) {
         const user = await getSessionUser()
         if (!user || user.role !== "ADMIN") throw new Error("Unauthorized")
 
-        await prisma.table.delete({ where: { id } })
+        await serverFetch(`/tables/${id}`, { method: 'DELETE' })
 
         revalidatePath("/admin/restaurant/tables")
         revalidatePath("/admin/restaurant/pos")

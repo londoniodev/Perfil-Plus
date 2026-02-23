@@ -9,23 +9,30 @@ import { ThemeProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
-import { prisma } from "@/lib/prisma";
+import { serverFetch } from "@/lib/api-server";
 import { getTenantId } from "@/lib/config-server";
 
 async function getTenantDesign(tenantId: string) {
-  // Skip DB call during build time (static generation) — DB is not accessible in Docker build
+  // Skip DB call during build time (static generation) — API is not accessible in Docker build context easily
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return null;
   }
   try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug: tenantId },
-      select: { design: true },
-    });
-    return tenant?.design ?? null;
+    const data = await serverFetch<any>('/tenant/branding');
+
+    // Fallback robusto en caso de que la data venga incompleta o la API falle silenciosamente sin error
+    return data?.design ?? {
+      colors: { primary: "#000000" }, // Default safe color
+      fonts: { heading: "Inter", body: "Inter" },
+      radius: 0.5
+    };
   } catch (e) {
-    console.error("Error fetching tenant design:", e);
-    return null;
+    console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);
+    return {
+      colors: { primary: "#000000" },
+      fonts: { heading: "Inter", body: "Inter" },
+      radius: 0.5
+    };
   }
 }
 

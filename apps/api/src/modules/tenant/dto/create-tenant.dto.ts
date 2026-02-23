@@ -16,4 +16,8 @@ export class CreateTenantDto {
     @IsString()
     @IsOptional()
     notes?: string;
+
+    @IsString()
+    @IsOptional()
+    adminPassword?: string;
 }

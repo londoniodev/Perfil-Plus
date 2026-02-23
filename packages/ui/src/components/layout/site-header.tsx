@@ -219,14 +219,14 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
 
             <div className="p-4 mt-auto">
                 {isLoggedIn ? (
-                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground" size="lg">
+                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
                         <Link href={profileUrl} onClick={onClick}>
                             <IconUser size={20} className="mr-2" />
                             Mi Panel
                         </Link>
                     </Button>
                 ) : (
-                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground" size="lg">
+                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
                         <Link href={loginUrl} onClick={onClick}>
                             <IconLogin size={20} className="mr-2" />
                             Entrar

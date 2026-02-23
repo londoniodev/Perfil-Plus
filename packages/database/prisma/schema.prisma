@@ -556,6 +556,7 @@ model Order {
   user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         OrderItem[]
   payments      Payment[]
+  deliveryAnalytics OrderDeliveryAnalytics?
 
   @@index([userId])
   @@index([status])
@@ -620,7 +621,7 @@ model Payment {
 // ============ CRM ============
 model Lead {
   id        String   @id @default(cuid())
-  email     String   @unique
+  email     String?
   name      String?
   phone     String?
   source    String?  // Origen (Facebook, Google, etc.)
@@ -628,6 +629,23 @@ model Lead {
   status    String   @default("new") // new, contacted, converted, lost
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============ ANALÍTICAS DE ENTREGA ============
+model OrderDeliveryAnalytics {
+  id              String    @id @default(cuid())
+  orderId         String    @unique
+  pendingAt       DateTime  @default(now())
+  preparingAt     DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  timeToPrepare   Int?      // Segundos entre pending -> preparing
+  timeToShip      Int?      // Segundos entre preparing -> shipped
+  timeToDeliver   Int?      // Segundos entre shipped -> delivered
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 // ============ TENANT CONFIGURATION ============

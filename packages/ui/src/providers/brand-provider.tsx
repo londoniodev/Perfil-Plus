@@ -100,68 +100,75 @@ export function BrandProvider({
         ? config.primary as ThemeName
         : "zinc"
 
-    React.useEffect(() => {
-        const root = document.documentElement
+    // Determine theme payload
+    let theme = themes[primaryThemeKey];
+    if (isCustomColor && finalCustomColor) {
+        const base = themes.zinc;
+        const custom = finalCustomColor;
+        const sidebarColors = getSidebarColors(custom);
 
-        let theme = themes[primaryThemeKey]
+        theme = {
+            light: {
+                ...base.light,
+                "--primary": custom,
+                "--primary-foreground": "0 0% 100%",
+                "--ring": custom,
+                ...(sidebarColors ? sidebarColors.light : {})
+            } as any,
+            dark: {
+                ...base.dark,
+                "--primary": custom,
+                "--primary-foreground": "0 0% 100%",
+                "--ring": custom,
+                ...(sidebarColors ? sidebarColors.dark : {})
+            } as any
+        };
+    }
 
-        // If Custom Color, override the base theme (zinc)
-        if (isCustomColor && finalCustomColor) {
-            const base = themes.zinc
-            const custom = finalCustomColor
-            const sidebarColors = getSidebarColors(custom)
+    // Use isomorphic effect for safe DOM mutation
+    const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
-            theme = {
-                light: {
-                    ...base.light,
-                    "--primary": custom,
-                    "--primary-foreground": "0 0% 100%",
-                    "--ring": custom,
-                    ...(sidebarColors ? sidebarColors.light : {})
-                } as any,
-                dark: {
-                    ...base.dark,
-                    "--primary": custom,
-                    "--primary-foreground": "0 0% 100%",
-                    "--ring": custom,
-                    ...(sidebarColors ? sidebarColors.dark : {})
-                } as any
-            }
-        }
+    useIsomorphicLayoutEffect(() => {
+        const root = document.documentElement;
 
         // 1. Inject Radius
-        root.style.setProperty("--radius", `${config.radius}rem`)
+        root.style.setProperty("--radius", `${config.radius}rem`);
 
-        const cssContent = `
-            :root {
-                ${Object.entries(theme.light).map(([key, value]) => `${key}: ${value};`).join(' ')}
-                --radius: ${config.radius}rem;
-            }
+        // 2. Inject Light Variables directly to :root
+        Object.entries(theme.light).forEach(([key, value]) => {
+            root.style.setProperty(key, value as string);
+        });
+
+        // 3. Handle Dark Mode CSS
+        const darkCssContent = `
             .dark {
                 ${Object.entries(theme.dark).map(([key, value]) => `${key}: ${value};`).join(' ')}
             }
-        `
+        `;
 
-        const styleId = "dynamic-branding-styles"
-        let styleEl = document.getElementById(styleId) as HTMLStyleElement
+        const styleId = "dynamic-branding-dark-styles";
+        let styleEl = document.getElementById(styleId) as HTMLStyleElement;
 
         if (!styleEl) {
-            styleEl = document.createElement("style")
-            styleEl.id = styleId
-            document.head.appendChild(styleEl)
+            styleEl = document.createElement("style");
+            styleEl.id = styleId;
+            document.head.appendChild(styleEl);
         }
 
-        styleEl.textContent = cssContent
+        if (styleEl.textContent !== darkCssContent) {
+            styleEl.textContent = darkCssContent;
+        }
 
-    }, [config.primary, config.radius, primaryThemeKey, isCustomColor]);
+    }, [theme, config.radius]);
 
     // Apply specific color theme (Light / Dark / System)
     const { setTheme } = require("next-themes").useTheme();
+
     React.useEffect(() => {
         if (config.mode && ["light", "dark", "system"].includes(config.mode)) {
             setTheme(config.mode);
         }
     }, [config.mode, setTheme]);
 
-    return <>{children}</>
+    return <>{children}</>;
 }

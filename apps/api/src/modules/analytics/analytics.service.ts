@@ -41,7 +41,7 @@ export class AnalyticsService {
             _sum: { totalAmount: true },
             where: { tenantId, status: OrderStatus.DELIVERED }
         });
-        const totalRevenue = Number(totalRevAgg._sum.totalAmount || 0);
+        const totalRevenue = Number(totalRevAgg._sum?.totalAmount || 0);
 
         // 2. Conteo the órdenes histórico
         const totalOrders = await this.prisma.order.count({
@@ -57,7 +57,7 @@ export class AnalyticsService {
                 createdAt: { gte: todayStart, lte: todayEnd }
             }
         });
-        const todayRevenue = Number(todayRevAgg._sum.totalAmount || 0);
+        const todayRevenue = Number(todayRevAgg._sum?.totalAmount || 0);
 
         // Ordenes the hoy
         const restaurantOrdersToday = await this.prisma.order.count({
@@ -76,7 +76,7 @@ export class AnalyticsService {
                 createdAt: { gte: monthStart, lte: todayEnd }
             }
         });
-        const totalRevenueThisMonth = Number(monthRevAgg._sum.totalAmount || 0);
+        const totalRevenueThisMonth = Number(monthRevAgg._sum?.totalAmount || 0);
 
         // Usuarios del tenant
         const totalUsers = await this.prisma.user.count({ where: { tenantId } });
@@ -156,7 +156,7 @@ export class AnalyticsService {
             _sum: { totalAmount: true },
             where: ordersQuery
         });
-        const totalSales = Number(salesAgg._sum.totalAmount || 0);
+        const totalSales = Number(salesAgg._sum?.totalAmount || 0);
 
         // 3. Ticket Promedio
         const avgTicket = orderCount > 0 ? totalSales / orderCount : 0;

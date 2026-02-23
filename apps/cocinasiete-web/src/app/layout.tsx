@@ -110,8 +110,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const branding = await getTenantBranding();
+  // Fallbacks firmes para evitar que SSR en dokploy rompa el frontend si el fetch interno the CNAME falla
   const tenantName = branding?.name || siteConfig.name;
   const logoUrl = branding?.design?.logoUrl || siteConfig.branding.logo;
+  const primaryColor = branding?.design?.primary || "rose"; // ROJO: Color fallback predeterminado para Cocina Siete
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -122,11 +124,10 @@ export default async function RootLayout({
       <body className={`${getFontVariables()} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          forcedTheme="dark"
+          defaultTheme="light"
+          enableSystem={true}
         >
-          <BrandProvider settings={branding?.design as any}>
+          <BrandProvider settings={{ ...branding?.design, primary: primaryColor } as any}>
             <GlobalSchemas />
             <ToastProvider>
               <NavigationWrapper

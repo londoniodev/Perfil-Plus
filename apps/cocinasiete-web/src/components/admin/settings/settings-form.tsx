@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch, Label } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Switch, Label, FilterTabs } from "@alvarosky/ui"
 import { Loader2, ExternalLink, Check, Info, DollarSign, Palette, Puzzle, Mail, Code, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
@@ -87,6 +87,7 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [activeTab, setActiveTab] = useState<string>("general")
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
@@ -147,46 +148,30 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 })}
                 className="space-y-6"
             >
-                <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="flex w-full overflow-x-auto lg:grid lg:grid-cols-4 mb-8 bg-transparent border-b rounded-none h-auto p-0 gap-2 scrollbar-none">
-                        <TabsTrigger
-                            value="general"
-                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
-                        >
-                            <Info className="w-4 h-4 mr-2" /> <span>General</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="finance"
-                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
-                        >
-                            <DollarSign className="w-4 h-4 mr-2" /> <span>Finanzas</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="email"
-                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
-                        >
-                            <Mail className="w-4 h-4 mr-2" /> <span>Email</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="apis"
-                            className="flex-1 min-w-[120px] rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all py-3"
-                        >
-                            <Code className="w-4 h-4 mr-2" /> <span>API's</span>
-                        </TabsTrigger>
-                    </TabsList>
+                <FilterTabs
+                    tabs={[
+                        { id: "general", label: "General" },
+                        { id: "finance", label: "Finanzas" },
+                        { id: "email", label: "Email" },
+                        { id: "apis", label: "API's" },
+                    ]}
+                    activeTab={activeTab}
+                    onChange={setActiveTab}
+                />
 
+                <div className="mt-6">
                     {/* General/Contacto */}
-                    <TabsContent value="general">
+                    {activeTab === "general" && (
                         <Card className="p-6 space-y-6">
                             <div className="space-y-4 max-w-2xl">
-                                <h3 className="text-lg font-semibold">Información del Negocio</h3>
+                                <h3 className="text-lg font-semibold">Informacion del Negocio</h3>
                                 <div className="grid gap-6">
                                     <FormField
                                         control={form.control}
                                         name="whatsapp"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>WhatsApp (incluir código de país)</FormLabel>
+                                                <FormLabel>WhatsApp (incluir codigo de pais)</FormLabel>
                                                 <FormControl>
                                                     <Input {...field} placeholder="+57310..." />
                                                 </FormControl>
@@ -199,7 +184,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                         name="address"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Dirección Física</FormLabel>
+                                                <FormLabel>Direccion Fisica</FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
                                                         <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -242,9 +227,9 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                         />
                                     </div>
 
-                                    {/* Menú Digital */}
+                                    {/* Menu Digital */}
                                     <div className="pt-4 border-t space-y-4">
-                                        <h4 className="text-sm font-medium">Menú Digital</h4>
+                                        <h4 className="text-sm font-medium">Menu Digital</h4>
 
                                         <FormField
                                             control={form.control}
@@ -260,7 +245,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                                             onChange={field.onChange}
                                                             label="Haz clic para subir el logo (JPG, PNG, WEBP)"
                                                             folder="logos"
-                                                            className="max-w-[200px]" // Limit size
+                                                            className="max-w-[200px]"
                                                         />
                                                     </FormControl>
                                                     <FormMessage />
@@ -273,11 +258,11 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                             name="menuSlogan"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Mensaje de bienvenida del menú</FormLabel>
+                                                    <FormLabel>Mensaje de bienvenida del menu</FormLabel>
                                                     <FormControl>
-                                                        <Input {...field} placeholder="Bienvenido a nuestro menú digital" />
+                                                        <Input {...field} placeholder="Bienvenido a nuestro menu digital" />
                                                     </FormControl>
-                                                    <p className="text-xs text-muted-foreground">Este texto aparece debajo del nombre del negocio en el menú público.</p>
+                                                    <p className="text-xs text-muted-foreground">Este texto aparece debajo del nombre del negocio en el menu publico.</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -286,11 +271,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 </div>
                             </div>
                         </Card>
-                    </TabsContent>
-
+                    )}
 
                     {/* Finanzas */}
-                    <TabsContent value="finance">
+                    {activeTab === "finance" && (
                         <Card className="p-6 space-y-6">
                             <div className="space-y-4 max-w-2xl">
                                 <div className="space-y-4">
@@ -337,14 +321,12 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 </div>
                             </div>
                         </Card>
-                    </TabsContent>
-
-
+                    )}
 
                     {/* Email */}
-                    <TabsContent value="email">
+                    {activeTab === "email" && (
                         <Card className="p-6 space-y-6 max-w-2xl">
-                            <h3 className="text-lg font-semibold">Configuración SMTP</h3>
+                            <h3 className="text-lg font-semibold">Configuracion SMTP</h3>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
@@ -424,10 +406,10 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 />
                             </div>
                         </Card>
-                    </TabsContent>
+                    )}
 
                     {/* APIs */}
-                    <TabsContent value="apis">
+                    {activeTab === "apis" && (
                         <Card className="p-6 space-y-4 max-w-2xl">
                             <h3 className="text-lg font-semibold">API Internas</h3>
                             <FormField
@@ -444,8 +426,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                 )}
                             />
                         </Card>
-                    </TabsContent>
-                </Tabs>
+                    )}
+                </div>
 
                 {/* Botón de Guardar */}
                 <div className="flex gap-4 pt-4">

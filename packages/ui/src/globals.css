@@ -9,8 +9,8 @@
 
 @layer base {
     :root {
-        /* Light Mode (Zinc) */
-        --background: 0 0% 100%;
+        /* Light Mode (Zinc) - With Depth */
+        --background: 0 0% 97.5%;
         --foreground: 240 10% 3.9%;
         --card: 0 0% 100%;
         --card-foreground: 240 10% 3.9%;
@@ -26,8 +26,8 @@
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
-        --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
+        --border: 240 5.9% 87%;
+        --input: 240 5.9% 87%;
         --ring: 240 10% 3.9%;
         --radius: 0.5rem;
 
@@ -50,12 +50,12 @@
     }
 
     .dark {
-        /* Dark Mode (Zinc) - Subtle borders, professional look */
+        /* Dark Mode (Zinc) - With Depth */
         --background: 240 5.9% 10%;
         --foreground: 0 0% 98%;
-        --card: 240 5.9% 10%;
+        --card: 240 5.9% 12%;
         --card-foreground: 0 0% 98%;
-        --popover: 240 5.9% 10%;
+        --popover: 240 5.9% 12%;
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;
         --primary-foreground: 240 5.9% 10%;
@@ -69,8 +69,8 @@
         --destructive-foreground: 0 0% 98%;
         
         /* CRITICAL: Subtle borders (NOT white/bright) */
-        --border: 240 3.7% 15.9%;
-        --input: 240 3.7% 15.9%;
+        --border: 240 3.7% 18%;
+        --input: 240 3.7% 18%;
         --ring: 240 4.9% 83.9%;
 
         /* Chart Colors (Dark Mode) */

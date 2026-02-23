@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Tabs, TabsList, TabsTrigger } from "../../../tabs";
+import FilterTabs from "../../../filter-tabs";
 
 export type StatusFilterType = "all" | "published" | "draft";
 
@@ -17,19 +17,15 @@ export interface StatusFilterProps {
 }
 
 export function StatusFilter({ value, onValueChange, stats, className = "w-full" }: StatusFilterProps) {
+    const tabs: { id: StatusFilterType; label: string }[] = [
+        { id: "all", label: stats !== undefined ? `Todos (${stats.total})` : "Todos" },
+        { id: "published", label: stats !== undefined ? `Publicados (${stats.published})` : "Publicados" },
+        { id: "draft", label: stats !== undefined ? `Borradores (${stats.draft})` : "Borradores" },
+    ];
+
     return (
-        <Tabs value={value} onValueChange={(v) => onValueChange(v as StatusFilterType)} className={className}>
-            <TabsList>
-                <TabsTrigger value="all">
-                    Todos {stats !== undefined ? `(${stats.total})` : ""}
-                </TabsTrigger>
-                <TabsTrigger value="published">
-                    Publicados {stats !== undefined ? `(${stats.published})` : ""}
-                </TabsTrigger>
-                <TabsTrigger value="draft">
-                    Borradores {stats !== undefined ? `(${stats.draft})` : ""}
-                </TabsTrigger>
-            </TabsList>
-        </Tabs>
+        <div className={className}>
+            <FilterTabs tabs={tabs} activeTab={value} onChange={onValueChange} />
+        </div>
     );
 }

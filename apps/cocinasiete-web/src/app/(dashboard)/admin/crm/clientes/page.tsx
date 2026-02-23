@@ -17,13 +17,15 @@ interface Lead {
 }
 
 export default function AdminCRMClientesPage() {
-    const { isAdmin, loading: authLoading, token } = useAuth();
+    const { isAdmin, loading: authLoading } = useAuth();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!token || !isAdmin) return;
+        if (!isAdmin) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
         const fetchLeads = async () => {
             try {
@@ -49,7 +51,7 @@ export default function AdminCRMClientesPage() {
         };
 
         fetchLeads();
-    }, [token, isAdmin]);
+    }, [isAdmin]);
 
     if (authLoading || loading) {
         return (

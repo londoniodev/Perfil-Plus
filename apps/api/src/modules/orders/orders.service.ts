@@ -213,11 +213,6 @@ export class OrdersService {
                                     },
                                 })),
                             },
-                            deliveryAnalytics: {
-                                create: {
-                                    pendingAt: new Date(),
-                                }
-                            }
                         },
                         include: {
                             items: {
@@ -229,6 +224,14 @@ export class OrdersService {
                                 },
                             },
                         },
+                    });
+
+                    // 8.5 Initialize Delivery Analytics explicitly to avoid type issues
+                    const analytics = await tx.orderDeliveryAnalytics.create({
+                        data: {
+                            orderId: order.id,
+                            pendingAt: new Date()
+                        }
                     });
 
                     // 9. Capturar Lead si hay teléfono
@@ -243,6 +246,7 @@ export class OrdersService {
                                 data: {
                                     phone: dto.customerPhone,
                                     name: dto.customerName || null,
+                                    email: null, // Required field in Prisma schema until properly synced
                                     source: 'Menu Checkout',
                                     status: 'new'
                                 }

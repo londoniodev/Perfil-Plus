@@ -6,35 +6,30 @@ import {
     AdminHeader,
     SidebarInset,
     SidebarProvider,
+    BrandProvider
 } from "@alvarosky/ui";
-import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/config-server";
-import { cookies } from "next/headers";
-import type { FeatureKey } from "@/config/sidebar.config";
+import { serverFetch } from "@/lib/api-server";
 
-// --- Server Side Data Fetching (uses singleton from lib/prisma.ts) ---
-
-async function getTenantData(tenantId: string) {
+// --- Server Side Data Fetching ---
+async function getTenantData() {
     try {
-        const tenant = await prisma.tenant.findUnique({
-            where: { slug: tenantId },
-            select: {
-                name: true,
-                features: true,
-                design: true
-            }
-        });
-        return tenant || { name: null, features: [], design: null };
+        const data = await serverFetch<any>('/tenant/branding');
+        return {
+            name: data?.name || null,
+            features: data?.features || [],
+            design: data?.design || null
+        };
     } catch (e) {
-        console.error("Error fetching tenant config:", e);
-        return { name: null, features: [], design: null };
+        console.warn("⚠️ Error obteniendo configuración del Tenant vía API en el Dashboard:", e);
+        // Retornamos un estado degradado gracefully en vez de reventar el Server Side Rendering
+        return { name: "Dashboard Local", features: [], design: null };
     }
 }
 
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth-server";
-
-// ... existing imports
+import { cookies } from "next/headers";
+import type { FeatureKey } from "@/config/sidebar.config";
 
 export default async function DashboardLayout({
     children,
@@ -50,9 +45,8 @@ export default async function DashboardLayout({
     const cookieStore = await cookies();
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
-    // Resolve Tenant ID
-    const tenantId = await getTenantId();
-    const { name, features: dbFeatures, design } = await getTenantData(tenantId);
+    // Resolve Tenant ID data directly from API
+    const { name, features: dbFeatures, design } = await getTenantData();
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
@@ -65,14 +59,16 @@ export default async function DashboardLayout({
     return (
         <AuthProvider>
             <DashboardProvider>
-                <DashboardShell
-                    features={features}
-                    tenantName={tenantName}
-                    defaultOpen={defaultOpen}
-                    appName={tenantName}
-                >
-                    {children}
-                </DashboardShell>
+                <BrandProvider settings={design as any}>
+                    <DashboardShell
+                        features={features}
+                        tenantName={tenantName}
+                        defaultOpen={defaultOpen}
+                        appName={tenantName}
+                    >
+                        {children}
+                    </DashboardShell>
+                </BrandProvider>
             </DashboardProvider>
         </AuthProvider>
     );

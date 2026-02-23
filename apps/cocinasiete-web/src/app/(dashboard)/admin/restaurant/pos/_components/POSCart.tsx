@@ -66,7 +66,7 @@ export function POSCart({ cart, tableId, tableName, onUpdateQuantity, onClearCar
                                     )}
                                     {item.quantity > 1 && (
                                         <div className="text-xs text-muted-foreground mt-1">
-                                            {item.quantity} x ${item.price}
+                                            {item.quantity} x {formatCurrency(item.price)}
                                         </div>
                                     )}
                                 </div>

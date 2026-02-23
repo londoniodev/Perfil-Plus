@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getSessionUser } from "@/lib/auth-server"
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { Button, AdminPageWrapper } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import { ProductsTableClient } from "../../products/products-table-client"
@@ -19,21 +19,9 @@ export default async function RestaurantMenuPage() {
         redirect("/")
     }
 
-    // 2. Obtener productos TIPO RESTAURANT
-    const products = await prisma.product.findMany({
-        where: {
-            productType: "RESTAURANT" as any
-        },
-        include: {
-            variants: {
-                select: {
-                    stock: true,
-                    price: true
-                }
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
+    // 2. Obtener productos TIPO RESTAURANT desde NestJS API (Row-Level Security)
+    const productsRes = await serverFetch<any[]>('/admin/products');
+    const products = Array.isArray(productsRes) ? productsRes.filter((p: any) => p.productType === "RESTAURANT") : [];
 
     // 3. Transformar datos para la tabla
     const tableData = products.map((product: any) => {

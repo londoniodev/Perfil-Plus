@@ -1,11 +1,11 @@
 "use server"
 
-import { prisma, Prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-// Reusing schemas from create-product (in a real app, move these to a shared file)
+// Reusing schemas from create-product
 const variantSchema = z.object({
     name: z.string().optional(),
     sku: z.string().optional(),
@@ -18,7 +18,7 @@ const variantSchema = z.object({
 const modifierSchema = z.object({
     name: z.string().min(1, "Nombre requerido"),
     priceAdjustment: z.number().min(0).default(0),
-    stock: z.number().nullable().optional(), // null = infinito
+    stock: z.number().nullable().optional(),
     isAvailable: z.boolean().default(true)
 })
 
@@ -38,7 +38,7 @@ const productSchema = z.object({
     images: z.array(z.string()).optional().default([]),
     specs: z.record(z.string(), z.any()).optional(),
     published: z.boolean().default(false),
-    categories: z.array(z.string()).optional(), // New category field
+    categories: z.array(z.string()).optional(),
     variants: z.array(variantSchema).optional(),
     modifierGroups: z.array(modifierGroupSchema).optional()
 })
@@ -62,128 +62,23 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
         const validated = productSchema.parse(data)
         const id = validated.id
 
-        // Transaction for atomicity
-        const product = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            // 1. Update Product Base
-            await tx.product.update({
-                where: { id },
-                data: {
-                    name: validated.name,
-                    description: validated.description,
-                    productType: validated.productType as any,
-                    basePrice: validated.basePrice,
-                    images: validated.images,
-                    specs: validated.specs,
-                    published: validated.published
-                }
-            })
-
-            // 1b. Sync Categories
-            if (validated.categories) {
-                // Wipe existing relations
-                await tx.categoriesOnProducts.deleteMany({
-                    where: { productId: id }
-                })
-
-                // Create new ones
-                if (validated.categories.length > 0) {
-                    await tx.categoriesOnProducts.createMany({
-                        data: validated.categories.map(catId => ({
-                            productId: id,
-                            categoryId: catId
-                        }))
-                    })
-                }
-            }
-
-            // 2. Handle Variants (Simplification: Delete all and re-create for physical products)
-            // Ideally we should sync by ID but for now re-create strategy is safer to avoid orphans
-            if (validated.productType === "PHYSICAL" && validated.variants) {
-                // Delete existing variants EXCEPT default if needed, but easier to wipe and recreate
-                // WARN: This changes variant IDs which might affect orders if referenced historically
-                // Checking if we should just update existing ones.
-                // Assuming simple update for now:
-                await tx.productVariant.deleteMany({ where: { productId: id } })
-
-                const variantsToCreate = validated.variants.map((variant, i) => ({
-                    productId: id,
-                    sku: variant.sku || `${validated.name.slice(0, 3).toUpperCase()}-${id.slice(0, 4)}-${i}`,
-                    name: variant.name,
-                    price: variant.price ?? validated.basePrice,
-                    stock: variant.stock,
-                    isDefault: variant.isDefault,
-                    attributes: variant.attributes
-                }))
-
-                await tx.productVariant.createMany({ data: variantsToCreate })
-            } else if (validated.productType === "RESTAURANT") {
-                // Ensure at least one variant exists for Restaurant products
-                const existingCount = await tx.productVariant.count({ where: { productId: id } })
-
-                if (existingCount === 0) {
-                    await tx.productVariant.create({
-                        data: {
-                            productId: id,
-                            name: "Standard",
-                            sku: `${validated.name.slice(0, 3).toUpperCase()}-${id.slice(0, 4)}-DEF`,
-                            price: validated.basePrice,
-                            stock: -1, // Unlimited
-                            isDefault: true
-                        }
-                    })
-                } else {
-                    // Update default variant price to match basePrice
-                    const defaultVariant = await tx.productVariant.findFirst({
-                        where: { productId: id, isDefault: true }
-                    })
-
-                    if (defaultVariant) {
-                        await tx.productVariant.update({
-                            where: { id: defaultVariant.id },
-                            data: { price: validated.basePrice }
-                        })
-                    }
-                }
-            }
-
-
-            // 3. Handle Modifier Groups (Restaurante)
-            if (validated.modifierGroups) {
-                // Clear existing groups (cascade deletes modifiers)
-                await tx.modifierGroup.deleteMany({ where: { productId: id } })
-
-                // Re-create groups and modifiers
-                for (const group of validated.modifierGroups) {
-                    await tx.modifierGroup.create({
-                        data: {
-                            productId: id,
-                            name: group.name,
-                            minSelect: group.minSelect,
-                            maxSelect: group.maxSelect,
-                            modifiers: {
-                                create: group.modifiers.map(mod => ({
-                                    name: mod.name,
-                                    priceAdjustment: mod.priceAdjustment,
-                                    stock: mod.stock === 0 ? null : mod.stock,
-                                    isAvailable: mod.isAvailable
-                                }))
-                            }
-                        }
-                    })
-                }
-            }
-
-            return { id }
+        const product = await serverFetch<any>(`/products/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(validated)
         })
+
+        if (!product || !product.id) {
+            throw new Error("El servidor no retornó el producto modificado")
+        }
 
         revalidatePath("/admin/products")
         revalidatePath("/admin/restaurant/menu")
 
         return { success: true, productId: product.id }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error updates product:", error)
         if (error instanceof z.ZodError) return { success: false, error: error.issues[0].message }
-        return { success: false, error: "Error al actualizar producto" }
+        return { success: false, error: error.message || "Error al actualizar producto" }
     }
 }

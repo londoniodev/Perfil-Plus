@@ -154,7 +154,7 @@ export function POSInterface({ products, tableId, tableName }: POSInterfaceProps
                                         {product.name}
                                     </h3>
                                     <p className="text-primary font-bold text-sm mt-2">
-                                        {formatCurrency(product.variants[0]?.price || 0)}
+                                        {formatCurrency(product.variants[0]?.price)}
                                     </p>
                                 </div>
                             </Card>

@@ -17,7 +17,7 @@ export type POSProduct = {
         price: number
         stock: number
     }[]
-    modifierGroups: any[] // TODO: Type correctly with Prisma
+    modifierGroups: any[] // TODO: Type correctly
 }
 
 const posOrderItemSchema = z.object({

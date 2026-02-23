@@ -1,31 +1,11 @@
 import { BrandingForm } from "@/components/settings/BrandingForm";
-import { PrismaClient } from "@alvarosky/database-management";
-import { TENANT_ID } from "@/lib/config";
 import { AdminPageWrapper } from "@alvarosky/ui";
-
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.MANAGEMENT_DATABASE_URL,
-        },
-    },
-});
-
-import { headers } from "next/headers";
+import { serverFetch } from "@/lib/api-server";
 
 async function getTenantDesign() {
     try {
-        const headersList = await headers();
-        const tenantHeader = headersList.get('x-tenant-id');
-
-        const isLocalDefault = !tenantHeader || tenantHeader === 'default';
-        const slug = isLocalDefault ? TENANT_ID : tenantHeader;
-
-        const tenant = await prisma.tenant.findUnique({
-            where: { slug: slug },
-            select: { design: true }
-        });
-        return tenant?.design || {};
+        const design = await serverFetch<any>('/tenant/branding');
+        return design || {};
     } catch (e) {
         return {};
     }

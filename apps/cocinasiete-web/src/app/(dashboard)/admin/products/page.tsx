@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getSessionUser } from "@/lib/auth-server"
-import { prisma } from "@alvarosky/database"
+import { serverFetch } from "@/lib/api-server"
 import { Button, AdminPageWrapper } from "@alvarosky/ui"
 import { Plus } from "lucide-react"
 import { ProductsTableClient } from "./products-table-client"
@@ -19,23 +19,10 @@ export default async function ProductsPage() {
         redirect("/")
     }
 
-    // 2. Obtener productos con variantes
-    const products = await prisma.product.findMany({
-        include: {
-            variants: {
-                select: {
-                    stock: true,
-                    price: true
-                }
-            }
-        },
-        where: {
-            productType: {
-                not: "RESTAURANT" as any
-            }
-        },
-        orderBy: { createdAt: "desc" }
-    })
+    // 2. Obtener productos a través state HTTP Fetch a REST NestJS (Headless Multi-Tenant)
+    const productsRes = await serverFetch<any[]>('/admin/products');
+    // Prevenir errores en caso de fallo del API Array 
+    const products = Array.isArray(productsRes) ? productsRes.filter((p: any) => p.productType !== "RESTAURANT") : [];
 
     // 3. Transformar datos para la tabla
     const tableData = products.map((product: any) => {

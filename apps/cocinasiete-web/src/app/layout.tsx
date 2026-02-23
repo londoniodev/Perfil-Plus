@@ -136,7 +136,7 @@ export default async function RootLayout({
   // Fallbacks firmes para evitar que SSR en dokploy rompa el frontend si el fetch interno the CNAME falla
   const tenantName = branding?.name || siteConfig.name;
   const logoUrl = branding?.design?.logoUrl || siteConfig.branding.logo;
-  const primaryColor = branding?.design?.primary || "rose"; // ROJO: Color fallback predeterminado para Cocina Siete
+  const primaryColor = branding?.design?.primary || "#01c176"; // Verde Cocina Siete como fallback
 
   return (
     <html lang="es" suppressHydrationWarning>

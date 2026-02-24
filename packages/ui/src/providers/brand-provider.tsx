@@ -131,22 +131,22 @@ export function BrandProvider({
     useIsomorphicLayoutEffect(() => {
         const root = document.documentElement;
 
-        // 1. Inject Radius
+        // 1. Inject Radius directly to :root (this is fine globally)
         root.style.setProperty("--radius", `${config.radius}rem`);
 
-        // 2. Inject Light Variables directly to :root
-        Object.entries(theme.light).forEach(([key, value]) => {
-            root.style.setProperty(key, value as string);
-        });
-
-        // 3. Handle Dark Mode CSS
-        const darkCssContent = `
+        // 2 & 3. Inject Light & Dark Variables via <style> to preserve CSS specificity rules
+        // Inline styles (root.style.setProperty) have higher specificity than .dark class, 
+        // breaking dark mode. So we MUST inject them as CSS rules.
+        const combinedCssContent = `
+            :root {
+                ${Object.entries(theme.light).map(([key, value]) => `${key}: ${value};`).join(' ')}
+            }
             .dark {
                 ${Object.entries(theme.dark).map(([key, value]) => `${key}: ${value};`).join(' ')}
             }
         `;
 
-        const styleId = "dynamic-branding-dark-styles";
+        const styleId = "dynamic-branding-styles";
         let styleEl = document.getElementById(styleId) as HTMLStyleElement;
 
         if (!styleEl) {
@@ -155,9 +155,13 @@ export function BrandProvider({
             document.head.appendChild(styleEl);
         }
 
-        if (styleEl.textContent !== darkCssContent) {
-            styleEl.textContent = darkCssContent;
+        if (styleEl.textContent !== combinedCssContent) {
+            styleEl.textContent = combinedCssContent;
         }
+
+        // Clean up old dark-only style tag if it existed from previous version
+        const oldDarkStyleEl = document.getElementById("dynamic-branding-dark-styles");
+        if (oldDarkStyleEl) oldDarkStyleEl.remove();
 
     }, [theme, config.radius]);
 

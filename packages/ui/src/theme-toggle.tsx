@@ -3,37 +3,29 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 
+import { useTheme } from "next-themes";
+
 interface ThemeToggleProps {
     className?: string;
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-    const [theme, setThemeState] = React.useState<string>("light");
+    const [themeState, setThemeState] = React.useState<string>("light");
     const [mounted, setMounted] = React.useState(false);
-
-    // Dynamically import useTheme to avoid SSR issues
-    const useTheme = React.useMemo(() => {
-        try {
-            return require("next-themes").useTheme;
-        } catch {
-            return null;
-        }
-    }, []);
-
-    const themeHook = useTheme?.();
+    const { theme, setTheme } = useTheme();
 
     React.useEffect(() => {
         setMounted(true);
-        if (themeHook?.theme) {
-            setThemeState(themeHook.theme);
+        if (theme) {
+            setThemeState(theme);
         }
-    }, [themeHook?.theme]);
+    }, [theme]);
 
     const toggleTheme = React.useCallback(() => {
-        const newTheme = theme === "dark" ? "light" : "dark";
+        const newTheme = themeState === "dark" ? "light" : "dark";
         setThemeState(newTheme);
-        themeHook?.setTheme(newTheme);
-    }, [theme, themeHook]);
+        setTheme(newTheme);
+    }, [themeState, setTheme]);
 
     // Avoid hydration mismatch
     if (!mounted) {

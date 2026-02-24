@@ -109,7 +109,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     const colorInputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<BrandingFormValues>({
-        resolver: zodResolver(brandingSchema) as any, // Bypass zod/hookform strict typing conflict
+        resolver: zodResolver(brandingSchema) as any,
         defaultValues: {
             primary: "zinc",
             radius: 0.5,
@@ -123,12 +123,11 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     const watchedRadius = form.watch("radius");
     const watchedPrimary = form.watch("primary");
 
+
     // Logic for Custom Hex
     const isCustomPrimary = watchedPrimary && !themes[watchedPrimary as keyof typeof themes];
     const [customHex, setCustomHex] = useState<string>(
-        isCustomPrimary && watchedPrimary.startsWith("#") ? watchedPrimary : (
-            isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
-        )
+        isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
     );
 
     const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,8 +135,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
         setCustomHex(hex);
         // Only update form if valid hex
         if (/^#[0-9A-F]{6}$/i.test(hex)) {
-            // Guardamos el HEX exacto para evitar payload rejects the WAF o URLErrors con '%'
-            form.setValue("primary", hex, { shouldDirty: true });
+            form.setValue("primary", hexToHSL(hex), { shouldDirty: true });
         }
     };
 
@@ -243,83 +241,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                     )}
                                 />
 
-                                <Separator />
 
-                                <FormField
-                                    control={form.control}
-                                    name="mode"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Esquema de Color (Tema)</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value || "system"}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecciona el tema por defecto" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="system">Sincronizar con el Sistema</SelectItem>
-                                                    <SelectItem value="light">Claro (Light)</SelectItem>
-                                                    <SelectItem value="dark">Oscuro (Dark)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>
-                                                Elige si tu panel y sistema administrativo será oscuro o claro por defecto.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="radius"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Redondeal (Border Radius): {field.value}rem</FormLabel>
-                                            <FormControl>
-                                                <Slider
-                                                    min={0}
-                                                    max={1}
-                                                    step={0.25} // 0, 0.25, 0.5, 0.75, 1
-                                                    defaultValue={[field.value]}
-                                                    value={[field.value]}
-                                                    onValueChange={(vals) => field.onChange(vals[0])}
-                                                    className="py-4"
-                                                />
-                                            </FormControl>
-                                            <FormDescription className="flex justify-between text-xs text-muted-foreground">
-                                                <span>0</span>
-                                                <span>0.5</span>
-                                                <span>1.0</span>
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <Separator />
-
-                                <FormField
-                                    control={form.control}
-                                    name="density"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Modo Espacioso</FormLabel>
-                                                <FormDescription>
-                                                    Aumenta el espacio entre elementos (Density).
-                                                </FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value === "spacious"}
-                                                    onCheckedChange={(checked) => field.onChange(checked ? "spacious" : "default")}
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
 
                                 <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
                                     {isSaving ? "Guardando..." : "Guardar Cambios"}

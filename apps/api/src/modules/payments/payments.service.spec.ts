@@ -401,7 +401,7 @@ describe('PaymentsService', () => {
                 mpSubscriptionId: 'MANUAL_ASSIGNMENT',
             });
 
-            const result = await service.assignManualSubscription('user-1', 1);
+            const result = await service.assignManualSubscription('user-1', 30);
 
             expect(mockPrisma.client.subscription.upsert).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -420,19 +420,19 @@ describe('PaymentsService', () => {
             expect(result).toEqual({ message: 'Suscripción asignada correctamente' });
         });
 
-        it('debería crear suscripción con duración personalizada (meses)', async () => {
+        it('debería crear suscripción con duración personalizada (días)', async () => {
             mockPrisma.client.subscription.upsert.mockResolvedValue(MOCK_SUBSCRIPTION);
 
-            await service.assignManualSubscription('user-1', 3);
+            await service.assignManualSubscription('user-1', 90);
 
             const upsertCall = mockPrisma.client.subscription.upsert.mock.calls[0][0];
             const createData = upsertCall.create;
 
-            // Verificar que endDate es ~3 meses después de startDate
+            // Verificar que endDate es ~90 días después de startDate
             const startDate = new Date(createData.startDate);
             const endDate = new Date(createData.endDate);
-            const diffMonths = (endDate.getTime() - startDate.getTime()) / (30 * 24 * 60 * 60 * 1000);
-            expect(Math.round(diffMonths)).toBe(3);
+            const diffDays = (endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000);
+            expect(Math.round(diffDays)).toBe(90);
         });
     });
 

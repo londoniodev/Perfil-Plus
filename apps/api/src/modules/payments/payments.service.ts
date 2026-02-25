@@ -543,10 +543,10 @@ export class PaymentsService {
     }
 
     // Admin: Assign manual subscription
-    async assignManualSubscription(userId: string, months = 1) {
+    async assignManualSubscription(userId: string, days = 30) {
         const startDate = new Date();
         const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + months);
+        endDate.setDate(endDate.getDate() + days);
 
         await this.prisma.subscription.upsert({
             where: { userId },
@@ -565,7 +565,7 @@ export class PaymentsService {
             },
         });
 
-        this.logger.log(`Manual subscription assigned to user ${userId} for ${months} months`);
+        this.logger.log(`Manual subscription assigned to user ${userId} for ${days} days`);
         return { message: 'Suscripción asignada correctamente' };
     }
 

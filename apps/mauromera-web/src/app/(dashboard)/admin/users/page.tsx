@@ -227,13 +227,31 @@ export default function AdminUsersPage() {
     };
 
     const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel") => {
-        if (!confirm(action === "assign" ? "¿Asignar Premium?" : "¿Cancelar Premium?")) return;
+        let daysParam: number | undefined;
+
+        if (action === "assign") {
+            const promptDays = window.prompt("¿Cuántos días de premium deseas asignar?", "30");
+            if (promptDays === null) return;
+
+            const parsedDays = parseInt(promptDays, 10);
+            if (isNaN(parsedDays) || parsedDays <= 0) {
+                toast.error("Cantidad de días inválida");
+                return;
+            }
+            daysParam = parsedDays;
+        } else {
+            if (!confirm("¿Cancelar Premium?")) return;
+        }
+
         setActionLoading(userId);
         try {
+            const body = action === "assign" ? JSON.stringify({ days: daysParam }) : undefined;
+
             const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
                 method: action === "assign" ? "POST" : "DELETE",
                 headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
+                body,
             });
             if (res.ok) {
                 setUsers(

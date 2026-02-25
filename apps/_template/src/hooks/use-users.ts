@@ -112,13 +112,31 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
     };
 
     const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel") => {
-        if (!confirm(action === "assign" ? "¿Asignar Premium?" : "¿Cancelar Premium?")) return false;
+        let daysParam: number | undefined;
+
+        if (action === "assign") {
+            const promptDays = window.prompt("¿Cuántos días de premium deseas asignar?", "30");
+            if (promptDays === null) return false;
+
+            const parsedDays = parseInt(promptDays, 10);
+            if (isNaN(parsedDays) || parsedDays <= 0) {
+                toast.error("Cantidad de días inválida");
+                return false;
+            }
+            daysParam = parsedDays;
+        } else {
+            if (!confirm("¿Cancelar Premium?")) return false;
+        }
+
         setActionLoading(userId);
         try {
+            const body = action === "assign" ? JSON.stringify({ days: daysParam }) : undefined;
+
             const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
                 method: action === "assign" ? "POST" : "DELETE",
                 headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
+                body,
             });
             if (res.ok) {
                 setUsers((current) =>

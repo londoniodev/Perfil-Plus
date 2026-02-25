@@ -60,9 +60,9 @@ export class AdminUsersController {
     @Post(':id/subscription')
     async assignSubscription(
         @Param('id') id: string,
-        @Body('months') months?: number,
+        @Body('days') days?: number,
     ) {
-        return this.paymentsService.assignManualSubscription(id, months);
+        return this.paymentsService.assignManualSubscription(id, days);
     }
 
     @Delete(':id/subscription')

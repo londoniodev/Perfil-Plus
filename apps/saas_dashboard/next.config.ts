@@ -70,6 +70,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
+  basePath: '/admin',
   output: "standalone",
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   poweredByHeader: false,
@@ -98,18 +99,6 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
     ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/admin/:path*',
-        destination: 'http://localhost:3002/admin/:path*',
-      },
-      {
-        source: '/admin',
-        destination: 'http://localhost:3002/admin',
-      },
-    ]
   },
 };
 

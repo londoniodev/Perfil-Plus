@@ -94,6 +94,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/admin/:path*',
+        destination: 'http://localhost:3002/admin/:path*',
+      },
+      {
+        source: '/admin',
+        destination: 'http://localhost:3002/admin',
+      },
+    ]
+  },
 };
 
 export default withPWA(nextConfig);

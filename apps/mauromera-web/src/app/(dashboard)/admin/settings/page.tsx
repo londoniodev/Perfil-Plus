@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth-server"
 import { prisma } from "@alvarosky/database"
 import { AdminPageWrapper } from "@alvarosky/ui"
 import { SettingsForm } from "@/components/admin/settings/settings-form"
+import { TENANT_ID } from "@/lib/config"
 
 export default async function SettingsPage() {
     // 1. Verificar autenticación y rol
@@ -18,7 +19,7 @@ export default async function SettingsPage() {
 
     // 2. Obtener configuración actual de SystemSetting (Sincronizado con Platform)
     const systemSetting = await prisma.systemSetting.findUnique({
-        where: { key: "TENANT_CONFIG" }
+        where: { tenantId_key: { tenantId: TENANT_ID, key: "TENANT_CONFIG" } }
     })
 
     let settings = null
@@ -47,7 +48,7 @@ export default async function SettingsPage() {
         }
     } else {
         // Fallback to legacy StoreSettings
-        const legacy = await prisma.storeSettings.findFirst()
+        const legacy = await prisma.storeSettings.findFirst({ where: { tenantId: TENANT_ID } })
         if (legacy) {
             settings = {
                 storeName: legacy.storeName,

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@alvarosky/database"
 import { MercadoPagoConfig, Payment } from "mercadopago"
 
+import { TENANT_ID } from "@/lib/config"
+
 /**
  * Webhook de Mercado Pago
  * 
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
 
         // 4. Obtener credenciales de MP desde la base de datos (TENANT_CONFIG)
         const tenantConfig = await prisma.systemSetting.findUnique({
-            where: { key: "TENANT_CONFIG" }
+            where: { tenantId_key: { tenantId: TENANT_ID, key: "TENANT_CONFIG" } }
         })
 
         let mpAccessToken = ""

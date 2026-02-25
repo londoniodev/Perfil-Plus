@@ -5,7 +5,7 @@ import { Product, ProductVariant } from "@prisma/client"
 import { useCart } from "@/store/use-cart"
 
 interface ProductConfiguratorProps {
-    product: Product & { variants: ProductVariant[] }
+    product: any // Temporarily use any since the internal components transform and cast it correctly
 }
 
 export function ProductConfigurator({ product }: ProductConfiguratorProps) {
@@ -32,7 +32,7 @@ export function ProductConfigurator({ product }: ProductConfiguratorProps) {
         images: product.images,
         productType: product.productType as "PHYSICAL" | "DIGITAL",
         specs: product.specs as Record<string, string | number> | undefined,
-        variants: product.variants.map(v => ({
+        variants: product.variants.map((v: any) => ({
             id: v.id,
             name: v.name,
             price: Number(v.price),

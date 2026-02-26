@@ -102,7 +102,7 @@ export function middleware(request: NextRequest) {
         '/cursos',
         '/suscripcion',
         '/mis-compras',
-        '/admin',
+        '/dashboard',
     ];
 
     const isProtected = protectedPaths.some(path => pathname.startsWith(path));

@@ -361,10 +361,10 @@ export function UsersTable({
     return (
         <div className="space-y-4">
             {/* Header: Tabs + Search */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="bg-muted/50">
-                        <TabsTrigger value="all" className="text-xs sm:text-sm">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full lg:w-auto">
+                    <TabsList className="bg-muted/50 w-full justify-start overflow-x-auto flex h-auto p-1 scrollbar-hide">
+                        <TabsTrigger value="all" className="text-xs sm:text-sm whitespace-nowrap">
                             Todos
                             <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
                                 {data.length}
@@ -382,7 +382,7 @@ export function UsersTable({
                     </TabsList>
                 </Tabs>
 
-                <div className="relative w-full sm:w-72">
+                <div className="relative w-full lg:w-72 shrink-0">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar por nombre o email..."
@@ -394,13 +394,13 @@ export function UsersTable({
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
-                <Table>
+            <div className="rounded-lg border bg-card overflow-x-auto">
+                <Table className="min-w-[800px] w-full">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="text-xs font-medium text-muted-foreground">
+                                    <TableHead key={header.id} className="text-xs font-medium text-muted-foreground whitespace-nowrap">
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(header.column.columnDef.header, header.getContext())}
@@ -436,14 +436,14 @@ export function UsersTable({
             </div>
 
             {/* Footer: Selection Info + Pagination */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-                <div>
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+                <div className="text-center lg:text-left w-full lg:w-auto">
                     {table.getFilteredSelectedRowModel().rows.length} de{" "}
                     {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto overflow-x-auto pb-2 sm:pb-0">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
                         <span className="text-xs">Filas por página</span>
                         <Select
                             value={table.getState().pagination.pageSize.toString()}
@@ -462,11 +462,11 @@ export function UsersTable({
                         </Select>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs">
+                    <div className="flex items-center gap-1 text-xs whitespace-nowrap">
                         Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                         <Button
                             variant="outline"
                             size="icon"

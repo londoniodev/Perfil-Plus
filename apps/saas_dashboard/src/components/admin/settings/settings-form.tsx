@@ -10,6 +10,7 @@ import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
 import { ImageUploader } from "@alvarosky/ui"
 import { API_BASE, TENANT_ID } from "@/lib/config"
+import { BrandingForm } from "@/components/settings/BrandingForm"
 
 const settingsSchema = z.object({
     storeName: z.string().optional().or(z.literal("")),
@@ -82,9 +83,10 @@ interface SettingsFormProps {
         menuSlogan?: string | null
         menuLogo?: string | null
     }
+    brandingData?: any
 }
 
-export function SettingsForm({ initialData }: SettingsFormProps) {
+export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -150,6 +152,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                 <Tabs defaultValue="general" className="w-full">
                     <TabsList>
                         <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="branding">Branding</TabsTrigger>
                         <TabsTrigger value="finance">Finanzas</TabsTrigger>
                         <TabsTrigger value="email">Email</TabsTrigger>
                         <TabsTrigger value="apis">API's</TabsTrigger>
@@ -222,50 +225,60 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                         />
                                     </div>
 
-                                    {/* Menu Digital */}
-                                    <div className="pt-4 border-t space-y-4">
-                                        <h4 className="text-sm font-medium">Menu Digital</h4>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="menuLogo"
-                                            render={({ field }) => (
-                                                <div className="space-y-3">
-                                                    <FormLabel>Logo del Restaurante</FormLabel>
-                                                    <FormControl>
-                                                        <ImageUploader
-                                                            apiBase={API_BASE || ""}
-                                                            tenantId={TENANT_ID || ""}
-                                                            value={field.value || null}
-                                                            onChange={field.onChange}
-                                                            label="Haz clic para subir el logo (JPG, PNG, WEBP)"
-                                                            folder="logos"
-                                                            className="max-w-[200px]"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="menuSlogan"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Mensaje de bienvenida del menu</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} placeholder="Bienvenido a nuestro menu digital" />
-                                                    </FormControl>
-                                                    <p className="text-xs text-muted-foreground">Este texto aparece debajo del nombre del negocio en el menu publico.</p>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
                                 </div>
                             </div>
                         </Card>
+                    </TabsContent>
+
+                    {/* Branding */}
+                    <TabsContent value="branding">
+                        <div className="space-y-6">
+                            {/* Logo y Menu Digital (Manejados como parte global Settings) */}
+                            <Card className="p-6 space-y-4">
+                                <h3 className="text-lg font-semibold">Logotipo y Mensaje</h3>
+                                <div className="space-y-4 max-w-2xl">
+                                    <FormField
+                                        control={form.control}
+                                        name="menuLogo"
+                                        render={({ field }) => (
+                                            <div className="space-y-3">
+                                                <FormLabel>Logo Principal</FormLabel>
+                                                <FormControl>
+                                                    <ImageUploader
+                                                        apiBase={API_BASE || ""}
+                                                        tenantId={TENANT_ID || ""}
+                                                        value={field.value || null}
+                                                        onChange={field.onChange}
+                                                        label="Haz clic para subir el logo (JPG, PNG, WEBP)"
+                                                        folder="logos"
+                                                        className="max-w-[200px]"
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </div>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="menuSlogan"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Mensaje de bienvenida (Slogan)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="Bienvenido a nuestro menu digital" />
+                                                </FormControl>
+                                                <p className="text-xs text-muted-foreground">Este texto aparece debajo del nombre del negocio en publico.</p>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </Card>
+
+                            {/* Colores y Diseño (Manejados por BrandingForm, no es submit del gran <form>) */}
+                            <BrandingForm defaultValues={brandingData} />
+                        </div>
                     </TabsContent>
 
                     {/* Finanzas */}
@@ -442,7 +455,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     </Button>
                 </div>
             </form>
-        </Form>
+        </Form >
     )
 }
 

@@ -55,7 +55,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
     const hasData = filteredData.length > 0 && filteredData.some((d) => d.total > 0)
 
     return (
-        <Card>
+        <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2">
                 <div>
                     <CardTitle>Ingresos</CardTitle>
@@ -148,12 +148,12 @@ export function RevenueChart({ data }: RevenueChartProps) {
                         </AreaChart>
                     </ChartContainer>
                 ) : (
-                    <div className="flex items-center justify-center h-[250px] bg-muted/30 rounded-lg border-2 border-dashed">
-                        <div className="text-center space-y-2">
-                            <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center h-[250px] bg-card/40 rounded-xl border border-dashed border-border/50">
+                        <div className="text-center space-y-2 px-4">
+                            <p className="text-sm font-medium text-muted-foreground">
                                 No hay datos de ingresos en este período
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground/70">
                                 Los ingresos aparecerán aquí cuando se registren ventas
                             </p>
                         </div>

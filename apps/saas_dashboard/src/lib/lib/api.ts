@@ -86,18 +86,11 @@ export async function getPosts(
     return fetchAPI<PaginatedResponse<Post>>(`/blog/posts?${params}`);
 }
 
-export async function getPostBySlug(slug: string): Promise<Post> {
-    return fetchAPI<Post>(`/blog/posts/${slug}`);
-}
+
 
 // Categories
 export async function getCategories(): Promise<Category[]> {
     return fetchAPI<Category[]>('/blog/categories');
-}
-
-// Tags
-export async function getTags(): Promise<Tag[]> {
-    return fetchAPI<Tag[]>('/blog/tags');
 }
 
 // ============ LMS ============
@@ -105,20 +98,6 @@ import { Theme, Course, Lesson } from '@/types/lms';
 
 export async function getThemes(): Promise<Theme[]> {
     return fetchAPI<Theme[]>('/lms/themes');
-}
-
-export async function getThemeBySlug(slug: string): Promise<Theme> {
-    return fetchAPI<Theme>(`/lms/themes/${slug}`);
-}
-
-export async function getCourseBySlug(slug: string): Promise<Course> {
-    return fetchAPI<Course>(`/lms/courses/${slug}`);
-}
-
-export async function getLessonBySlug(courseSlug: string, lessonSlug: string, token?: string): Promise<Lesson> {
-    const headers: any = {};
-    if (token) headers.Authorization = `Bearer ${token}`;
-    return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers });
 }
 
 // ============ SHOP & RESTAURANT ============
@@ -145,18 +124,3 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
         body: JSON.stringify({ status }),
     });
 }
-
-export async function toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean): Promise<any> {
-    return fetchAPI(`/admin/orders/${orderId}/items/${itemId}/prepared`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isPrepared }),
-    });
-}
-
-export async function payOrder(orderId: string, data: { amount: number, method: string, itemIds?: string[], closeOrder?: boolean, reference?: string }): Promise<any> {
-    return fetchAPI(`/admin/orders/${orderId}/pay`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-    });
-}
-

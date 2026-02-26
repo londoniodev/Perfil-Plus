@@ -99,15 +99,64 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
-        source: '/admin/:path*',
-        destination: 'http://localhost:3002/admin/:path*',
+        source: '/dashboard/login',
+        destination: '/login',
+        permanent: true,
+      }
+    ]
+  },
+  async rewrites() {
+    const dashboardUrl = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
+    return [
+      // 1. Rewrite assets del Dashboard
+      {
+        source: '/dashboard/_next/:path*',
+        destination: `${dashboardUrl}/dashboard/_next/:path*`,
+      },
+      // 2. Rewrite de perfiles y vistas standalone del dashboard
+      {
+        source: '/perfil/:path*',
+        destination: `${dashboardUrl}/perfil/:path*`,
       },
       {
-        source: '/admin',
-        destination: 'http://localhost:3002/admin',
+        source: '/perfil',
+        destination: `${dashboardUrl}/perfil`,
+      },
+      {
+        source: '/cursos/:path*',
+        destination: `${dashboardUrl}/cursos/:path*`,
+      },
+      {
+        source: '/compras/:path*',
+        destination: `${dashboardUrl}/compras/:path*`,
+      },
+      {
+        source: '/kitchen/:path*',
+        destination: `${dashboardUrl}/kitchen/:path*`,
+      },
+      {
+        source: '/suscripcion/:path*',
+        destination: `${dashboardUrl}/suscripcion/:path*`,
+      },
+      {
+        source: '/waiter/:path*',
+        destination: `${dashboardUrl}/waiter/:path*`,
+      },
+      {
+        source: '/whatsapp/:path*',
+        destination: `${dashboardUrl}/whatsapp/:path*`,
+      },
+      // 3. Rewrite de todas las vistas del admin
+      {
+        source: '/dashboard/:path*',
+        destination: `${dashboardUrl}/dashboard/:path*`,
+      },
+      {
+        source: '/dashboard',
+        destination: `${dashboardUrl}/dashboard`,
       },
     ]
   },

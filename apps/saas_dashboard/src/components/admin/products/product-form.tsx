@@ -21,7 +21,20 @@ import {
 } from "@alvarosky/ui"
 
 // Local Components & Schema
-import { productSchema, ProductFormValues } from "@/schemas/ecommerce"
+import { productSchema } from "@/schemas/product.schema"
+import * as z from "zod"
+
+export const extendedProductSchema = productSchema.extend({
+    downloadUrl: z.string().optional(),
+    pages: z.number().optional(),
+    format: z.string().optional(),
+    weight: z.string().optional(),
+    dimensions: z.string().optional(),
+    variants: z.array(z.any()).optional(),
+})
+
+export type ProductFormValues = z.infer<typeof extendedProductSchema>
+
 import { ModifierGroupsBuilder } from "./modifier-groups-builder"
 import { CategorySelector } from "./category-selector"
 
@@ -59,7 +72,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
     }
 
     const form = useForm<ProductFormValues>({
-        resolver: zodResolver(productSchema) as any,
+        resolver: zodResolver(extendedProductSchema) as any,
         defaultValues,
     })
 
@@ -123,9 +136,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
                 // Redirect based on type
                 if (data.productType === "RESTAURANT") {
-                    router.push("/admin/restaurant/menu")
+                    router.push("/restaurante/menu")
                 } else {
-                    router.push("/admin/products")
+                    router.push("/tienda/productos")
                 }
                 router.refresh()
             } else {

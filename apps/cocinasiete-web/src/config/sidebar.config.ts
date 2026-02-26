@@ -53,19 +53,19 @@ export const sidebarConfig: SidebarConfig = {
         groups: [
             {
                 title: "Dashboard",
-                href: "/admin",
+                href: "/dashboard",
                 icon: LayoutDashboard,
             },
             {
                 title: "Usuarios",
-                href: "/admin/users",
+                href: "/dashboard/usuarios",
                 icon: Users,
             },
             {
                 title: "CRM",
                 icon: Users,
                 items: [
-                    { title: "Clientes (Leads)", href: "/admin/crm/clientes" },
+                    { title: "Clientes (Leads)", href: "/dashboard/clientes" },
                 ],
             },
 
@@ -73,8 +73,8 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Configuración",
                 icon: Settings,
                 items: [
-                    { title: "General", href: "/admin/settings" },
-                    { title: "Branding", href: "/admin/settings/branding" },
+                    { title: "General", href: "/dashboard/configuracion" },
+                    { title: "Branding", href: "/dashboard/configuracion/branding" },
                 ],
             },
         ],
@@ -90,13 +90,13 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Productos",
                 icon: Package,
                 items: [
-                    { title: "Ver todos", href: "/admin/products" },
-                    { title: "Crear nuevo", href: "/admin/products/new" },
+                    { title: "Ver todos", href: "/dashboard/tienda/productos" },
+                    { title: "Crear nuevo", href: "/dashboard/tienda/productos/nuevo" },
                 ],
             },
             {
                 title: "Pedidos",
-                href: "/admin/orders",
+                href: "/dashboard/tienda/pedidos",
                 icon: ClipboardList,
             },
         ],
@@ -112,8 +112,8 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Publicaciones",
                 icon: FileText,
                 items: [
-                    { title: "Ver todas", href: "/admin/blog" },
-                    { title: "Crear nueva", href: "/admin/blog/nuevo" },
+                    { title: "Ver todas", href: "/dashboard/blog/publicaciones" },
+                    { title: "Crear nueva", href: "/dashboard/blog/publicaciones/nuevo" },
                 ],
             },
         ],
@@ -129,8 +129,8 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Cursos",
                 icon: GraduationCap,
                 items: [
-                    { title: "Ver temas", href: "/admin/cursos" },
-                    { title: "Crear tema", href: "/admin/cursos/temas/nuevo" },
+                    { title: "Ver temas", href: "/dashboard/academia/cursos" },
+                    { title: "Crear tema", href: "/dashboard/academia/cursos/temas/nuevo" },
                 ],
             },
         ],
@@ -143,51 +143,51 @@ export const sidebarConfig: SidebarConfig = {
         groups: [
             {
                 title: "Empleados",
-                href: "/admin/employees",
+                href: "/dashboard/restaurante/empleados",
                 icon: UserCog,
             },
             {
                 title: "Menú",
                 icon: UtensilsCrossed,
                 items: [
-                    { title: "Ver carta", href: "/admin/restaurant/menu" },
-                    { title: "Nuevo plato", href: "/admin/restaurant/menu/new" },
+                    { title: "Ver carta", href: "/dashboard/restaurante/menu" },
+                    { title: "Nuevo plato", href: "/dashboard/restaurante/menu/nuevo" },
                 ],
             },
             {
                 title: "Comandas",
-                href: "/admin/restaurant/orders",
+                href: "/dashboard/restaurante/comandas",
                 icon: ChefHat,
             },
             {
                 title: "Caja",
-                href: "/admin/restaurant/cashier",
+                href: "/dashboard/restaurante/caja",
                 icon: DollarSign,
             },
             {
                 title: "Punto de Venta (POS)",
-                href: "/admin/restaurant/pos",
+                href: "/dashboard/restaurante/pos",
                 icon: ClipboardList,
             },
             {
                 title: "Cocina (KDS Exclusivo)",
-                href: "/kitchen",
+                href: "/dashboard/restaurante/cocina",
                 icon: ChefHat,
             },
             {
                 title: "Mesero (Pedidos)",
                 icon: ClipboardList,
                 items: [
-                    { title: "Activas", href: "/waiter?tab=active" },
-                    { title: "Pendientes", href: "/waiter?tab=pending" },
-                    { title: "En Cocina", href: "/waiter?tab=kitchen" },
-                    { title: "Listas", href: "/waiter?tab=ready" },
-                    { title: "Historial", href: "/waiter?tab=history" },
+                    { title: "Activas", href: "/dashboard/restaurante/mesero?tab=active" },
+                    { title: "Pendientes", href: "/dashboard/restaurante/mesero?tab=pending" },
+                    { title: "En Cocina", href: "/dashboard/restaurante/mesero?tab=kitchen" },
+                    { title: "Listas", href: "/dashboard/restaurante/mesero?tab=ready" },
+                    { title: "Historial", href: "/dashboard/restaurante/mesero?tab=history" },
                 ]
             },
             {
                 title: "Mesas",
-                href: "/admin/restaurant/tables",
+                href: "/dashboard/restaurante/mesas",
                 icon: QrCode,
             },
         ],
@@ -238,11 +238,11 @@ export function getStaffSections(role: UserRole, features: FeatureKey[]): Sideba
                         title: "Pedidos",
                         icon: ClipboardList,
                         items: [
-                            { title: "Activas", href: "/waiter?tab=active" },
-                            { title: "Pendientes", href: "/waiter?tab=pending" },
-                            { title: "En Cocina", href: "/waiter?tab=kitchen" },
-                            { title: "Listas", href: "/waiter?tab=ready" },
-                            { title: "Historial", href: "/waiter?tab=history" },
+                            { title: "Activas", href: "/dashboard/restaurante/mesero?tab=active" },
+                            { title: "Pendientes", href: "/dashboard/restaurante/mesero?tab=pending" },
+                            { title: "En Cocina", href: "/dashboard/restaurante/mesero?tab=kitchen" },
+                            { title: "Listas", href: "/dashboard/restaurante/mesero?tab=ready" },
+                            { title: "Historial", href: "/dashboard/restaurante/mesero?tab=history" },
                         ],
                     },
                 ],
@@ -254,7 +254,7 @@ export function getStaffSections(role: UserRole, features: FeatureKey[]): Sideba
                 groups: [
                     {
                         title: "Comandas",
-                        href: "/admin/restaurant/orders",
+                        href: "/dashboard/restaurante/comandas",
                         icon: ChefHat,
                     },
                 ],
@@ -266,25 +266,25 @@ export function getStaffSections(role: UserRole, features: FeatureKey[]): Sideba
                 groups: [
                     {
                         title: "Caja",
-                        href: "/admin/restaurant/cashier",
+                        href: "/dashboard/restaurante/caja",
                         icon: DollarSign,
                     },
                     {
                         title: "Punto de Venta (POS)",
-                        href: "/admin/restaurant/pos",
+                        href: "/dashboard/restaurante/pos",
                         icon: ClipboardList,
                     },
                     {
                         title: "Mesas",
-                        href: "/admin/restaurant/tables",
+                        href: "/dashboard/restaurante/mesas",
                         icon: QrCode,
                     },
                     {
                         title: "Menú",
                         icon: UtensilsCrossed,
                         items: [
-                            { title: "Ver carta", href: "/admin/restaurant/menu" },
-                            { title: "Nuevo plato", href: "/admin/restaurant/menu/new" },
+                            { title: "Ver carta", href: "/dashboard/restaurante/menu" },
+                            { title: "Nuevo plato", href: "/dashboard/restaurante/menu/nuevo" },
                         ],
                     },
                 ],

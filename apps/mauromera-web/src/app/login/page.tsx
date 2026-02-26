@@ -61,7 +61,7 @@ function LoginForm() {
     }
 
     if (user) {
-      router.push("/perfil");
+      window.location.href = "/perfil";
     }
   }, [router, searchParams]);
 
@@ -111,9 +111,9 @@ function LoginForm() {
 
       const redirect = searchParams.get("redirect");
       if (redirect) {
-        router.push(redirect);
+        window.location.href = redirect;
       } else {
-        router.push("/perfil");
+        window.location.href = "/dashboard";
       }
     } catch (err: any) {
       toast.error(err.message);

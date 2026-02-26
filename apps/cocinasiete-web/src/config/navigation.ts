@@ -29,9 +29,9 @@ export const NAVIGATION_CONFIG: {
     ],
     admin: [
         { name: "Dashboard", href: "/perfil", icon: IconHome },
-        { name: "Gestionar Formación", href: "/admin/cursos", icon: IconEdit, feature: 'lms' },
-        { name: "Gestionar Blog", href: "/admin/blog", icon: IconDocument, feature: 'blog' },
-        { name: "Gestión de Productos", href: "/admin/products", icon: IconGrid, feature: 'shop' },
-        { name: "Usuarios", href: "/admin/usuarios", icon: IconUsers }, // Core admin feature
+        { name: "Gestionar Formación", href: "/dashboard/academia/cursos", icon: IconEdit, feature: 'lms' },
+        { name: "Gestionar Blog", href: "/dashboard/blog/publicaciones", icon: IconDocument, feature: 'blog' },
+        { name: "Gestión de Productos", href: "/dashboard/tienda/productos", icon: IconGrid, feature: 'shop' },
+        { name: "Usuarios", href: "/dashboard/usuarios", icon: IconUsers }, // Core admin feature
     ]
 };

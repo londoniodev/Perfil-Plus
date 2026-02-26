@@ -15,7 +15,7 @@ export function NavigationWrapper({ children, footer, tenantName, logoUrl }: Nav
 
     // Rutas que usan el Layout del Dashboard (Sidebar/BottomNav) y NO deben tener Header/Footer
     const isDashboard = pathname?.startsWith("/perfil") ||
-        pathname?.startsWith("/admin") ||
+        pathname?.startsWith("/dashboard") ||
         pathname?.includes("/mis-compras") ||
         pathname?.startsWith("/formacion") || // Mis Cursos (LMS)
         pathname?.startsWith("/suscripcion") ||

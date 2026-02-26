@@ -1,0 +1,213 @@
+﻿\next.config.ts:165 - default
+\tailwind.config.ts:33 - default
+\src\proxy.ts:22 - proxy
+\src\proxy.ts:101 - config
+\src\actions\pos.ts:39 - getPOSProducts
+\src\actions\pos.ts:87 - createPOSOrder
+\src\actions\pos.ts:9 - POSProduct
+\src\app\error.tsx:6 - default
+\src\app\layout.tsx:63 - generateMetadata
+\src\app\layout.tsx:130 - default
+\src\app\layout.tsx:122 - viewport
+\src\app\loading.tsx:4 - default
+\src\app\manifest.ts:4 - default
+\src\app\not-found.tsx:4 - default
+\src\app\opengraph-image.tsx:14 - default
+\src\app\opengraph-image.tsx:4 - runtime
+\src\app\opengraph-image.tsx:6 - alt
+\src\app\opengraph-image.tsx:7 - size (used in module)
+\src\app\opengraph-image.tsx:12 - contentType
+\src\app\robots.ts:5 - default
+\src\app\sitemap.ts:58 - default
+\src\config\brand.ts:1 - BrandConfig (used in module)
+\src\config\navigation.ts:11 - NavItem (used in module)
+\src\config\navigation.ts:20 - NAVIGATION_CONFIG
+\src\config\sidebar.config.ts:30 - SidebarNavItem
+\src\config\sidebar.config.ts:31 - SidebarNavGroup
+\src\config\sidebar.config.ts:32 - SidebarFeatureSection (used in module)
+\src\config\sidebar.config.ts:36 - SidebarConfig (used in module)
+\src\config\sidebar.config.ts:47 - sidebarConfig (used in module)
+\src\constants\casosData.ts:8 - casos
+\src\context\AuthContext.tsx:75 - AuthProvider
+\src\context\DashboardContext.tsx:16 - DashboardProvider
+\src\hooks\index.ts:7 - useMobile
+\src\hooks\index.ts:8 - useScroll
+\src\hooks\index.ts:11 - useAuth
+\src\hooks\index.ts:14 - useCourses
+\src\hooks\index.ts:15 - useBlog
+\src\hooks\index.ts:16 - useCategories
+\src\hooks\index.ts:17 - useUsers
+\src\hooks\use-categories.ts:7 - Category (used in module)
+\src\hooks\use-order-events.ts:6 - OrderEvent (used in module)
+\src\lib\api.ts:99 - getTags
+\src\lib\api.ts:110 - getThemeBySlug
+\src\lib\api.ts:114 - getCourseBySlug
+\src\lib\api.ts:118 - getLessonBySlug
+\src\lib\api.ts:149 - toggleItemPrepared
+\src\lib\api.ts:156 - payOrder
+\src\lib\config-server.ts:28 - getServerApiHeaders
+\src\lib\config.ts:25 - getApiHeaders
+\src\lib\sanitize.ts:34 - sanitizeHtmlStrict
+\src\schemas\index.ts:8 - LoginSchema
+\src\schemas\index.ts:9 - RegisterSchema
+\src\schemas\index.ts:10 - ForgotPasswordSchema
+\src\schemas\index.ts:11 - ResetPasswordSchema
+\src\schemas\index.ts:12 - LoginValues
+\src\schemas\index.ts:13 - RegisterValues
+\src\schemas\index.ts:14 - ForgotPasswordValues
+\src\schemas\index.ts:15 - ResetPasswordValues
+\src\schemas\index.ts:20 - ThemeSchema
+\src\schemas\index.ts:21 - CourseSchema
+\src\schemas\index.ts:22 - LessonSchema
+\src\schemas\index.ts:23 - EvaluationSchema
+\src\schemas\index.ts:24 - QuestionSchema
+\src\schemas\index.ts:25 - ThemeValues
+\src\schemas\index.ts:26 - CourseValues
+\src\schemas\index.ts:27 - LessonValues
+\src\schemas\index.ts:28 - EvaluationValues
+\src\schemas\index.ts:29 - QuestionValues
+\src\store\use-cart.ts:4 - CartItem (used in module)
+\src\types\auth.ts:2 - StaffRole (used in module)
+\src\types\blog.ts:44 - Attachment (used in module)
+\src\types\ecommerce.ts:1 - Ebook
+\src\types\ecommerce.ts:14 - Purchase
+\src\types\lms.ts:54 - Evaluation
+\src\types\lms.ts:67 - Question (used in module)
+\src\types\lms.ts:74 - EvaluationResult
+\src\types\lms.ts:90 - CourseProgress
+\src\types\marketing.ts:20 - Testimonial
+\src\types\marketing.ts:28 - Service
+\src\types\restaurant.ts:2 - OrderType (used in module)
+\src\types\restaurant.ts:4 - Modifier
+\src\types\restaurant.ts:11 - OrderItem (used in module)
+\src\types\waiter.ts:18 - WaiterOrderItem (used in module)
+\src\actions\admin\dashboard.ts:34 - getDashboardStats
+\src\actions\admin\dashboard.ts:6 - DashboardStats (used in module)
+\src\actions\admin\reports.ts:18 - getZReport
+\src\actions\admin\reports.ts:7 - ZReport (used in module)
+\src\actions\admin\tables.ts:28 - getTables
+\src\actions\admin\tables.ts:38 - upsertTable
+\src\actions\admin\tables.ts:85 - deleteTable
+\src\actions\admin\toggle-product-availability.ts:7 - toggleProductAvailability
+\src\actions\admin\update-order-status.ts:33 - updateOrderStatus
+\src\actions\shop\create-order.ts:22 - createOrder
+\src\app\(marketing)\page.tsx:9 - default
+\src\app\(public)\layout.tsx:1 - default
+\src\app\(standalone)\layout.tsx:8 - default
+\src\app\(standalone)\layout.tsx:3 - metadata
+\src\components\cursos\index.ts:1 - CursosHero
+\src\components\cursos\index.ts:2 - CursosCategorias
+\src\components\cursos\index.ts:3 - CursosPopulares
+\src\components\cursos\index.ts:4 - CursosNuevos
+\src\components\cursos\index.ts:5 - CursosEmpty
+\src\components\dashboard\revenue-chart.tsx:31 - RevenueChart
+\src\components\dashboard\stats-card.tsx:12 - StatsCard
+\src\components\kitchen\KitchenClient.tsx:111 - KitchenClient
+\src\components\landing\index.ts:1 - LandingHero
+\src\components\landing\index.ts:2 - LandingPlanes
+\src\components\landing\index.ts:3 - LandingTestimonios
+\src\components\landing\index.ts:4 - LandingAbout
+\src\components\landing\index.ts:5 - LandingCTABottom
+\src\components\landing\LandingNav.tsx:3 - LandingNav
+\src\components\layout\breadcrumb-setter.tsx:11 - BreadcrumbSetter
+\src\components\layout\DashboardShell.tsx:18 - DashboardShell
+\src\components\layout\FormLayout.tsx:42 - FormLayout
+\src\components\layout\index.tsx:2 - Header
+\src\components\layout\index.tsx:3 - Footer
+\src\components\layout\index.tsx:4 - NavigationWrapper
+\src\components\layout\index.tsx:5 - ProfileCarousel
+\src\components\lead-form\index.ts:1 - LeadForm
+\src\components\portfolio\CaseVisual.tsx:11 - CaseVisual
+\src\components\providers\brand-provider.tsx:7 - BrandProvider
+\src\components\sections\index.tsx:2 - HeroSection
+\src\components\sections\index.tsx:3 - ClientsCarouselSection
+\src\components\sections\index.tsx:4 - AreasImpactoSection
+\src\components\sections\index.tsx:5 - AboutSection
+\src\components\sections\index.tsx:6 - PropuestaSection
+\src\components\sections\index.tsx:7 - ServiciosSection
+\src\components\sections\index.tsx:8 - MetodoSection
+\src\components\sections\index.tsx:9 - TestimoniosSection
+\src\components\sections\index.tsx:10 - CTASection
+\src\components\seo\JsonLd.tsx:10 - PersonSchema (used in module)
+\src\components\seo\JsonLd.tsx:32 - OrganizationSchema (used in module)
+\src\components\seo\JsonLd.tsx:77 - WebSiteSchema (used in module)
+\src\components\seo\JsonLd.tsx:128 - BreadcrumbSchema
+\src\components\seo\JsonLd.tsx:164 - ServiceSchema
+\src\components\seo\JsonLd.tsx:199 - ServicesPageSchema
+\src\components\seo\JsonLd.tsx:259 - CourseSchema
+\src\components\seo\JsonLd.tsx:314 - ProductSchema
+\src\components\seo\JsonLd.tsx:369 - FAQSchema
+\src\components\seo\JsonLd.tsx:401 - VideoSchema
+\src\components\seo\JsonLd.tsx:443 - CollectionPageSchema
+\src\components\seo\JsonLd.tsx:489 - generatePaginationLinks
+\src\components\seo\JsonLd.tsx:152 - ServiceSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:244 - CourseSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:303 - ProductSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:364 - FAQItem (used in module)
+\src\components\seo\JsonLd.tsx:391 - VideoSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:436 - CollectionPageSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:483 - PaginationSchemaProps (used in module)
+\src\components\servicios\ServicesSelector.tsx:314 - ServicesSelector
+\src\components\settings\BrandingForm.tsx:107 - BrandingForm
+\src\components\ui\card.tsx:79 - Card (used in module)
+\src\components\ui\card.tsx:79 - CardHeader (used in module)
+\src\components\ui\card.tsx:79 - CardFooter (used in module)
+\src\components\ui\card.tsx:79 - CardTitle (used in module)
+\src\components\ui\card.tsx:79 - CardDescription (used in module)
+\src\components\ui\card.tsx:79 - CardContent (used in module)
+\src\components\ui\chart.tsx:366 - ChartLegend (used in module)
+\src\components\ui\chart.tsx:367 - ChartLegendContent (used in module)
+\src\components\ui\chart.tsx:368 - ChartStyle (used in module)
+\src\components\users\columns.tsx:52 - createUserColumns
+\src\components\users\columns.tsx:41 - UserTableActions (used in module)
+\src\components\users\users-table.tsx:303 - UsersTable
+\src\components\users\users-table.tsx:62 - User (used in module)
+\src\components\waiter\OrderList.tsx:12 - OrderList
+\src\components\waiter\WaiterClient.tsx:121 - WaiterClient
+\src\app\(marketing)\blog\BlogBreadcrumbs.tsx:5 - BlogBreadcrumbs
+\src\app\(marketing)\blog\page.tsx:18 - default
+\src\app\(marketing)\blog\page.tsx:8 - metadata
+\src\app\(marketing)\checkout\page.tsx:4 - default
+\src\app\(marketing)\cursos\page.tsx:36 - default
+\src\app\(marketing)\cursos\page.tsx:12 - metadata
+\src\app\(marketing)\cursos\page.tsx:18 - dynamic
+\src\app\(marketing)\empresas\page.tsx:8 - default
+\src\app\(marketing)\empresas\page.tsx:3 - metadata
+\src\app\(marketing)\formacion\page.tsx:35 - default
+\src\app\(marketing)\formacion\page.tsx:11 - metadata
+\src\app\(marketing)\formacion\page.tsx:17 - dynamic
+\src\app\(marketing)\login\page.tsx:216 - default
+\src\app\(marketing)\order-confirmation\page.tsx:41 - default
+\src\app\(marketing)\politica-de-privacidad\page.tsx:15 - default
+\src\app\(marketing)\politica-de-privacidad\page.tsx:3 - metadata
+\src\app\(marketing)\registro\page.tsx:20 - default
+\src\app\(marketing)\tienda\page.tsx:3 - default
+\src\app\(marketing)\verificar-email\page.tsx:238 - default
+\src\app\(public)\menu\page.tsx:5 - default
+\src\components\admin\blog\AttachmentManager.tsx:13 - default
+\src\components\admin\blog\PostForm.tsx:36 - default
+\src\components\admin\blog\PostsGrid.tsx:14 - default
+\src\components\admin\blog\PostsTable.tsx:14 - default
+\src\components\admin\lms\CourseForm.tsx:57 - default
+\src\components\admin\lms\QuestionEditor.tsx:13 - default
+\src\components\admin\products\product-form.tsx:32 - ProductForm
+\src\components\admin\restaurant\table-card.tsx:34 - TableCard
+\src\components\admin\restaurant\table-card.tsx:16 - TableData (used in module)
+\src\components\admin\settings\settings-form.tsx:87 - SettingsForm
+\src\app\(marketing)\auth\forgot-password\page.tsx:23 - default
+\src\app\(marketing)\auth\reset-password\page.tsx:219 - default
+\src\app\(marketing)\blog\[slug]\not-found.tsx:4 - default
+\src\app\(marketing)\blog\[slug]\opengraph-image.tsx:18 - default
+\src\app\(marketing)\blog\[slug]\opengraph-image.tsx:4 - runtime
+\src\app\(marketing)\blog\[slug]\opengraph-image.tsx:6 - alt
+\src\app\(marketing)\blog\[slug]\opengraph-image.tsx:7 - size (used in module)
+\src\app\(marketing)\blog\[slug]\opengraph-image.tsx:12 - contentType
+\src\app\(marketing)\blog\[slug]\page.tsx:15 - generateMetadata
+\src\app\(marketing)\blog\[slug]\page.tsx:62 - default
+\src\app\(marketing)\mi_pedido\[id]\page.tsx:9 - default
+\src\app\(marketing)\mi_pedido\[id]\page.tsx:4 - metadata
+\src\app\(marketing)\tienda\[slug]\page.tsx:10 - default
+\src\app\(marketing)\tienda\status\page.tsx:70 - default
+\src\app\(public)\[slug]\menu\page.tsx:7 - default
+\src\app\(standalone)\viewer\[id]\page.tsx:13 - default
+\src\app\api\products\[id]\route.ts:6 - DELETE

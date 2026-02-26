@@ -70,7 +70,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
-  basePath: '/admin',
+  basePath: '/dashboard',
   output: "standalone",
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   poweredByHeader: false,
@@ -80,6 +80,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
       },
       {
         protocol: "https",

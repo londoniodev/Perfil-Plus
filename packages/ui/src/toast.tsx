@@ -155,33 +155,34 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         ),
     };
 
-    const typeStyles = {
-        success: "border-l-success bg-background/95 text-foreground border border-border shadow-lg",
-        error: "border-l-destructive bg-destructive/10 text-destructive border-destructive/20 border shadow-lg",
-        warning: "border-l-yellow-500 bg-yellow-500/10 text-yellow-500 border-yellow-500/20 border shadow-lg",
-        info: "border-l-blue-500 bg-blue-500/10 text-blue-500 border-blue-500/20 border shadow-lg"
-    };
-
     const iconStyles = {
-        success: "text-success",
-        error: "text-destructive",
+        success: "text-green-500",
+        error: "text-red-500",
         warning: "text-yellow-500",
         info: "text-blue-500"
     };
 
     return (
         <div className={`
-            pointer-events-auto flex w-full items-start gap-3 rounded-lg p-4 pr-8 
-            transition-all duration-300 animate-in slide-in-from-right-full border-l-4 
-            backdrop-blur-sm
-            ${typeStyles[toast.type]}
+            relative overflow-hidden pointer-events-auto flex w-full items-start gap-3 rounded-2xl p-4 pr-10 
+            transition-all duration-400 ease-out animate-in slide-in-from-top-4 md:slide-in-from-right-full 
+            border border-border/30 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]
+            bg-background/70 dark:bg-card/50
         `}>
-            <div className={`h-5 w-5 mt-0.5 shrink-0 ${iconStyles[toast.type]}`}>
+            {/* Tinte decorativo sutil en el borde izquierdo */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl opacity-80
+                ${toast.type === 'success' ? 'bg-green-500' : ''}
+                ${toast.type === 'error' ? 'bg-red-500' : ''}
+                ${toast.type === 'warning' ? 'bg-yellow-500' : ''}
+                ${toast.type === 'info' ? 'bg-blue-500' : ''}
+            `} />
+
+            <div className={`h-5 w-5 mt-0.5 shrink-0 ml-1 ${iconStyles[toast.type]}`}>
                 {iconMap[toast.type]}
             </div>
             <div className="flex-1 grid gap-1">
-                {toast.title && <div className="font-semibold text-sm">{toast.title}</div>}
-                <div className="text-sm opacity-90">{toast.message}</div>
+                {toast.title && <div className="font-semibold text-sm tracking-tight">{toast.title}</div>}
+                <div className="text-sm text-foreground/80 leading-snug">{toast.message}</div>
             </div>
             <button
                 className="absolute right-2 top-2 rounded-md p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"

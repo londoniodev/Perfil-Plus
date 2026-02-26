@@ -103,10 +103,10 @@ export default function RegisterPage() {
 
     return (
         <AuthLayout>
-            <Card className="w-full border-none shadow-none bg-transparent p-0">
+            <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
                 <CardHeader className="text-center px-0 pt-0">
                     <CardTitle className="heading-h2 mb-2"></CardTitle>
-                    <CardDescription className="text-body">
+                    <CardDescription className="text-slate-500">
                     </CardDescription>
                 </CardHeader>
 
@@ -123,6 +123,7 @@ export default function RegisterPage() {
                                 required
                                 placeholder="Tu nombre"
                                 minLength={2}
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                             />
                         </div>
 
@@ -136,6 +137,7 @@ export default function RegisterPage() {
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 required
                                 placeholder="tucorreo@ejemplo.com"
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                             />
                         </div>
 
@@ -150,6 +152,7 @@ export default function RegisterPage() {
                                 required
                                 placeholder="Mínimo 8 caracteres"
                                 minLength={8}
+                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                             />
                         </div>
 

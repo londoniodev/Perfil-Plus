@@ -95,14 +95,15 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
+    const dashboardUrl = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
     return [
       {
-        source: '/admin/:path*',
-        destination: 'http://localhost:3002/admin/:path*',
+        source: '/dashboard/:path*',
+        destination: `${dashboardUrl}/dashboard/:path*`,
       },
       {
-        source: '/admin',
-        destination: 'http://localhost:3002/admin',
+        source: '/dashboard',
+        destination: `${dashboardUrl}/dashboard`,
       },
     ]
   },

@@ -22,7 +22,8 @@
         --secondary-foreground: 240 5.9% 10%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 240 4.8% 95.9%;
+        --accent: 220 14% 94%;
+        /* Slightly darker than background for contrast */
         --accent-foreground: 240 5.9% 10%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
@@ -50,27 +51,29 @@
     }
 
     .dark {
-        /* Dark Mode (Zinc) - With Depth */
-        --background: 240 5.9% 10%;
+        /* Dark Mode (Zinc) - Premium Depth */
+        --background: 240 10% 4%;
+        /* Deep dark base */
         --foreground: 0 0% 98%;
-        --card: 240 5.9% 13%;
+        --card: 240 6% 10%;
+        /* Cards slightly elevated */
         --card-foreground: 0 0% 98%;
-        --popover: 240 5.9% 13%;
+        --popover: 240 6% 10%;
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;
         --primary-foreground: 240 5.9% 10%;
-        --secondary: 240 3.7% 15.9%;
+        --secondary: 240 3.7% 16%;
         --secondary-foreground: 0 0% 98%;
-        --muted: 240 3.7% 15.9%;
+        --muted: 240 3.7% 16%;
         --muted-foreground: 240 5% 64.9%;
-        --accent: 240 3.7% 15.9%;
+        --accent: 240 3.7% 16%;
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
 
-        /* CRITICAL: Subtle borders (NOT white/bright) */
-        --border: 240 3.7% 20%;
-        --input: 240 3.7% 20%;
+        /* CRITICAL: Subtle borders */
+        --border: 240 4% 16%;
+        --input: 240 4% 16%;
         --ring: 240 4.9% 83.9%;
 
         /* Chart Colors (Dark Mode) */
@@ -81,7 +84,8 @@
         --chart-5: 340 75% 55%;
 
         /* Sidebar Variables (Dark Mode) */
-        --sidebar-background: 240 5.9% 10%;
+        --sidebar-background: 240 5% 10%;
+        /* #18181b - Very Dark Gray (Darker than main bg) */
         --sidebar-foreground: 240 4.8% 95.9%;
         --sidebar-primary: 224.3 76.3% 48%;
         --sidebar-primary-foreground: 0 0% 100%;
@@ -112,6 +116,25 @@
         letter-spacing: -0.01em;
         color: var(--foreground);
         line-height: 1.2;
+    }
+
+    /* Premium Custom Scrollbars */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: hsl(var(--muted-foreground) / 0.3);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--muted-foreground) / 0.5);
     }
 }
 
@@ -147,7 +170,29 @@
     }
 
     50% {
-        transform: translateY(-15px);
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes aurora-bg {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
     }
 }
 

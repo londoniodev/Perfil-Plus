@@ -13,7 +13,7 @@ import { IconBack } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
 import { Textarea } from "@alvarosky/ui"; // Need to ensure Textarea exists, or use native with class
-import { Button } from "@alvarosky/ui";
+import { Button, AdminPageWrapper } from "@alvarosky/ui";
 import { Card, CardContent } from "@alvarosky/ui"; // Use shadcn Card if available or div
 import { Label } from "@alvarosky/ui";
 import { Switch } from "@alvarosky/ui"; // Recommended replacement for ToggleButton
@@ -158,7 +158,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
             }
 
             toast.success(mode === "create" ? "Post creado correctamente" : "Post actualizado correctamente");
-            router.push("/admin/blog");
+            router.push("/blog/publicaciones");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error desconocido");
         } finally {
@@ -170,19 +170,16 @@ export default function PostForm({ mode, postId }: PostFormProps) {
     if (!isAdmin) return null;
 
     return (
-        <div className="max-w-5xl mx-auto py-6 space-y-8">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" onClick={() => router.push("/admin/blog")} className="gap-2">
-                        <IconBack className="h-4 w-4" />
-                        Volver
-                    </Button>
-                    <h1 className="text-2xl font-bold tracking-tight">
-                        {mode === "create" ? "Nuevo Post" : "Editar Post"}
-                    </h1>
-                </div>
-            </div>
-
+        <AdminPageWrapper
+            title={mode === "create" ? "Nuevo Post" : "Editar Post"}
+            className="max-w-5xl mx-auto py-6 space-y-8"
+            actions={
+                <Button variant="ghost" onClick={() => router.push("/blog/publicaciones")} className="gap-2">
+                    <IconBack className="h-4 w-4" />
+                    Volver
+                </Button>
+            }
+        >
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid gap-6">
                     <div className="space-y-2">
@@ -293,7 +290,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-                        <Button type="button" variant="outline" onClick={() => router.push("/admin/blog")} className="w-full sm:w-auto">
+                        <Button type="button" variant="outline" onClick={() => router.push("/blog/publicaciones")} className="w-full sm:w-auto">
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={saving} className="w-full sm:w-auto">
@@ -302,7 +299,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                     </div>
                 </div>
             </form>
-        </div>
+        </AdminPageWrapper>
     );
 }
 

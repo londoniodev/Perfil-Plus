@@ -33,7 +33,7 @@ export function BottomNav() {
     ];
 
     const adminNavItems = [
-        { name: "Inicio", href: "/admin", icon: <IconHome size={24} /> },
+        { name: "Inicio", href: "/dashboard", icon: <IconHome size={24} /> },
         { name: "Cursos", href: "/admin/cursos", icon: <IconEdit size={24} /> },
         { name: "Blog", href: "/admin/blog", icon: <IconDocument size={24} /> },
         { name: "Más", href: "#", icon: <IconMenu size={24} />, action: () => setIsMenuOpen(!isMenuOpen) },

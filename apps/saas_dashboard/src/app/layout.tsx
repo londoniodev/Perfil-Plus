@@ -1,3 +1,4 @@
+import "@/styles/index.css";
 import { DashboardSidebar } from "@/components/layout/DashboardSidebar";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { AuthProvider } from "@/context/AuthContext";
@@ -6,7 +7,9 @@ import {
     AdminHeader,
     SidebarInset,
     SidebarProvider,
-    BrandProvider
+    BrandProvider,
+    ToastProvider,
+    getFontVariables
 } from "@alvarosky/ui";
 import { serverFetch } from "@/lib/api-server";
 
@@ -30,6 +33,8 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth-server";
 import { cookies } from "next/headers";
 import type { FeatureKey } from "@/config/sidebar.config";
+
+import { ThemeProvider } from "./providers";
 
 export default async function DashboardLayout({
     children,
@@ -57,19 +62,35 @@ export default async function DashboardLayout({
     }).filter((f: string): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
 
     return (
-        <AuthProvider>
-            <DashboardProvider>
-                <BrandProvider settings={design as any}>
-                    <DashboardShell
-                        features={features}
-                        tenantName={tenantName}
-                        defaultOpen={defaultOpen}
-                        appName={tenantName}
-                    >
-                        {children}
-                    </DashboardShell>
-                </BrandProvider>
-            </DashboardProvider>
-        </AuthProvider>
+        <html lang="es" suppressHydrationWarning>
+            <head>
+                <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+                <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+            </head>
+            <body className={`${getFontVariables()} font-sans antialiased`}>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="light"
+                    enableSystem={true}
+                >
+                    <AuthProvider>
+                        <DashboardProvider>
+                            <BrandProvider settings={design as any}>
+                                <ToastProvider>
+                                    <DashboardShell
+                                        features={features}
+                                        tenantName={tenantName}
+                                        defaultOpen={defaultOpen}
+                                        appName={tenantName}
+                                    >
+                                        {children}
+                                    </DashboardShell>
+                                </ToastProvider>
+                            </BrandProvider>
+                        </DashboardProvider>
+                    </AuthProvider>
+                </ThemeProvider>
+            </body>
+        </html>
     );
 }

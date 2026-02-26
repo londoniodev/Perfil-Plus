@@ -46,7 +46,7 @@ export function PostsGrid({
             {posts.map((post) => (
                 <div
                     key={post.id}
-                    className="group relative flex flex-col bg-card rounded-lg border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                    className="group relative flex flex-col bg-card/60 backdrop-blur-xl border border-border/40 rounded-xl shadow-sm overflow-hidden hover:shadow-md hover:border-border/60 hover:-translate-y-1 transition-all duration-300"
                 >
                     {/* Full Width Image Header */}
                     <div className="relative w-full aspect-video overflow-hidden bg-muted">

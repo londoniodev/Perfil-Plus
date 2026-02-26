@@ -41,8 +41,6 @@ export * from "./toast";
 export * from "./icons";
 
 // Data Display
-// Legacy DataTable (basic)
-export { DataTable as DataTableSimple } from "./data-table";
 // Enhanced DataTable components with pagination, sorting, etc.
 export {
     DataTable,

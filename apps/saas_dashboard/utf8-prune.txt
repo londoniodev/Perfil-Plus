@@ -1,0 +1,240 @@
+﻿\next.config.ts:105 - default
+\tailwind.config.ts:15 - default
+\.next\types\routes.d.ts:59 - ParamsOf
+\.next\types\routes.d.ts:66 - PageRoutes (used in module)
+\.next\types\routes.d.ts:66 - RedirectRoutes (used in module)
+\.next\types\routes.d.ts:66 - RewriteRoutes (used in module)
+\src\app\layout.tsx:39 - default
+\src\app\loading.tsx:3 - default
+\src\config\brand.ts:1 - BrandConfig (used in module)
+\src\config\navigation.ts:11 - NavItem (used in module)
+\src\config\navigation.ts:20 - NAVIGATION_CONFIG
+\src\config\sidebar.config.ts:30 - SidebarNavItem
+\src\config\sidebar.config.ts:31 - SidebarNavGroup
+\src\config\sidebar.config.ts:32 - SidebarFeatureSection (used in module)
+\src\config\sidebar.config.ts:36 - SidebarConfig (used in module)
+\src\config\sidebar.config.ts:47 - sidebarConfig (used in module)
+\src\hooks\index.ts:7 - useMobile
+\src\hooks\index.ts:8 - useScroll
+\src\hooks\index.ts:11 - useAuth
+\src\hooks\index.ts:14 - useCourses
+\src\hooks\index.ts:15 - useBlog
+\src\hooks\index.ts:16 - useCategories
+\src\hooks\index.ts:17 - useUsers
+\src\hooks\use-categories.ts:7 - Category (used in module)
+\src\hooks\use-order-events.ts:6 - OrderEvent (used in module)
+\src\lib\api.ts:89 - getPostBySlug
+\src\lib\api.ts:99 - getTags
+\src\lib\api.ts:118 - getLessonBySlug
+\src\lib\api.ts:149 - toggleItemPrepared
+\src\lib\config-server.ts:28 - getServerApiHeaders
+\src\lib\config.ts:25 - getApiHeaders
+\src\lib\sanitize.ts:34 - sanitizeHtmlStrict
+\src\schemas\ecommerce.ts:3 - productSchema (used in module)
+\src\schemas\lms.ts:6 - ThemeSchema (used in module)
+\src\schemas\lms.ts:14 - ThemeValues
+\src\schemas\lms.ts:36 - LessonSchema (used in module)
+\src\schemas\lms.ts:48 - LessonValues
+\src\schemas\lms.ts:53 - EvaluationSchema (used in module)
+\src\schemas\lms.ts:59 - EvaluationValues
+\src\schemas\lms.ts:64 - QuestionSchema (used in module)
+\src\schemas\lms.ts:71 - QuestionValues
+\src\store\use-cart.ts:4 - CartItem (used in module)
+\src\types\auth.ts:2 - StaffRole (used in module)
+\src\types\blog.ts:44 - Attachment (used in module)
+\src\types\ecommerce.ts:1 - Ebook
+\src\types\ecommerce.ts:14 - Purchase
+\src\types\lms.ts:54 - Evaluation
+\src\types\lms.ts:67 - Question (used in module)
+\src\types\lms.ts:74 - EvaluationResult
+\src\types\lms.ts:90 - CourseProgress
+\src\types\restaurant.ts:2 - OrderType (used in module)
+\src\types\restaurant.ts:4 - Modifier
+\src\types\waiter.ts:18 - WaiterOrderItem (used in module)
+\src\actions\shop\create-order.ts:22 - createOrder
+\src\components\auth\AuthLayout.tsx:12 - AuthLayout
+\src\components\cursos\index.ts:1 - CursosHero
+\src\components\cursos\index.ts:2 - CursosCategorias
+\src\components\cursos\index.ts:3 - CursosPopulares
+\src\components\cursos\index.ts:4 - CursosNuevos
+\src\components\cursos\index.ts:5 - CursosEmpty
+\src\components\landing\index.ts:1 - LandingHero
+\src\components\landing\index.ts:2 - LandingPlanes
+\src\components\landing\index.ts:3 - LandingTestimonios
+\src\components\landing\index.ts:4 - LandingAbout
+\src\components\landing\index.ts:5 - LandingCTABottom
+\src\components\landing\LandingNav.tsx:3 - LandingNav
+\src\components\layout\FormLayout.tsx:42 - FormLayout
+\src\components\layout\index.tsx:2 - Header
+\src\components\layout\index.tsx:3 - Footer
+\src\components\layout\index.tsx:4 - NavigationWrapper
+\src\components\layout\index.tsx:5 - ProfileCarousel
+\src\components\lead-form\index.ts:1 - LeadForm
+\src\components\menu\MenuClient.tsx:32 - default
+\src\components\portfolio\CaseVisual.tsx:11 - CaseVisual
+\src\components\providers\brand-provider.tsx:7 - BrandProvider
+\src\components\sections\index.tsx:2 - HeroSection
+\src\components\sections\index.tsx:3 - ClientsCarouselSection
+\src\components\sections\index.tsx:4 - AreasImpactoSection
+\src\components\sections\index.tsx:5 - AboutSection
+\src\components\sections\index.tsx:6 - PropuestaSection
+\src\components\sections\index.tsx:7 - ServiciosSection
+\src\components\sections\index.tsx:8 - MetodoSection
+\src\components\sections\index.tsx:9 - TestimoniosSection
+\src\components\sections\index.tsx:10 - CTASection
+\src\components\seo\JsonLd.tsx:10 - PersonSchema (used in module)
+\src\components\seo\JsonLd.tsx:32 - OrganizationSchema (used in module)
+\src\components\seo\JsonLd.tsx:77 - WebSiteSchema (used in module)
+\src\components\seo\JsonLd.tsx:108 - GlobalSchemas
+\src\components\seo\JsonLd.tsx:164 - ServiceSchema
+\src\components\seo\JsonLd.tsx:199 - ServicesPageSchema
+\src\components\seo\JsonLd.tsx:314 - ProductSchema
+\src\components\seo\JsonLd.tsx:369 - FAQSchema
+\src\components\seo\JsonLd.tsx:401 - VideoSchema
+\src\components\seo\JsonLd.tsx:443 - CollectionPageSchema
+\src\components\seo\JsonLd.tsx:489 - generatePaginationLinks
+\src\components\seo\JsonLd.tsx:152 - ServiceSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:244 - CourseSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:303 - ProductSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:364 - FAQItem (used in module)
+\src\components\seo\JsonLd.tsx:391 - VideoSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:436 - CollectionPageSchemaProps (used in module)
+\src\components\seo\JsonLd.tsx:483 - PaginationSchemaProps (used in module)
+\src\components\servicios\ServicesSelector.tsx:314 - ServicesSelector
+\src\components\shop\product-configurator.tsx:11 - ProductConfigurator (used in module)
+\src\components\shop\table-detector.tsx:21 - TableDetector
+\src\components\ui\card.tsx:79 - Card (used in module)
+\src\components\ui\card.tsx:79 - CardHeader (used in module)
+\src\components\ui\card.tsx:79 - CardFooter (used in module)
+\src\components\ui\card.tsx:79 - CardTitle (used in module)
+\src\components\ui\card.tsx:79 - CardDescription (used in module)
+\src\components\ui\card.tsx:79 - CardContent (used in module)
+\src\components\ui\chart.tsx:366 - ChartLegend (used in module)
+\src\components\ui\chart.tsx:367 - ChartLegendContent (used in module)
+\src\components\ui\chart.tsx:368 - ChartStyle (used in module)
+\src\components\users\columns.tsx:52 - createUserColumns
+\src\components\users\columns.tsx:41 - UserTableActions (used in module)
+\src\components\users\users-table.tsx:303 - UsersTable
+\src\components\users\users-table.tsx:62 - User (used in module)
+\src\components\waiter\OrderList.tsx:12 - OrderList
+\src\lib\lib\api-server.ts:15 - serverFetch
+\src\lib\lib\api.ts:78 - getPosts
+\src\lib\lib\api.ts:89 - getPostBySlug
+\src\lib\lib\api.ts:94 - getCategories
+\src\lib\lib\api.ts:99 - getTags
+\src\lib\lib\api.ts:106 - getThemes
+\src\lib\lib\api.ts:110 - getThemeBySlug
+\src\lib\lib\api.ts:114 - getCourseBySlug
+\src\lib\lib\api.ts:118 - getLessonBySlug
+\src\lib\lib\api.ts:127 - createOrder
+\src\lib\lib\api.ts:134 - getAdminOrders
+\src\lib\lib\api.ts:142 - updateOrderStatus
+\src\lib\lib\api.ts:149 - toggleItemPrepared
+\src\lib\lib\api.ts:156 - payOrder
+\src\lib\lib\auth-server.ts:20 - getSessionUser
+\src\lib\lib\config-server.ts:28 - getServerApiHeaders
+\src\lib\lib\config.ts:25 - getApiHeaders
+\src\lib\lib\sanitize.ts:21 - sanitizeHtml
+\src\lib\lib\sanitize.ts:34 - sanitizeHtmlStrict
+\src\lib\lib\utils.ts:8 - cn
+\src\lib\lib\utils.ts:12 - formatCurrency
+\.next\types\app\(core)\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\page.ts:60 - LayoutProps
+\.next\types\app\compras\page.ts:56 - PageProps (used in module)
+\.next\types\app\compras\page.ts:60 - LayoutProps
+\.next\types\app\suscripcion\page.ts:56 - PageProps (used in module)
+\.next\types\app\suscripcion\page.ts:60 - LayoutProps
+\.next\types\app\whatsapp\page.ts:56 - PageProps (used in module)
+\.next\types\app\whatsapp\page.ts:60 - LayoutProps
+\src\components\admin\blog\AttachmentManager.tsx:13 - default
+\src\components\admin\blog\PostsGrid.tsx:14 - default
+\src\components\admin\blog\PostsTable.tsx:14 - default
+\src\components\admin\lms\CourseForm.tsx:57 - default
+\src\components\admin\products\product-form.tsx:27 - extendedProductSchema (used in module)
+\src\components\admin\products\product-form.tsx:36 - ProductFormValues (used in module)
+\src\components\admin\restaurant\table-card.tsx:34 - TableCard
+\src\components\admin\restaurant\table-card.tsx:16 - TableData (used in module)
+\src\components\shop\checkout\checkout-form.tsx:56 - CheckoutForm
+\.next\types\app\(core)\clientes\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\clientes\page.ts:60 - LayoutProps
+\.next\types\app\(core)\configuracion\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\configuracion\page.ts:60 - LayoutProps
+\.next\types\app\(core)\perfil\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\perfil\page.ts:60 - LayoutProps
+\.next\types\app\(core)\usuarios\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\usuarios\page.ts:60 - LayoutProps
+\.next\types\app\suscripcion\error\page.ts:56 - PageProps (used in module)
+\.next\types\app\suscripcion\error\page.ts:60 - LayoutProps
+\.next\types\app\suscripcion\exito\page.ts:56 - PageProps (used in module)
+\.next\types\app\suscripcion\exito\page.ts:60 - LayoutProps
+\.next\types\app\suscripcion\pendiente\page.ts:56 - PageProps (used in module)
+\.next\types\app\suscripcion\pendiente\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\page.ts:60 - LayoutProps
+\.next\types\app\(content)\blog\publicaciones\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\blog\publicaciones\page.ts:60 - LayoutProps
+\.next\types\app\(core)\clientes\clientes\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\clientes\clientes\page.ts:60 - LayoutProps
+\.next\types\app\(core)\configuracion\branding\page.ts:56 - PageProps (used in module)
+\.next\types\app\(core)\configuracion\branding\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\caja\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\caja\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\cocina\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\cocina\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\comandas\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\comandas\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\empleados\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\empleados\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\menu\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\menu\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\mesas\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\mesas\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\mesero\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\mesero\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\pos\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\pos\page.ts:60 - LayoutProps
+\.next\types\app\(shop)\tienda\pedidos\page.ts:56 - PageProps (used in module)
+\.next\types\app\(shop)\tienda\pedidos\page.ts:60 - LayoutProps
+\.next\types\app\(shop)\tienda\productos\page.ts:56 - PageProps (used in module)
+\.next\types\app\(shop)\tienda\productos\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\[slug]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\[slug]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\blog\publicaciones\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\blog\publicaciones\nuevo\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\menu\[id]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\menu\[id]\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\menu\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\menu\nuevo\page.ts:60 - LayoutProps
+\.next\types\app\(restaurant)\restaurante\pos\[tableId]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(restaurant)\restaurante\pos\[tableId]\page.ts:60 - LayoutProps
+\.next\types\app\(shop)\tienda\pedidos\[id]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(shop)\tienda\pedidos\[id]\page.ts:60 - LayoutProps
+\.next\types\app\(shop)\tienda\productos\[id]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(shop)\tienda\productos\[id]\page.ts:60 - LayoutProps
+\.next\types\app\(shop)\tienda\productos\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(shop)\tienda\productos\nuevo\page.ts:60 - LayoutProps
+\src\app\(content)\academia\cursos\[slug]\[courseSlug]\opengraph-image.tsx:18 - default
+\src\app\(content)\academia\cursos\[slug]\[courseSlug]\opengraph-image.tsx:4 - runtime
+\src\app\(content)\academia\cursos\[slug]\[courseSlug]\opengraph-image.tsx:6 - alt
+\src\app\(content)\academia\cursos\[slug]\[courseSlug]\opengraph-image.tsx:7 - size (used in module)
+\src\app\(content)\academia\cursos\[slug]\[courseSlug]\opengraph-image.tsx:12 - contentType
+\.next\types\app\(content)\academia\cursos\[slug]\[courseSlug]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\[slug]\[courseSlug]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\nuevo\page.ts:60 - LayoutProps
+\.next\types\app\(content)\blog\publicaciones\editar\[id]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\blog\publicaciones\editar\[id]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\[slug]\[courseSlug]\[lessonSlug]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\[slug]\[courseSlug]\[lessonSlug]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\nuevo\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\evaluacion\[evaluationId]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\evaluacion\[evaluationId]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\lecciones\[lessonId]\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\lecciones\[lessonId]\page.ts:60 - LayoutProps
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\lecciones\nuevo\page.ts:56 - PageProps (used in module)
+\.next\types\app\(content)\academia\cursos\temas\[id]\cursos\[courseId]\lecciones\nuevo\page.ts:60 - LayoutProps

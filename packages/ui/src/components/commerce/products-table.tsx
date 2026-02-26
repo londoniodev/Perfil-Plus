@@ -289,13 +289,13 @@ export function ProductsTable({ data, onEdit, onDelete, onView, onToggleAvailabl
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
-                <Table>
+            <div className="rounded-lg border bg-card overflow-x-auto">
+                <Table className="min-w-[800px] w-full">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="hover:bg-transparent">
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="h-11">
+                                    <TableHead key={header.id} className="h-11 whitespace-nowrap">
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(

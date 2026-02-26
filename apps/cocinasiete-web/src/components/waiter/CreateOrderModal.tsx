@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Input, ScrollArea, Tabs, TabsList, TabsTrigger, TabsContent, Badge, Separator } from "@alvarosky/ui"
-import { Table } from "@/actions/admin/tables"
+import type { Table } from "@prisma/client"
 import { useMenu } from "@alvarosky/restaurant-sdk"
 import { useOrder } from "@alvarosky/restaurant-sdk"
 import { TENANT_ID } from "@/lib/config"

@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // 1. Proteger rutas privadas
-    const protectedPaths = ['/perfil', '/cursos', '/suscripcion', '/admin', '/admin/cursos', '/admin/blog', '/admin/users', '/admin/products'];
+    const protectedPaths = ['/perfil', '/cursos', '/suscripcion', '/dashboard', '/dashboard/cursos', '/dashboard/blog', '/dashboard/usuarios', '/dashboard/tienda/productos'];
     const isProtected = protectedPaths.some(path => pathname.startsWith(path));
 
     if (isProtected && !token) {
@@ -38,11 +38,11 @@ export const config = {
         '/perfil/:path*',
         '/cursos/:path*',
         '/suscripcion/:path*',
-        '/admin',
-        '/admin/cursos/:path*',
-        '/admin/blog/:path*',
-        '/admin/users/:path*',
-        '/admin/products/:path*',
+        '/dashboard',
+        '/dashboard/academia/cursos/:path*',
+        '/dashboard/blog/publicaciones/:path*',
+        '/dashboard/usuarios/:path*',
+        '/dashboard/tienda/productos/:path*',
         '/login',
         '/registro',
         '/'

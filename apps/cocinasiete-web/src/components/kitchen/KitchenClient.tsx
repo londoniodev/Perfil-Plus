@@ -12,7 +12,7 @@ import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
 import type { WaiterOrder } from "@/types/waiter"
-import type { Table } from "@/actions/admin/tables"
+import type { Table } from "@prisma/client"
 import { useOrderEvents } from "@/hooks/use-order-events"
 
 // ─── KitchenCard ──────────────────────────────────────────────────────

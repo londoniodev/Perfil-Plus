@@ -46,20 +46,21 @@ export const sidebarConfig: SidebarConfig = {
         groups: [
             {
                 title: "Dashboard",
-                href: "/admin",
+                href: "/dashboard",
                 icon: LayoutDashboard,
             },
             {
                 title: "Usuarios",
-                href: "/admin/users",
+                href: "/dashboard/usuarios",
                 icon: Users,
             },
+
             {
                 title: "Configuración",
                 icon: Settings,
                 items: [
-                    { title: "General", href: "/admin/settings" },
-                    { title: "Branding", href: "/admin/settings/branding" },
+                    { title: "General", href: "/dashboard/configuracion" },
+                    { title: "Branding", href: "/dashboard/configuracion/branding" },
                 ],
             },
         ],
@@ -75,13 +76,13 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Productos",
                 icon: Package,
                 items: [
-                    { title: "Ver todos", href: "/admin/products" },
-                    { title: "Crear nuevo", href: "/admin/products/new" },
+                    { title: "Ver todos", href: "/dashboard/tienda/productos" },
+                    { title: "Crear nuevo", href: "/dashboard/tienda/productos/nuevo" },
                 ],
             },
             {
                 title: "Pedidos",
-                href: "/admin/orders",
+                href: "/dashboard/tienda/pedidos",
                 icon: ClipboardList,
             },
         ],
@@ -97,8 +98,8 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Publicaciones",
                 icon: FileText,
                 items: [
-                    { title: "Ver todas", href: "/admin/blog" },
-                    { title: "Crear nueva", href: "/admin/blog/nuevo" },
+                    { title: "Ver todas", href: "/dashboard/blog/publicaciones" },
+                    { title: "Crear nueva", href: "/dashboard/blog/publicaciones/nuevo" },
                 ],
             },
         ],
@@ -114,8 +115,8 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Cursos",
                 icon: GraduationCap,
                 items: [
-                    { title: "Ver temas", href: "/admin/cursos" },
-                    { title: "Crear tema", href: "/admin/cursos/temas/nuevo" },
+                    { title: "Ver temas", href: "/dashboard/academia/cursos" },
+                    { title: "Crear tema", href: "/dashboard/academia/cursos/temas/nuevo" },
                 ],
             },
         ],

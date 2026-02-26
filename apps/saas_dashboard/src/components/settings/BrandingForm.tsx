@@ -153,152 +153,102 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     }
 
     return (
-        <div className="grid gap-6 md:grid-cols-2">
-            <div>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Apariencia del Tenant</CardTitle>
-                                <CardDescription>
-                                    Personaliza los colores y estilo base de tu plataforma.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="primary"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Color Principal</FormLabel>
-                                            <FormControl>
-                                                <div className="flex flex-wrap gap-3">
-                                                    {Object.keys(themes).map((themeKey) => (
-                                                        <div
-                                                            key={themeKey}
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === "Enter" || e.key === " ") {
-                                                                    e.preventDefault();
-                                                                    field.onChange(themeKey);
-                                                                }
-                                                            }}
-                                                            className={cn(
-                                                                "h-10 w-10 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
-                                                                field.value === themeKey ? "ring-2 ring-offset-2 ring-primary" : "ring-1 ring-border"
-                                                            )}
-                                                            style={{ backgroundColor: getThemeColor(themeKey) }}
-                                                            onClick={() => field.onChange(themeKey)}
-                                                            title={themeKey}
-                                                            aria-label={`Seleccionar color ${themeKey}`}
-                                                            aria-pressed={field.value === themeKey}
-                                                        >
-                                                            {field.value === themeKey && (
-                                                                <Check className="h-4 w-4 text-white drop-shadow-md" />
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </FormControl>
-
-                                            {/* Custom Hex Section */}
-                                            <div className="mt-4 pt-4 border-t">
-                                                <Label className="text-sm font-medium mb-1.5 block">O color personalizado (Hex)</Label>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="relative w-10 h-10 rounded-full overflow-hidden border shadow-sm shrink-0">
-                                                        <input
-                                                            type="color"
-                                                            ref={colorInputRef}
-                                                            className="absolute -top-2 -left-2 w-16 h-16 p-0 border-0 cursor-pointer opacity-0"
-                                                            value={customHex}
-                                                            onChange={handleHexChange}
-                                                        />
-                                                        <div
-                                                            className="w-full h-full"
-                                                            style={{ backgroundColor: customHex }}
-                                                            onClick={() => colorInputRef.current?.click()}
-                                                        />
+        <div className="w-full">
+            <Form {...form}>
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Apariencia del Tenant</CardTitle>
+                            <CardDescription>
+                                Personaliza los colores y estilo base de tu plataforma.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="primary"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Color Principal</FormLabel>
+                                        <FormControl>
+                                            <div className="flex flex-wrap gap-3">
+                                                {Object.keys(themes).map((themeKey) => (
+                                                    <div
+                                                        key={themeKey}
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter" || e.key === " ") {
+                                                                e.preventDefault();
+                                                                field.onChange(themeKey);
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "h-10 w-10 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
+                                                            field.value === themeKey ? "ring-2 ring-offset-2 ring-primary" : "ring-1 ring-border"
+                                                        )}
+                                                        style={{ backgroundColor: getThemeColor(themeKey) }}
+                                                        onClick={() => field.onChange(themeKey)}
+                                                        title={themeKey}
+                                                        aria-label={`Seleccionar color ${themeKey}`}
+                                                        aria-pressed={field.value === themeKey}
+                                                    >
+                                                        {field.value === themeKey && (
+                                                            <Check className="h-4 w-4 text-white drop-shadow-md" />
+                                                        )}
                                                     </div>
-                                                    <Input
+                                                ))}
+                                            </div>
+                                        </FormControl>
+
+                                        {/* Custom Hex Section */}
+                                        <div className="mt-4 pt-4 border-t">
+                                            <Label className="text-sm font-medium mb-1.5 block">O color personalizado (Hex)</Label>
+                                            <div className="flex items-center gap-3">
+                                                <div className="relative w-10 h-10 rounded-full overflow-hidden border shadow-sm shrink-0">
+                                                    <input
+                                                        type="color"
+                                                        ref={colorInputRef}
+                                                        className="absolute -top-2 -left-2 w-16 h-16 p-0 border-0 cursor-pointer opacity-0"
                                                         value={customHex}
                                                         onChange={handleHexChange}
-                                                        placeholder="#000000"
-                                                        className="font-mono w-32 uppercase"
-                                                        maxLength={7}
                                                     />
-                                                    {isCustomPrimary && (
-                                                        <div className="text-xs text-muted-foreground animate-in fade-in">
-                                                            <Check className="h-3 w-3 inline mr-1 text-green-500" />
-                                                            Aplicado
-                                                        </div>
-                                                    )}
+                                                    <div
+                                                        className="w-full h-full"
+                                                        style={{ backgroundColor: customHex }}
+                                                        onClick={() => colorInputRef.current?.click()}
+                                                    />
                                                 </div>
+                                                <Input
+                                                    value={customHex}
+                                                    onChange={handleHexChange}
+                                                    placeholder="#000000"
+                                                    className="font-mono w-32 uppercase"
+                                                    maxLength={7}
+                                                />
+                                                {isCustomPrimary && (
+                                                    <div className="text-xs text-muted-foreground animate-in fade-in">
+                                                        <Check className="h-3 w-3 inline mr-1 text-green-500" />
+                                                        Aplicado
+                                                    </div>
+                                                )}
                                             </div>
+                                        </div>
 
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
 
 
-                                <Button type="submit" disabled={isSaving} className="w-full sm:w-auto">
-                                    {isSaving ? "Guardando..." : "Guardar Cambios"}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </form>
-                </Form>
-            </div>
-
-            {/* Preview Section */}
-            <div className="space-y-6">
-                <Card className="border-2 border-dashed bg-muted/50 hidden md:block">
-                    <CardHeader>
-                        <CardTitle>Vista Previa</CardTitle>
-                        <CardDescription>Simulación en tiempo real</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div
-                            className="flex flex-col gap-4 p-6 rounded-lg bg-background border shadow-sm transition-all duration-300 relative"
-                            style={{
-                                borderRadius: `${watchedRadius}rem`,
-                                // Note: Colors are hard to preview exactly without a provider wrapper,
-                                // but we simulate spacing and radius.
-                            }}
-                        >
-                            <div className="space-y-2">
-                                <h3 className="text-lg font-semibold">Título de Ejemplo</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Así se verán los textos y contenedores con el radio seleccionado.
-                                </p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                <Button>Primary Action</Button>
-                                <Button variant="secondary">Secondary</Button>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                <Button variant="outline" size="sm">Small</Button>
-                                <Button variant="ghost" size="icon"><span className="text-lg">👻</span></Button>
-                                <Button variant="destructive">Destructive</Button>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="preview-input">Input de Texto</Label>
-                                <Input id="preview-input" placeholder="Escribe algo..." />
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                                <Switch id="preview-switch" />
-                                <Label htmlFor="preview-switch">Toggle de ejemplo</Label>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSaving} className="w-full sm:w-auto">
+                                {isSaving ? "Guardando..." : "Guardar Diseño"}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </Form>
         </div>
     );
 }

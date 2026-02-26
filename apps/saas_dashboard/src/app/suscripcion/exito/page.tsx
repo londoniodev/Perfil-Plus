@@ -12,7 +12,7 @@ export default function SuscripcionExitoPage() {
                 </p>
                 <div className="pt-4">
                     <Button asChild size="lg" className="shadow-lg shadow-success/20 w-full md:w-auto">
-                        <Link href="/cursos">Explorar Cursos</Link>
+                        <Link href="/academia/cursos">Explorar Cursos</Link>
                     </Button>
                 </div>
             </div>

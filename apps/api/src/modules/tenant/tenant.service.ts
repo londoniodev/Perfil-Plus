@@ -1,4 +1,6 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, Inject, UnauthorizedException } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
@@ -9,7 +11,10 @@ import * as bcrypt from 'bcryptjs';
 export class TenantService {
     private readonly logger = new Logger(TenantService.name);
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
+    ) { }
 
     /**
      * Crea un nuevo Tenant asegurando los valores por defecto "Plug & Play",
@@ -77,23 +82,42 @@ export class TenantService {
     }
 
     /**
-     * Resuelve el TenantId dado un Hostname/Domain. Utilizado por NextJS Edge Middleware.
+     * Resuelve el TenantId dado un Hostname/Domain mediante caché centralizada (Redis) 
+     * Protegido por Token Interno para evitar escaneo de la infraestructura.
      */
-    async identifyTenant(domain: string) {
+    async identifyTenant(domain: string, internalToken: string) {
         if (!domain) {
             throw new BadRequestException('Dominio requerido');
         }
 
-        // Buscar por slug (dominio o subdominio)
+        const expectedToken = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+        if (internalToken !== expectedToken) {
+            this.logger.warn(`Intento de acceso no autorizado a identifyTenant. Host: ${domain}`);
+            throw new UnauthorizedException('Acceso denegado a resolución de tenants');
+        }
+
+        const cacheKey = `tenant_resolve_${domain}`;
+
+        const cachedResolution = await this.cacheManager.get(cacheKey);
+
+        if (cachedResolution === 'NOT_FOUND') {
+            throw new NotFoundException(`Dominio no registrado: ${domain}`);
+        } else if (cachedResolution) {
+            return cachedResolution;
+        }
+
+        // Buscar por slug (dominio o subdominio) asegurando que el plan/status actúe si es necesario
         const tenant = await this.prisma.tenant.findFirst({
-            where: { slug: domain },
-            select: { id: true }
+            where: { slug: domain, status: 'ACTIVE' },
+            select: { id: true, name: true }
         });
 
         if (!tenant) {
+            await this.cacheManager.set(cacheKey, 'NOT_FOUND', 3600 * 1000);
             throw new NotFoundException(`Tenant no encontrado para el dominio: ${domain}`);
         }
 
+        await this.cacheManager.set(cacheKey, { id: tenant.id }, 3600 * 1000);
         return { id: tenant.id };
     }
 

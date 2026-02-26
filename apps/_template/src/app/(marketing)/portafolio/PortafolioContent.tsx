@@ -173,13 +173,13 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
                     {/* Visual */}
                     <div className="hidden lg:block">
-                        <CaseVisual category={caso.categoria} color={sectionColor} id={caso.id} />
+                        <CaseVisual category={caso.categoria} color={sectionColor} id={Number(caso.id)} />
                     </div>
                 </div>
 
                 {/* Visual - Mobile */}
                 <div className="lg:hidden mt-8">
-                    <CaseVisual category={caso.categoria} color={sectionColor} id={caso.id} />
+                    <CaseVisual category={caso.categoria} color={sectionColor} id={Number(caso.id)} />
                 </div>
             </div>
         </section>

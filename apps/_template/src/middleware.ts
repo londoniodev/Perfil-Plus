@@ -1,0 +1,93 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+const INTERNAL_API_URL = process.env.INTERNAL_API_URL || 'http://localhost:3001/api';
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+
+export async function middleware(request: NextRequest) {
+    const url = request.nextUrl.clone();
+
+    const hostname = request.headers.get('host') || '';
+    const cleanHostname = hostname.split(':')[0];
+
+    const isBaseDomain = ['localhost', '127.0.0.1'].includes(cleanHostname);
+
+    let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
+    let tenantFeatures: string[] = [];
+
+    if (!isBaseDomain) {
+        try {
+            // Petición al backend en Docker (misma red) para resolver host
+            const res = await fetch(`${INTERNAL_API_URL}/tenant/identify?domain=${cleanHostname}`, {
+                headers: {
+                    'x-internal-token': INTERNAL_API_KEY
+                }
+            });
+
+            if (res.ok) {
+                const tenantData = await res.json();
+                tenantId = tenantData.id;
+                tenantFeatures = tenantData.features || [];
+            } else if (res.status === 404) {
+                // Redirigir a 404 si el dominio apunta aquí pero no está registrado
+                url.pathname = '/404-tenant';
+                return NextResponse.rewrite(url);
+            }
+        } catch (error) {
+            console.error(`Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}`);
+        }
+    }
+
+    const rewritesPaths = [
+        '/dashboard',
+        '/admin',
+        '/perfil',
+        '/cursos',
+        '/compras',
+        '/kitchen',
+        '/suscripcion',
+        '/waiter',
+        '/whatsapp'
+    ];
+    const shouldRewrite = rewritesPaths.some(path => url.pathname === path || url.pathname.startsWith(`${path}/`));
+
+    const protectedPaths = [
+        ...rewritesPaths,
+        '/login',
+        '/registro'
+    ];
+    const isProtected = protectedPaths.some(path => url.pathname === path || url.pathname.startsWith(`${path}/`));
+
+    // Bloquear acceso a rutas del SaaS si el tenant NO tiene el feature activo
+    // (Bypass para isBaseDomain, ideal para desarrollo local del dashboard core)
+    if (isProtected && !isBaseDomain && !tenantFeatures.includes('SAAS_DASHBOARD')) {
+        url.pathname = '/';
+        return NextResponse.redirect(url);
+    }
+
+    const requestHeaders = new Headers(request.headers);
+    // Inyectar TENANT ID y FEATURES dinámico
+    requestHeaders.set('x-tenant-id', tenantId);
+    requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
+
+    if (shouldRewrite) {
+        const dashboardHost = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
+        const destinationTarget = new URL(url.pathname + url.search, dashboardHost);
+
+        requestHeaders.set('x-forwarded-host', request.headers.get('host') || '');
+        requestHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || url.protocol.replace(':', ''));
+
+        return NextResponse.rewrite(destinationTarget, {
+            request: { headers: requestHeaders },
+        });
+    }
+
+    return NextResponse.next({
+        request: { headers: requestHeaders },
+    });
+}
+
+export const config = {
+    // Aplicar a casi toda la web, útil para forzar el x-tenant-id incluso en la Landing
+    matcher: ['/((?!_next/static|_next/image|favicon.ico|images|.*\\..*|api).*)'],
+};

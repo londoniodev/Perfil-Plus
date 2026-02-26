@@ -69,8 +69,25 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   disable: process.env.NODE_ENV === "development",
 });
 
+const allowedTenantDomains = process.env.ALLOWED_TENANT_DOMAINS
+  ? process.env.ALLOWED_TENANT_DOMAINS.split(',')
+  : [];
+
 const nextConfig: NextConfig = {
   basePath: '/dashboard',
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'localhost:3000',
+        'localhost:3001',
+        'cocinasiete.com',
+        '*.cocinasiete.com',
+        'mauromera.com',
+        'deborahmoscoso.com',
+        ...allowedTenantDomains
+      ],
+    },
+  },
   output: "standalone",
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   poweredByHeader: false,

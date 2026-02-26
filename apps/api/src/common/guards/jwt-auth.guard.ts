@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -11,6 +12,7 @@ export class JwtAuthGuard implements CanActivate {
         private reflector: Reflector,
         private jwtService: JwtService,
         private prisma: PrismaService, // Inject directly (Singleton)
+        private cls: ClsService,
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,14 +40,16 @@ export class JwtAuthGuard implements CanActivate {
         try {
             const payload = await this.jwtService.verifyAsync(token);
 
-            // Cargar usuario desde la base de datos
-            // PrismaService.client getter will throw if no tenant context, BUT:
-            // This guard runs AFTER middleware, so context should be there IF x-tenant-id was sent.
-            // If x-tenant-id is missing, this might fail unless we handle it.
-            // But JwtAuth usually implies we are in a tenant context or global?
-            // If global (e.g. /profile), we might need a different DB strategy or master DB.
-            // Assuming for now Auth is tenant-scoped as per previous analysis.
+            if (payload.tenantId) {
+                // Inyectar contexto multi-tenant de manera segura ANTES de hacer peticiones a Prisma.
+                this.cls.set('tenantId', payload.tenantId);
+            } else {
+                // Log and perhaps throw if tenantId is missing, though we support public maybe.
+                console.warn('[JwtAuthGuard] Payload has no tenantId');
+            }
 
+            // Cargar usuario desde la base de datos
+            // PrismaService.client getter will not throw here because ClsService already has context.
             const user = await this.prisma.user.findUnique({
                 where: { id: payload.sub },
                 select: {
@@ -53,6 +57,7 @@ export class JwtAuthGuard implements CanActivate {
                     email: true,
                     name: true,
                     role: true,
+                    tenantId: true,
                     subscription: {
                         select: {
                             status: true,

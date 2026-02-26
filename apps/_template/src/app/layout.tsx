@@ -11,6 +11,7 @@ import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
 import { serverFetch } from "@/lib/api-server";
 import { getTenantId } from "@/lib/config-server";
+import { headers } from "next/headers";
 
 async function getTenantDesign(tenantId: string) {
   // Skip DB call during build time (static generation) — API is not accessible in Docker build context easily
@@ -137,6 +138,18 @@ export default async function RootLayout({
   // Color fallback
   const primaryColor = design?.primary || "zinc";
 
+  const headersList = await headers();
+  const tenantFeaturesRaw = headersList.get('x-tenant-features');
+  let hasDashboardFeature = true; // Default fallback publico
+  if (tenantFeaturesRaw) {
+    try {
+      const features = JSON.parse(tenantFeaturesRaw);
+      hasDashboardFeature = features.includes('SAAS_DASHBOARD');
+    } catch (e) {
+      console.warn("Failed to parse tenant features block");
+    }
+  }
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
@@ -148,7 +161,7 @@ export default async function RootLayout({
           <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
             <GlobalSchemas />
             <ToastProvider>
-              <NavigationWrapper footer={<Footer />}>
+              <NavigationWrapper footer={<Footer />} hasDashboardFeature={hasDashboardFeature}>
                 {children}
               </NavigationWrapper>
               <PwaInstallPrompt />

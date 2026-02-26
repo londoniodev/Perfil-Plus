@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 
-export function NavigationWrapper({ children, footer }: { children: React.ReactNode, footer: React.ReactNode }) {
+export function NavigationWrapper({ children, footer, hasDashboardFeature = true }: { children: React.ReactNode, footer: React.ReactNode, hasDashboardFeature?: boolean }) {
     const pathname = usePathname();
 
     // Rutas que usan el Layout del Dashboard (Sidebar/BottomNav) y NO deben tener Header/Footer
@@ -30,7 +30,7 @@ export function NavigationWrapper({ children, footer }: { children: React.ReactN
 
     return (
         <>
-            <Header />
+            <Header hasDashboardFeature={hasDashboardFeature} />
             <main>{children}</main>
             {footer}
         </>

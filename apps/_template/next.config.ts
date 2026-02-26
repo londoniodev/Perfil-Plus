@@ -99,19 +99,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    const dashboardUrl = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
-    return [
-      {
-        source: '/dashboard/:path*',
-        destination: `${dashboardUrl}/dashboard/:path*`,
-      },
-      {
-        source: '/dashboard',
-        destination: `${dashboardUrl}/dashboard`,
-      },
-    ]
-  },
 };
 
 export default withPWA(nextConfig);

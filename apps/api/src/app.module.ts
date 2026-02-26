@@ -12,6 +12,7 @@ import { join } from 'path';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { ClsModule } from 'nestjs-cls';
 
 // Core modules
 import { PrismaModule } from './prisma';
@@ -84,6 +85,10 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         REDIS_PORT: Joi.number().default(6379),
         REDIS_PASSWORD: Joi.string().optional().allow(''),
       }),
+    }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
     }),
 
     // Core modules

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards, Query, Headers } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -17,8 +17,11 @@ export class TenantController {
     @Public()
     @SkipThrottle()
     @Get('identify')
-    async identifyTenant(@Query('domain') domain: string) {
-        return this.tenantService.identifyTenant(domain);
+    async identifyTenant(
+        @Query('domain') domain: string,
+        @Headers('x-internal-token') token: string,
+    ) {
+        return this.tenantService.identifyTenant(domain, token);
     }
 
     // Endpoint SaaS the aprovisionamiento automático the Tenants

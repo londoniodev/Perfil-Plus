@@ -181,19 +181,29 @@ export function AdminSidebar({
                                                 </CollapsibleTrigger>
                                                 <CollapsibleContent>
                                                     <SidebarMenuSub>
-                                                        {group.items!.map((subItem) => (
-                                                            <SidebarMenuSubItem key={subItem.href}>
-                                                                <SidebarMenuSubButton
-                                                                    asChild
-                                                                    isActive={pathname === subItem.href}
-                                                                    className="transition-colors duration-150 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
-                                                                >
-                                                                    <Link href={subItem.href}>
-                                                                        <span>{subItem.title}</span>
-                                                                    </Link>
-                                                                </SidebarMenuSubButton>
-                                                            </SidebarMenuSubItem>
-                                                        ))}
+                                                        {group.items!.map((subItem) => {
+                                                            const isExternal = subItem.href?.startsWith('http');
+                                                            return (
+                                                                <SidebarMenuSubItem key={subItem.href}>
+                                                                    <SidebarMenuSubButton
+                                                                        asChild
+                                                                        isActive={!isExternal && pathname === subItem.href}
+                                                                        className="transition-colors duration-150 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
+                                                                    >
+                                                                        {isExternal ? (
+                                                                            <a href={subItem.href} target="_blank" rel="noopener noreferrer">
+                                                                                <span>{subItem.title}</span>
+                                                                            </a>
+                                                                        ) : (
+                                                                            <Link href={subItem.href}>
+                                                                                <span>{subItem.title}</span>
+                                                                            </Link>
+                                                                        )}
+                                                                    </SidebarMenuSubButton>
+                                                                </SidebarMenuSubItem>
+                                                            );
+                                                        })}
+
                                                     </SidebarMenuSub>
                                                 </CollapsibleContent>
                                             </SidebarMenuItem>

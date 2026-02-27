@@ -376,7 +376,8 @@ export default function MenuClient({
                         {categories.map((cat) => {
                             // Find first product image for this category
                             const catImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
-                                || '/placeholder.png'
+                                || '/placeholder.jpg'
+                            const isFallback = !products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
 
                             return (
                                 <div
@@ -395,9 +396,11 @@ export default function MenuClient({
                                                 fill
                                                 sizes="72px"
                                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                                unoptimized={isFallback}
                                             />
                                         </div>
                                     </div>
+
                                     <span className={`text-xs font-medium text-center truncate w-20 transition-colors ${selectedCategoryId === cat.id ? "text-primary font-bold" : "text-slate-500"
                                         }`}>
                                         {cat.name}
@@ -428,11 +431,12 @@ export default function MenuClient({
                                 className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
                             >
                                 <Image
-                                    src={product.images?.[0] || "/placeholder.png"}
+                                    src={product.images?.[0] || "/placeholder.jpg"}
                                     alt={product.name}
                                     fill
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                    unoptimized={!product.images?.[0]}
                                 />
                                 {((product as any).isAvailable === false) && (
                                     <div className="absolute inset-0 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">

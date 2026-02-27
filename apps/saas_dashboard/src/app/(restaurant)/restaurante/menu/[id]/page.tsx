@@ -2,6 +2,7 @@ import { serverFetch } from "@/lib/api-server"
 import { ProductForm } from "@/components/admin/products/product-form"
 import { AdminPageWrapper } from "@alvarosky/ui"
 import { notFound } from "next/navigation"
+import { BreadcrumbSetter } from "@/components/admin/products/BreadcrumbSetter"
 
 interface EditMenuPageProps {
     params: Promise<{ id: string }>
@@ -48,6 +49,8 @@ export default async function EditMenuPage({ params }: EditMenuPageProps) {
             description={`Editando: ${product.name}`}
             className="space-y-6"
         >
+            {/* Override the raw product ID in breadcrumbs with the product name */}
+            <BreadcrumbSetter segment={id} label={product.name} />
             <ProductForm initialData={product} />
         </AdminPageWrapper>
     )

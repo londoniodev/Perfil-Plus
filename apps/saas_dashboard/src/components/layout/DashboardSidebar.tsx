@@ -44,10 +44,13 @@ export function DashboardSidebar({ features, tenantName }: DashboardSidebarProps
             if (menuGroup && menuGroup.items) {
                 const alreadyExists = menuGroup.items.some(item => item.title === "Ver Menú Digital ↗");
                 if (!alreadyExists) {
+                    // Use the tenant's public domain so it opens the storefront, not the dashboard
+                    const publicOrigin = typeof window !== 'undefined' ? window.location.origin : ''
                     menuGroup.items.push({
                         title: "Ver Menú Digital ↗",
-                        href: `/menu`,
-                    });
+                        href: `${publicOrigin}/menu`,
+                        external: true,
+                    } as any);
                 }
             }
         }

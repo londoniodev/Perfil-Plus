@@ -19,15 +19,45 @@ export function DashboardShell({ children, features, tenantName, defaultOpen, ap
     const pathname = usePathname()
     const { breadcrumbOverrides } = useDashboard()
 
+    // Known segment translations for breadcrumbs
+    const segmentLabels: Record<string, string> = {
+        'dashboard': 'Dashboard',
+        'restaurante': 'Restaurante',
+        'menu': 'Menú',
+        'nuevo': 'Nuevo Plato',
+        'tienda': 'Tienda',
+        'productos': 'Productos',
+        'pedidos': 'Pedidos',
+        'comandas': 'Comandas',
+        'configuracion': 'Configuración',
+        'usuarios': 'Usuarios',
+        'perfil': 'Perfil',
+        'empleados': 'Empleados',
+        'cocina': 'Cocina',
+        'mesero': 'Mesero',
+        'mesas': 'Mesas',
+        'caja': 'Caja',
+        'pos': 'POS',
+        'clientes': 'CRM / Leads',
+        'blog': 'Blog',
+        'publicaciones': 'Publicaciones',
+        'academia': 'Academia',
+        'cursos': 'Cursos',
+    }
+
     // Generate breadcrumbs with overrides
     const breadcrumbs = React.useMemo(() => {
         const segments = pathname.split('/').filter(Boolean)
-        return segments.map((segment, index) => {
-            const href = `/${segments.slice(0, index + 1).join('/')}`
-            // Use override if available, otherwise format segment
-            const label = breadcrumbOverrides[segment] || segment
-                .replace(/-/g, ' ')
-                .replace(/^./, (c) => c.toUpperCase())
+        // Skip the first segment if it's 'dashboard' (it's the basePath)
+        const displaySegments = segments[0] === 'dashboard' ? segments.slice(1) : segments
+        return displaySegments.map((segment, index) => {
+            const href = `/${displaySegments.slice(0, index + 1).join('/')}`
+            // Priority: context override > known labels > formatted segment
+            const label = breadcrumbOverrides[segment]
+                || segmentLabels[segment]
+                || segment
+                    .replace(/-/g, ' ')
+                    .replace(/^./, (c) => c.toUpperCase())
 
             return { label, href }
         })

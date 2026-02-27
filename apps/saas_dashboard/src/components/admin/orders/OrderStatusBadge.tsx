@@ -67,7 +67,7 @@ export default function OrderStatusBadge({ order }: OrderStatusBadgeProps) {
 
     const handleChange = async (newStatus: OrderStatus) => {
         setIsLoading(true)
-        const res = await updateOrderStatus(order.id, newStatus, order.tenantId)
+        const res = await updateOrderStatus(order.id, newStatus)
         setIsLoading(false)
 
         if (res.success) {

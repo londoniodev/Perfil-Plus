@@ -69,7 +69,7 @@ export class TenantService {
      */
     async getTenantBranding(tenantId: string) {
         const tenant = await this.prisma.tenant.findFirst({
-            where: { slug: tenantId },
+            where: { id: tenantId },
             select: {
                 design: true,
                 name: true,
@@ -82,6 +82,26 @@ export class TenantService {
         }
 
         return tenant;
+    }
+
+    /**
+     * Obtiene los datos de Marketing del tenant para la Landing Page pública
+     */
+    async getTenantMarketing(tenantId: string) {
+        const tenant = await this.prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { slug: true, name: true, notes: true }
+        });
+
+        if (!tenant) {
+            throw new NotFoundException(`Tenant con ID ${tenantId} no encontrado para marketing`);
+        }
+
+        return {
+            tenantSlug: tenant.slug,
+            heroTitle: tenant.name || 'Empresa Creciendo',
+            heroSubtitle: tenant.notes || 'Configurando soluciones digitales para ti...',
+        };
     }
 
     /**
@@ -130,7 +150,7 @@ export class TenantService {
      */
     async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
         const updatedTenant = await this.prisma.tenant.update({
-            where: { slug: tenantId },
+            where: { id: tenantId },
             data: {
                 design: updateDto.design !== undefined ? updateDto.design : undefined,
             },

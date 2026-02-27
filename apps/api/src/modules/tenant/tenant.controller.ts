@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards, Query, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards, Query, Headers, BadRequestException } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -38,6 +38,17 @@ export class TenantController {
     @Get('branding')
     async getTenantBranding(@CurrentTenant() tenantId: string) {
         return this.tenantService.getTenantBranding(tenantId);
+    }
+
+    // Endpoint público para obtener datos de marketing (Landing page)
+    @Public()
+    @SkipThrottle()
+    @Get('marketing')
+    async getTenantMarketing(@Query('tenant') tenantId: string) {
+        if (!tenantId) {
+            throw new BadRequestException('El id del tenant es requerido (ej. ?tenant=...)');
+        }
+        return this.tenantService.getTenantMarketing(tenantId);
     }
 
     // Uso estrictamente protegido por administradores para configurar el Theme

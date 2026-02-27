@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest) {
     // Leer el Host considerando que estamos detrás de un Reverse Proxy (Dokploy/Traefik)
     const hostname = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
     const cleanHostname = hostname.split(':')[0];
+    console.log(`[DOKPLOY DEBUG] Raw Hostname: ${hostname} | Clean: ${cleanHostname}`);
 
     // Convert domain.com to domain (removes TLD for DB slug matching)
     let tenantSlugToQuery = cleanHostname;

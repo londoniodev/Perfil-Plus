@@ -12,6 +12,9 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/
 async function getMarketingData(tenantId: string): Promise<TenantMarketingData | null> {
   try {
     const res = await fetch(`${INTERNAL_API_URL}/tenant/marketing?tenant=${tenantId}`, {
+      headers: {
+        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
+      },
       next: {
         revalidate: 3600, // Usar 1 hora es seguro, el webhook purgará a la fuerza
         tags: ["tenant-marketing", `tenant-marketing-${tenantId}`],

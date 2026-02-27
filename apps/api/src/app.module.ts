@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { redisStore } from 'cache-manager-redis-yet';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
@@ -191,7 +192,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     // Global Rate Limiting Guard
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
     },
 
     // Global Prisma Initialization Interceptor

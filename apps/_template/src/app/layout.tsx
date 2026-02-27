@@ -30,6 +30,7 @@ async function getTenantDesign(tenantId: string) {
       headers: {
         'Content-Type': 'application/json',
         'x-tenant-id': tenantId,
+        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
       },
       next: {
         revalidate: 3600,

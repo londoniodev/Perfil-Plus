@@ -65,23 +65,17 @@ export class TenantService {
     }
 
     /**
-     * Helper para saber si un string es un UUID válido o un CUID, evitando crasheos 22P03 de PostgreSQL
-     * al intentar buscar strings genéricos como 'template' en la columna 'id' tipada.
-     */
-    private isId(value: string) {
-        return value && value.length >= 20; // CUIDs y UUIDs superan los 24 caracteres.
-    }
-
-    /**
      * Obtiene la apariencia del tenant para la inicialización pública de la aplicación (app/layout.tsx en frontend)
      */
     async getTenantBranding(tenantId: string) {
-        if (this.isId(tenantId)) {
+        try {
             const tenantById = await this.prisma.tenant.findFirst({
                 where: { id: tenantId },
                 select: { design: true, name: true, features: true },
             });
             if (tenantById) return tenantById;
+        } catch (error) {
+            // Postgres throw 22P03 si el tenantId ('template') no coincide con el map de la columna (UUID/INT).
         }
 
         const tenantBySlug = await this.prisma.tenant.findFirst({
@@ -98,7 +92,7 @@ export class TenantService {
      * Obtiene los datos de Marketing del tenant para la Landing Page pública
      */
     async getTenantMarketing(tenantId: string) {
-        if (this.isId(tenantId)) {
+        try {
             const tenantById = await this.prisma.tenant.findUnique({
                 where: { id: tenantId },
                 select: { slug: true, name: true, notes: true }
@@ -110,6 +104,8 @@ export class TenantService {
                     heroSubtitle: tenantById.notes || 'Configurando soluciones digitales para ti...',
                 };
             }
+        } catch (error) {
+            // Ignorar mismatch de tipo ID Postgres
         }
 
         const tenantBySlug = await this.prisma.tenant.findUnique({

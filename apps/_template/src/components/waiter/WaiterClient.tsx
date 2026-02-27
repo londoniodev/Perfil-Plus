@@ -5,7 +5,7 @@ import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import {} from "@/lib/config"
+import { } from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, ScrollArea, AdminPageWrapper } from "@alvarosky/ui"
 import { Clock, CheckCircle2, XCircle, Utensils, Plus, RefreshCw, ChefHat, Bell, Loader2 } from "lucide-react"
@@ -140,7 +140,7 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(undefined, true);
+            const data = await getAdminOrders(tenantId, undefined, true);
             setOrders(data as any) // Type update might be needed if WaiterOrder != Order
         } catch (e) {
             // Optional: toast error
@@ -164,7 +164,7 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(orderId, status as any);
+            await updateOrderStatus(tenantId, orderId, status as any);
             await fetchOrders()
         } catch (e: any) {
             alert(`Error: ${e.message}`)

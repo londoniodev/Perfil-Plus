@@ -13,7 +13,8 @@ import { Input } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from '@/lib/config';
+import { API_BASE } from '@/lib/config';
+import { useTenant } from "@/app/providers";
 
 
 const resetPasswordSchema = z
@@ -34,6 +35,7 @@ const resetPasswordSchema = z
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordFormContent() {
+    const { tenantId } = useTenant();
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -63,7 +65,7 @@ function ResetPasswordFormContent() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-tenant-id': TENANT_ID,
+                    'x-tenant-id': tenantId,
                 },
                 body: JSON.stringify({
                     token,

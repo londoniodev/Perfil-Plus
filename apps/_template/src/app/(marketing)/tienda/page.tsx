@@ -1,6 +1,5 @@
 import { headers } from "next/headers"
 import { StoreClient } from "@/components/store/StoreClient"
-import { TENANT_ID } from "@/lib/config"
 
 export const metadata = {
     title: "Tienda Oficial - Nuestros Productos",
@@ -10,7 +9,7 @@ export const metadata = {
 export default async function TiendaPage() {
     const headersList = await headers()
     // Resolving x-tenant-id passed down from Edge Middleware
-    const tenantId = headersList.get("x-tenant-id") || TENANT_ID
+    const tenantId = headersList.get("x-tenant-id") || "template"
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">

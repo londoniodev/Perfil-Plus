@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Input, Scroll
 import { Table } from "@/actions/admin/tables"
 import { useMenu } from "@alvarosky/restaurant-sdk"
 import { useOrder } from "@alvarosky/restaurant-sdk"
-import {} from "@/lib/config"
+import { } from "@/lib/config"
 import Image from "next/image"
 import { Search, Plus, Minus, Trash2, ShoppingCart, ChefHat, ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -39,7 +39,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
     const [activeCategory, setActiveCategory] = useState("ALL")
 
     const { categories, products, isLoading } = useMenu(tenantId)
-    const { createOrder, isSubmitting } = useOrder()
+    const { createOrder, isSubmitting } = useOrder(tenantId)
 
     // Filter products using safe casting to match SDK definitions
     const filteredProducts = useMemo(() => {
@@ -106,7 +106,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                 modifiers: []
             }))
 
-            const result = await createOrder( {
+            const result = await createOrder({
                 cart: sdkCart,
                 total: cartTotal,
                 customer: {

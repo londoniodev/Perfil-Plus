@@ -5,7 +5,7 @@ import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import {} from "@/lib/config"
+import { } from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { AdminPageWrapper, Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle } from "@alvarosky/ui"
 import { Clock, CheckCircle2, Utensils, RefreshCw, ChefHat, Loader2, Play } from "lucide-react"
@@ -125,7 +125,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(undefined, true);
+            const data = await getAdminOrders(tenantId, undefined, true);
             // Cocina solo ve APPROVED, PREPARING
             const kitchenOrders = data.filter((o: any) => ["APPROVED", "PREPARING"].includes(o.status));
             // Sort por antigüedad
@@ -154,7 +154,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(orderId, status as any);
+            await updateOrderStatus(tenantId, orderId, status as any);
             await fetchOrders()
         } catch (e: any) {
             console.error(e)

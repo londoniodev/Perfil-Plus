@@ -18,6 +18,21 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import { formatCurrency } from "@/lib/utils"
 
+// Fallback food images for products without uploaded photos
+const FOOD_FALLBACK_IMAGES = [
+    '/images/food/food-1.png', // burger
+    '/images/food/food-2.png', // fries
+    '/images/food/food-3.png', // smoothie
+    '/images/food/food-4.png', // salad
+    '/images/food/food-5.png', // pizza
+    '/images/food/food-6.png', // dessert
+]
+
+/** Deterministic fallback image based on product index */
+function getFallbackImage(index: number): string {
+    return FOOD_FALLBACK_IMAGES[index % FOOD_FALLBACK_IMAGES.length]
+}
+
 // Lazy loaded modals to strip hundreds of KB from the initial JS bundle
 const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.ProductModal), {
     ssr: false,
@@ -375,9 +390,9 @@ export default function MenuClient({
 
                         {categories.map((cat) => {
                             // Find first product image for this category
-                            const catImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
-                                || '/placeholder.jpg'
-                            const isFallback = !products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
+                            const catProductImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
+                            const catIndex = categories.indexOf(cat)
+                            const catImage = catProductImage || getFallbackImage(catIndex)
 
                             return (
                                 <div
@@ -396,7 +411,6 @@ export default function MenuClient({
                                                 fill
                                                 sizes="72px"
                                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                unoptimized={isFallback}
                                             />
                                         </div>
                                     </div>
@@ -418,7 +432,7 @@ export default function MenuClient({
                     className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-[2px] bg-slate-100 pb-20"
                 >
                     <AnimatePresence mode="popLayout">
-                        {filteredProducts.map((product) => (
+                        {filteredProducts.map((product, productIndex) => (
                             <motion.div
                                 layout
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -431,12 +445,11 @@ export default function MenuClient({
                                 className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
                             >
                                 <Image
-                                    src={product.images?.[0] || "/placeholder.jpg"}
+                                    src={product.images?.[0] || getFallbackImage(productIndex)}
                                     alt={product.name}
                                     fill
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                    unoptimized={!product.images?.[0]}
                                 />
                                 {((product as any).isAvailable === false) && (
                                     <div className="absolute inset-0 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">

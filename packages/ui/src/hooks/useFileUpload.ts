@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import imageCompression from "browser-image-compression";
 

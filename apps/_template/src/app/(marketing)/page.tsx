@@ -13,8 +13,8 @@ async function getMarketingData(tenantId: string): Promise<TenantMarketingData |
   try {
     const res = await fetch(`${INTERNAL_API_URL}/tenant/marketing?tenant=${tenantId}`, {
       next: {
-        revalidate: 3600,
-        tags: ["tenant-marketing"],
+        revalidate: 3600, // Usar 1 hora es seguro, el webhook purgará a la fuerza
+        tags: ["tenant-marketing", `tenant-marketing-${tenantId}`],
       },
     });
 

@@ -11,3 +11,41 @@ export class CreateSubscriptionDto {
     frontUrl?: string;
 }
 
+// ==================== CHECKOUT DTOs ====================
+
+export class CheckoutItemDto {
+    @IsString()
+    variantId: string;
+
+    @IsNumber()
+    quantity: number;
+}
+
+export class CheckoutCustomerDto {
+    @IsOptional()
+    @IsString()
+    name?: string;
+
+    @IsOptional()
+    @IsString()
+    email?: string;
+
+    @IsOptional()
+    @IsString()
+    phone?: string;
+
+    @IsOptional()
+    @IsString()
+    userId?: string;
+}
+
+export class CreateCheckoutDto {
+    items: CheckoutItemDto[];
+
+    @IsOptional()
+    @IsString()
+    frontUrl?: string;
+
+    @IsOptional()
+    customer?: CheckoutCustomerDto;
+}

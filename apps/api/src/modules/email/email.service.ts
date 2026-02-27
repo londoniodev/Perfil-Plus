@@ -255,5 +255,36 @@ export class EmailService {
             text,
         });
     }
+    async sendDigitalDelivery(
+        email: string,
+        name: string,
+        items: { productName: string; downloadUrl: string }[],
+    ): Promise<boolean> {
+        const frontendUrl = await this.getFrontendUrl();
+
+        // Formato básico en HTML dado que estamos enviando un arreglo dinámico de links.
+        // Podría mejorarse integrando un React Template específico luego.
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                <h2>¡Gracias por tu compra, ${name}!</h2>
+                <p>Ya puedes acceder a tus productos digitales. Aquí tienes los enlaces de descarga directa (válidos por 24 horas):</p>
+                <ul style="background: #f4f4f5; padding: 20px; border-radius: 8px; list-style-type: none;">
+                    ${items.map(item => `<li style="margin-bottom: 10px;"><strong>${item.productName}</strong><br/><a href="${item.downloadUrl}" style="color: #2563eb; text-decoration: none;">⬇️ Descargar Archivo</a></li>`).join('')}
+                </ul>
+                <p style="margin-top: 30px;">Si necesitas volver a descargar, puedes ver tus compras en cualquier momento desde tu cuenta:</p>
+                <a href="${frontendUrl}/compras" style="display: inline-block; padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 6px;">Ver mis compras</a>
+                <p style="margin-top: 20px; font-size: 12px; color: #666;">Si tienes problemas para acceder a los archivos, responde a este correo.</p>
+            </div>
+        `;
+
+        const text = `¡Gracias por tu compra, ${name}!\n\nYa puedes acceder a tus productos digitales. Aquí tienes los enlaces de descarga (válidos por 24 horas):\n\n${items.map(item => `- ${item.productName}: ${item.downloadUrl}`).join('\n')}\n\nVer mis compras: ${frontendUrl}/compras`;
+
+        return this.sendEmail({
+            to: email,
+            subject: '⬇️ Tus productos digitales están listos - Mauro Mera',
+            html,
+            text,
+        });
+    }
 }
 

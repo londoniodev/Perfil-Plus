@@ -10,6 +10,9 @@ import * as bcrypt from 'bcryptjs';
 @Injectable()
 export class TenantService {
     private readonly logger = new Logger(TenantService.name);
+    // Asume INTERNAL_FRONTEND_URL = "http://localhost:3000/api/revalidate"
+    private readonly nextjsRevalidationUrl = process.env.INTERNAL_FRONTEND_URL || 'http://127.0.0.1:3000/api/revalidate';
+    private readonly internalApiKey = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
     constructor(
         private readonly prisma: PrismaService,
@@ -137,6 +140,36 @@ export class TenantService {
         });
 
         this.logger.log(`Branding actualizado de forma segura para Tenant ID: ${tenantId}`);
+
+        // Disparador On-Demand de la caché The Next.js
+        this.triggerFrontendRevalidation([`tenant-branding-${tenantId}`, `tenant-marketing-${tenantId}`, `tenant-branding`, `tenant-marketing`]);
+
         return updatedTenant;
+    }
+
+    /**
+     * Webhook hacia el App Router de Next.js para forzar la revalidación On-Demand del caché (ISR)
+     */
+    private async triggerFrontendRevalidation(tags: string[]) {
+        try {
+            for (const tag of tags) {
+                const response = await fetch(this.nextjsRevalidationUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-revalidate-secret': this.internalApiKey,
+                    },
+                    body: JSON.stringify({ tag }),
+                });
+
+                if (!response.ok) {
+                    this.logger.error(`Revalidación Next.js falló para tag [${tag}]: ${response.statusText}`);
+                } else {
+                    this.logger.log(`Caché purgado exitosamente en Next.js para tag: [${tag}]`);
+                }
+            }
+        } catch (error: any) {
+            this.logger.error(`Error al conectar con el Webhook de Next.js en ${this.nextjsRevalidationUrl}:`, error.message);
+        }
     }
 }

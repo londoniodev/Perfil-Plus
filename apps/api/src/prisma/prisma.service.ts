@@ -49,6 +49,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
                         if (safeTenantId) {
                             if (['findMany', 'findFirst', 'findUnique', 'findUniqueOrThrow', 'count', 'update', 'updateMany', 'delete', 'deleteMany', 'aggregate', 'groupBy'].includes(operation)) {
+                                // @ts-ignore
                                 args.where = { ...args.where, tenantId: safeTenantId };
                             }
 

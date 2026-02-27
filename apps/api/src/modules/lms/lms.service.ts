@@ -260,8 +260,46 @@ export class LmsService {
 
         // Verificar acceso
         // Si el curso no es gratuito y el usuario no tiene suscripción activa
-        if (!lesson.course.isFree && !hasSubscription) {
-            throw new ForbiddenException('Necesitas una suscripción activa para acceder a este contenido');
+        let hasPurchasedCourse = false;
+
+        if (!lesson.course.isFree && !hasSubscription && userId) {
+            // Hotfix: Verificar si compró el curso individualmente
+            // Prisma JSON typing can be tricky, so we fetch the user's approved orders 
+            // and filter in memory since orders per user are typically manageable.
+            const userOrders = await this.prisma.order.findMany({
+                where: {
+                    userId: userId,
+                    status: 'APPROVED',
+                },
+                include: {
+                    items: {
+                        include: {
+                            variant: {
+                                include: { product: true }
+                            }
+                        }
+                    }
+                }
+            });
+
+            for (const order of userOrders) {
+                for (const item of order.items) {
+                    let specsStr = item.variant.product.specs as any;
+                    try {
+                        if (typeof specsStr === 'string') specsStr = JSON.parse(specsStr);
+                    } catch (e) { }
+
+                    if (specsStr && specsStr.courseId === lesson.course.id) {
+                        hasPurchasedCourse = true;
+                        break;
+                    }
+                }
+                if (hasPurchasedCourse) break;
+            }
+        }
+
+        if (!lesson.course.isFree && !hasSubscription && !hasPurchasedCourse) {
+            throw new ForbiddenException('Necesitas una suscripción activa o haber comprado este curso para acceder al contenido.');
         }
 
         // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
@@ -427,8 +465,62 @@ export class LmsService {
             .replace(/[^a-z0-9\s-]/g, '') // Eliminar caracteres especiales
             .replace(/\s+/g, '-') // Reemplazar espacios con guiones
             .replace(/-+/g, '-') // Reemplazar múltiples guiones con uno solo
-            .replace(/^-|-$/g, '') // Eliminar guiones al inicio o final
-            + '-' + Date.now().toString(36).substring(4); // Añadir sufijo único corto
+    }
+
+    // ==================== PURCHASING (B2C) ====================
+    async getMyPurchasedCourses(userId: string) {
+        // Encontrar todas las órdenes aprobadas del usuario
+        const orders = await this.prisma.order.findMany({
+            where: {
+                userId,
+                status: 'APPROVED',
+            },
+            include: {
+                items: {
+                    include: {
+                        variant: {
+                            include: {
+                                product: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Extraer los courseIds desde los "specs" (JSON)
+        const courseIds = new Set<string>();
+
+        for (const order of orders) {
+            for (const item of order.items) {
+                // Parse if it happens to be a string or JSON wrapper
+                let specsStr = item.variant.product.specs as any;
+                try {
+                    if (typeof specsStr === 'string') {
+                        specsStr = JSON.parse(specsStr);
+                    }
+                } catch (e) { }
+
+                if (specsStr && specsStr.courseId) {
+                    courseIds.add(specsStr.courseId);
+                }
+            }
+        }
+
+        if (courseIds.size === 0) {
+            return [];
+        }
+
+        // Buscar y devolver los cursos
+        return this.prisma.course.findMany({
+            where: {
+                id: { in: Array.from(courseIds) }
+            },
+            include: {
+                theme: { select: { id: true, title: true, slug: true } },
+                _count: { select: { lessons: true } }
+            }
+        });
     }
 }
 

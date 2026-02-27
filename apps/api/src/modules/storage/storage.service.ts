@@ -296,6 +296,10 @@ export class StorageService {
         }
     }
 
+    async getPresignedUrl(key: string, expiresIn: number = 86400): Promise<string> {
+        return this.getSignedUrl(key, expiresIn);
+    }
+
     getPublicUrl(key: string): string {
         const bucket = this.getBucketName(false);
         return `${this.publicUrl}/${bucket}/${key}`;

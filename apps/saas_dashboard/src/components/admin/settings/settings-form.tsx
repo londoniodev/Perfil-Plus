@@ -8,8 +8,8 @@ import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel,
 import { Loader2, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
-import { ImageUploader } from "@alvarosky/ui"
-import { API_BASE, TENANT_ID } from "@/lib/config"
+import { SingleImageDropzone } from "@alvarosky/ui"
+import { API_BASE } from "@/lib/config"
 import { BrandingForm } from "@/components/settings/BrandingForm"
 
 const settingsSchema = z.object({
@@ -89,6 +89,7 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const authToken = typeof window !== 'undefined' ? localStorage.getItem("accessToken") || "" : "";
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
@@ -244,16 +245,17 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <div className="space-y-3">
                                                 <FormLabel>Logo Principal</FormLabel>
                                                 <FormControl>
-                                                    <ImageUploader
-                                                        apiBase={API_BASE || ""}
-                                                        tenantId={TENANT_ID || ""}
-                                                        value={field.value || null}
-                                                        onChange={field.onChange}
-                                                        label="Haz clic para subir el logo (JPG, PNG, WEBP)"
-                                                        folder="logos"
-                                                        className="max-w-[200px]"
+                                                    <SingleImageDropzone
+                                                        value={field.value}
+                                                        onChange={(url) => field.onChange(url)}
+                                                        endpoint={`${API_BASE}/storage/upload/image`}
+                                                        token={authToken}
+                                                        className="max-w-[300px]"
                                                     />
                                                 </FormControl>
+                                                <p className="text-xs text-muted-foreground mt-2">
+                                                    Haz clic o arrastra para subir el logo (JPG, PNG, WEBP).
+                                                </p>
                                                 <FormMessage />
                                             </div>
                                         )}

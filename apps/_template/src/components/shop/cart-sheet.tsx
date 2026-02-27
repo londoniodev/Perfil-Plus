@@ -3,11 +3,15 @@
 import { useState, useEffect } from "react"
 import { CartSheet as SharedCartSheet, Button } from "@alvarosky/ui"
 import { useCart } from "@/store/use-cart"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
 
 export function CartSheet() {
     const [isMounted, setIsMounted] = useState(false)
     const [isCheckoutProcessing, setIsCheckoutProcessing] = useState(false)
     const cart = useCart()
+    const router = useRouter()
+    const { user } = useAuth()
 
     // Evitar error de hidratación (localStorage vs Server)
     useEffect(() => {
@@ -15,6 +19,16 @@ export function CartSheet() {
     }, [])
 
     const handleCheckout = async () => {
+        // Validación B2B2C Auth-First
+        const hasDigitalOrPhysical = cart.items.some(
+            (item) => item.productType === "DIGITAL" || item.productType === "PHYSICAL"
+        )
+
+        if (hasDigitalOrPhysical && !user) {
+            router.push("/login?redirect=/checkout")
+            return
+        }
+
         setIsCheckoutProcessing(true)
 
         try {

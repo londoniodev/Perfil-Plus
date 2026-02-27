@@ -19,6 +19,7 @@ jest.mock('mercadopago', () => ({
 
 import { PaymentsService } from './payments.service';
 import { EmailService } from '../email/email.service';
+import { StorageService } from '../storage/storage.service';
 
 // ============ MOCK DATA ============
 
@@ -110,6 +111,12 @@ function createMockEmailService() {
     };
 }
 
+function createMockStorageService() {
+    return {
+        getPresignedUrl: jest.fn().mockResolvedValue('http://mock-url.com/file'),
+    };
+}
+
 // ============ TESTS ============
 
 describe('PaymentsService', () => {
@@ -117,11 +124,13 @@ describe('PaymentsService', () => {
     let mockPrisma: ReturnType<typeof createMockPrisma>;
     let mockConfig: ReturnType<typeof createMockConfigService>;
     let mockEmail: ReturnType<typeof createMockEmailService>;
+    let mockStorage: ReturnType<typeof createMockStorageService>;
 
     beforeEach(() => {
         mockPrisma = createMockPrisma();
         mockConfig = createMockConfigService();
         mockEmail = createMockEmailService();
+        mockStorage = createMockStorageService();
 
         // Instanciación manual porque PaymentsService usa Scope.REQUEST
         // y NestJS no permite resolverlo con Test.createTestingModule
@@ -131,6 +140,7 @@ describe('PaymentsService', () => {
             mockPrisma as any,
             mockConfig as any,
             mockEmail as any,
+            mockStorage as any,
         );
     });
 

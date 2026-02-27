@@ -17,7 +17,8 @@ import { API_BASE, TENANT_ID } from "@/lib/config"
 import {
     Button, Input, Textarea, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription,
     useToast, Card, CardContent, CardHeader, CardTitle, CardDescription,
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, ImageUploader
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch,
+    SingleImageDropzone, YouTubeEmbedInput, PrivateDocumentDropzone
 } from "@alvarosky/ui"
 
 // Local Components & Schema
@@ -26,6 +27,8 @@ import * as z from "zod"
 
 export const extendedProductSchema = productSchema.extend({
     downloadUrl: z.string().optional(),
+    videoUrl: z.string().optional(), // Added for YouTube Video URL integration
+    courseId: z.string().optional(), // Vinculación con Cursos (LMS)
     pages: z.number().optional(),
     format: z.string().optional(),
     weight: z.string().optional(),
@@ -40,13 +43,23 @@ import { CategorySelector } from "./category-selector"
 
 interface ProductFormProps {
     initialData?: any
+    courses?: { id: string; title: string }[]
 }
 
-export function ProductForm({ initialData }: ProductFormProps) {
+export function ProductForm({ initialData, courses = [] }: ProductFormProps) {
     const router = useRouter()
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [hasModifiers, setHasModifiers] = useState(!!(initialData?.modifierGroups && initialData?.modifierGroups.length > 0))
+    const [authToken, setAuthToken] = useState<string | undefined>(undefined)
+
+    // Setup Auth Token safe payload for Edge uploads directly to NestJS
+    useState(() => {
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("token");
+            if (token) setAuthToken(token);
+        }
+    })
 
     // Valores por defecto
     const defaultValues: Partial<ProductFormValues> = {
@@ -56,7 +69,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
         basePrice: initialData?.basePrice || 0,
         images: initialData?.images || [],
         published: initialData?.published || false,
-        downloadUrl: initialData?.specs?.downloadUrl || "",
+        downloadUrl: initialData?.specs?.downloadUrl || initialData?.digitalFileUrl || "",
+        videoUrl: initialData?.specs?.videoUrl || initialData?.previewUrl || "",
+        courseId: initialData?.specs?.courseId || "",
         pages: initialData?.specs?.pages,
         format: initialData?.specs?.format || "",
         weight: initialData?.specs?.weight || "",
@@ -90,12 +105,14 @@ export function ProductForm({ initialData }: ProductFormProps) {
             // Construir specs
             const specs: Record<string, any> = {}
             if (data.productType === "DIGITAL") {
-                if (data.downloadUrl) specs.downloadUrl = data.downloadUrl
-                if (data.pages) specs.pages = data.pages
-                if (data.format) specs.format = data.format
+                if (data.downloadUrl) specs.downloadUrl = data.downloadUrl;
+                if (data.videoUrl) specs.videoUrl = data.videoUrl;
+                if (data.courseId) specs.courseId = data.courseId;
+                if (data.pages) specs.pages = data.pages;
+                if (data.format) specs.format = data.format;
             } else {
-                if (data.weight) specs.weight = data.weight
-                if (data.dimensions) specs.dimensions = data.dimensions
+                if (data.weight) specs.weight = data.weight;
+                if (data.dimensions) specs.dimensions = data.dimensions;
             }
 
             const productData = {
@@ -107,6 +124,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 images: data.images,
                 specs,
                 published: data.published,
+                digitalFileUrl: data.downloadUrl || undefined, // Send separately for Prisma
+                previewUrl: data.videoUrl || undefined, // Send mapped to DB models
                 // Si es físico enviamos variantes, si no undefined (backend lo maneja)
                 variants: data.productType === "PHYSICAL" ? data.variants?.map(v => ({
                     id: v.id,
@@ -288,16 +307,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                     </div>
                                 ))}
 
-                                <div className="aspect-square">
-                                    <ImageUploader
-                                        value={null}
-                                        onChange={handleAddImage}
-                                        label=""
+                                <div className="col-span-2 sm:col-span-4 mt-2">
+                                    <SingleImageDropzone
+                                        endpoint={`${API_BASE}/storage/upload/image`}
+                                        token={authToken}
                                         folder="products"
-                                        apiBase={API_BASE}
-                                        tenantId={TENANT_ID}
-                                        variant="button"
+                                        onUploadSuccess={handleAddImage}
+                                        maxSizeMB={5}
                                     />
+                                    <p className="text-xs text-muted-foreground mt-2">Si adjuntas varias, la primera será la portada</p>
                                 </div>
                             </div>
                             {form.formState.errors.images && (
@@ -310,7 +328,86 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     </CardContent>
                 </Card>
 
+                {/* 2. Metadata Digital (Solo Cursos y Software) */}
+                {productType === "DIGITAL" && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Contenido Digital</CardTitle>
+                            <CardDescription>Video de introducción o demo y archivo a entregar</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField
+                                control={form.control}
+                                name="videoUrl"
+                                render={({ field }: { field: any }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <YouTubeEmbedInput
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                label="Enlace del Video de Demostración (YouTube)"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
+                            <FormField
+                                control={form.control}
+                                name="downloadUrl"
+                                render={({ field }: { field: any }) => (
+                                    <FormItem>
+                                        <FormLabel>Archivo Digital Protegido (Ebook, ZIP, etc.)</FormLabel>
+                                        <FormControl>
+                                            <PrivateDocumentDropzone
+                                                endpoint={`${API_BASE}/storage/upload/ebook`}
+                                                token={authToken}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {courses && courses.length > 0 && (
+                                <FormField
+                                    control={form.control}
+                                    name="courseId"
+                                    render={({ field }: { field: any }) => (
+                                        <FormItem>
+                                            <FormLabel>Vincular a un Curso (LMS)</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger className="bg-background">
+                                                        <SelectValue placeholder="Selecciona un curso (opcional)" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="">Ninguno</SelectItem>
+                                                    {courses.map(course => (
+                                                        <SelectItem key={course.id} value={course.id}>
+                                                            {course.title}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Si el cliente compra este producto, se le dará acceso al curso seleccionado.
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* 3. Modificadores (Restaurante o Físico con opciones) */}
                 {(productType === "PHYSICAL" || productType === "RESTAURANT") && (

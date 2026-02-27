@@ -31,8 +31,8 @@ async function getTenantDesign(tenantId: string) {
         'x-tenant-id': tenantId,
       },
       next: {
-        revalidate: 300,
-        tags: ['tenant-branding'],
+        revalidate: 3600,
+        tags: ['tenant-branding', `tenant-branding-${tenantId}`],
       }
     });
 

@@ -105,6 +105,9 @@ export * from "./components/commerce/product-configurator";
 
 // Upload Components
 export * from "./components/upload";
+export * from "./components/SingleImageDropzone";
+export * from "./components/YouTubeEmbedInput";
+export * from "./components/PrivateDocumentDropzone";
 
 // Admin Components
 export * from "./components/admin";
@@ -126,6 +129,7 @@ export * from "./components/subscription";
 export * from "./hooks/use-mobile";
 export * from "./hooks/use-scroll";
 export * from "./hooks/use-digital-product";
+export * from "./hooks/useFileUpload";
 
 // Layouts (Admin Panel Components)
 export * from "./layouts";

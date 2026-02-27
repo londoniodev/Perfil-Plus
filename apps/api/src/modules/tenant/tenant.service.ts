@@ -150,22 +150,31 @@ export class TenantService {
         }
 
         // Buscar primero por coincidencia exacta relajando status ('ACTIVE' u otros)
-        let tenant = await this.prisma.tenant.findFirst({
-            where: { slug: domain },
-            select: { id: true, name: true, status: true }
-        });
+        let tenant: any = null;
+        try {
+            tenant = await this.prisma.tenant.findFirst({
+                where: { slug: domain },
+                select: { id: true, name: true, status: true }
+            });
+        } catch (error) {
+            // Ignorar
+        }
 
         // Si no lo encuentra, buscar con 'contains' (ej. Si la BD lo tiene guardado como mauromera.com o MauroMera)
         if (!tenant) {
-            tenant = await this.prisma.tenant.findFirst({
-                where: {
-                    OR: [
-                        { slug: { contains: domain, mode: 'insensitive' } },
-                        { name: { contains: domain, mode: 'insensitive' } }
-                    ]
-                },
-                select: { id: true, name: true, status: true }
-            });
+            try {
+                tenant = await this.prisma.tenant.findFirst({
+                    where: {
+                        OR: [
+                            { slug: { contains: domain, mode: 'insensitive' } },
+                            { name: { contains: domain, mode: 'insensitive' } }
+                        ]
+                    },
+                    select: { id: true, name: true, status: true }
+                });
+            } catch (error) {
+                // Ignorar
+            }
         }
 
         if (!tenant) {

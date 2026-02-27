@@ -6,14 +6,13 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api";
 
 // Enforce explicit NEXT_PUBLIC_TENANT_ID in ALL environments
-const envTenantId = process.env.NEXT_PUBLIC_TENANT_ID?.trim();
+let envTenantId = process.env.NEXT_PUBLIC_TENANT_ID?.trim();
 
 if (!envTenantId) {
-    throw new Error(
-        "❌ [FATAL ERROR] Missing NEXT_PUBLIC_TENANT_ID environment variable.\n" +
-        "Set it in .env.local for development or as a build-time argument in Dokploy/Vercel for production.\n" +
-        "Example: NEXT_PUBLIC_TENANT_ID=\"my-tenant-slug\""
-    );
+    // During Docker build phase we use a fallback to allow standalone compilation 
+    // without locking the image to a specific tenant
+    console.warn("⚠️ [WARN] Missing NEXT_PUBLIC_TENANT_ID environment variable. Falling back to 'template' for build compatibility.");
+    envTenantId = "template";
 }
 
 export const TENANT_ID = envTenantId;

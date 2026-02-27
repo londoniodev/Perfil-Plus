@@ -75,7 +75,7 @@ export async function middleware(request: NextRequest) {
 
     // Bloquear acceso a rutas del SaaS si el tenant NO tiene el feature activo
     // (Bypass para isBaseDomain, ideal para desarrollo local del dashboard core)
-    if (isProtected && !isBaseDomain && !tenantFeatures.includes('SAAS_DASHBOARD')) {
+    if (isProtected && !isBaseDomain && !tenantFeatures.includes('dashboard')) {
         url.pathname = '/';
         return NextResponse.redirect(url);
     }

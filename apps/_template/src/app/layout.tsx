@@ -146,7 +146,7 @@ export default async function RootLayout({
   if (tenantFeaturesRaw) {
     try {
       const features = JSON.parse(tenantFeaturesRaw);
-      hasDashboardFeature = features.includes('SAAS_DASHBOARD');
+      hasDashboardFeature = features.includes('dashboard');
     } catch (e) {
       console.warn("Failed to parse tenant features block");
     }

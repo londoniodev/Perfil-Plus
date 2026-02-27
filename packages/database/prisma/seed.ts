@@ -20,7 +20,7 @@ async function main() {
             id: 'mauro',
             name: 'Mauro Mera',
             slug: 'mauro',
-            dbName: 'db_mauromera',
+            dbName: 'web-projects',
             features: ["shop", "blog", "lms", "restaurant"],
             design: { colors: { primary: "#000000" } }
         },
@@ -28,7 +28,7 @@ async function main() {
             id: 'default',
             name: 'Template Admin',
             slug: 'default',
-            dbName: 'db_default',
+            dbName: 'web-projects',
             features: ["shop", "blog", "lms"],
             design: { colors: { primary: "#4f46e5" } }
         },
@@ -36,7 +36,7 @@ async function main() {
             id: 'cocinasiete',
             name: 'Cocina Siete',
             slug: 'cocinasiete',
-            dbName: 'db_cocinasiete',
+            dbName: 'web-projects',
             features: ["shop", "blog", "lms", "restaurant"],
             design: { colors: { primary: "#01c176" } }
         },
@@ -44,7 +44,7 @@ async function main() {
             id: 'deborahmoscoso',
             name: 'Deborah Moscoso',
             slug: 'deborahmoscoso',
-            dbName: 'db_deborahmoscoso',
+            dbName: 'web-projects',
             features: ["shop", "blog", "lms"],
             design: { colors: { primary: "#e88d74" } } // Approximate branding color based on memory or generic
         }

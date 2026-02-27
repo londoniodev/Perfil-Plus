@@ -39,7 +39,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
     const [activeCategory, setActiveCategory] = useState("ALL")
 
     const { categories, products, isLoading } = useMenu(tenantId)
-    const { createOrder, isSubmitting } = useOrder(tenantId)
+    const { createOrder, isSubmitting } = useOrder()
 
     // Filter products using safe casting to match SDK definitions
     const filteredProducts = useMemo(() => {
@@ -106,7 +106,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                 modifiers: []
             }))
 
-            const result = await createOrder({
+            const result = await createOrder(tenantId, {
                 cart: sdkCart,
                 total: cartTotal,
                 customer: {

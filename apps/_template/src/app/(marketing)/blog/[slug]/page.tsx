@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { headers } from "next/headers";
 import { Metadata } from "next";
 import { PostHeader, RelatedTopics, AdaptiveImage, Button, IconLock, IconDocument, IconFile, ShareButtons, TableOfContents, type TocItem } from "@alvarosky/ui";
 import { BlogBackButton } from "../BlogBackButton";
@@ -15,7 +16,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const post = await getPostBySlug(slug);
+    const headersList = await headers()
+    const tenantId = headersList.get("x-tenant-id") || "template"
+    const post = await getPostBySlug(tenantId, slug);
     const title = post.metaTitle || post.title;
     const description = post.metaDescription || post.excerpt;
 
@@ -64,7 +67,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
   let post;
   try {
-    post = await getPostBySlug(slug);
+    const headersList = await headers()
+    const tenantId = headersList.get("x-tenant-id") || "template"
+    post = await getPostBySlug(tenantId, slug);
   } catch {
     notFound();
   }

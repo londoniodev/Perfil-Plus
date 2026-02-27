@@ -23,7 +23,8 @@ export default async function Image({ params }: Props) {
     let publishedDate = '';
 
     try {
-        const post = await getPostBySlug(slug);
+        const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || "template";
+        const post = await getPostBySlug(tenantId, slug);
         postTitle = post.title;
 
         // Format date

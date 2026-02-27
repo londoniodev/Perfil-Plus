@@ -44,7 +44,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PHASE=phase-production-build
 
 # Provide a dummy DATABASE_URL purely for prisma generate to complete without breaking (matches _template)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm run build --filter=saas_dashboard
+# Provide a dummy NEXT_PUBLIC_TENANT_ID to allow Next.js static generation to pass the missing env check
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+    NEXT_PUBLIC_TENANT_ID="admin_build" \
+    pnpm run build --filter=saas_dashboard
 
 # 3. Production Runner
 FROM base AS runner

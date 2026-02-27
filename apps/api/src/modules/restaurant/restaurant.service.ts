@@ -21,14 +21,28 @@ export class RestaurantService {
         return tenant.id;
     }
 
-    async getPublicMenu(slug: string) {
+    async getPublicMenu(slugOrId: string) {
         // 0. Check Cache
-        const cacheKey = `public_menu:${slug}`;
+        const cacheKey = `public_menu:${slugOrId}`;
 
-        // 1. Find Tenant
-        const tenant = await this.prisma.tenant.findUnique({
-            where: { slug },
-        });
+        // 1. Find Tenant (Polymorphic: ID or Slug)
+        let tenant = null;
+
+        // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
+        try {
+            tenant = await this.prisma.tenant.findUnique({
+                where: { id: slugOrId }
+            });
+        } catch (e) {
+            // Probably not a valid UUID, ignore and try slug
+        }
+
+        // Fallback to Slug lookup
+        if (!tenant) {
+            tenant = await this.prisma.tenant.findUnique({
+                where: { slug: slugOrId },
+            });
+        }
 
         if (!tenant) {
             throw new NotFoundException('Restaurant not found');

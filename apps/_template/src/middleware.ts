@@ -54,6 +54,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const rewritesPaths = [
+        '/dashboard/_next',
         '/dashboard',
         '/admin',
         '/perfil',
@@ -103,6 +104,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // Aplicar a casi toda la web, útil para forzar el x-tenant-id incluso en la Landing
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|images|.*\\..*|api).*)'],
+    // Aplicar a casi toda la web, útil para forzar el x-tenant-id incluso en la Landing.
+    // IMPORTANTE: Se debe interceptar explícitamente `/dashboard/_next/...` para que los assets 
+    // del SaaS Dashboard (CSS/JS) no sean ignorados por el proxy y devuelvan 404 en producción.
+    matcher: [
+        '/dashboard/_next/:path*',
+        '/((?!_next/static|_next/image|favicon.ico|images|.*\\..*|api).*)'
+    ],
 };

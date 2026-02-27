@@ -6,6 +6,7 @@ import { TenantMarketingData } from "@/types/marketing";
 import MauroLanding from "@/components/legacy/mauromera/Landing";
 import DeborahLanding from "@/components/legacy/deborahmoscoso/Landing";
 import DefaultLanding from "@/components/marketing/DefaultLanding";
+import CocinasieteLanding from "@/components/legacy/cocinasiete/Landing";
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
@@ -50,8 +51,10 @@ export default async function MarketingHubPage() {
   switch (safeData.tenantSlug) {
     case "mauromera":
       return <MauroLanding data={safeData} />;
-    case "deborahmoscoso":
+    case "soydeborasoysaludable":
       return <DeborahLanding data={safeData} />;
+    case "cocinasiete":
+      return <CocinasieteLanding data={safeData} />;
     default:
       return <DefaultLanding data={safeData} />;
   }

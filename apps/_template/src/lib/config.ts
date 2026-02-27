@@ -3,7 +3,7 @@
 // ============================================================================
 
 // API Base URL
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api";
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
 
 // Enforce explicit NEXT_PUBLIC_TENANT_ID in ALL environments
 let envTenantId = process.env.NEXT_PUBLIC_TENANT_ID?.trim();

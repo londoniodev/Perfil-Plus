@@ -26,7 +26,7 @@ export class RestaurantService {
         const cacheKey = `public_menu:${slugOrId}`;
 
         // 1. Find Tenant (Polymorphic: ID or Slug)
-        let tenant = null;
+        let tenant: any = null;
 
         // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
         try {

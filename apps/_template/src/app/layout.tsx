@@ -142,14 +142,18 @@ export default async function RootLayout({
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
+  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, x-tenant-features raw="${tenantFeaturesRaw}"`);
   let hasDashboardFeature = true; // Default fallback publico
   if (tenantFeaturesRaw) {
     try {
       const features = JSON.parse(tenantFeaturesRaw);
       hasDashboardFeature = features.includes('dashboard');
+      console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(features)}, hasDashboardFeature=${hasDashboardFeature}`);
     } catch (e) {
       console.warn("Failed to parse tenant features block");
     }
+  } else {
+    console.log(`[LAYOUT DEBUG] No x-tenant-features header found, defaulting hasDashboardFeature=true`);
   }
 
   return (

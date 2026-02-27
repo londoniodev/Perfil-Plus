@@ -68,23 +68,33 @@ export class TenantService {
      * Obtiene la apariencia del tenant para la inicialización pública de la aplicación (app/layout.tsx en frontend)
      */
     async getTenantBranding(tenantId: string) {
+        this.logger.log(`[BRANDING DEBUG] getTenantBranding called with tenantId: "${tenantId}"`);
         try {
             const tenantById = await this.prisma.tenant.findFirst({
                 where: { id: tenantId },
                 select: { design: true, name: true, features: true },
             });
-            if (tenantById) return tenantById;
+            if (tenantById) {
+                this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
+                return tenantById;
+            }
         } catch (error) {
+            this.logger.warn(`[BRANDING DEBUG] findFirst by ID failed for "${tenantId}": ${error?.message || error}`);
             // Postgres throw 22P03 si el tenantId ('template') no coincide con el map de la columna (UUID/INT).
         }
 
+        this.logger.log(`[BRANDING DEBUG] ID lookup failed, trying slug lookup for: "${tenantId}"`);
         const tenantBySlug = await this.prisma.tenant.findFirst({
             where: { slug: tenantId },
             select: { design: true, name: true, features: true },
         });
 
-        if (tenantBySlug) return tenantBySlug;
+        if (tenantBySlug) {
+            this.logger.log(`[BRANDING DEBUG] Found tenant by slug: ${tenantId}`);
+            return tenantBySlug;
+        }
 
+        this.logger.error(`[BRANDING DEBUG] Tenant NOT FOUND for ID/Slug: "${tenantId}"`);
         throw new NotFoundException(`Tenant con ID/Slug ${tenantId} no encontrado`);
     }
 
@@ -154,7 +164,7 @@ export class TenantService {
         try {
             tenant = await this.prisma.tenant.findFirst({
                 where: { slug: domain },
-                select: { id: true, name: true, status: true }
+                select: { id: true, name: true, status: true, features: true }
             });
         } catch (error) {
             // Ignorar
@@ -170,7 +180,7 @@ export class TenantService {
                             { name: { contains: domain, mode: 'insensitive' } }
                         ]
                     },
-                    select: { id: true, name: true, status: true }
+                    select: { id: true, name: true, status: true, features: true }
                 });
             } catch (error) {
                 // Ignorar
@@ -182,8 +192,10 @@ export class TenantService {
             throw new NotFoundException(`Tenant no encontrado para el dominio: ${domain}`);
         }
 
-        await this.cacheManager.set(cacheKey, { id: tenant.id }, 3600 * 1000);
-        return { id: tenant.id };
+        const resolvedTenant = { id: tenant.id, features: tenant.features || [] };
+        this.logger.log(`[IDENTIFY DEBUG] Resolved tenant for domain "${domain}": id=${tenant.id}, features=${JSON.stringify(resolvedTenant.features)}`);
+        await this.cacheManager.set(cacheKey, resolvedTenant, 3600 * 1000);
+        return resolvedTenant;
     }
 
     /**

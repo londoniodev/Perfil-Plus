@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
                 const tenantData = await res.json();
                 tenantId = tenantData.id;
                 tenantFeatures = tenantData.features || [];
-                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, features: ${JSON.stringify(tenantFeatures)}`);
             } else if (res.status === 404) {
                 console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${tenantSlugToQuery}`);
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado

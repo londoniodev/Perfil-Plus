@@ -1,66 +1,43 @@
 "use server"
 
-import { PrismaClient, OrderStatus } from "@prisma/client"
+import { OrderStatus } from "@prisma/client"
 import { revalidatePath } from "next/cache"
+import { serverFetch } from "@/lib/api-server"
 
-const prisma = new PrismaClient()
-
-export async function getOrders(tenantId: string) {
+export async function getOrders() {
     try {
-        const orders = await prisma.order.findMany({
-            where: { tenantId },
-            orderBy: { createdAt: 'desc' },
-            include: {
-                items: {
-                    include: {
-                        variant: {
-                            include: {
-                                product: {
-                                    select: {
-                                        productType: true,
-                                        name: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                user: {
-                    select: { name: true, email: true }
-                }
-            }
-        });
+        const orders = await serverFetch<any[]>("/admin/orders")
 
-        // Convertir el Decimal object de Prisma en string/número crudo para pasarlo seguro al Client Component
+        // Convertir el Decimal object/number en número para pasarlo seguro al Client Component
         return orders.map(order => ({
             ...order,
             totalAmount: Number(order.totalAmount),
-            items: order.items.map(item => ({
+            items: order.items.map((item: any) => ({
                 ...item,
                 price: Number(item.price),
-                // Opcional para arrastrar priceAdjustment si existe: priceAdjustment: Number(item.priceAdjustment)
             }))
         }));
     } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching orders via API:", error);
         return [];
     }
 }
 
-export async function updateOrderStatus(orderId: string, newStatus: OrderStatus, tenantId: string) {
+export async function updateOrderStatus(orderId: string, newStatus: OrderStatus) {
     try {
-        await prisma.order.update({
-            where: { id: orderId, tenantId },
-            data: { status: newStatus }
+        await serverFetch(`/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: newStatus })
         });
 
         // Revalida la ruta donde se encuentra la tabla para ver cambios inmediatos
         revalidatePath('/orders');
         revalidatePath('/admin/orders'); // Previendo ambos scopes
+        revalidatePath('/restaurante/comandas');
 
         return { success: true };
     } catch (error: any) {
-        console.error("Error updating order status directly on Prisma:", error);
+        console.error("Error updating order status via API:", error);
         return { success: false, error: error.message };
     }
 }

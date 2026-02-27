@@ -1,47 +1,36 @@
-import { PrismaClient } from "@prisma/client"
+import { serverFetch } from "@/lib/api-server"
 import { ProductForm } from "@/components/admin/products/product-form"
-import { PageHeader, AdminPageWrapper } from "@alvarosky/ui"
+import { AdminPageWrapper } from "@alvarosky/ui"
 import { notFound } from "next/navigation"
-
-const prisma = new PrismaClient()
 
 interface EditMenuPageProps {
     params: Promise<{ id: string }>
 }
 
 async function getProduct(id: string) {
-    const product = await prisma.product.findUnique({
-        where: { id },
-        include: {
-            variants: true,
-            modifierGroups: {
-                include: {
-                    modifiers: {
-                        orderBy: { createdAt: 'asc' }
-                    }
-                },
-                orderBy: { createdAt: 'asc' }
-            }
+    try {
+        const product = await serverFetch<any>(`/admin/products/${id}`)
+        if (!product) return null
+
+        // Transform decimal to number for form (Backend usually returns numbers but we ensure)
+        return {
+            ...product,
+            basePrice: Number(product.basePrice),
+            variants: product.variants?.map((v: any) => ({
+                ...v,
+                price: Number(v.price)
+            })) || [],
+            modifierGroups: product.modifierGroups?.map((g: any) => ({
+                ...g,
+                modifiers: g.modifiers?.map((m: any) => ({
+                    ...m,
+                    priceAdjustment: Number(m.priceAdjustment)
+                })) || []
+            })) || []
         }
-    })
-
-    if (!product) return null
-
-    // Transform decimal to number for form
-    return {
-        ...product,
-        basePrice: Number(product.basePrice),
-        variants: product.variants.map(v => ({
-            ...v,
-            price: Number(v.price)
-        })),
-        modifierGroups: product.modifierGroups.map(g => ({
-            ...g,
-            modifiers: g.modifiers.map(m => ({
-                ...m,
-                priceAdjustment: Number(m.priceAdjustment)
-            }))
-        }))
+    } catch (error) {
+        console.error("Error fetching product via API:", error)
+        return null
     }
 }
 

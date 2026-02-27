@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
@@ -154,6 +155,19 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         }
       },
       inject: [ConfigService],
+    }),
+
+    // Global JWT configuration (Allows JwtAuthGuard to verify globally)
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
+        },
+      }),
     }),
 
     // Static Files (for local uploads)

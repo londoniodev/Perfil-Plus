@@ -53,7 +53,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Signal to app code that we're in build phase (skip DB calls during static generation)
 ENV NEXT_PHASE=phase-production-build
 
-RUN pnpm run build
+# Provide a dummy DATABASE_URL purely for prisma generate to complete without breaking
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" pnpm run build
 
 # 3. Production Runner
 FROM base AS runner
@@ -90,4 +91,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/_template/server.js"]
+CMD ["node", "apps/_template/server.js"]

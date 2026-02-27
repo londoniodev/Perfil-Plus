@@ -73,6 +73,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_TENANT_ID: process.env.NEXT_PUBLIC_TENANT_ID,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

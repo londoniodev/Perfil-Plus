@@ -7,7 +7,7 @@ WORKDIR /app
 RUN npm install -g turbo
 COPY . .
 # Prune the workspace for the web app
-RUN turbo prune --scope=mauromera-web --docker
+RUN turbo prune --scope=template --docker
 
 # 2. Install dependencies & Build
 FROM base AS builder
@@ -72,7 +72,7 @@ RUN adduser --system --uid 1001 nextjs
 RUN apk add --no-cache openssl
 
 # Copy public files
-COPY --from=builder /app/apps/mauromera-web/public ./apps/mauromera-web/public
+COPY --from=builder /app/apps/_template/public ./apps/_template/public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -80,8 +80,8 @@ RUN chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/mauromera-web/.next/static ./apps/mauromera-web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/_template/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/_template/.next/static ./apps/_template/.next/static
 # Copiamos el esquema para poder correr migraciones en producción
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 
@@ -91,4 +91,4 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/mauromera-web/server.js"]
+CMD ["sh", "-c", "sed -i '/^generator client {$/,/^}$/d' prisma/schema.prisma && npx prisma@5.22.0 db push --accept-data-loss && node apps/_template/server.js"]

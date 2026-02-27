@@ -65,43 +65,67 @@ export class TenantService {
     }
 
     /**
+     * Helper para saber si un string es un UUID válido o un CUID, evitando crasheos 22P03 de PostgreSQL
+     * al intentar buscar strings genéricos como 'template' en la columna 'id' tipada.
+     */
+    private isId(value: string) {
+        return value && value.length >= 20; // CUIDs y UUIDs superan los 24 caracteres.
+    }
+
+    /**
      * Obtiene la apariencia del tenant para la inicialización pública de la aplicación (app/layout.tsx en frontend)
      */
     async getTenantBranding(tenantId: string) {
-        const tenant = await this.prisma.tenant.findFirst({
-            where: { id: tenantId },
-            select: {
-                design: true,
-                name: true,
-                features: true,
-            },
-        });
-
-        if (!tenant) {
-            throw new NotFoundException(`Tenant con ID ${tenantId} no encontrado`);
+        if (this.isId(tenantId)) {
+            const tenantById = await this.prisma.tenant.findFirst({
+                where: { id: tenantId },
+                select: { design: true, name: true, features: true },
+            });
+            if (tenantById) return tenantById;
         }
 
-        return tenant;
+        const tenantBySlug = await this.prisma.tenant.findFirst({
+            where: { slug: tenantId },
+            select: { design: true, name: true, features: true },
+        });
+
+        if (tenantBySlug) return tenantBySlug;
+
+        throw new NotFoundException(`Tenant con ID/Slug ${tenantId} no encontrado`);
     }
 
     /**
      * Obtiene los datos de Marketing del tenant para la Landing Page pública
      */
     async getTenantMarketing(tenantId: string) {
-        const tenant = await this.prisma.tenant.findUnique({
-            where: { id: tenantId },
+        if (this.isId(tenantId)) {
+            const tenantById = await this.prisma.tenant.findUnique({
+                where: { id: tenantId },
+                select: { slug: true, name: true, notes: true }
+            });
+            if (tenantById) {
+                return {
+                    tenantSlug: tenantById.slug,
+                    heroTitle: tenantById.name || 'Empresa Creciendo',
+                    heroSubtitle: tenantById.notes || 'Configurando soluciones digitales para ti...',
+                };
+            }
+        }
+
+        const tenantBySlug = await this.prisma.tenant.findUnique({
+            where: { slug: tenantId },
             select: { slug: true, name: true, notes: true }
         });
 
-        if (!tenant) {
-            throw new NotFoundException(`Tenant con ID ${tenantId} no encontrado para marketing`);
+        if (tenantBySlug) {
+            return {
+                tenantSlug: tenantBySlug.slug,
+                heroTitle: tenantBySlug.name || 'Empresa Creciendo',
+                heroSubtitle: tenantBySlug.notes || 'Configurando soluciones digitales para ti...',
+            };
         }
 
-        return {
-            tenantSlug: tenant.slug,
-            heroTitle: tenant.name || 'Empresa Creciendo',
-            heroSubtitle: tenant.notes || 'Configurando soluciones digitales para ti...',
-        };
+        throw new NotFoundException(`Tenant con ID/Slug ${tenantId} no encontrado para marketing`);
     }
 
     /**
@@ -129,11 +153,24 @@ export class TenantService {
             return cachedResolution;
         }
 
-        // Buscar por slug (dominio o subdominio) asegurando que el plan/status actúe si es necesario
-        const tenant = await this.prisma.tenant.findFirst({
-            where: { slug: domain, status: 'ACTIVE' },
-            select: { id: true, name: true }
+        // Buscar primero por coincidencia exacta relajando status ('ACTIVE' u otros)
+        let tenant = await this.prisma.tenant.findFirst({
+            where: { slug: domain },
+            select: { id: true, name: true, status: true }
         });
+
+        // Si no lo encuentra, buscar con 'contains' (ej. Si la BD lo tiene guardado como mauromera.com o MauroMera)
+        if (!tenant) {
+            tenant = await this.prisma.tenant.findFirst({
+                where: {
+                    OR: [
+                        { slug: { contains: domain, mode: 'insensitive' } },
+                        { name: { contains: domain, mode: 'insensitive' } }
+                    ]
+                },
+                select: { id: true, name: true, status: true }
+            });
+        }
 
         if (!tenant) {
             await this.cacheManager.set(cacheKey, 'NOT_FOUND', 3600 * 1000);

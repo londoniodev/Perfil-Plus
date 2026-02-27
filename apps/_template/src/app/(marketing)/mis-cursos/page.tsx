@@ -28,7 +28,8 @@ export default function MisCursosPage() {
     const fetchPurchasedCourses = async () => {
         try {
             const token = localStorage.getItem('token')
-            const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+            const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+            const apiUrl = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
             const res = await fetch(`${apiUrl}/lms/my-purchased-courses`, {
                 headers: {

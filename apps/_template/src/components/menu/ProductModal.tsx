@@ -67,7 +67,8 @@ export function ProductModal({
         }
     }, [commentText])
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
+    const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
     // Load initial state
     useEffect(() => {

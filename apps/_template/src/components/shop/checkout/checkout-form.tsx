@@ -117,7 +117,9 @@ export function CheckoutForm() {
                 }
 
                 // POST al endpoint de Checkout de MercadoPago en NestJS
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/payments/product/checkout`, {
+                const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
+                const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+                const response = await fetch(`${API_URL}/payments/product/checkout`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

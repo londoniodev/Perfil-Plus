@@ -24,7 +24,8 @@ async function getTenantDesign(tenantId: string) {
     // 2. serverFetch llama a cookies() que marca el fetch como dinámico,
     //    impidiendo el cache ISR y causando errores en páginas estáticas
     // Use INTERNAL_API_URL inside Docker for SSR to avoid external routing hops and HTTPS 404s
-    const API_URL = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api').replace(/\/+$/, "");
+    const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api').replace(/\/+$/, "");
+    const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
     const response = await fetch(`${API_URL}/tenant/branding`, {
       headers: {

@@ -23,7 +23,8 @@ async function getTenantDesign(tenantId: string) {
     // 1. El endpoint /tenant/branding es @Public() y NO requiere JWT/cookies
     // 2. serverFetch llama a cookies() que marca el fetch como dinámico,
     //    impidiendo el cache ISR y causando errores en páginas estáticas
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+    // Use INTERNAL_API_URL inside Docker for SSR to avoid external routing hops and HTTPS 404s
+    const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
     const response = await fetch(`${API_URL}/tenant/branding`, {
       headers: {

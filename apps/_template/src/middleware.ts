@@ -10,7 +10,15 @@ export async function middleware(request: NextRequest) {
     const hostname = request.headers.get('host') || '';
     const cleanHostname = hostname.split(':')[0];
 
-    const isBaseDomain = ['localhost', '127.0.0.1'].includes(cleanHostname);
+    // Convert domain.com to domain (removes TLD for DB slug matching)
+    let tenantSlugToQuery = cleanHostname;
+    if (tenantSlugToQuery.startsWith('www.')) {
+        tenantSlugToQuery = tenantSlugToQuery.substring(4);
+    }
+    // Remove everything after the first dot (matches 'mauromera.com' -> 'mauromera')
+    tenantSlugToQuery = tenantSlugToQuery.split('.')[0];
+
+    const isBaseDomain = ['localhost', '127'].includes(tenantSlugToQuery);
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantFeatures: string[] = [];
@@ -18,7 +26,8 @@ export async function middleware(request: NextRequest) {
     if (!isBaseDomain) {
         try {
             // Petición al backend en Docker (misma red) para resolver host
-            const res = await fetch(`${INTERNAL_API_URL}/tenant/identify?domain=${cleanHostname}`, {
+            // Sending the stripped slug to the backend
+            const res = await fetch(`${INTERNAL_API_URL}/tenant/identify?domain=${tenantSlugToQuery}`, {
                 headers: {
                     'x-internal-token': INTERNAL_API_KEY
                 }

@@ -17,8 +17,8 @@ export async function toggleProductAvailability(productId: string, isAvailable: 
             body: JSON.stringify({ isAvailable })
         })
 
-        revalidatePath("/admin/products")
-        revalidatePath("/admin/restaurant/menu")
+        revalidatePath("/tienda/productos")
+        revalidatePath("/restaurante/menu")
 
         return { success: true }
     } catch (error: any) {

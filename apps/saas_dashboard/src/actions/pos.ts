@@ -121,8 +121,8 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
 
         const order = await res.json()
 
-        revalidatePath("/admin/restaurant/orders")
-        revalidatePath("/admin/restaurant/pos")
+        revalidatePath("/restaurante/comandas")
+        revalidatePath("/restaurante/pos")
 
         return { success: true, orderId: order.id }
 

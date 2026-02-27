@@ -552,7 +552,7 @@ export function ProductForm({ initialData, courses = [] }: ProductFormProps) {
                         className="w-full sm:flex-none sm:w-auto"
                         onClick={() => {
                             const type = form.getValues("productType")
-                            router.push(type === "RESTAURANT" ? "/admin/restaurant/menu" : "/admin/products")
+                            router.push(type === "RESTAURANT" ? "/restaurante/menu" : "/tienda/productos")
                         }}
                         disabled={isSubmitting}
                     >

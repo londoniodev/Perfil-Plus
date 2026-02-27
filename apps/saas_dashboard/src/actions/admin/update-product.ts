@@ -71,8 +71,8 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
             throw new Error("El servidor no retornó el producto modificado")
         }
 
-        revalidatePath("/admin/products")
-        revalidatePath("/admin/restaurant/menu")
+        revalidatePath("/tienda/productos")
+        revalidatePath("/restaurante/menu")
 
         return { success: true, productId: product.id }
 

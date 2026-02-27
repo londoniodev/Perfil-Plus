@@ -76,7 +76,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         })
 
         // 6. Revalidar rutas
-        revalidatePath("/admin/products")
+        revalidatePath("/tienda/productos")
         revalidatePath("/tienda")
 
         return {

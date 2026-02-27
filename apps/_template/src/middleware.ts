@@ -55,6 +55,9 @@ export async function middleware(request: NextRequest) {
 
     const rewritesPaths = [
         '/dashboard/_next',
+        '/dashboard/sw.js',
+        '/dashboard/sw.js.map',
+        '/dashboard/workbox',
         '/dashboard',
         '/admin',
         '/perfil',
@@ -63,7 +66,8 @@ export async function middleware(request: NextRequest) {
         '/kitchen',
         '/suscripcion',
         '/waiter',
-        '/whatsapp'
+        '/whatsapp',
+        '/clientes'
     ];
     const shouldRewrite = rewritesPaths.some(path => url.pathname === path || url.pathname.startsWith(`${path}/`));
 
@@ -105,10 +109,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     // Aplicar a casi toda la web, útil para forzar el x-tenant-id incluso en la Landing.
-    // IMPORTANTE: Se debe interceptar explícitamente `/dashboard/_next/...` para que los assets 
-    // del SaaS Dashboard (CSS/JS) no sean ignorados por el proxy y devuelvan 404 en producción.
+    // IMPORTANTE: Se debe interceptar explícitamente `/dashboard/:path*` para que los assets 
+    // del SaaS Dashboard (CSS/JS/SW) no sean ignorados por el proxy por contener puntos.
     matcher: [
-        '/dashboard/_next/:path*',
+        '/dashboard/:path*',
         '/((?!_next/static|_next/image|favicon.ico|images|.*\\..*|api).*)'
     ],
 };

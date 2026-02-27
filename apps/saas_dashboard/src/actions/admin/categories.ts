@@ -37,7 +37,7 @@ export async function createCategory(name: string) {
                 body: JSON.stringify({ name: validated.name })
             })
 
-            revalidatePath("/admin/products")
+            revalidatePath("/tienda/productos")
             return { success: true, category }
         } catch (e: any) {
             console.error("Error creating category db:", e)
@@ -69,7 +69,7 @@ export async function updateCategory(id: string, name: string) {
             body: JSON.stringify({ name: validated.name })
         })
 
-        revalidatePath("/admin/products")
+        revalidatePath("/tienda/productos")
         return { success: true, category }
     } catch (error: any) {
         console.error("Error updating category:", error)
@@ -88,7 +88,7 @@ export async function deleteCategory(id: string) {
             method: 'DELETE'
         })
 
-        revalidatePath("/admin/products")
+        revalidatePath("/tienda/productos")
         return { success: true }
     } catch (error: any) {
         console.error("Error deleting category:", error)

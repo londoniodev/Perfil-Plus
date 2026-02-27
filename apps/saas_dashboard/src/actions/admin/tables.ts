@@ -72,8 +72,8 @@ export async function upsertTable(data: z.infer<typeof tableSchema>) {
             })
         }
 
-        revalidatePath("/admin/restaurant/tables")
-        revalidatePath("/admin/restaurant/pos")
+        revalidatePath("/restaurante/mesas")
+        revalidatePath("/restaurante/pos")
         return { success: true }
     } catch (error: any) {
         console.error("Upsert Table Error:", error)
@@ -89,8 +89,8 @@ export async function deleteTable(id: string) {
 
         await serverFetch(`/tables/${id}`, { method: 'DELETE' })
 
-        revalidatePath("/admin/restaurant/tables")
-        revalidatePath("/admin/restaurant/pos")
+        revalidatePath("/restaurante/mesas")
+        revalidatePath("/restaurante/pos")
         return { success: true }
     } catch (error) {
         return { success: false, error: "Failed to delete table" }

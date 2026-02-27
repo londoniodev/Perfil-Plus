@@ -207,8 +207,8 @@ function getColumns(
                             <DropdownMenuItem asChild>
                                 <Link href={
                                     product.type === "RESTAURANT"
-                                        ? `/admin/restaurant/menu/${product.id}`
-                                        : `/admin/products/${product.id}`
+                                        ? `/restaurante/menu/${product.id}`
+                                        : `/tienda/productos/${product.id}`
                                 }>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Editar

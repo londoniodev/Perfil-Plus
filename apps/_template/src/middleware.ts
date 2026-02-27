@@ -7,7 +7,8 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'default_dev_secret_key
 export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
 
-    const hostname = request.headers.get('host') || '';
+    // Leer el Host considerando que estamos detrás de un Reverse Proxy (Dokploy/Traefik)
+    const hostname = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
     const cleanHostname = hostname.split(':')[0];
 
     // Convert domain.com to domain (removes TLD for DB slug matching)

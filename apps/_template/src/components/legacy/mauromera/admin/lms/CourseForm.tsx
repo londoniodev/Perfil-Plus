@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTenant } from "@/app/providers";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
@@ -61,6 +62,8 @@ export default function CourseForm({
     initialData,
     onSuccess,
 }: CourseFormProps) {
+    const { tenantId } = useTenant();
+
     const router = useRouter();
     const toast = useToast();
 
@@ -103,7 +106,7 @@ export default function CourseForm({
 
             const res = await fetch(url, {
                 method,
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
                 credentials: "include",
                 body: JSON.stringify(body),
             });

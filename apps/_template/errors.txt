@@ -1,0 +1,33 @@
+﻿src/actions/pos.ts(5,20): error TS2305: Module '"../lib/config"' has no exported member 'TENANT_ID'.
+src/actions/shop/create-order.ts(3,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/auth/forgot-password/page.tsx(15,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/auth/reset-password/page.tsx(16,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/blog/[slug]/opengraph-image.tsx(26,28): error TS2554: Expected 2 arguments, but got 1.
+src/app/(marketing)/blog/[slug]/page.tsx(18,24): error TS2554: Expected 2 arguments, but got 1.
+src/app/(marketing)/blog/[slug]/page.tsx(67,18): error TS2554: Expected 2 arguments, but got 1.
+src/app/(marketing)/login/page.tsx(7,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/registro/page.tsx(5,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/tienda/page.tsx(3,10): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(marketing)/verificar-email/page.tsx(6,20): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/app/(public)/menu/page.tsx(3,10): error TS2305: Module '"@/lib/config"' has no exported member 'TENANT_ID'.
+src/components/admin/blog/AttachmentManager.tsx(24,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/admin/blog/CategorySelector.tsx(36,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/admin/blog/PostForm.tsx(217,34): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/admin/lms/QuestionEditor.tsx(22,93): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/admin/products/product-form.tsx(288,50): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/kitchen/KitchenClient.tsx(128,47): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'string'.
+src/components/kitchen/KitchenClient.tsx(157,19): error TS2554: Expected 3 arguments, but got 2.
+src/components/legacy/deborahmoscoso/admin/blog/AttachmentManager.tsx(24,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/deborahmoscoso/admin/blog/CategorySelector.tsx(36,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/deborahmoscoso/admin/blog/PostForm.tsx(211,34): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/deborahmoscoso/admin/lms/QuestionEditor.tsx(22,93): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/deborahmoscoso/admin/products/product-form.tsx(20,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/mauromera/admin/blog/AttachmentManager.tsx(24,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/mauromera/admin/blog/CategorySelector.tsx(36,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/mauromera/admin/blog/PostForm.tsx(215,34): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/mauromera/admin/lms/QuestionEditor.tsx(17,63): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/legacy/mauromera/admin/products/product-form.tsx(20,22): error TS17000: JSX attributes must only be assigned a non-empty 'expression'.
+src/components/waiter/CreateOrderModal.tsx(109,34): error TS2554: Expected 2 arguments, but got 1.
+src/components/waiter/WaiterClient.tsx(143,47): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'string'.
+src/components/waiter/WaiterClient.tsx(167,19): error TS2554: Expected 3 arguments, but got 2.
+src/hooks/use-courses.ts(30,32): error TS2554: Expected 1 arguments, but got 0.

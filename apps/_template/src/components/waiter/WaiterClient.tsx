@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import { TENANT_ID } from "@/lib/config"
+import {} from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, ScrollArea, AdminPageWrapper } from "@alvarosky/ui"
 import { Clock, CheckCircle2, XCircle, Utensils, Plus, RefreshCw, ChefHat, Bell, Loader2 } from "lucide-react"
@@ -119,6 +120,8 @@ function OrderCard({ order, onAction, busy, tableName }: {
 
 // ─── Main Waiter Client ───────────────────────────────────────────────
 export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }) {
+    const { tenantId } = useTenant();
+
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()

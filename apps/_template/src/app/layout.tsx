@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, getFontVariables } from "@alvarosky/ui";
 import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
-import { ThemeProvider } from "./providers";
+import { ThemeProvider, TenantProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
@@ -159,22 +159,24 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={true}
-        >
-          <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
-            <GlobalSchemas />
-            <ToastProvider>
-              <NavigationWrapper footer={<Footer />} hasDashboardFeature={hasDashboardFeature}>
-                {children}
-              </NavigationWrapper>
-              <PwaInstallPrompt />
-              <TableDetector />
-            </ToastProvider>
-          </BrandProvider>
-        </ThemeProvider>
+        <TenantProvider tenantId={tenantId}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={true}
+          >
+            <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
+              <GlobalSchemas />
+              <ToastProvider>
+                <NavigationWrapper footer={<Footer />} hasDashboardFeature={hasDashboardFeature}>
+                  {children}
+                </NavigationWrapper>
+                <PwaInstallPrompt />
+                <TableDetector />
+              </ToastProvider>
+            </BrandProvider>
+          </ThemeProvider>
+        </TenantProvider>
       </body>
     </html>
   );

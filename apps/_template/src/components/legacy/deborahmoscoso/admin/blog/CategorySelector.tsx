@@ -1,7 +1,8 @@
 "use client";
 
 import { CategorySelector as SharedCategorySelector } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { useTenant } from "@/app/providers";
+import { API_BASE } from "@/lib/config";
 import { Category } from "@/types/blog";
 
 interface CategorySelectorProps {
@@ -19,6 +20,8 @@ export default function CategorySelector({
     onCategoryCreated,
     className
 }: CategorySelectorProps) {
+    const { tenantId } = useTenant();
+
     return (
         <SharedCategorySelector
             categories={categories}
@@ -30,7 +33,7 @@ export default function CategorySelector({
             } : undefined}
             className={className}
             apiBase={API_BASE}
-            tenantId={TENANT_ID}
+            tenantId={tenantId}
         />
     );
 }

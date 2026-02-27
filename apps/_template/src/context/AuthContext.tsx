@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 
 import { User, AuthContextType, STAFF_ROLES } from "@/types/auth";
 
@@ -48,12 +49,12 @@ function parseJwt(token: string) {
 }
 
 // Helper to handle the API call and storage of refreshed tokens
-async function executeTokenRefresh(refreshToken: string) {
+async function executeTokenRefresh(refreshToken: string, tenantId: string) {
     const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         credentials: 'include',
         headers: {
-            'x-tenant-id': TENANT_ID,
+            'x-tenant-id': tenantId,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ refreshToken }),
@@ -73,6 +74,7 @@ async function executeTokenRefresh(refreshToken: string) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const { tenantId } = useTenant();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const isRefreshingRef = useRef(false); // Concurrency lock
@@ -95,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                 const refreshToken = localStorage.getItem("refreshToken");
                                 if (!refreshToken) throw new Error("No refresh token");
 
-                                const refreshRes = await executeTokenRefresh(refreshToken);
+                                const refreshRes = await executeTokenRefresh(refreshToken, tenantId);
 
                                 if (refreshRes.success) {
                                     // Retry getting user with NEW token
@@ -112,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
 
-            const headers: HeadersInit = { 'x-tenant-id': TENANT_ID };
+            const headers: HeadersInit = { 'x-tenant-id': tenantId };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
@@ -134,12 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
 
                     // Refresh with Cookie (primary) OR body token (fallback)
-                    const refreshRes = await executeTokenRefresh(refreshToken);
+                    const refreshRes = await executeTokenRefresh(refreshToken, tenantId);
 
                     if (refreshRes.success) {
                         // Retry original request with NEW token
                         const newToken = localStorage.getItem("token");
-                        const newHeaders: HeadersInit = { 'x-tenant-id': TENANT_ID };
+                        const newHeaders: HeadersInit = { 'x-tenant-id': tenantId };
                         if (newToken) {
                             newHeaders['Authorization'] = `Bearer ${newToken}`;
                         }
@@ -189,7 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await fetch(`${API_BASE}/auth/logout`, {
                 method: "POST",
                 credentials: 'include',
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: { 'x-tenant-id': tenantId },
             });
         } catch (error) {
             console.error("Logout API error:", error);
@@ -225,7 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const refreshToken = localStorage.getItem("refreshToken");
             if (!refreshToken) return false;
 
-            const refreshRes = await executeTokenRefresh(refreshToken);
+            const refreshRes = await executeTokenRefresh(refreshToken, tenantId);
 
             if (refreshRes.success) {
                 return true;

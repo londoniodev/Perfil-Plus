@@ -1,6 +1,7 @@
 "use client";
 
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { LeadForm as SharedLeadForm, type LeadFormProps as SharedLeadFormProps } from "@alvarosky/ui";
 
 interface LeadFormProps extends Omit<SharedLeadFormProps, "apiConfig" | "onSubmit"> {
@@ -8,12 +9,14 @@ interface LeadFormProps extends Omit<SharedLeadFormProps, "apiConfig" | "onSubmi
 }
 
 export default function LeadForm(props: LeadFormProps) {
+    const { tenantId } = useTenant();
+
     return (
         <SharedLeadForm
             {...props}
             apiConfig={{
                 baseUrl: API_BASE,
-                tenantId: TENANT_ID
+                tenantId: tenantId
             }}
         />
     );

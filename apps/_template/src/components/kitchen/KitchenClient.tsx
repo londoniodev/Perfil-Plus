@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import { TENANT_ID } from "@/lib/config"
+import {} from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { AdminPageWrapper, Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle } from "@alvarosky/ui"
 import { Clock, CheckCircle2, Utensils, RefreshCw, ChefHat, Loader2, Play } from "lucide-react"
@@ -109,6 +110,8 @@ function KitchenCard({ order, onAction, busy, tableName }: {
 
 // ─── Main Kitchen Client ─────────────────────────────────────────────
 export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] }) {
+    const { tenantId } = useTenant();
+
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()

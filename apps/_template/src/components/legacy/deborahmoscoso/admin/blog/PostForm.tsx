@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTenant } from "@/app/providers";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
 import { BlogEditor } from "@alvarosky/ui";
 import { ImageUploader } from "@alvarosky/ui";
 import CategorySelector from "./CategorySelector";
@@ -34,6 +35,8 @@ interface PostFormProps {
 // ============================================================================
 
 export default function PostForm({ mode, postId }: PostFormProps) {
+    const { tenantId } = useTenant();
+
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
@@ -68,13 +71,13 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         const fetchData = async () => {
             try {
                 const requests: Promise<Response>[] = [
-                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': TENANT_ID } }),
-                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': TENANT_ID } }),
+                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': tenantId } }),
+                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': tenantId } }),
                 ];
 
                 if (mode === "edit" && postId) {
                     requests.push(
-                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" })
+                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': tenantId }, credentials: "include" })
                     );
                 }
 
@@ -130,7 +133,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
 
             const res = await fetch(url, {
                 method: mode === "create" ? "POST" : "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
                 credentials: "include",
                 body: JSON.stringify({
                     title,
@@ -205,7 +208,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
 
                     <ImageUploader
                         apiBase={API_BASE}
-                        tenantId={TENANT_ID}
+                        tenantId={tenantId}
                         value={coverImage}
                         onChange={setCoverImage}
                         label="Imagen de portada"

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -18,6 +19,7 @@ import {
 } from "@alvarosky/ui";
 
 export default function RegisterPage() {
+    const { tenantId } = useTenant();
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -36,7 +38,7 @@ export default function RegisterPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": TENANT_ID,
+                    "x-tenant-id": tenantId,
                 },
                 credentials: "include",
                 body: JSON.stringify(formData),

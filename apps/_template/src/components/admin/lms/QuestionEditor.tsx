@@ -1,8 +1,9 @@
 "use client";
 
 import { QuestionEditor as SharedQuestionEditor, Question } from "@alvarosky/ui";
+import { useTenant } from "@/app/providers";
 import { ImageUploader } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
 
 interface QuestionEditorProps {
     question: Question;
@@ -11,12 +12,14 @@ interface QuestionEditorProps {
 }
 
 export default function QuestionEditor({ question, onSave, onCancel }: QuestionEditorProps) {
+    const { tenantId } = useTenant();
+
     return (
         <SharedQuestionEditor
             question={question}
             onSave={onSave}
             onCancel={onCancel}
-            ImageUploader={(props) => <ImageUploader {...props} apiBase={API_BASE} tenantId={TENANT_ID} />}
+            ImageUploader={(props) => <ImageUploader {...props} apiBase={API_BASE} tenantId={tenantId} />}
         />
     );
 }

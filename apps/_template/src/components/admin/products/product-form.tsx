@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTenant } from "@/app/providers";
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils"
 // Importamos Action y Config (igual que antes)
 import { createProduct } from "@/actions/admin/create-product"
 import { updateProduct } from "@/actions/admin/update-product"
-import { API_BASE, TENANT_ID } from "@/lib/config"
+import { API_BASE } from "@/lib/config"
 
 // UI Components Library
 import {
@@ -30,6 +31,8 @@ interface ProductFormProps {
 }
 
 export function ProductForm({ initialData }: ProductFormProps) {
+    const { tenantId } = useTenant();
+
     const router = useRouter()
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -115,7 +118,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 result = await updateProduct(productData)
             } else {
                 // @ts-ignore
-                result = await createProduct(productData, API_BASE, TENANT_ID)
+                result = await createProduct(productData, API_BASE, tenantId)
             }
 
             if (result.success) {
@@ -282,7 +285,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                                         label=""
                                         folder="products"
                                         apiBase={API_BASE}
-                                        tenantId={TENANT_ID}
+                                        tenantId={tenantId}
                                         variant="button"
                                     />
                                 </div>

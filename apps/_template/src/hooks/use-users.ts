@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { User } from "@/components/users/columns";
 
 interface UsersResponse {
@@ -16,6 +17,7 @@ interface UsersResponse {
 }
 
 export function useUsers(isAdmin: boolean, authLoading: boolean) {
+    const { tenantId } = useTenant();
     const toast = useToast();
     const [users, setUsers] = useState<User[]>([]);
     const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
@@ -30,7 +32,7 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
             });
 
             const res = await fetch(`${API_BASE}/admin/users?${queryParams.toString()}`, {
-                headers: { "x-tenant-id": TENANT_ID },
+                headers: { "x-tenant-id": tenantId },
                 credentials: "include",
                 signal // REACT DOCTOR: Prevents race conditions and memory leaks
             });
@@ -68,7 +70,7 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}/role`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
                 credentials: "include",
                 body: JSON.stringify({ role: newRole }),
             });
@@ -93,7 +95,7 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
                 method: "DELETE",
-                headers: { "x-tenant-id": TENANT_ID },
+                headers: { "x-tenant-id": tenantId },
                 credentials: "include",
             });
             if (res.ok) {
@@ -117,7 +119,7 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
                 method: action === "assign" ? "POST" : "DELETE",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json", "x-tenant-id": tenantId },
                 credentials: "include",
             });
             if (res.ok) {

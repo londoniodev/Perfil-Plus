@@ -4,7 +4,8 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -28,6 +29,7 @@ import {
 import { LoginSchema, type LoginValues } from "@/schemas/auth";
 
 function LoginForm() {
+  const { tenantId } = useTenant();
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -81,7 +83,7 @@ function LoginForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-tenant-id": TENANT_ID,
+          "x-tenant-id": tenantId,
         },
         credentials: "include",
         body: JSON.stringify(values),

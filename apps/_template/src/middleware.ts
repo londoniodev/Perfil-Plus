@@ -39,10 +39,14 @@ export async function middleware(request: NextRequest) {
                 const tenantData = await res.json();
                 tenantId = tenantData.id;
                 tenantFeatures = tenantData.features || [];
+                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}`);
             } else if (res.status === 404) {
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${tenantSlugToQuery}`);
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
+            } else {
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned weird status ${res.status} ${res.statusText} for domain ${tenantSlugToQuery}`);
             }
         } catch (error) {
             console.error(`Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}`);

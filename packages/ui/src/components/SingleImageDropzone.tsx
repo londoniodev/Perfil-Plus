@@ -7,6 +7,7 @@ import { useFileUpload } from "../hooks/useFileUpload";
 export interface SingleImageDropzoneProps {
     endpoint: string;
     token?: string;
+    tenantId?: string;
     folder?: string;
     maxSizeMB?: number;
     value?: string;
@@ -19,6 +20,7 @@ export interface SingleImageDropzoneProps {
 export function SingleImageDropzone({
     endpoint,
     token,
+    tenantId,
     folder = "images",
     maxSizeMB = 2,
     value,
@@ -51,6 +53,7 @@ export function SingleImageDropzone({
                 endpoint,
                 maxSizeMB,
                 token,
+                tenantId,
                 folder,
             });
 
@@ -63,7 +66,7 @@ export function SingleImageDropzone({
                 if (onUploadError && error) onUploadError(error);
             }
         },
-        [uploadFile, endpoint, maxSizeMB, token, folder, value, onChange, onUploadSuccess, onUploadError, error]
+        [uploadFile, endpoint, maxSizeMB, token, tenantId, folder, value, onChange, onUploadSuccess, onUploadError, error]
     );
 
     const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {

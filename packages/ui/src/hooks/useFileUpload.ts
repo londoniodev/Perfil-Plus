@@ -8,6 +8,7 @@ interface UploadOptions {
     maxSizeMB?: number;
     maxWidthOrHeight?: number;
     token?: string;
+    tenantId?: string;
     folder?: string;
 }
 
@@ -59,6 +60,9 @@ export function useFileUpload() {
 
                     if (options.token) {
                         xhr.setRequestHeader("Authorization", `Bearer ${options.token}`);
+                    }
+                    if (options.tenantId) {
+                        xhr.setRequestHeader("x-tenant-id", options.tenantId);
                     }
 
                     xhr.upload.onprogress = (event) => {

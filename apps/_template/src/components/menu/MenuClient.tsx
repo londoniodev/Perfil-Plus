@@ -20,16 +20,25 @@ import { formatCurrency } from "@/lib/utils"
 
 // Fallback food images for products without uploaded photos
 const FOOD_FALLBACK_IMAGES = [
-    '/images/food/food-1.png', // burger
-    '/images/food/food-2.png', // fries
-    '/images/food/food-3.png', // smoothie
-    '/images/food/food-4.png', // salad
-    '/images/food/food-5.png', // pizza
-    '/images/food/food-6.png', // dessert
+    '/dashboard/images/food/food-1.png', // burger
+    '/dashboard/images/food/food-2.png', // fries
+    '/dashboard/images/food/food-3.png', // smoothie
+    '/dashboard/images/food/food-4.png', // salad
+    '/dashboard/images/food/food-5.png', // pizza
+    '/dashboard/images/food/food-6.png', // dessert
 ]
 
-/** Deterministic fallback image based on product index */
-function getFallbackImage(index: number): string {
+/** Deterministic fallback image based on product index or name */
+function getFallbackImage(index: number, name?: string): string {
+    if (name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('burger') || lowerName.includes('hamburguesa')) return FOOD_FALLBACK_IMAGES[0];
+        if (lowerName.includes('papa') || lowerName.includes('frie') || lowerName.includes('salchipapa')) return FOOD_FALLBACK_IMAGES[1];
+        if (lowerName.includes('jugo') || lowerName.includes('smoothie') || lowerName.includes('limonada') || lowerName.includes('gaseosa') || lowerName.includes('malteada')) return FOOD_FALLBACK_IMAGES[2];
+        if (lowerName.includes('ensalada') || lowerName.includes('salad') || lowerName.includes('nuggets')) return FOOD_FALLBACK_IMAGES[3];
+        if (lowerName.includes('pizza') || lowerName.includes('perro caliente')) return FOOD_FALLBACK_IMAGES[4];
+        if (lowerName.includes('postre') || lowerName.includes('brownie') || lowerName.includes('dessert')) return FOOD_FALLBACK_IMAGES[5];
+    }
     return FOOD_FALLBACK_IMAGES[index % FOOD_FALLBACK_IMAGES.length]
 }
 
@@ -392,7 +401,7 @@ export default function MenuClient({
                             // Find first product image for this category
                             const catProductImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
                             const catIndex = categories.indexOf(cat)
-                            const catImage = catProductImage || getFallbackImage(catIndex)
+                            const catImage = catProductImage || getFallbackImage(catIndex, cat.name)
 
                             return (
                                 <div
@@ -445,7 +454,7 @@ export default function MenuClient({
                                 className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
                             >
                                 <Image
-                                    src={product.images?.[0] || getFallbackImage(productIndex)}
+                                    src={product.images?.[0] || getFallbackImage(productIndex, product.name)}
                                     alt={product.name}
                                     fill
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"

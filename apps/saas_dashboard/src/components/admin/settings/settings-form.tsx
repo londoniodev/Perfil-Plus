@@ -89,7 +89,23 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const authToken = typeof window !== 'undefined' ? localStorage.getItem("accessToken") || "" : "";
+    const [authToken, setAuthToken] = useState("");
+    const [tenantId, setTenantId] = useState("");
+
+    // Read auth token and tenant only on client side to avoid hydration mismatch and ensure it's loaded
+    import("react").then((React) => {
+        React.useEffect(() => {
+            if (typeof window !== 'undefined') {
+                setAuthToken(localStorage.getItem("accessToken") || "");
+                // Usually the tenant ID is in localStorage, or you can extract it from the current session context if available.
+                // It is required by the ImageUploader and backend API
+                const localTenant = localStorage.getItem("tenantId");
+                if (localTenant) {
+                    setTenantId(localTenant);
+                }
+            }
+        }, []);
+    });
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
@@ -250,6 +266,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                                         onChange={(url) => field.onChange(url)}
                                                         endpoint={`${API_BASE}/storage/upload/image`}
                                                         token={authToken}
+                                                        tenantId={tenantId} // Optional: we might need to pass this if the dropzone supports it
                                                         className="max-w-[300px]"
                                                     />
                                                 </FormControl>

@@ -5,6 +5,10 @@ import { serverFetch } from "@/lib/api-server";
 import { getDashboardStats, type DashboardStats } from "@/actions/admin/dashboard";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { TopProductsChart, type TopProductData } from "@/components/dashboard/top-products-chart";
+import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order-type-chart";
+import { RecentOrdersTable, type RecentOrderData } from "@/components/dashboard/recent-orders-table";
+import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
 import {
     Users,
@@ -18,6 +22,8 @@ import {
     Sparkles,
     UtensilsCrossed,
     ChefHat,
+    Timer,
+    Percent,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -78,6 +84,75 @@ export default async function AdminDashboardPage() {
 
     const userTrend = formatTrend(stats.userGrowthPercent);
     const revTrend = formatTrend(stats.revenueGrowthPercent);
+
+    // --- Mock Data for Restaurant Dashboard ---
+    const mockTopProducts: TopProductData[] = [
+        { name: "Bandeja Paisa", cantidad: 145, ingresos: 3625000 },
+        { name: "Sancocho de Gallina", cantidad: 98, ingresos: 2156000 },
+        { name: "Limonada Natural", cantidad: 210, ingresos: 1260000 },
+        { name: "Ajiaco Santafereño", cantidad: 85, ingresos: 2210000 },
+        { name: "Postre de Natas", cantidad: 64, ingresos: 512000 },
+    ];
+
+    const mockOrderTypes: OrderTypeData[] = [
+        { type: "DINE_IN", label: "Mesa", count: 342, fill: "var(--color-DINE_IN)" },
+        { type: "TAKE_AWAY", label: "Llevar", count: 128, fill: "var(--color-TAKE_AWAY)" },
+        { type: "DELIVERY", label: "Domicilio", count: 215, fill: "var(--color-DELIVERY)" },
+    ];
+
+    const mockPaymentMethods: PaymentMethodData[] = [
+        { method: "CASH", label: "Efectivo", total: 4500000, count: 185 },
+        { method: "CARD", label: "Tarjeta", total: 8200000, count: 240 },
+        { method: "TRANSFER", label: "Transferencia", total: 3100000, count: 110 },
+        { method: "OTHER", label: "Otros", total: 450000, count: 20 },
+    ];
+
+    const mockRecentOrders: RecentOrderData[] = [
+        {
+            id: "1",
+            orderNumber: "00142",
+            customerName: "Carlos Rodríguez",
+            totalAmount: 45000,
+            status: "DELIVERED",
+            orderType: "DINE_IN",
+            tableNumber: "1",
+            createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+            itemCount: 2,
+        },
+        {
+            id: "2",
+            orderNumber: "00143",
+            customerName: "María Gómez",
+            totalAmount: 125000,
+            status: "SERVED",
+            orderType: "DINE_IN",
+            tableNumber: "4",
+            createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+            itemCount: 4,
+        },
+        {
+            id: "3",
+            orderNumber: "00144",
+            customerName: "Juan Pérez",
+            totalAmount: 68000,
+            status: "PREPARING",
+            orderType: "DELIVERY",
+            tableNumber: null,
+            createdAt: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
+            itemCount: 3,
+        },
+        {
+            id: "4",
+            orderNumber: "00145",
+            customerName: null,
+            totalAmount: 35000,
+            status: "PENDING",
+            orderType: "TAKE_AWAY",
+            tableNumber: null,
+            createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+            itemCount: 1,
+        },
+    ];
 
     return (
         <div className="flex flex-col min-h-screen relative">
@@ -216,6 +291,20 @@ export default async function AdminDashboardPage() {
                                 <div className="space-y-4">
                                     <h2 className="text-xl font-bold tracking-tight">Análisis de Rendimiento</h2>
                                     <RevenueChart data={stats.revenueByDay} />
+                                </div>
+                            )}
+
+                            {hasRestaurant && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-bold tracking-tight">Métricas de Restaurante (Demo)</h2>
+                                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+                                        <TopProductsChart data={mockTopProducts} />
+                                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                                            <OrderTypeChart data={mockOrderTypes} />
+                                            <PaymentMethodsChart data={mockPaymentMethods} />
+                                        </div>
+                                    </div>
+                                    <RecentOrdersTable data={mockRecentOrders} />
                                 </div>
                             )}
 

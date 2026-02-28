@@ -27,14 +27,45 @@ function formatYMD(d: Date): string {
 @Injectable()
 export class AnalyticsService {
     private readonly logger = new Logger(AnalyticsService.name);
+    private cache = new Map<string, { data: any, timestamp: number }>();
+    private readonly CACHE_TTL = 60000; // 60 segundos cache para evitar asfixiar DB (Requerimiento Estricto)
 
     constructor(private readonly prisma: PrismaService) { }
 
-    async getDashboardStats(tenantId: string) {
+    async getDashboardStats(tenantId: string, period: string = '30d') {
         const now = new Date();
-        const todayStart = startOfDay(now);
-        const todayEnd = endOfDay(now);
-        const monthStart = startOfMonth(now);
+        const EndDate = endOfDay(now);
+        let StartDate = startOfDay(now);
+
+        // Parse period
+        switch (period) {
+            case 'today':
+                StartDate = startOfDay(now);
+                break;
+            case '7d':
+                StartDate = startOfDay(subDays(now, 7));
+                break;
+            case '30d':
+                StartDate = startOfDay(subDays(now, 30));
+                break;
+            case '3m':
+                StartDate = startOfDay(subDays(now, 90));
+                break;
+            case '6m':
+                StartDate = startOfDay(subDays(now, 180));
+                break;
+            default:
+                StartDate = startOfDay(subDays(now, 30));
+                break;
+        }
+
+        const cacheKey = `stats_${tenantId}_${period}`;
+        const cached = this.cache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+            return cached.data;
+        }
+
+        const dateQuery = { gte: StartDate, lte: EndDate };
 
         // 1. Total Revenue Historico (Muerte: tenantId obligado)
         const totalRevAgg = await this.prisma.order.aggregate({
@@ -48,63 +79,46 @@ export class AnalyticsService {
             where: { tenantId }
         });
 
-        // 3. Ventas de Hoy
-        const todayRevAgg = await this.prisma.order.aggregate({
+        // 3. Ventas y Ordenes en el Periodo Seleccionado
+        const periodRevAgg = await this.prisma.order.aggregate({
             _sum: { totalAmount: true },
             where: {
                 tenantId,
                 status: OrderStatus.DELIVERED,
-                createdAt: { gte: todayStart, lte: todayEnd }
+                createdAt: dateQuery
             }
         });
-        const todayRevenue = Number(todayRevAgg._sum?.totalAmount || 0);
+        const periodRevenue = Number(periodRevAgg._sum?.totalAmount || 0);
 
-        // Ordenes the hoy
-        const restaurantOrdersToday = await this.prisma.order.count({
+        const periodOrdersCount = await this.prisma.order.count({
             where: {
                 tenantId,
-                createdAt: { gte: todayStart, lte: todayEnd }
+                createdAt: dateQuery
             }
         });
 
-        // Facturacion Mensual 
-        const monthRevAgg = await this.prisma.order.aggregate({
-            _sum: { totalAmount: true },
-            where: {
-                tenantId,
-                status: OrderStatus.DELIVERED,
-                createdAt: { gte: monthStart, lte: todayEnd }
-            }
-        });
-        const totalRevenueThisMonth = Number(monthRevAgg._sum?.totalAmount || 0);
+        // 4. Sales/Revenue Chart (Area)
+        // STRICT OPTIMIZATION: Calculations must be done at DB level, no JS array loading.
+        const revenueRaw = await this.prisma.$queryRaw<{ date: Date, total: number }[]>`
+            SELECT DATE("createdAt") as date, SUM("totalAmount") as total
+            FROM "Order"
+            WHERE "tenantId" = ${tenantId}
+            AND "status" = 'DELIVERED'
+            AND "createdAt" >= ${StartDate}
+            AND "createdAt" <= ${EndDate}
+            GROUP BY DATE("createdAt")
+            ORDER BY DATE("createdAt") ASC
+        `;
 
-        // Usuarios del tenant
-        const totalUsers = await this.prisma.user.count({ where: { tenantId } });
-
-        // 4. Sales Chart (últimos 30 días)
-        const thirtyDaysAgo = startOfDay(subDays(now, 30));
-
-        // Extraccion de transacciones the los ultimos 30 dias
-        const last30DaysOrders = await this.prisma.order.findMany({
-            where: {
-                tenantId,
-                status: OrderStatus.DELIVERED,
-                createdAt: { gte: thirtyDaysAgo }
-            },
-            select: { createdAt: true, totalAmount: true }
-        });
-
-        // Mapear por día "YYYY-MM-DD"
         const sumByDay: Record<string, number> = {};
-
-        for (const order of last30DaysOrders) {
-            const dateStr = formatYMD(order.createdAt);
-            sumByDay[dateStr] = (sumByDay[dateStr] || 0) + Number(order.totalAmount || 0);
+        for (const row of revenueRaw) {
+            sumByDay[formatYMD(row.date)] = Number(row.total || 0);
         }
 
-        // Construir arreglo the días vacíos para la gráfica
         const revenueByDay: { date: string, total: number }[] = [];
-        for (let i = 29; i >= 0; i--) {
+        // Extract days logic: iterate between StartDate and EndDate
+        const diffDays = Math.ceil((EndDate.getTime() - StartDate.getTime()) / (1000 * 3600 * 24));
+        for (let i = diffDays; i >= 0; i--) {
             const dStr = formatYMD(subDays(now, i));
             revenueByDay.push({
                 date: dStr,
@@ -112,27 +126,90 @@ export class AnalyticsService {
             });
         }
 
-        return {
-            totalRevenue,
-            todayRevenue,
-            totalOrders,
-            salesChart: revenueByDay,
+        // 5. Categorical Distributions (Pie Charts)
+        // a. Order Types
+        const orderTypeGroup = await this.prisma.order.groupBy({
+            by: ['orderType'],
+            _count: { id: true },
+            where: { tenantId, createdAt: dateQuery }
+        });
+        const orderTypes = orderTypeGroup.map(g => ({
+            type: g.orderType,
+            count: g._count.id
+        }));
 
-            // Extras
+        // b. Payment Methods
+        const paymentGroup = await this.prisma.payment.groupBy({
+            by: ['method'],
+            _count: { id: true },
+            where: { order: { tenantId, createdAt: dateQuery } }
+        });
+        const paymentMethods = paymentGroup.map(g => ({
+            method: g.method,
+            count: g._count.id
+        }));
+
+        // 6. Rankings (Bar Charts)
+        // a. Top Products
+        const topProductsItems = await this.prisma.orderItem.groupBy({
+            by: ['productName'],
+            _sum: { quantity: true },
+            where: { order: { tenantId, createdAt: dateQuery, status: OrderStatus.DELIVERED } },
+            orderBy: { _sum: { quantity: 'desc' } },
+            take: 15
+        });
+        const topProducts = topProductsItems.map(p => ({
+            productName: p.productName,
+            quantity: p._sum.quantity || 0
+        }));
+
+        // 7. Operations & Table Metrics
+        // a. Average Ticket by Type (CRM)
+        const ticketByTypeQuery = await this.prisma.order.groupBy({
+            by: ['orderType'],
+            _sum: { totalAmount: true },
+            _count: { id: true },
+            where: { tenantId, createdAt: dateQuery, status: OrderStatus.DELIVERED }
+        });
+        const avgTicketByType = ticketByTypeQuery.map(t => ({
+            type: t.orderType,
+            avgTicket: t._count.id > 0 ? Number(t._sum.totalAmount) / t._count.id : 0
+        }));
+
+        // b. Production Times (Average Stages)
+        const prodTimesAgg = await this.prisma.orderDeliveryAnalytics.aggregate({
+            _avg: { timeToPrepare: true, timeToShip: true, timeToDeliver: true },
+            where: { order: { tenantId, createdAt: dateQuery } }
+        });
+        const productionTimes = [
+            { stage: 'Preparation', minutes: Math.round(prodTimesAgg._avg.timeToPrepare || 0) },
+            { stage: 'Shipping', minutes: Math.round(prodTimesAgg._avg.timeToShip || 0) },
+            { stage: 'Delivery', minutes: Math.round(prodTimesAgg._avg.timeToDeliver || 0) },
+        ];
+
+        // c. Table Occupancy (Dine In)
+        const totalUsers = await this.prisma.user.count({ where: { tenantId } });
+
+        const result = {
+            totalRevenue,
+            totalOrders,
+            periodRevenue,
+            periodOrdersCount,
+            revenueByDay,      // Trend Area Chart
+            orderTypes,        // Pie Chart
+            paymentMethods,    // Pie Chart
+            topProducts,       // Bar Chart
+            avgTicketByType,   // CRM / Stats
+            productionTimes,   // Area or Bar
+
+            // Legacy fallbacks for general compatibility during refactor
             totalUsers,
-            newUsersThisMonth: 0,
-            userGrowthPercent: null,
-            totalRevenueThisMonth,
-            totalRevenueLastMonth: 0,
-            revenueGrowthPercent: null,
-            pendingOrders: 0,
-            publishedPosts: 0,
-            publishedThemes: 0,
-            totalLessons: 0,
-            restaurantOrdersToday,
-            topProductToday: null,
-            revenueByDay
+            restaurantOrdersToday: periodOrdersCount,
+            topProductToday: topProducts[0]?.productName || null,
         };
+
+        this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
+        return result;
     }
 
     async getZReport(tenantId: string, dateParam?: string) {
@@ -162,33 +239,23 @@ export class AnalyticsService {
         const avgTicket = orderCount > 0 ? totalSales / orderCount : 0;
 
         // 4. Desglose the ventas agrupadas por paymentMethod usando Prisma GroupBy en la tabla Payment
-        const payments = await this.prisma.payment.findMany({
+        const paymentGroup = await this.prisma.payment.groupBy({
+            by: ['method'],
+            _sum: { amount: true },
+            _count: { id: true },
             where: {
                 order: {
                     tenantId,
                     status: OrderStatus.DELIVERED,
                     createdAt: { gte: startObj, lte: endObj }
                 }
-            },
-            select: {
-                method: true,
-                amount: true
             }
         });
 
-        const groupedPayments: Record<string, { amount: number, count: number }> = {};
-        for (const p of payments) {
-            if (!groupedPayments[p.method]) {
-                groupedPayments[p.method] = { amount: 0, count: 0 };
-            }
-            groupedPayments[p.method].amount += Number(p.amount);
-            groupedPayments[p.method].count += 1;
-        }
-
-        const byMethod = Object.keys(groupedPayments).map(method => ({
-            method,
-            amount: groupedPayments[method].amount,
-            count: groupedPayments[method].count
+        const byMethod = paymentGroup.map(g => ({
+            method: g.method,
+            amount: Number(g._sum.amount || 0),
+            count: g._count.id
         }));
 
         return {

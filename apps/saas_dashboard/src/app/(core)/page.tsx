@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth-server";
 import { getTenantId } from "@/lib/config-server";
@@ -9,6 +10,10 @@ import { TopProductsChart, type TopProductData } from "@/components/dashboard/to
 import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order-type-chart";
 import { RecentOrdersTable, type RecentOrderData } from "@/components/dashboard/recent-orders-table";
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
+import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
+import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
+import { SalesByDayChart, type SalesByDayData } from "@/components/dashboard/sales-by-day-chart";
+import { DashboardTimeSelector } from "@/components/dashboard/dashboard-time-selector";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
 import {
     Users,
@@ -52,30 +57,69 @@ function formatTrend(percent: number | null): { text: string; up: boolean } | nu
     return { text: `${sign}${percent}%`, up: percent >= 0 };
 }
 
-export default async function AdminDashboardPage() {
-    const user = await getSessionUser();
+function DashboardSkeleton() {
+    return (
+        <div className="space-y-6 animate-pulse">
+            <div className="h-8 w-48 bg-card/60 rounded-md border border-border/50" />
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-[120px] rounded-xl bg-card/60 border border-border/50" />
+                ))}
+            </div>
+            <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+                <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
+                <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
+            </div>
+        </div>
+    );
+}
 
-    if (!user) {
-        redirect("/login?redirect=/admin");
-    }
+// Extracted metrics component to allow Suspense streaming
+async function DashboardMetrics({ tenant, period }: { tenant: any, period: string }) {
+    const stats = await getDashboardStats(tenant.features || [], period);
 
-    if (user.role !== "ADMIN") {
-        redirect("/perfil");
-    }
+    const mappedTopProducts: TopProductData[] = (stats.topProducts || []).map(p => ({
+        name: p.productName,
+        cantidad: p.quantity,
+        ingresos: 0 // Simplificado
+    }));
 
-    const tenantId = await getTenantId();
-    const tenant = await getTenantData();
-    const stats = await getDashboardStats(tenant.features || []);
+    const mappedOrderTypes: OrderTypeData[] = (stats.orderTypes || []).map((ot) => ({
+        type: ot.type,
+        label: ot.type === 'DINE_IN' ? 'Mesa' : ot.type === 'DELIVERY' ? 'Domicilio' : 'Llevar',
+        count: ot.count,
+        fill: ot.type === 'DINE_IN' ? 'var(--color-DINE_IN)' : ot.type === 'DELIVERY' ? 'var(--color-DELIVERY)' : 'var(--color-TAKE_AWAY)'
+    }));
 
-    // Check if this is first-time setup (no features enabled)
-    const isFirstTime = !tenant.features || tenant.features.length === 0;
+    const mappedPaymentMethods: PaymentMethodData[] = (stats.paymentMethods || []).map(pm => ({
+        method: pm.method,
+        label: pm.method === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
+        count: pm.count,
+        total: 0 // Simplify mapping for pie
+    }));
 
-    const currentDate = new Date().toLocaleDateString("es-ES", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
+    const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({
+        step: p.stage === 'Preparation' ? 'Preparación' : p.stage === 'Shipping' ? 'Embalaje/Envío' : 'Entrega',
+        time: p.minutes
+    }));
+
+    // Hardcoded fallbacks while pending endpoint logic implementation
+    const mockTableTimes: TableTimeData[] = [
+        { range: "Bajo ($)", time: 35 },
+        { range: "Medio ($$)", time: 55 },
+        { range: "Alto ($$$)", time: 85 },
+    ];
+
+    const mockSalesByDay: SalesByDayData[] = [
+        { day: "Lun", sales: 1200000 },
+        { day: "Mar", sales: 950000 },
+        { day: "Mié", sales: 1100000 },
+        { day: "Jue", sales: 1500000 },
+        { day: "Vie", sales: 2800000 },
+        { day: "Sáb", sales: 3500000 },
+        { day: "Dom", sales: 3100000 },
+    ];
 
     const hasLMS = tenant.features?.includes("lms");
     const hasShop = tenant.features?.includes("shop");
@@ -84,28 +128,6 @@ export default async function AdminDashboardPage() {
 
     const userTrend = formatTrend(stats.userGrowthPercent);
     const revTrend = formatTrend(stats.revenueGrowthPercent);
-
-    // --- Mock Data for Restaurant Dashboard ---
-    const mockTopProducts: TopProductData[] = [
-        { name: "Bandeja Paisa", cantidad: 145, ingresos: 3625000 },
-        { name: "Sancocho de Gallina", cantidad: 98, ingresos: 2156000 },
-        { name: "Limonada Natural", cantidad: 210, ingresos: 1260000 },
-        { name: "Ajiaco Santafereño", cantidad: 85, ingresos: 2210000 },
-        { name: "Postre de Natas", cantidad: 64, ingresos: 512000 },
-    ];
-
-    const mockOrderTypes: OrderTypeData[] = [
-        { type: "DINE_IN", label: "Mesa", count: 342, fill: "var(--color-DINE_IN)" },
-        { type: "TAKE_AWAY", label: "Llevar", count: 128, fill: "var(--color-TAKE_AWAY)" },
-        { type: "DELIVERY", label: "Domicilio", count: 215, fill: "var(--color-DELIVERY)" },
-    ];
-
-    const mockPaymentMethods: PaymentMethodData[] = [
-        { method: "CASH", label: "Efectivo", total: 4500000, count: 185 },
-        { method: "CARD", label: "Tarjeta", total: 8200000, count: 240 },
-        { method: "TRANSFER", label: "Transferencia", total: 3100000, count: 110 },
-        { method: "OTHER", label: "Otros", total: 450000, count: 20 },
-    ];
 
     const mockRecentOrders: RecentOrderData[] = [
         {
@@ -155,14 +177,234 @@ export default async function AdminDashboardPage() {
     ];
 
     return (
+        <>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold tracking-tight">Período Actual</h2>
+                </div>
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    {/* Usuarios totales */}
+                    <StatsCard
+                        title="Usuarios Totales"
+                        value={stats.totalUsers.toLocaleString("es-ES")}
+                        icon={Users}
+                        trend={userTrend?.text}
+                        trendUp={userTrend?.up}
+                    />
+
+                    {/* Revenue - Shop o Restaurant */}
+                    {(hasShop || hasRestaurant) && (
+                        <>
+                            <StatsCard
+                                title="Ingresos"
+                                value={formatCurrency(stats.periodRevenue || 0)}
+                                icon={DollarSign}
+                                trend={revTrend?.text}
+                                trendUp={revTrend?.up}
+                            />
+                            <StatsCard
+                                title="Órdenes Recibidas"
+                                value={(stats.periodOrdersCount || 0).toLocaleString("es-ES")}
+                                icon={Package}
+                            />
+                        </>
+                    )}
+
+                    {/* Blog Stats */}
+                    {hasBlog && (
+                        <StatsCard
+                            title="Artículos Publicados"
+                            value={stats.publishedPosts.toLocaleString("es-ES")}
+                            icon={BookOpen}
+                        />
+                    )}
+
+                    {/* LMS Stats */}
+                    {hasLMS && (
+                        <>
+                            <StatsCard
+                                title="Temas Publicados"
+                                value={stats.publishedThemes.toLocaleString("es-ES")}
+                                icon={GraduationCap}
+                            />
+                            <StatsCard
+                                title="Lecciones Activas"
+                                value={stats.totalLessons.toLocaleString("es-ES")}
+                                icon={BookOpen}
+                            />
+                        </>
+                    )}
+
+                    {/* Restaurant Stats */}
+                    {hasRestaurant && (
+                        <>
+                            <StatsCard
+                                title="Órdenes Hoy"
+                                value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
+                                icon={UtensilsCrossed}
+                            />
+                            {stats.topProductToday && (
+                                <StatsCard
+                                    title="Plato Más Vendido Hoy"
+                                    value={stats.topProductToday}
+                                    icon={ChefHat}
+                                />
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <Separator className="opacity-50" />
+
+            {/* Revenue Chart - shadcn/recharts */}
+            {(hasShop || hasRestaurant) && (
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold tracking-tight">Análisis de Rendimiento</h2>
+                    <RevenueChart data={stats.revenueByDay} />
+                </div>
+            )}
+
+            {hasRestaurant && (
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+                        <TopProductsChart data={mappedTopProducts} />
+                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                            <OrderTypeChart data={mappedOrderTypes} />
+                            <PaymentMethodsChart data={mappedPaymentMethods} />
+                        </div>
+                    </div>
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+                        <SalesByDayChart data={mockSalesByDay} />
+                        <TableTimeChart data={mockTableTimes} />
+                        <ProductionTimeChart data={mappedProductionTimes} />
+                    </div>
+                    <RecentOrdersTable data={mockRecentOrders} />
+                </div>
+            )}
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold tracking-tight">Accesos Rápidos</h2>
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                    {hasLMS && (
+                        <Link href="/academia/cursos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
+                            <div className="flex items-start gap-4">
+                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                    <BookOpen className="h-6 w-6" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="font-semibold leading-none tracking-tight">Gestionar Cursos</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Crea y edita contenido educativo
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    )}
+
+                    {hasShop && (
+                        <Link href="/tienda/productos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
+                            <div className="flex items-start gap-4">
+                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                    <ShoppingCart className="h-6 w-6" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="font-semibold leading-none tracking-tight">Gestionar Productos</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        Controla tu inventario y precios
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    )}
+
+                    {hasRestaurant && (
+                        <>
+                            <Link href="/restaurante/pos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
+                                <div className="flex items-start gap-4">
+                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                        <UtensilsCrossed className="h-6 w-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="font-semibold leading-none tracking-tight">Punto de Venta</div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Abre el POS para tomar pedidos
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+
+                            <Link href="/restaurante/comandas" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
+                                <div className="flex items-start gap-4">
+                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                        <ChefHat className="h-6 w-6" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="font-semibold leading-none tracking-tight">Cocina / Comandas</div>
+                                        <div className="text-sm text-muted-foreground">
+                                            Gestiona las órdenes en la cocina
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        </>
+                    )}
+
+                    <Link href="/usuarios" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-start gap-4">
+                            <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                                <Users className="h-6 w-6" />
+                            </div>
+                            <div className="space-y-1">
+                                <div className="font-semibold leading-none tracking-tight">Gestionar Usuarios</div>
+                                <div className="text-sm text-muted-foreground">
+                                    Administra roles y permisos
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+        </>
+    );
+}
+
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function AdminDashboardPage(props: PageProps) {
+    const searchParams = await props.searchParams;
+    const user = await getSessionUser();
+
+    if (!user) {
+        redirect("/login?redirect=/admin");
+    }
+
+    if (user.role !== "ADMIN") {
+        redirect("/perfil");
+    }
+
+    const tenant = await getTenantData();
+    const period = (searchParams.period as string) || "30d";
+    const isFirstTime = !tenant.features || tenant.features.length === 0;
+
+    const currentDate = new Date().toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+
+    return (
         <div className="flex flex-col min-h-screen relative">
-            {/* Header - Now part of content for better Card styling */}
             <div className="flex-1 px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
                 <div className="max-w-7xl mx-auto space-y-10">
 
                     {/* Welcome Card */}
                     <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 shadow-sm overflow-hidden relative">
-                        {/* Decorative Background Mesh */}
                         <div className="absolute top-0 right-0 p-32 bg-primary/10 rounded-full blur-[100px] -mr-16 -mt-16 pointer-events-none" />
                         <div className="absolute bottom-0 left-0 p-32 bg-primary/5 rounded-full blur-[100px] -ml-16 -mb-16 pointer-events-none" />
 
@@ -175,14 +417,18 @@ export default async function AdminDashboardPage() {
                                     {currentDate}
                                 </p>
                             </div>
-                            <Button variant="outline" size="lg" className="h-12 px-6 border-primary/20 hover:bg-primary/5" asChild>
-                                <Link href="/configuracion">
-                                    <Settings className="mr-2 h-5 w-5" />
-                                    Configuración
-                                </Link>
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 items-end">
+                                <DashboardTimeSelector currentPeriod={period} />
+                                <Button variant="outline" size="lg" className="h-10 border-primary/20 hover:bg-primary/5" asChild>
+                                    <Link href="/configuracion">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Configuración
+                                    </Link>
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
+
                     {isFirstTime ? (
                         /* Empty State - First Time Setup */
                         <Card className="border-dashed">
@@ -205,193 +451,9 @@ export default async function AdminDashboardPage() {
                             </CardContent>
                         </Card>
                     ) : (
-                        <>
-                            {/* Stats Grid */}
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-bold tracking-tight">Resumen General</h2>
-                                </div>
-                                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                                    {/* Usuarios totales */}
-                                    <StatsCard
-                                        title="Usuarios Totales"
-                                        value={stats.totalUsers.toLocaleString("es-ES")}
-                                        icon={Users}
-                                        trend={userTrend?.text}
-                                        trendUp={userTrend?.up}
-                                    />
-
-                                    {/* Revenue - Shop o Restaurant */}
-                                    {(hasShop || hasRestaurant) && (
-                                        <>
-                                            <StatsCard
-                                                title="Ingresos del Mes"
-                                                value={formatCurrency(stats.totalRevenueThisMonth)}
-                                                icon={DollarSign}
-                                                trend={revTrend?.text}
-                                                trendUp={revTrend?.up}
-                                            />
-                                            <StatsCard
-                                                title="Pedidos Pendientes"
-                                                value={stats.pendingOrders.toLocaleString("es-ES")}
-                                                icon={Package}
-                                            />
-                                        </>
-                                    )}
-
-                                    {/* Blog Stats */}
-                                    {hasBlog && (
-                                        <StatsCard
-                                            title="Artículos Publicados"
-                                            value={stats.publishedPosts.toLocaleString("es-ES")}
-                                            icon={BookOpen}
-                                        />
-                                    )}
-
-                                    {/* LMS Stats */}
-                                    {hasLMS && (
-                                        <>
-                                            <StatsCard
-                                                title="Temas Publicados"
-                                                value={stats.publishedThemes.toLocaleString("es-ES")}
-                                                icon={GraduationCap}
-                                            />
-                                            <StatsCard
-                                                title="Lecciones Activas"
-                                                value={stats.totalLessons.toLocaleString("es-ES")}
-                                                icon={BookOpen}
-                                            />
-                                        </>
-                                    )}
-
-                                    {/* Restaurant Stats */}
-                                    {hasRestaurant && (
-                                        <>
-                                            <StatsCard
-                                                title="Órdenes Hoy"
-                                                value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
-                                                icon={UtensilsCrossed}
-                                            />
-                                            {stats.topProductToday && (
-                                                <StatsCard
-                                                    title="Plato Más Vendido Hoy"
-                                                    value={stats.topProductToday}
-                                                    icon={ChefHat}
-                                                />
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            <Separator className="opacity-50" />
-
-                            {/* Revenue Chart - shadcn/recharts */}
-                            {(hasShop || hasRestaurant) && (
-                                <div className="space-y-4">
-                                    <h2 className="text-xl font-bold tracking-tight">Análisis de Rendimiento</h2>
-                                    <RevenueChart data={stats.revenueByDay} />
-                                </div>
-                            )}
-
-                            {hasRestaurant && (
-                                <div className="space-y-4">
-                                    <h2 className="text-xl font-bold tracking-tight">Métricas de Restaurante (Demo)</h2>
-                                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                                        <TopProductsChart data={mockTopProducts} />
-                                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
-                                            <OrderTypeChart data={mockOrderTypes} />
-                                            <PaymentMethodsChart data={mockPaymentMethods} />
-                                        </div>
-                                    </div>
-                                    <RecentOrdersTable data={mockRecentOrders} />
-                                </div>
-                            )}
-
-                            {/* Quick Actions */}
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-bold tracking-tight">Accesos Rápidos</h2>
-                                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                                    {hasLMS && (
-                                        <Link href="/academia/cursos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                            <div className="flex items-start gap-4">
-                                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                                    <BookOpen className="h-6 w-6" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="font-semibold leading-none tracking-tight">Gestionar Cursos</div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Crea y edita contenido educativo
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    )}
-
-                                    {hasShop && (
-                                        <Link href="/tienda/productos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                            <div className="flex items-start gap-4">
-                                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                                    <ShoppingCart className="h-6 w-6" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="font-semibold leading-none tracking-tight">Gestionar Productos</div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Controla tu inventario y precios
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    )}
-
-                                    {hasRestaurant && (
-                                        <>
-                                            <Link href="/restaurante/pos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                                <div className="flex items-start gap-4">
-                                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                                        <UtensilsCrossed className="h-6 w-6" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <div className="font-semibold leading-none tracking-tight">Punto de Venta</div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            Abre el POS para tomar pedidos
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Link>
-
-                                            <Link href="/restaurante/comandas" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                                <div className="flex items-start gap-4">
-                                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                                        <ChefHat className="h-6 w-6" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <div className="font-semibold leading-none tracking-tight">Cocina / Comandas</div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            Gestiona las órdenes en la cocina
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        </>
-                                    )}
-
-                                    <Link href="/usuarios" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                        <div className="flex items-start gap-4">
-                                            <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                                <Users className="h-6 w-6" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <div className="font-semibold leading-none tracking-tight">Gestionar Usuarios</div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Administra roles y permisos
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </div>
-                            </div>
-                        </>
+                        <Suspense key={period} fallback={<DashboardSkeleton />}>
+                            <DashboardMetrics tenant={tenant} period={period} />
+                        </Suspense>
                     )}
                 </div>
             </div>

@@ -22,21 +22,29 @@ export type DashboardStats = {
     publishedThemes: number
     totalLessons: number
 
-    // Restaurant
+    // --- Nuevas Métricas Dinámicas ---
+    totalRevenue: number
+    totalOrders: number
+    periodRevenue: number
+    periodOrdersCount: number
     restaurantOrdersToday: number
     topProductToday: string | null
 
-    // Chart: ingresos por día (últimos 30 días)
+    // Arrays para Gráficas
     revenueByDay: { date: string; total: number }[]
+    orderTypes: { type: string; count: number }[]
+    paymentMethods: { method: string; count: number }[]
+    topProducts: { productName: string; quantity: number }[]
+    avgTicketByType: { type: string; avgTicket: number }[]
+    productionTimes: { stage: string; minutes: number }[]
 }
 
 // --- Server Action principal ---
-export async function getDashboardStats(features: string[] = []): Promise<DashboardStats> {
+export async function getDashboardStats(features: string[] = [], period: string = '30d'): Promise<DashboardStats> {
     try {
-        // Delegar TODO el cálculo y query paramétricas masivas a NestJS
-        // El endpoint /analytics/dashboard deberá crearse en NestJS para recibir los ?features= y manejar los cálculos
         const queryParams = new URLSearchParams()
         features.forEach(f => queryParams.append('features', f))
+        queryParams.append('period', period)
 
         const stats = await serverFetch<DashboardStats>(`/analytics/dashboard?${queryParams.toString()}`)
 
@@ -47,7 +55,7 @@ export async function getDashboardStats(features: string[] = []): Promise<Dashbo
         return stats
     } catch (e) {
         console.error("Error obteniendo Dashboard stats:", e)
-        // Fallback robusto para no romper la UI si el endpoint aún no existe
+        // Fallback robusto
         return {
             totalUsers: 0,
             newUsersThisMonth: 0,
@@ -61,7 +69,16 @@ export async function getDashboardStats(features: string[] = []): Promise<Dashbo
             totalLessons: 0,
             restaurantOrdersToday: 0,
             topProductToday: null,
-            revenueByDay: []
+            totalRevenue: 0,
+            totalOrders: 0,
+            periodRevenue: 0,
+            periodOrdersCount: 0,
+            revenueByDay: [],
+            orderTypes: [],
+            paymentMethods: [],
+            topProducts: [],
+            avgTicketByType: [],
+            productionTimes: []
         }
     }
 }

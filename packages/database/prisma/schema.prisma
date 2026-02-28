@@ -631,6 +631,7 @@ model Order {
   mpPaymentId   String?     // ID de Mercado Pago
   shippingData  Json?       // { "address": "...", "city": "..." }
   tableNumber   String?     // Número de mesa (solo DINE_IN)
+  guestCount    Int?        @default(1) // Cantidad de personas por mesa (DINE_IN)
   
   // Guest / CRM fields
   customerName  String?

@@ -151,7 +151,7 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
 
                 {/* Legend */}
                 {hasData && (
-                    <div className="flex justify-center gap-6 pb-4 pt-2">
+                    <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 pb-4 pt-2">
                         {data.map((entry, index) => (
                             <div key={entry.type} className="flex items-center gap-2">
                                 <div

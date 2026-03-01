@@ -97,7 +97,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         method: pm.method,
         label: pm.method === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
         count: pm.count,
-        total: 0 // Simplify mapping for pie
+        total: pm.total || 0 // Properly mapped from backend
     }));
 
     const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({

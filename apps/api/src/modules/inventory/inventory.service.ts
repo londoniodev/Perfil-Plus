@@ -425,14 +425,23 @@ export class InventoryService {
 
         // Batch: collect all productIds and fetch their recipes in one query
         const productIds = items.map((i) => i.productId);
-        const recipes = await prisma.recipe.findMany({
+
+        type RecipeWithIngredients = {
+            productId: string;
+            yield: number;
+            ingredients: Array<{
+                inventoryItemId: string;
+                quantity: any;
+                wasteFactor: any;
+                inventoryItem: { name: string; minStock: any };
+            }>;
+        };
+
+        const recipes: RecipeWithIngredients[] = await prisma.recipe.findMany({
             where: { productId: { in: productIds } },
             include: {
                 ingredients: {
-                    select: {
-                        inventoryItemId: true,
-                        quantity: true,
-                        wasteFactor: true,
+                    include: {
                         inventoryItem: { select: { name: true, minStock: true } },
                     },
                 },
@@ -440,7 +449,9 @@ export class InventoryService {
         });
 
         // Index recipes by productId for O(1) lookup
-        const recipeMap = new Map(recipes.map((r) => [r.productId, r]));
+        const recipeMap = new Map<string, RecipeWithIngredients>(
+            recipes.map((r) => [r.productId, r]),
+        );
 
         // Build flat array of deductions
         const deductions: Array<{

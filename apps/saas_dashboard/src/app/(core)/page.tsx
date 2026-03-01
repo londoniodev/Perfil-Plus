@@ -8,255 +8,53 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { TopProductsChart, type TopProductData } from "@/components/dashboard/top-products-chart";
 import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order-type-chart";
-import { ChefProductionChart } from "@/components/dashboard/chef-production-chart";
-import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
-import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
-import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
+import { ProductionByProductTable } from "@/components/dashboard/production-by-product-table";
 import { MarginCostChart } from "@/components/dashboard/margin-cost-chart";
-import { CostingSummaryCards } from "@/components/dashboard/costing-summary-cards";
-import { SalesByDayChart, type SalesByDayData } from "@/components/dashboard/sales-by-day-chart";
-import { getDashboardMetrics, getAllProductsCost } from "@/actions/admin/inventory";
-import { DashboardTimeSelector } from "@/components/dashboard/dashboard-time-selector";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
-import {
-    Users,
-    ShoppingCart,
-    BookOpen,
-    TrendingUp,
-    Package,
-    DollarSign,
-    GraduationCap,
-    Settings,
-    Sparkles,
-    UtensilsCrossed,
-    ChefHat,
-    Timer,
-    Percent,
-} from "lucide-react";
-import Link from "next/link";
 
-async function getTenantData() {
-    try {
-        const tenant = await serverFetch<any>('/tenant/branding');
-        return tenant || { features: [], design: null, name: null };
-    } catch (e) {
-        console.error("Error fetching tenant config:", e);
-        return { features: [], design: null, name: null };
-    }
-}
+// ---- ... [Skipped lines]
 
-function formatCurrency(value: number): string {
-    return new Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(value);
-}
+{
+    hasRestaurant && (
+        <div className="space-y-4 pt-4">
+            <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
 
-function formatTrend(percent: number | null | undefined): { text: string; up: boolean } | null {
-    if (percent === null || percent === undefined || Number.isNaN(percent)) return null;
-    const sign = percent >= 0 ? "+" : "";
-    return { text: `${sign}${percent}%`, up: percent >= 0 };
-}
-
-function DashboardSkeleton() {
-    return (
-        <div className="space-y-6 animate-pulse">
-            <div className="h-8 w-48 bg-card/60 rounded-md border border-border/50" />
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-[120px] rounded-xl bg-card/60 border border-border/50" />
-                ))}
+            {/* Fila 1: Top Productos (2 columnas) y Distribuciones (1 columna apilada) */}
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+                <div className="lg:col-span-2 flex flex-col h-full">
+                    <TopProductsChart data={mappedTopProducts} />
+                </div>
+                <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6 h-full">
+                    <div className="flex-1">
+                        <OrderTypeChart data={mappedOrderTypes} />
+                    </div>
+                    <div className="flex-1">
+                        <PaymentMethodsChart data={mappedPaymentMethods} />
+                    </div>
+                </div>
             </div>
-            <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
-                <div className="h-[350px] rounded-xl bg-card/60 border border-border/50" />
+
+            {/* Fila 2: Tiempos agrupados (1 columna flotante si se quiere, o mitad) */}
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 mt-4 sm:mt-6">
+                <ProductionTimeChart data={mappedProductionTimes} />
+                <ProductionByProductTable data={stats.productionTimesByProduct || []} />
             </div>
         </div>
-    );
+    )
 }
 
-// Extracted metrics component to allow Suspense streaming
-async function DashboardMetrics({ tenant, period }: { tenant: any, period: string }) {
-    const stats = await getDashboardStats(tenant.features || [], period);
-
-    const mappedTopProducts: TopProductData[] = (stats.topProducts || []).map(p => ({
-        name: p.productName,
-        cantidad: p.quantity,
-        ingresos: 0 // Simplificado
-    }));
-
-    const mappedOrderTypes: OrderTypeData[] = (stats.orderTypes || []).map((ot) => ({
-        type: ot.type,
-        label: ot.type === 'DINE_IN' ? 'Mesa' : ot.type === 'DELIVERY' ? 'Domicilio' : 'Llevar',
-        count: ot.count,
-        total: ot.total || 0,
-        fill: ot.type === 'DINE_IN' ? 'var(--color-DINE_IN)' : ot.type === 'DELIVERY' ? 'var(--color-DELIVERY)' : 'var(--color-TAKE_AWAY)'
-    }));
-
-    // Group payment methods into two categories: Efectivo vs Tarjeta/Transferencia
-    const paymentGrouped = (stats.paymentMethods || []).reduce<Record<string, { count: number; total: number }>>((acc, pm) => {
-        const key = pm.method === 'CASH' ? 'CASH' : 'CARD';
-        if (!acc[key]) acc[key] = { count: 0, total: 0 };
-        acc[key].count += pm.count;
-        acc[key].total += pm.total || 0;
-        return acc;
-    }, {});
-    const mappedPaymentMethods: PaymentMethodData[] = Object.entries(paymentGrouped).map(([key, val]) => ({
-        method: key,
-        label: key === 'CASH' ? 'Efectivo' : 'Transferencia',
-        count: val.count,
-        total: val.total
-    }));
-
-    const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({
-        step: p.stage === 'Preparation' ? 'Recepción' : p.stage === 'Shipping' ? 'Despacho' : 'Entrega',
-        time: p.minutes
-    })).sort((a, b) => b.time - a.time);
-
-    // Chef production time: avg time between "Empezar" -> "Preparado" (timeToShip field)
-    const chefAvgMinutes = Math.round((stats.productionTimes || []).find(p => p.stage === 'Shipping')?.minutes || 0);
-
-    // Hardcoded fallbacks while pending endpoint logic implementation
-    const mockTableTimes: TableTimeData[] = [
-        { range: "Bajo ($)", time: 35 },
-        { range: "Medio ($$)", time: 55 },
-        { range: "Alto ($$$)", time: 85 },
-    ];
-
-    const mockSalesByDay: SalesByDayData[] = [
-        { day: "Lun", sales: 1200000 },
-        { day: "Mar", sales: 950000 },
-        { day: "Mié", sales: 1100000 },
-        { day: "Jue", sales: 1500000 },
-        { day: "Vie", sales: 2800000 },
-        { day: "Sáb", sales: 3500000 },
-        { day: "Dom", sales: 3100000 },
-    ];
-
-    const hasLMS = tenant.features?.includes("lms");
-    const hasShop = tenant.features?.includes("shop");
-    const hasBlog = tenant.features?.includes("blog");
-    const hasRestaurant = tenant.features?.includes("restaurant");
-
-    const userTrend = formatTrend(stats.userGrowthPercent);
-    const revTrend = formatTrend(stats.revenueGrowthPercent);
-
-    // Cleaned up unused mock recent orders.
-
-    return (
-        <>
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold tracking-tight">Período Actual</h2>
-                </div>
-                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    {/* Usuarios totales */}
-                    <StatsCard
-                        title="Usuarios Totales"
-                        value={stats.totalUsers.toLocaleString("es-ES")}
-                        icon={Users}
-                        trend={userTrend?.text}
-                        trendUp={userTrend?.up}
-                    />
-
-                    {/* Revenue - Shop o Restaurant */}
-                    {(hasShop || hasRestaurant) && (
-                        <>
-                            <StatsCard
-                                title="Ingresos"
-                                value={formatCurrency(stats.periodRevenue || 0)}
-                                icon={DollarSign}
-                                trend={revTrend?.text}
-                                trendUp={revTrend?.up}
-                            />
-                            <StatsCard
-                                title="Órdenes Recibidas"
-                                value={(stats.periodOrdersCount || 0).toLocaleString("es-ES")}
-                                icon={Package}
-                            />
-                        </>
-                    )}
-
-                    {/* Blog Stats */}
-                    {hasBlog && (
-                        <StatsCard
-                            title="Artículos Publicados"
-                            value={stats.publishedPosts.toLocaleString("es-ES")}
-                            icon={BookOpen}
-                        />
-                    )}
-
-                    {/* LMS Stats */}
-                    {hasLMS && (
-                        <>
-                            <StatsCard
-                                title="Temas Publicados"
-                                value={stats.publishedThemes.toLocaleString("es-ES")}
-                                icon={GraduationCap}
-                            />
-                            <StatsCard
-                                title="Lecciones Activas"
-                                value={stats.totalLessons.toLocaleString("es-ES")}
-                                icon={BookOpen}
-                            />
-                        </>
-                    )}
-
-                    {/* Restaurant Stats */}
-                    {hasRestaurant && (
-                        <>
-                            <StatsCard
-                                title="Órdenes Hoy"
-                                value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
-                                icon={UtensilsCrossed}
-                            />
-                            {/* Plato Más Vendido Hoy card removed per user request */}
-                        </>
-                    )}
-                </div>
+{
+    hasRestaurant && (
+        <div className="space-y-4 pt-4">
+            <h2 className="text-xl font-bold tracking-tight">Finanzas y Costeo</h2>
+            <CostingSummaryCards tenantId={tenant.id} />
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-1">
+                <MarginCostChart tenantId={tenant.id} />
             </div>
+        </div>
+    )
+}
 
-            <Separator className="opacity-50" />
-
-            {/* Revenue Chart - shadcn/recharts */}
-            {(hasShop || hasRestaurant) && (
-                <div className="space-y-4">
-                    <h2 className="text-xl font-bold tracking-tight">Análisis de Rendimiento</h2>
-                    <RevenueChart data={stats.revenueByDay} />
-                </div>
-            )}
-
-            {hasRestaurant && (
-                <div className="space-y-4">
-                    <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                        <TopProductsChart data={mappedTopProducts} />
-                        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                            <OrderTypeChart data={mappedOrderTypes} />
-                            <PaymentMethodsChart data={mappedPaymentMethods} />
-                        </div>
-                        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                            <ProductionTimeChart data={mappedProductionTimes} />
-                            <ChefProductionChart avgMinutes={chefAvgMinutes} />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {hasRestaurant && (
-                <div className="space-y-4 pt-4">
-                    <h2 className="text-xl font-bold tracking-tight">Finanzas y Costeo</h2>
-                    <CostingSummaryCards tenantId={tenant.id} />
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-1">
-                        <MarginCostChart tenantId={tenant.id} />
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Actions removed per user request */}
+{/* Quick Actions removed per user request */ }
         </>
     );
 }

@@ -37,6 +37,7 @@ export type DashboardStats = {
     topProducts: { productName: string; quantity: number }[]
     avgTicketByType: { type: string; avgTicket: number }[]
     productionTimes: { stage: string; minutes: number }[]
+    productionTimesByProduct?: { productName: string; avgMinutes: number }[]
     recentOrders: {
         id: string;
         orderNumber: string;

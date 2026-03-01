@@ -523,7 +523,7 @@ export default function MenuClient({
                                 price: Number(p.variants?.find((va: ProductVariant) => va.id === v)?.price ?? p.basePrice) || 0,
                                 quantity: q,
                                 modifiers: m,
-                                image: p.images?.[0]
+                                image: p.images?.[0] || getFallbackImage(0, p.name)
                             })
                             setSelectedProduct(null)
                         }}

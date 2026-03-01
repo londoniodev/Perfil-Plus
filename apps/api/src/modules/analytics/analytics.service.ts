@@ -191,6 +191,25 @@ export class AnalyticsService {
             { stage: 'Delivery', minutes: Math.round(prodTimesAgg._avg.timeToDeliver || 0) },
         ];
 
+        // b.2. Production Times by Product
+        const prodTimesByProductRaw = await this.prisma.$queryRaw<{ productName: string, avgMinutes: number }[]>`
+            SELECT oi."productName", COALESCE(AVG(oda."timeToShip"), 0) as "avgMinutes"
+            FROM "OrderItem" oi
+            JOIN "OrderDeliveryAnalytics" oda ON oi."orderId" = oda."orderId"
+            JOIN "Order" o ON o.id = oi."orderId"
+            WHERE o."tenantId" = ${tenantId}
+            AND o."createdAt" >= ${StartDate} 
+            AND o."createdAt" <= ${EndDate}
+            AND oda."timeToShip" IS NOT NULL
+            GROUP BY oi."productName"
+            ORDER BY "avgMinutes" DESC
+            LIMIT 10
+        `;
+        const productionTimesByProduct = prodTimesByProductRaw.map(r => ({
+            productName: r.productName,
+            avgMinutes: Math.round(Number(r.avgMinutes || 0))
+        }));
+
         // c. Table Occupancy (Dine In)
         const totalUsers = await this.prisma.user.count({ where: { tenantId } });
 
@@ -235,6 +254,7 @@ export class AnalyticsService {
             topProducts,       // Bar Chart
             avgTicketByType,   // CRM / Stats
             productionTimes,   // Area or Bar
+            productionTimesByProduct, // Table Data
             recentOrders,      // Data Table
 
             // Legacy fallbacks for general compatibility during refactor

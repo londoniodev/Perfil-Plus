@@ -18,6 +18,30 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import { formatCurrency } from "@/lib/utils"
 
+// Fallback food images for products without uploaded photos
+const FOOD_FALLBACK_IMAGES = [
+    '/dashboard/images/food/food-1.png', // burger
+    '/dashboard/images/food/food-2.png', // fries
+    '/dashboard/images/food/food-3.png', // smoothie
+    '/dashboard/images/food/food-4.png', // salad
+    '/dashboard/images/food/food-5.png', // pizza
+    '/dashboard/images/food/food-6.png', // dessert
+]
+
+/** Deterministic fallback image based on product id or name */
+function getFallbackImage(id: string | number, name?: string): string {
+    if (name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('burger') || lowerName.includes('hamburguesa')) return FOOD_FALLBACK_IMAGES[0];
+        if (lowerName.includes('papa') || lowerName.includes('frie') || lowerName.includes('salchipapa')) return FOOD_FALLBACK_IMAGES[1];
+        if (lowerName.includes('jugo') || lowerName.includes('smoothie') || lowerName.includes('limonada') || lowerName.includes('gaseosa') || lowerName.includes('malteada')) return FOOD_FALLBACK_IMAGES[2];
+        if (lowerName.includes('ensalada') || lowerName.includes('salad') || lowerName.includes('nuggets')) return FOOD_FALLBACK_IMAGES[3];
+        if (lowerName.includes('pizza') || lowerName.includes('perro caliente')) return FOOD_FALLBACK_IMAGES[4];
+        if (lowerName.includes('postre') || lowerName.includes('brownie') || lowerName.includes('dessert')) return FOOD_FALLBACK_IMAGES[5];
+    }
+    const hash = typeof id === 'string' ? id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : id;
+    return FOOD_FALLBACK_IMAGES[hash % FOOD_FALLBACK_IMAGES.length]
+}
 // Lazy loaded modals to strip hundreds of KB from the initial JS bundle
 const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.ProductModal), {
     ssr: false,
@@ -381,8 +405,9 @@ export default function MenuClient({
 
                         {categories.map((cat) => {
                             // Find first product image for this category
+                            const catIndex = categories.indexOf(cat)
                             const catImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
-                                || '/placeholder.png'
+                                || getFallbackImage(catIndex, cat.name)
 
                             return (
                                 <div
@@ -434,7 +459,7 @@ export default function MenuClient({
                                 className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
                             >
                                 <Image
-                                    src={product.images?.[0] || "/placeholder.png"}
+                                    src={product.images?.[0] || getFallbackImage(product.id, product.name)}
                                     alt={product.name}
                                     fill
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
@@ -504,7 +529,7 @@ export default function MenuClient({
                                 price: Number(p.variants?.find((va: ProductVariant) => va.id === v)?.price ?? p.basePrice) || 0,
                                 quantity: q,
                                 modifiers: m,
-                                image: p.images?.[0]
+                                image: p.images?.[0] || getFallbackImage(p.id, p.name)
                             })
                             setSelectedProduct(null)
                         }}

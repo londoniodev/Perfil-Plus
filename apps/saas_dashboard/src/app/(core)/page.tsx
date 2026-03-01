@@ -89,6 +89,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         type: ot.type,
         label: ot.type === 'DINE_IN' ? 'Mesa' : ot.type === 'DELIVERY' ? 'Domicilio' : 'Llevar',
         count: ot.count,
+        total: ot.total || 0,
         fill: ot.type === 'DINE_IN' ? 'var(--color-DINE_IN)' : ot.type === 'DELIVERY' ? 'var(--color-DELIVERY)' : 'var(--color-TAKE_AWAY)'
     }));
 

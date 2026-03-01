@@ -190,6 +190,36 @@ export class AnalyticsService {
         // c. Table Occupancy (Dine In)
         const totalUsers = await this.prisma.user.count({ where: { tenantId } });
 
+        // d. Recent Orders (Table)
+        const recentOrdersRaw = await this.prisma.order.findMany({
+            where: { tenantId, createdAt: dateQuery },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: {
+                id: true,
+                orderNumber: true,
+                customerName: true,
+                totalAmount: true,
+                status: true,
+                orderType: true,
+                tableNumber: true,
+                createdAt: true,
+                _count: { select: { items: true } }
+            }
+        });
+
+        const recentOrders = recentOrdersRaw.map(o => ({
+            id: o.id,
+            orderNumber: o.orderNumber,
+            customerName: o.customerName,
+            totalAmount: Number(o.totalAmount),
+            status: o.status,
+            orderType: o.orderType,
+            tableNumber: o.tableNumber,
+            createdAt: o.createdAt.toISOString(),
+            itemCount: o._count.items
+        }));
+
         const result = {
             totalRevenue,
             totalOrders,
@@ -201,6 +231,7 @@ export class AnalyticsService {
             topProducts,       // Bar Chart
             avgTicketByType,   // CRM / Stats
             productionTimes,   // Area or Bar
+            recentOrders,      // Data Table
 
             // Legacy fallbacks for general compatibility during refactor
             totalUsers,

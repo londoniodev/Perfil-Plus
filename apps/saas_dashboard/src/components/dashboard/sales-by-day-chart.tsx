@@ -17,8 +17,8 @@ import {
 
 const chartConfig = {
     sales: {
-        label: "Ventas Diarias",
-        color: "hsl(var(--chart-5))",
+        label: "Ventas",
+        color: "hsl(var(--chart-4))",
     },
 } satisfies ChartConfig
 

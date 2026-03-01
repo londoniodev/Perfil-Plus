@@ -17,8 +17,8 @@ import {
 
 const chartConfig = {
     cantidad: {
-        label: "Vendidos",
-        color: "var(--primary)",
+        label: "Platos",
+        color: "hsl(var(--chart-3))",
     },
     ingresos: {
         label: "Ingresos",

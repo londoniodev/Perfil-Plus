@@ -37,6 +37,17 @@ export type DashboardStats = {
     topProducts: { productName: string; quantity: number }[]
     avgTicketByType: { type: string; avgTicket: number }[]
     productionTimes: { stage: string; minutes: number }[]
+    recentOrders: {
+        id: string;
+        orderNumber: string;
+        customerName: string | null;
+        totalAmount: number;
+        status: string;
+        orderType: string;
+        tableNumber: string | null;
+        createdAt: string;
+        itemCount: number;
+    }[]
 }
 
 // --- Server Action principal ---
@@ -78,7 +89,8 @@ export async function getDashboardStats(features: string[] = [], period: string 
             paymentMethods: [],
             topProducts: [],
             avgTicketByType: [],
-            productionTimes: []
+            productionTimes: [],
+            recentOrders: []
         }
     }
 }

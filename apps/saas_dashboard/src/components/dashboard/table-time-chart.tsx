@@ -17,8 +17,8 @@ import {
 
 const chartConfig = {
     time: {
-        label: "Minutos",
-        color: "hsl(var(--chart-3))", // a distinct color
+        label: "Tiempo (min)",
+        color: "hsl(var(--chart-5))",
     },
 } satisfies ChartConfig
 

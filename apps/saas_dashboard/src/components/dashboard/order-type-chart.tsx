@@ -22,7 +22,7 @@ const chartConfig = {
     },
     DINE_IN: {
         label: "Mesa",
-        color: "var(--primary)",
+        color: "hsl(var(--chart-1))",
     },
     TAKE_AWAY: {
         label: "Para Llevar",
@@ -34,11 +34,6 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-const COLORS = [
-    "var(--color-DINE_IN)",
-    "var(--color-TAKE_AWAY)",
-    "var(--color-DELIVERY)",
-]
 
 export interface OrderTypeData {
     type: string
@@ -89,12 +84,6 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                                 strokeWidth={5}
                                 paddingAngle={3}
                             >
-                                {data.map((entry, index) => (
-                                    <Cell
-                                        key={entry.type}
-                                        fill={COLORS[index % COLORS.length]}
-                                    />
-                                ))}
                                 <Label
                                     content={({ viewBox }) => {
                                         if (viewBox && "cx" in viewBox && "cy" in viewBox) {
@@ -142,7 +131,7 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                             <div key={entry.type} className="flex items-center gap-2">
                                 <div
                                     className="h-3 w-3 rounded-full shrink-0"
-                                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                    style={{ backgroundColor: `var(--color-${entry.type})` }}
                                     aria-hidden="true"
                                 />
                                 <span className="text-xs text-muted-foreground">

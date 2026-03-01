@@ -51,8 +51,8 @@ function formatCurrency(value: number): string {
     }).format(value);
 }
 
-function formatTrend(percent: number | null): { text: string; up: boolean } | null {
-    if (percent === null) return null;
+function formatTrend(percent: number | null | undefined): { text: string; up: boolean } | null {
+    if (percent === null || percent === undefined || Number.isNaN(percent)) return null;
     const sign = percent >= 0 ? "+" : "";
     return { text: `${sign}${percent}%`, up: percent >= 0 };
 }
@@ -129,52 +129,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
     const userTrend = formatTrend(stats.userGrowthPercent);
     const revTrend = formatTrend(stats.revenueGrowthPercent);
 
-    const mockRecentOrders: RecentOrderData[] = [
-        {
-            id: "1",
-            orderNumber: "00142",
-            customerName: "Carlos Rodríguez",
-            totalAmount: 45000,
-            status: "DELIVERED",
-            orderType: "DINE_IN",
-            tableNumber: "1",
-            createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-            itemCount: 2,
-        },
-        {
-            id: "2",
-            orderNumber: "00143",
-            customerName: "María Gómez",
-            totalAmount: 125000,
-            status: "SERVED",
-            orderType: "DINE_IN",
-            tableNumber: "4",
-            createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-            itemCount: 4,
-        },
-        {
-            id: "3",
-            orderNumber: "00144",
-            customerName: "Juan Pérez",
-            totalAmount: 68000,
-            status: "PREPARING",
-            orderType: "DELIVERY",
-            tableNumber: null,
-            createdAt: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
-            itemCount: 3,
-        },
-        {
-            id: "4",
-            orderNumber: "00145",
-            customerName: null,
-            totalAmount: 35000,
-            status: "PENDING",
-            orderType: "TAKE_AWAY",
-            tableNumber: null,
-            createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-            itemCount: 1,
-        },
-    ];
+    // Cleaned up unused mock recent orders.
 
     return (
         <>
@@ -243,13 +198,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                                 value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
                                 icon={UtensilsCrossed}
                             />
-                            {stats.topProductToday && (
-                                <StatsCard
-                                    title="Plato Más Vendido Hoy"
-                                    value={stats.topProductToday}
-                                    icon={ChefHat}
-                                />
-                            )}
+                            {/* Plato Más Vendido Hoy card removed per user request */}
                         </>
                     )}
                 </div>
@@ -280,93 +229,11 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                         <TableTimeChart data={mockTableTimes} />
                         <ProductionTimeChart data={mappedProductionTimes} />
                     </div>
-                    <RecentOrdersTable data={mockRecentOrders} />
+                    <RecentOrdersTable data={stats.recentOrders || []} />
                 </div>
             )}
 
-            {/* Quick Actions */}
-            <div className="space-y-4">
-                <h2 className="text-xl font-bold tracking-tight">Accesos Rápidos</h2>
-                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                    {hasLMS && (
-                        <Link href="/academia/cursos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                    <BookOpen className="h-6 w-6" />
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="font-semibold leading-none tracking-tight">Gestionar Cursos</div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Crea y edita contenido educativo
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    )}
-
-                    {hasShop && (
-                        <Link href="/tienda/productos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                            <div className="flex items-start gap-4">
-                                <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                    <ShoppingCart className="h-6 w-6" />
-                                </div>
-                                <div className="space-y-1">
-                                    <div className="font-semibold leading-none tracking-tight">Gestionar Productos</div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Controla tu inventario y precios
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    )}
-
-                    {hasRestaurant && (
-                        <>
-                            <Link href="/restaurante/pos" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                <div className="flex items-start gap-4">
-                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                        <UtensilsCrossed className="h-6 w-6" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="font-semibold leading-none tracking-tight">Punto de Venta</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Abre el POS para tomar pedidos
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            <Link href="/restaurante/comandas" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                                <div className="flex items-start gap-4">
-                                    <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                        <ChefHat className="h-6 w-6" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="font-semibold leading-none tracking-tight">Cocina / Comandas</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Gestiona las órdenes en la cocina
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        </>
-                    )}
-
-                    <Link href="/usuarios" className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:shadow-md transition-all duration-300">
-                        <div className="flex items-start gap-4">
-                            <div className="rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                                <Users className="h-6 w-6" />
-                            </div>
-                            <div className="space-y-1">
-                                <div className="font-semibold leading-none tracking-tight">Gestionar Usuarios</div>
-                                <div className="text-sm text-muted-foreground">
-                                    Administra roles y permisos
-                                </div>
-                            </div>
-                        </div>
-                    </Link>
-                </div>
-            </div>
+            {/* Quick Actions removed per user request */}
         </>
     );
 }
@@ -419,12 +286,6 @@ export default async function AdminDashboardPage(props: PageProps) {
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 items-end">
                                 <DashboardTimeSelector currentPeriod={period} />
-                                <Button variant="outline" size="lg" className="h-10 border-primary/20 hover:bg-primary/5" asChild>
-                                    <Link href="/configuracion">
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        Configuración
-                                    </Link>
-                                </Button>
                             </div>
                         </CardContent>
                     </Card>

@@ -32,7 +32,7 @@ export type DashboardStats = {
 
     // Arrays para Gráficas
     revenueByDay: { date: string; total: number }[]
-    orderTypes: { type: string; count: number }[]
+    orderTypes: { type: string; count: number; total: number }[]
     paymentMethods: { method: string; count: number; total: number }[]
     topProducts: { productName: string; quantity: number }[]
     avgTicketByType: { type: string; avgTicket: number }[]

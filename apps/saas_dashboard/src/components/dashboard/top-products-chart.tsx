@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/chart"
 
 const chartConfig = {
-    quantity: {
+    cantidad: {
         label: "Platos",
         theme: {
             light: "hsl(197, 37%, 24%)",

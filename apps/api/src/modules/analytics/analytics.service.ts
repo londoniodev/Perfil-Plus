@@ -131,11 +131,13 @@ export class AnalyticsService {
         const orderTypeGroup = await this.prisma.order.groupBy({
             by: ['orderType'],
             _count: { id: true },
+            _sum: { totalAmount: true },
             where: { tenantId, createdAt: dateQuery }
         });
         const orderTypes = orderTypeGroup.map(g => ({
             type: g.orderType,
-            count: g._count.id
+            count: g._count.id,
+            total: Number(g._sum.totalAmount || 0)
         }));
 
         // b. Payment Methods

@@ -48,6 +48,7 @@ export interface OrderTypeData {
     type: string
     label: string
     count: number
+    total: number
     fill: string
 }
 
@@ -80,7 +81,16 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                                 cursor={false}
                                 content={
                                     <ChartTooltipContent
-                                        formatter={(value) => `${value} órdenes`}
+                                        formatter={(value, name, item) => {
+                                            const income = item?.payload?.total || 0;
+                                            const formattedIncome = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(income);
+                                            return (
+                                                <div className="flex items-center gap-2">
+                                                    <span>{value} órdenes</span>
+                                                    <span className="text-muted-foreground ml-2">({formattedIncome})</span>
+                                                </div>
+                                            )
+                                        }}
                                         hideLabel
                                     />
                                 }
@@ -149,8 +159,11 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                                     style={{ backgroundColor: `var(--color-${entry.type})` }}
                                     aria-hidden="true"
                                 />
-                                <span className="text-xs text-muted-foreground">
-                                    {entry.label} ({entry.count})
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <span className="font-medium text-foreground">{entry.label}</span>
+                                    <span>({entry.count})</span>
+                                    <span>-</span>
+                                    <span>{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(entry.total || 0)}</span>
                                 </span>
                             </div>
                         ))}

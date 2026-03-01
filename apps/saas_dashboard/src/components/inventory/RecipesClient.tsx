@@ -12,6 +12,7 @@ import { Label } from "@alvarosky/ui"
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@alvarosky/ui"
+import { Card } from "@alvarosky/ui"
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@alvarosky/ui"

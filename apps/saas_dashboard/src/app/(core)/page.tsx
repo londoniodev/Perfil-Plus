@@ -12,7 +12,7 @@ import { ChefProductionChart } from "@/components/dashboard/chef-production-char
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
 import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
 import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
-import { MarginCostChart, type MarginCostData } from "@/components/dashboard/margin-cost-chart";
+import { MarginCostChart } from "@/components/dashboard/margin-cost-chart";
 import { CostingSummaryCards } from "@/components/dashboard/costing-summary-cards";
 import { SalesByDayChart, type SalesByDayData } from "@/components/dashboard/sales-by-day-chart";
 import { getDashboardMetrics, getAllProductsCost } from "@/actions/admin/inventory";

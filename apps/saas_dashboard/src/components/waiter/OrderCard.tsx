@@ -85,8 +85,12 @@ export function OrderCard({ order, onUpdateStatus, onDelete, isUpdating }: Order
                         </div>
                     ))}
                     {order.notes && (
-                        <div className="mt-2 text-sm bg-yellow-500/10 text-yellow-500 p-2 rounded-md italic">
-                            "{order.notes}"
+                        <div className="mt-2 text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 p-2 rounded">
+                            {order.notes.split('\n').filter(Boolean).map((line, i) => (
+                                <span key={i} className={line.includes('Forma de pago:') ? 'font-semibold flex items-center gap-1 not-italic mt-1' : 'italic block'}>
+                                    {line}
+                                </span>
+                            ))}
                         </div>
                     )}
                 </div>

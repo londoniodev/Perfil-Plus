@@ -77,11 +77,12 @@ function KitchenCard({ order, onAction, busy, tableName }: {
                 </div>
 
                 {order.notes && (
-                    <div className="mt-4 p-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <p className="text-xs uppercase text-red-500 font-bold mb-1">Nota del pedido</p>
-                        <p className="text-base font-bold italic">
-                            "{order.notes}"
-                        </p>
+                    <div className="mt-3 text-sm bg-yellow-500/10 text-yellow-600 p-2 rounded">
+                        {order.notes.split('\n').filter(Boolean).map((line, i) => (
+                            <span key={i} className={line.includes('Forma de pago:') ? 'font-semibold flex items-center gap-1 not-italic mt-1' : 'italic block'}>
+                                {line}
+                            </span>
+                        ))}
                     </div>
                 )}
             </CardContent>

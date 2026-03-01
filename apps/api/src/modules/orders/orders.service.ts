@@ -192,7 +192,15 @@ export class OrdersService {
                             // New Fields
                             customerName: dto.customerName || null,
                             customerPhone: dto.customerPhone || null,
-                            notes: dto.paymentMethod ? `${dto.notes ? dto.notes + ' | ' : ''}[Pago: ${dto.paymentMethod}]` : (dto.notes || null),
+                            notes: (() => {
+                                let methodLabel = dto.paymentMethod;
+                                if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+                                if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
+                                if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
+                                const paymentNote = dto.paymentMethod ? `Forma de pago: ${methodLabel}` : null;
+                                if (dto.notes && paymentNote) return `${dto.notes}\n\n${paymentNote}`;
+                                return paymentNote || dto.notes || null;
+                            })(),
                             shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
 
                             items: {

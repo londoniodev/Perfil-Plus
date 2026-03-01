@@ -145,8 +145,7 @@ export default function MenuClient({
         const orderData = {
             cart,
             total: total(),
-            customer: { name: customerName, phone: "0000000000" },
-            tableId: table || undefined,
+            customer: { name: customerName, phone: "0000000000", tableNumber: table || undefined },
             paymentMethod: paymentMethod
         }
 

@@ -85,9 +85,13 @@ function OrderCard({ order, onAction, busy, tableName }: {
                 </div>
 
                 {order.notes && (
-                    <p className="mt-2 text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 p-2 rounded italic">
-                        "{order.notes}"
-                    </p>
+                    <div className="mt-2 text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 p-2 rounded">
+                        {order.notes.split('\n').filter(Boolean).map((line, i) => (
+                            <span key={i} className={line.includes('Forma de pago:') ? 'font-semibold flex items-center gap-1 not-italic mt-1' : 'italic block'}>
+                                {line}
+                            </span>
+                        ))}
+                    </div>
                 )}
 
                 <Separator className="my-2" />

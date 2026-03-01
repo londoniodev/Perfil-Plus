@@ -8,11 +8,11 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { TopProductsChart, type TopProductData } from "@/components/dashboard/top-products-chart";
 import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order-type-chart";
-import { RecentOrdersTable, type RecentOrderData } from "@/components/dashboard/recent-orders-table";
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
-import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
 import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
-import { SalesByDayChart, type SalesByDayData } from "@/components/dashboard/sales-by-day-chart";
+import { ProductionByProductTable } from "@/components/dashboard/production-by-product-table";
+import { MarginCostChart } from "@/components/dashboard/margin-cost-chart";
+import { CostingSummaryCards } from "@/components/dashboard/costing-summary-cards";
 import { DashboardTimeSelector } from "@/components/dashboard/dashboard-time-selector";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
 import {
@@ -105,22 +105,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         time: p.minutes
     }));
 
-    // Hardcoded fallbacks while pending endpoint logic implementation
-    const mockTableTimes: TableTimeData[] = [
-        { range: "Bajo ($)", time: 35 },
-        { range: "Medio ($$)", time: 55 },
-        { range: "Alto ($$$)", time: 85 },
-    ];
 
-    const mockSalesByDay: SalesByDayData[] = [
-        { day: "Lun", sales: 1200000 },
-        { day: "Mar", sales: 950000 },
-        { day: "Mié", sales: 1100000 },
-        { day: "Jue", sales: 1500000 },
-        { day: "Vie", sales: 2800000 },
-        { day: "Sáb", sales: 3500000 },
-        { day: "Dom", sales: 3100000 },
-    ];
 
     const hasLMS = tenant.features?.includes("lms");
     const hasShop = tenant.features?.includes("shop");
@@ -216,21 +201,39 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
             )}
 
             {hasRestaurant && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-4">
                     <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-                        <TopProductsChart data={mappedTopProducts} />
-                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
-                            <OrderTypeChart data={mappedOrderTypes} />
-                            <PaymentMethodsChart data={mappedPaymentMethods} />
+
+                    {/* Fila 1: Top Productos (2 columnas) y Distribuciones (1 columna apilada) */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+                        <div className="lg:col-span-2 flex flex-col h-full">
+                            <TopProductsChart data={mappedTopProducts} />
+                        </div>
+                        <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6 h-full">
+                            <div className="flex-1">
+                                <OrderTypeChart data={mappedOrderTypes} />
+                            </div>
+                            <div className="flex-1">
+                                <PaymentMethodsChart data={mappedPaymentMethods} />
+                            </div>
                         </div>
                     </div>
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-                        <SalesByDayChart data={mockSalesByDay} />
-                        <TableTimeChart data={mockTableTimes} />
+
+                    {/* Fila 2: Tiempos agrupados */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 mt-4 sm:mt-6">
                         <ProductionTimeChart data={mappedProductionTimes} />
+                        <ProductionByProductTable data={stats.productionTimesByProduct || []} />
                     </div>
-                    <RecentOrdersTable data={stats.recentOrders || []} />
+                </div>
+            )}
+
+            {hasRestaurant && (
+                <div className="space-y-4 pt-4">
+                    <h2 className="text-xl font-bold tracking-tight">Finanzas y Costeo</h2>
+                    <CostingSummaryCards tenantId={tenant.id} />
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-1">
+                        <MarginCostChart tenantId={tenant.id} />
+                    </div>
                 </div>
             )}
 

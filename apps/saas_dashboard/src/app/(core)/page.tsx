@@ -8,7 +8,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { TopProductsChart, type TopProductData } from "@/components/dashboard/top-products-chart";
 import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order-type-chart";
-import { RecentOrdersTable, type RecentOrderData } from "@/components/dashboard/recent-orders-table";
+import { ChefProductionChart } from "@/components/dashboard/chef-production-chart";
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
 import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
 import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
@@ -93,17 +93,28 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         fill: ot.type === 'DINE_IN' ? 'var(--color-DINE_IN)' : ot.type === 'DELIVERY' ? 'var(--color-DELIVERY)' : 'var(--color-TAKE_AWAY)'
     }));
 
-    const mappedPaymentMethods: PaymentMethodData[] = (stats.paymentMethods || []).map(pm => ({
-        method: pm.method,
-        label: pm.method === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
-        count: pm.count,
-        total: pm.total || 0 // Properly mapped from backend
+    // Group payment methods into two categories: Efectivo vs Tarjeta/Transferencia
+    const paymentGrouped = (stats.paymentMethods || []).reduce<Record<string, { count: number; total: number }>>((acc, pm) => {
+        const key = pm.method === 'CASH' ? 'CASH' : 'CARD';
+        if (!acc[key]) acc[key] = { count: 0, total: 0 };
+        acc[key].count += pm.count;
+        acc[key].total += pm.total || 0;
+        return acc;
+    }, {});
+    const mappedPaymentMethods: PaymentMethodData[] = Object.entries(paymentGrouped).map(([key, val]) => ({
+        method: key,
+        label: key === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
+        count: val.count,
+        total: val.total
     }));
 
     const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({
-        step: p.stage === 'Preparation' ? 'Preparación' : p.stage === 'Shipping' ? 'Embalaje/Envío' : 'Entrega',
+        step: p.stage === 'Preparation' ? 'Recepción' : p.stage === 'Shipping' ? 'Despacho' : 'Entrega',
         time: p.minutes
-    }));
+    })).sort((a, b) => b.time - a.time);
+
+    // Chef production time: avg time between "Empezar" -> "Preparado" (timeToShip field)
+    const chefAvgMinutes = Math.round((stats.productionTimes || []).find(p => p.stage === 'Shipping')?.minutes || 0);
 
     // Hardcoded fallbacks while pending endpoint logic implementation
     const mockTableTimes: TableTimeData[] = [
@@ -227,10 +238,9 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                     </div>
                     <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
                         <SalesByDayChart data={mockSalesByDay} />
-                        <TableTimeChart data={mockTableTimes} />
                         <ProductionTimeChart data={mappedProductionTimes} />
+                        <ChefProductionChart avgMinutes={chefAvgMinutes} />
                     </div>
-                    <RecentOrdersTable data={stats.recentOrders || []} />
                 </div>
             )}
 

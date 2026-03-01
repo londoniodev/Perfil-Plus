@@ -1,6 +1,6 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
 import {
     Card,
     CardContent,
@@ -35,65 +35,61 @@ interface ProductionTimeChartProps {
 }
 
 export function ProductionTimeChart({ data }: ProductionTimeChartProps) {
-    const hasData = data.length > 0
+    const hasData = data.length > 0 && data.some((d) => d.time > 0)
 
     return (
         <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
             <CardHeader className="pb-2">
-                <CardTitle className="text-base">Tiempo de Producción</CardTitle>
-                <CardDescription>Minutos desde orden hasta entrega</CardDescription>
+                <CardTitle className="text-base">Tiempos de Entrega</CardTitle>
+                <CardDescription>Promedio por etapa (minutos)</CardDescription>
             </CardHeader>
             <CardContent className="px-2 sm:px-6">
                 {hasData ? (
-                    <ChartContainer config={chartConfig} className="aspect-auto h-[280px] w-full mt-4">
-                        <AreaChart
+                    <ChartContainer config={chartConfig} className="aspect-auto h-[220px] w-full">
+                        <BarChart
                             data={data}
-                            margin={{ left: 10, right: 10, top: 10, bottom: 0 }}
+                            layout="vertical"
+                            margin={{ left: 10, right: 40, top: 5, bottom: 5 }}
                         >
-                            <defs>
-                                <linearGradient id="fillTime" x1="0" y1="0" x2="0" y2="1">
-                                    <stop
-                                        offset="5%"
-                                        stopColor="var(--color-time)"
-                                        stopOpacity={0.8}
-                                    />
-                                    <stop
-                                        offset="95%"
-                                        stopColor="var(--color-time)"
-                                        stopOpacity={0.1}
-                                    />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
-                            <XAxis
+                            <YAxis
                                 dataKey="step"
+                                type="category"
                                 tickLine={false}
                                 axisLine={false}
+                                width={80}
                                 tick={{ fontSize: 12 }}
                             />
-                            <YAxis
-                                hide={false}
-                                tickLine={false}
-                                axisLine={false}
-                                tickFormatter={(val) => val === 0 ? "" : `${val}m`}
+                            <XAxis
+                                type="number"
+                                hide
                             />
                             <ChartTooltip
                                 cursor={false}
-                                content={<ChartTooltipContent indicator="dot" />}
+                                content={
+                                    <ChartTooltipContent
+                                        formatter={(value) => `${value} min`}
+                                    />
+                                }
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="time"
-                                fill="url(#fillTime)"
-                                stroke="var(--color-time)"
-                                strokeWidth={2}
-                            />
-                        </AreaChart>
+                                fill="var(--color-time)"
+                                radius={[0, 6, 6, 0]}
+                                barSize={28}
+                            >
+                                <LabelList
+                                    dataKey="time"
+                                    position="right"
+                                    formatter={(val: number) => `${val}m`}
+                                    className="fill-foreground text-sm font-medium"
+                                />
+                            </Bar>
+                        </BarChart>
                     </ChartContainer>
                 ) : (
-                    <div className="flex items-center justify-center h-[280px] bg-card/40 rounded-xl border border-dashed border-border/50">
+                    <div className="flex items-center justify-center h-[220px] bg-card/40 rounded-xl border border-dashed border-border/50">
                         <p className="text-sm text-muted-foreground">
-                            No hay datos de producción todavía
+                            No hay datos de tiempos
                         </p>
                     </div>
                 )}

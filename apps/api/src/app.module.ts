@@ -30,6 +30,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -105,6 +106,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     PaymentsModule,
     LeadsModule,
     EmployeesModule,
+    InventoryModule,
     EmailModule,
     RestaurantModule,
 

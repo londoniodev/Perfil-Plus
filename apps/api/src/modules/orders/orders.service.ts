@@ -9,6 +9,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 import { OrdersGateway } from './orders.gateway';
 import { validateOrderTransition } from './domain/order-state-machine';
+import { InventoryService } from '../inventory/inventory.service';
 
 import { Inject, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
@@ -23,6 +24,7 @@ export class OrdersService {
         private prisma: PrismaService,
         private storage: StorageService,
         private ordersGateway: OrdersGateway,
+        private inventoryService: InventoryService,
     ) { }
 
     private getTenantId(): string {
@@ -279,6 +281,31 @@ export class OrdersService {
                         data: { orderNumber, status: order.status, totalAmount: Number(totalAmount), items: dto.items.length },
                     });
 
+                    // --- DEDUCCIÓN DE INVENTARIO (ATÓMICA dentro del mismo tx) ---
+                    const productItems = orderItemsData.map((item) => {
+                        // Extract productId from the variant relationship
+                        const variant = dto.items.find((i) => i.variantId === item.variantId);
+                        return {
+                            productId: order.items.find((oi) => oi.variantId === item.variantId)?.variant?.product?.id || '',
+                            quantity: item.quantity,
+                        };
+                    }).filter((i) => i.productId);
+
+                    if (productItems.length > 0) {
+                        const inventoryResult = await this.inventoryService.deductByOrder(
+                            this.getTenantId(),
+                            order.id,
+                            productItems,
+                            tx,
+                        );
+
+                        if (inventoryResult.alerts.length > 0) {
+                            this.logger.warn(
+                                `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
+                            );
+                        }
+                    }
+
                     return order;
                 });
             } catch (error) {
@@ -356,7 +383,14 @@ export class OrdersService {
                             }
                         }
                     }
-                    this.logger.log(`Stock restaurado para orden cancelada: ${orderId}`);
+                    this.logger.log(`Stock de variantes restaurado para orden cancelada: ${orderId}`);
+
+                    // Restaurar stock de inventario (ingredientes)
+                    await this.inventoryService.restoreByOrder(
+                        this.getTenantId(),
+                        orderId,
+                        tx,
+                    );
                 }
             }
 

@@ -19,6 +19,7 @@ import {
     QrCode,
     DollarSign,
     UserCog,
+    Warehouse,
 } from "lucide-react";
 import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
 import type { UserRole } from "@/types/auth";
@@ -189,6 +190,18 @@ export const sidebarConfig: SidebarConfig = {
                 title: "Mesas",
                 href: "/restaurante/mesas",
                 icon: QrCode,
+            },
+            {
+                title: "Inventarios",
+                icon: Warehouse,
+                items: [
+                    { title: "Ingredientes", href: "/restaurante/inventario" },
+                    { title: "Nuevo ingrediente", href: "/restaurante/inventario/nuevo" },
+                    { title: "Almacenes", href: "/restaurante/inventario/almacenes" },
+                    { title: "Recetas", href: "/restaurante/recetas" },
+                    { title: "Conteo físico", href: "/restaurante/inventario/conteos" },
+                    { title: "Costeo y Márgenes", href: "/restaurante/costeo" },
+                ],
             },
         ],
     },

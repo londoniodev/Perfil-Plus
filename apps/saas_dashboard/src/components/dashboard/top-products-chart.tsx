@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
 import {
     Card,
     CardContent,
@@ -54,7 +54,7 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                         <BarChart
                             data={data}
                             layout="vertical"
-                            margin={{ left: 10, right: 10, top: 5, bottom: 5 }}
+                            margin={{ left: 10, right: 40, top: 5, bottom: 5 }}
                         >
                             <YAxis
                                 dataKey="name"
@@ -83,7 +83,13 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                                 fill="var(--color-cantidad)"
                                 radius={[0, 6, 6, 0]}
                                 barSize={24}
-                            />
+                            >
+                                <LabelList
+                                    dataKey="cantidad"
+                                    position="right"
+                                    className="fill-foreground text-xs font-medium"
+                                />
+                            </Bar>
                         </BarChart>
                     </ChartContainer>
                 ) : (

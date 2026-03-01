@@ -9,7 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@alvarosky/ui"
-import { Badge } from "@alvarosky/ui"
+import { Badge, Card } from "@alvarosky/ui"
 import { Button } from "@alvarosky/ui"
 import {
     Dialog,
@@ -195,9 +195,9 @@ export function InventoryClient({
             </div>
 
             {/* Ingredients table */}
-            <div className="rounded-lg border">
+            <Card className="rounded-xl shadow-sm border-border/50 overflow-hidden bg-card/60 backdrop-blur-xl">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-muted/50">
                         <TableRow>
                             <TableHead>Ingrediente</TableHead>
                             <TableHead>Unidad</TableHead>
@@ -212,7 +212,7 @@ export function InventoryClient({
                     <TableBody>
                         {items.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                                     No hay ingredientes registrados. Crea tu primer ingrediente.
                                 </TableCell>
                             </TableRow>
@@ -225,7 +225,7 @@ export function InventoryClient({
                                 const isLow = alertItemIds.has(item.id)
 
                                 return (
-                                    <TableRow key={item.id} className={isLow ? "bg-orange-500/5" : ""}>
+                                    <TableRow key={item.id} className={`transition-colors hover:bg-muted/30 ${isLow ? "bg-orange-500/5 hover:bg-orange-500/10" : ""}`}>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
                                                 {isLow && (
@@ -262,7 +262,7 @@ export function InventoryClient({
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 hover:bg-emerald-500/10"
                                                     onClick={() => openDialog("entry", item.id)}
                                                     aria-label={`Agregar stock a ${item.name}`}
                                                 >
@@ -271,7 +271,7 @@ export function InventoryClient({
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 hover:bg-destructive/10"
                                                     onClick={() => handleDelete(item.id, item.name)}
                                                     aria-label={`Desactivar ${item.name}`}
                                                 >
@@ -285,7 +285,7 @@ export function InventoryClient({
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             {/* Stock Movement Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

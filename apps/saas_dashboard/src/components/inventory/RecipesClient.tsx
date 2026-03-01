@@ -239,9 +239,9 @@ export function RecipesClient({
             )}
 
             {/* Recipes table */}
-            <div className="rounded-lg border">
+            <Card className="rounded-xl shadow-sm border-border/50 overflow-hidden bg-card/60 backdrop-blur-xl">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-muted/50">
                         <TableRow>
                             <TableHead>Producto</TableHead>
                             <TableHead className="text-center">Ingredientes</TableHead>
@@ -253,13 +253,13 @@ export function RecipesClient({
                     <TableBody>
                         {recipes.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                                     No hay recetas creadas. Asocia ingredientes a tus platos del menú.
                                 </TableCell>
                             </TableRow>
                         ) : (
                             recipes.map((recipe) => (
-                                <TableRow key={recipe.id}>
+                                <TableRow key={recipe.id} className="transition-colors hover:bg-muted/30">
                                     <TableCell className="font-medium">{recipe.product.name}</TableCell>
                                     <TableCell className="text-center">
                                         <div className="flex flex-wrap gap-1 justify-center">
@@ -278,7 +278,7 @@ export function RecipesClient({
                                         <Button
                                             size="icon"
                                             variant="ghost"
-                                            className="h-8 w-8"
+                                            className="h-8 w-8 hover:bg-destructive/10"
                                             onClick={() => handleDelete(recipe.id, recipe.product.name)}
                                             aria-label={`Eliminar receta ${recipe.product.name}`}
                                         >
@@ -290,7 +290,7 @@ export function RecipesClient({
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </section>
     )
 }

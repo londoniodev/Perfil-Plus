@@ -1,7 +1,7 @@
 "use client"
 
 import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Card
 } from "@alvarosky/ui"
 import { Badge } from "@alvarosky/ui"
 import { TrendingUp, TrendingDown, Minus } from "lucide-react"
@@ -34,28 +34,29 @@ export function CostingClient({ data }: { data: CostingData[] }) {
         <section className="space-y-6">
             {/* Summary cards */}
             <div className="grid gap-4 md:grid-cols-3">
-                <article className="rounded-lg border p-4 space-y-1">
-                    <p className="text-sm text-muted-foreground">Productos Costeados</p>
-                    <p className="text-2xl font-bold">{data.length}</p>
-                </article>
-                <article className="rounded-lg border p-4 space-y-1">
-                    <p className="text-sm text-muted-foreground">Margen Promedio</p>
-                    <p className={`text-2xl font-bold ${getMarginColor(avgMargin)}`}>
+                <Card className="rounded-xl shadow-sm border-border/50 bg-card/60 backdrop-blur-xl p-5 space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center justify-between">Productos Costeados</p>
+                    <p className="text-3xl font-bold">{data.length}</p>
+                </Card>
+                <Card className="rounded-xl shadow-sm border-border/50 bg-card/60 backdrop-blur-xl p-5 space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center justify-between">Margen Promedio</p>
+                    <p className={`text-3xl font-bold ${getMarginColor(avgMargin)}`}>
                         {avgMargin.toFixed(1)}%
                     </p>
-                </article>
-                <article className="rounded-lg border p-4 space-y-1">
-                    <p className="text-sm text-muted-foreground">Productos con Margen Bajo (&lt;40%)</p>
-                    <p className="text-2xl font-bold text-red-500">
+                </Card>
+                <Card className="rounded-xl shadow-sm border-border/50 bg-card/60 backdrop-blur-xl p-5 space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground flex items-center justify-between">Alerta de Margen</p>
+                    <p className="text-3xl font-bold text-red-500">
                         {data.filter((d) => d.margin < 40).length}
                     </p>
-                </article>
+                    <p className="text-xs text-muted-foreground">Productos por debajo del 40%</p>
+                </Card>
             </div>
 
             {/* Costing table */}
-            <div className="rounded-lg border">
+            <Card className="rounded-xl shadow-sm border-border/50 overflow-hidden bg-card/60 backdrop-blur-xl">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-muted/50">
                         <TableRow>
                             <TableHead>Producto</TableHead>
                             <TableHead className="text-right">Precio Venta</TableHead>
@@ -69,7 +70,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
                     <TableBody>
                         {data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                                     No hay productos costeados. Crea recetas con ingredientes primero.
                                 </TableCell>
                             </TableRow>
@@ -78,7 +79,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
                                 const profit = item.salePrice - item.costPerPortion
 
                                 return (
-                                    <TableRow key={item.productId}>
+                                    <TableRow key={item.productId} className="transition-colors hover:bg-muted/30">
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
                                                 {getMarginIcon(item.margin)}
@@ -109,7 +110,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
         </section>
     )
 }

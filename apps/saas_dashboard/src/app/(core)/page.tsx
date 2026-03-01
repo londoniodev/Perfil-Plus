@@ -12,7 +12,10 @@ import { ChefProductionChart } from "@/components/dashboard/chef-production-char
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
 import { TableTimeChart, type TableTimeData } from "@/components/dashboard/table-time-chart";
 import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
+import { MarginCostChart, type MarginCostData } from "@/components/dashboard/margin-cost-chart";
+import { CostingSummaryCards } from "@/components/dashboard/costing-summary-cards";
 import { SalesByDayChart, type SalesByDayData } from "@/components/dashboard/sales-by-day-chart";
+import { getDashboardMetrics, getAllProductsCost } from "@/actions/admin/inventory";
 import { DashboardTimeSelector } from "@/components/dashboard/dashboard-time-selector";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Separator } from "@alvarosky/ui";
 import {
@@ -103,7 +106,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
     }, {});
     const mappedPaymentMethods: PaymentMethodData[] = Object.entries(paymentGrouped).map(([key, val]) => ({
         method: key,
-        label: key === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
+        label: key === 'CASH' ? 'Efectivo' : 'Transferencia',
         count: val.count,
         total: val.total
     }));
@@ -231,15 +234,24 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                     <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
                     <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
                         <TopProductsChart data={mappedTopProducts} />
-                        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
                             <OrderTypeChart data={mappedOrderTypes} />
                             <PaymentMethodsChart data={mappedPaymentMethods} />
                         </div>
+                        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+                            <ProductionTimeChart data={mappedProductionTimes} />
+                            <ChefProductionChart avgMinutes={chefAvgMinutes} />
+                        </div>
                     </div>
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-                        <SalesByDayChart data={mockSalesByDay} />
-                        <ProductionTimeChart data={mappedProductionTimes} />
-                        <ChefProductionChart avgMinutes={chefAvgMinutes} />
+                </div>
+            )}
+
+            {hasRestaurant && (
+                <div className="space-y-4 pt-4">
+                    <h2 className="text-xl font-bold tracking-tight">Finanzas y Costeo</h2>
+                    <CostingSummaryCards tenantId={tenant.id} />
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-1">
+                        <MarginCostChart tenantId={tenant.id} />
                     </div>
                 </div>
             )}

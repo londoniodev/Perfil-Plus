@@ -18,7 +18,10 @@ import {
 const chartConfig = {
     total: {
         label: "Ingresos",
-        color: "hsl(var(--chart-2))",
+        theme: {
+            light: "hsl(173, 58%, 39%)",
+            dark: "hsl(160, 60%, 45%)"
+        }
     },
 } satisfies ChartConfig
 

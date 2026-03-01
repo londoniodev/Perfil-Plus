@@ -142,11 +142,13 @@ export class AnalyticsService {
         const paymentGroup = await this.prisma.payment.groupBy({
             by: ['method'],
             _count: { id: true },
+            _sum: { amount: true },
             where: { order: { tenantId, createdAt: dateQuery } }
         });
         const paymentMethods = paymentGroup.map(g => ({
             method: g.method,
-            count: g._count.id
+            count: g._count.id,
+            total: Number(g._sum.amount || 0)
         }));
 
         // 6. Rankings (Bar Charts)

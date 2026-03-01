@@ -18,7 +18,10 @@ import {
 const chartConfig = {
     time: {
         label: "Minutos",
-        color: "hsl(var(--chart-1))",
+        theme: {
+            light: "hsl(12, 76%, 61%)",
+            dark: "hsl(220, 70%, 50%)"
+        }
     },
 } satisfies ChartConfig
 
@@ -72,8 +75,7 @@ export function ProductionTimeChart({ data }: ProductionTimeChartProps) {
                                 hide={false}
                                 tickLine={false}
                                 axisLine={false}
-                                tick={{ fontSize: 12 }}
-                                tickFormatter={(val) => `${val}m`}
+                                tickFormatter={(val) => val === 0 ? "" : `${val}m`}
                             />
                             <ChartTooltip
                                 cursor={false}

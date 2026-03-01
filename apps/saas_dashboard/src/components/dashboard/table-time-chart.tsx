@@ -18,7 +18,10 @@ import {
 const chartConfig = {
     time: {
         label: "Tiempo (min)",
-        color: "hsl(var(--chart-5))",
+        theme: {
+            light: "hsl(27, 87%, 67%)",
+            dark: "hsl(340, 75%, 55%)"
+        }
     },
 } satisfies ChartConfig
 
@@ -72,8 +75,7 @@ export function TableTimeChart({ data }: TableTimeChartProps) {
                                 hide={false}
                                 tickLine={false}
                                 axisLine={false}
-                                tick={{ fontSize: 12 }}
-                                tickFormatter={(val) => `${val}m`}
+                                tickFormatter={(val) => val === 0 ? "" : `${val}m`}
                             />
                             <ChartTooltip
                                 cursor={false}

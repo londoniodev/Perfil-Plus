@@ -16,9 +16,12 @@ import {
 } from "@/components/ui/chart"
 
 const chartConfig = {
-    cantidad: {
+    quantity: {
         label: "Platos",
-        color: "hsl(var(--chart-3))",
+        theme: {
+            light: "hsl(197, 37%, 24%)",
+            dark: "hsl(30, 80%, 55%)"
+        }
     },
     ingresos: {
         label: "Ingresos",

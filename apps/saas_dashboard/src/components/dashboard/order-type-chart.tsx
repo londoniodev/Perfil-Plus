@@ -22,15 +22,24 @@ const chartConfig = {
     },
     DINE_IN: {
         label: "Mesa",
-        color: "hsl(var(--chart-1))",
+        theme: {
+            light: "hsl(12, 76%, 61%)",
+            dark: "hsl(220, 70%, 50%)"
+        }
     },
     TAKE_AWAY: {
         label: "Para Llevar",
-        color: "hsl(var(--chart-2))",
+        theme: {
+            light: "hsl(173, 58%, 39%)",
+            dark: "hsl(160, 60%, 45%)"
+        }
     },
     DELIVERY: {
         label: "Domicilio",
-        color: "hsl(var(--chart-3))",
+        theme: {
+            light: "hsl(197, 37%, 24%)",
+            dark: "hsl(30, 80%, 55%)"
+        }
     },
 } satisfies ChartConfig
 
@@ -84,6 +93,12 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                                 strokeWidth={5}
                                 paddingAngle={3}
                             >
+                                {data.map((entry) => (
+                                    <Cell
+                                        key={entry.type}
+                                        fill={`var(--color-${entry.type})`}
+                                    />
+                                ))}
                                 <Label
                                     content={({ viewBox }) => {
                                         if (viewBox && "cx" in viewBox && "cy" in viewBox) {

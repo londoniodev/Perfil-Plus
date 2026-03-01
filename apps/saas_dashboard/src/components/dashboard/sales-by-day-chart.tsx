@@ -18,7 +18,10 @@ import {
 const chartConfig = {
     sales: {
         label: "Ventas",
-        color: "hsl(var(--chart-4))",
+        theme: {
+            light: "hsl(43, 74%, 66%)",
+            dark: "hsl(280, 65%, 60%)"
+        }
     },
 } satisfies ChartConfig
 
@@ -58,8 +61,7 @@ export function SalesByDayChart({ data }: SalesByDayChartProps) {
                                 hide={false}
                                 tickLine={false}
                                 axisLine={false}
-                                tick={{ fontSize: 12 }}
-                                tickFormatter={(val) => `$${(val / 1000000).toFixed(1)}M`}
+                                tickFormatter={(val) => val === 0 ? "" : `$${(val / 1000000).toFixed(1)}M`}
                             />
                             <ChartTooltip
                                 cursor={false}

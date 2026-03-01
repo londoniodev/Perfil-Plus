@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { useMobile } from "@/hooks/use-mobile"
 import {
     Card,
     CardContent,
@@ -29,30 +28,7 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data }: RevenueChartProps) {
-    const isMobile = useMobile()
-    const [timeRange, setTimeRange] = React.useState<"30d" | "7d">("30d")
-
-    React.useEffect(() => {
-        if (isMobile) {
-            setTimeRange("7d")
-        }
-    }, [isMobile])
-
-    const filteredData = React.useMemo(() => {
-        if (!data || data.length === 0) return []
-
-        const now = new Date()
-        const daysToSubtract = timeRange === "7d" ? 7 : 30
-        const startDate = new Date(now)
-        startDate.setDate(startDate.getDate() - daysToSubtract)
-
-        return data.filter((item) => {
-            const date = new Date(item.date)
-            return date >= startDate
-        })
-    }, [data, timeRange])
-
-    const hasData = filteredData.length > 0 && filteredData.some((d) => d.total > 0)
+    const hasData = data && data.length > 0 && data.some((d) => d.total > 0)
 
     return (
         <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
@@ -60,28 +36,8 @@ export function RevenueChart({ data }: RevenueChartProps) {
                 <div>
                     <CardTitle>Ingresos</CardTitle>
                     <CardDescription>
-                        {timeRange === "7d" ? "Últimos 7 días" : "Últimos 30 días"}
+                        Flujo de ingresos en el período seleccionado
                     </CardDescription>
-                </div>
-                <div className="flex gap-1 rounded-lg border p-1">
-                    <button
-                        onClick={() => setTimeRange("30d")}
-                        className={`px-3 py-1 text-xs rounded-md transition-colors ${timeRange === "30d"
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                            }`}
-                    >
-                        30 días
-                    </button>
-                    <button
-                        onClick={() => setTimeRange("7d")}
-                        className={`px-3 py-1 text-xs rounded-md transition-colors ${timeRange === "7d"
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                            }`}
-                    >
-                        7 días
-                    </button>
                 </div>
             </CardHeader>
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
@@ -90,7 +46,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                         config={chartConfig}
                         className="aspect-auto h-[250px] w-full"
                     >
-                        <AreaChart data={filteredData}>
+                        <AreaChart data={data}>
                             <defs>
                                 <linearGradient id="fillIngresos" x1="0" y1="0" x2="0" y2="1">
                                     <stop

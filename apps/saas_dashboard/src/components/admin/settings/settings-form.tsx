@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -9,7 +9,7 @@ import { Loader2, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
 import { SingleImageDropzone } from "@alvarosky/ui"
-import { API_BASE } from "@/lib/config"
+import { API_BASE, TENANT_ID } from "@/lib/config"
 import { BrandingForm } from "@/components/settings/BrandingForm"
 
 const settingsSchema = z.object({
@@ -90,22 +90,13 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [authToken, setAuthToken] = useState("");
-    const [tenantId, setTenantId] = useState("");
 
-    // Read auth token and tenant only on client side to avoid hydration mismatch and ensure it's loaded
-    import("react").then((React) => {
-        React.useEffect(() => {
-            if (typeof window !== 'undefined') {
-                setAuthToken(localStorage.getItem("token") || "");
-                // Usually the tenant ID is in localStorage, or you can extract it from the current session context if available.
-                // It is required by the ImageUploader and backend API
-                const localTenant = localStorage.getItem("tenantId");
-                if (localTenant) {
-                    setTenantId(localTenant);
-                }
-            }
-        }, []);
-    });
+    // Read auth token on client side
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setAuthToken(localStorage.getItem("token") || "");
+        }
+    }, []);
 
     const form = useForm<SettingsFormValues>({
         resolver: zodResolver(settingsSchema),
@@ -266,7 +257,8 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                                         onChange={(url) => field.onChange(url)}
                                                         endpoint={`${API_BASE}/storage/upload/image`}
                                                         token={authToken}
-                                                        tenantId={tenantId} // Optional: we might need to pass this if the dropzone supports it
+                                                        tenantId={TENANT_ID}
+                                                        folder="branding"
                                                         className="max-w-[300px]"
                                                     />
                                                 </FormControl>

@@ -311,6 +311,7 @@ export function ProductForm({ initialData, courses = [] }: ProductFormProps) {
                                     <SingleImageDropzone
                                         endpoint={`${API_BASE}/storage/upload/image`}
                                         token={authToken}
+                                        tenantId={TENANT_ID}
                                         folder="products"
                                         onUploadSuccess={handleAddImage}
                                         maxSizeMB={5}

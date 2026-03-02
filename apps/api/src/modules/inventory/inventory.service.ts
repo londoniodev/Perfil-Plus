@@ -730,20 +730,24 @@ export class InventoryService {
                     HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
                 ) sub
             `,
-            // Average margin across all products with recipes
+            // Average margin across all products with recipes (CTE to avoid nested aggregates)
             this.prisma.$queryRaw<[{ avg_margin: number | null }]>`
-                SELECT AVG(
-                    CASE WHEN p."basePrice" > 0
-                    THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
-                          / p."basePrice" * 100)
-                    ELSE 0 END
-                )::float AS "avg_margin"
-                FROM "Recipe" r
-                JOIN "Product" p ON p."id" = r."productId"
-                JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
-                JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
-                WHERE p."tenantId" = ${tenantId}
-                GROUP BY p."id", p."basePrice", r."yield"
+                WITH product_margins AS (
+                    SELECT
+                        p."id",
+                        CASE WHEN p."basePrice" > 0
+                        THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
+                              / p."basePrice" * 100)
+                        ELSE 0 END AS margin
+                    FROM "Recipe" r
+                    JOIN "Product" p ON p."id" = r."productId"
+                    JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
+                    JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
+                    WHERE p."tenantId" = ${tenantId}
+                    GROUP BY p."id", p."basePrice", r."yield"
+                )
+                SELECT AVG(margin)::float AS "avg_margin"
+                FROM product_margins
             `,
             // Top 5 most consumed ingredients by $ value (last 30 days)
             this.prisma.$queryRaw<

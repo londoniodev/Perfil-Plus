@@ -288,8 +288,8 @@ export class AuthService {
         // Eliminar el token usado (rotación de tokens)
         await this.prisma.refreshToken.deleteMany({ where: { id: storedToken.id } });
 
-        // Generar nuevos tokens
-        const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email, storedToken.user.role, storedToken.user.name);
+        // Generar nuevos tokens (IMPORTANTE: pasar tenantId para que el JWT mantenga el contexto multi-tenant)
+        const tokens = await this.generateTokens(storedToken.user.id, storedToken.user.email, storedToken.user.role, storedToken.user.name, storedToken.user.tenantId);
 
         return tokens;
     }

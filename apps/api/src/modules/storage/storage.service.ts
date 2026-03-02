@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import { join } from 'path';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export interface UploadResult {
     key: string;
@@ -23,7 +24,8 @@ export class StorageService {
 
     constructor(
         @Inject(REQUEST) private request: Request,
-        private configService: ConfigService
+        private configService: ConfigService,
+        private prisma: PrismaService,
     ) {
         this.endpoint = this.configService.get('S3_ENDPOINT', 'http://localhost:9000');
         // Si es local, la URL pública base es diferente
@@ -53,7 +55,7 @@ export class StorageService {
         return this.s3Client;
     }
 
-    private getTenantId(): string {
+    private async getTenantId(): Promise<string> {
         // Prioridad 1: header x-tenant-id (contiene el SLUG legible, ej: "cocinasiete")
         // El frontend lo envía desde NEXT_PUBLIC_TENANT_ID
         const headerTenantId = this.request.headers['x-tenant-id'];
@@ -62,17 +64,31 @@ export class StorageService {
         }
 
         // Prioridad 2: tenantId del JWT (contiene el CUID, ej: "cm7mm6m7p000108js6k7p98w2")
-        // Fallback para requests autenticados que no envían el header
+        // Como el usuario sugiere mapear CUID a Slug, buscamos en DB
         const user = (this.request as any).user;
         if (user?.tenantId) {
+            try {
+                const tenantInfo = await this.prisma.tenant.findUnique({
+                    where: { id: user.tenantId },
+                    select: { slug: true }
+                });
+
+                if (tenantInfo?.slug) {
+                    return tenantInfo.slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                }
+            } catch (error) {
+                console.error('[StorageService] Error resolviendo slug de tenantId:', error);
+            }
+
+            // Si falla la búsqueda, usamos el CUID
             return (user.tenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
         }
 
         return 'default';
     }
 
-    private getBucketName(isPrivate: boolean): string {
-        const tenantId = this.getTenantId();
+    private async getBucketName(isPrivate: boolean): Promise<string> {
+        const tenantId = await this.getTenantId();
         const suffix = isPrivate ? 'private' : 'public';
         return `${tenantId}-${suffix}`;
     }
@@ -144,7 +160,7 @@ export class StorageService {
         const driver = this.configService.get('STORAGE_DRIVER', 's3');
 
         if (driver === 'local') {
-            const tenantId = this.getTenantId();
+            const tenantId = await this.getTenantId();
             const extension = file.originalname.split('.').pop()?.toLowerCase();
             const fileName = `${randomUUID()}.${extension}`;
 
@@ -167,7 +183,15 @@ export class StorageService {
             }
         }
 
-        const bucket = this.getBucketName(isPrivate);
+        const bucket = await this.getBucketName(isPrivate);
+        console.log('[StorageService DEBUG] Upload resolved:', {
+            headerTenantId: this.request.headers['x-tenant-id'] || '(not set)',
+            jwtTenantId: (this.request as any).user?.tenantId || '(no user)',
+            resolvedTenantId: await this.getTenantId(),
+            bucket,
+            folder,
+            isPrivate,
+        });
         await this.ensureBucketExists(bucket, isPrivate);
 
         const client = await this.getS3Client();
@@ -207,7 +231,7 @@ export class StorageService {
         const driver = this.configService.get('STORAGE_DRIVER', 's3');
 
         if (driver === 'local') {
-            const tenantId = this.getTenantId();
+            const tenantId = await this.getTenantId();
             const extension = filename.split('.').pop()?.toLowerCase();
             const fileName = `${randomUUID()}.${extension}`;
 
@@ -227,7 +251,7 @@ export class StorageService {
             }
         }
 
-        const bucket = this.getBucketName(isPrivate);
+        const bucket = await this.getBucketName(isPrivate);
         await this.ensureBucketExists(bucket, isPrivate);
 
         const client = await this.getS3Client();
@@ -261,7 +285,7 @@ export class StorageService {
         const driver = this.configService.get('STORAGE_DRIVER', 's3');
 
         if (driver === 'local') {
-            const tenantId = this.getTenantId();
+            const tenantId = await this.getTenantId();
             // key tiene formato "folder/filename.ext"
             const filePath = join(process.cwd(), 'uploads', tenantId, key);
             try {
@@ -273,7 +297,7 @@ export class StorageService {
             return;
         }
 
-        const bucket = this.getBucketName(isPrivate);
+        const bucket = await this.getBucketName(isPrivate);
         const client = await this.getS3Client();
         const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
 
@@ -290,7 +314,7 @@ export class StorageService {
     }
 
     async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
-        const bucket = this.getBucketName(true); // Siempre asumimos privado para signed URLs
+        const bucket = await this.getBucketName(true); // Siempre asumimos privado para signed URLs
         const client = await this.getS3Client();
         const { GetObjectCommand } = await import('@aws-sdk/client-s3');
         const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
@@ -311,8 +335,8 @@ export class StorageService {
         return this.getSignedUrl(key, expiresIn);
     }
 
-    getPublicUrl(key: string): string {
-        const bucket = this.getBucketName(false);
+    async getPublicUrl(key: string): Promise<string> {
+        const bucket = await this.getBucketName(false);
         return `${this.publicUrl}/${bucket}/${key}`;
     }
 }

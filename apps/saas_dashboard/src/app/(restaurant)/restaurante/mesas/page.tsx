@@ -49,6 +49,7 @@ export default function TablesPage() {
 
     // Form State
     const [label, setLabel] = useState("")
+    const [capacity, setCapacity] = useState<number>(4)
     const [status, setStatus] = useState<string>("ACTIVE")
 
     // Search State
@@ -181,6 +182,7 @@ export default function TablesPage() {
     const handleOpenAdd = () => {
         setEditingTable(null)
         setLabel("")
+        setCapacity(4)
         setStatus("ACTIVE")
         setIsDialogOpen(true)
     }
@@ -188,6 +190,7 @@ export default function TablesPage() {
     const handleEdit = (table: TableType) => {
         setEditingTable(table)
         setLabel(table.label)
+        setCapacity(table.capacity || 4)
         setStatus(table.status)
         setIsDialogOpen(true)
     }
@@ -216,7 +219,7 @@ export default function TablesPage() {
         const res = await upsertTable({
             id: editingTable?.id,
             label,
-            capacity: 4,
+            capacity: capacity,
             status: status as any,
             x: 0,
             y: 0
@@ -227,6 +230,7 @@ export default function TablesPage() {
             await loadTables()
             setEditingTable(null)
             setLabel("")
+            setCapacity(4)
             setStatus("ACTIVE")
             toast.success(editingTable ? "Mesa actualizada" : "Mesa creada")
             setIsDialogOpen(false)
@@ -267,6 +271,7 @@ export default function TablesPage() {
                             <TableRow>
                                 <TableHead className="w-[300px]">Nombre del QR</TableHead>
                                 <TableHead>Estado</TableHead>
+                                <TableHead>Puestos</TableHead>
                                 <TableHead className="text-right"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -279,6 +284,7 @@ export default function TablesPage() {
                                 <TableCell>
                                     <Badge variant="default" className="bg-blue-600 hover:bg-blue-700">General</Badge>
                                 </TableCell>
+                                <TableCell className="text-muted-foreground">-</TableCell>
                                 <TableCell className="text-right flex justify-end gap-2">
 
                                     <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(generalMenuUrl, "General")}>
@@ -307,6 +313,7 @@ export default function TablesPage() {
                                                     {table.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}
                                                 </Badge>
                                             </TableCell>
+                                            <TableCell>{table.capacity} pax</TableCell>
                                             <TableCell className="text-right flex justify-end gap-2 items-center">
 
                                                 <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(tableUrl, table.label)}>
@@ -348,6 +355,17 @@ export default function TablesPage() {
                                     onChange={(e) => setLabel(e.target.value)}
                                     placeholder="Ej: Mesa 1, Barra, Terraza 2"
                                     autoFocus
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="capacity">Cantidad de Puestos</Label>
+                                <Input
+                                    id="capacity"
+                                    type="number"
+                                    min="1"
+                                    value={capacity}
+                                    onChange={(e) => setCapacity(parseInt(e.target.value) || 1)}
+                                    placeholder="Ej: 4"
                                 />
                             </div>
                             <div className="space-y-2">

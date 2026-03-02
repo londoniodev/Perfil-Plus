@@ -20,12 +20,13 @@ async function getTenantData() {
         return {
             name: data?.name || null,
             features: data?.features || [],
-            design: data?.design || null
+            design: data?.design || null,
+            logo: data?.logo || null
         };
     } catch (e) {
         console.warn("⚠️ Error obteniendo configuración del Tenant vía API en el Dashboard:", e);
         // Retornamos un estado degradado gracefully en vez de reventar el Server Side Rendering
-        return { name: "Dashboard Local", features: [], design: null };
+        return { name: "Dashboard Local", features: [], design: null, logo: null };
     }
 }
 
@@ -51,7 +52,7 @@ export default async function DashboardLayout({
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
     // Resolve Tenant ID data directly from API
-    const { name, features: dbFeatures, design } = await getTenantData();
+    const { name, features: dbFeatures, design, logo } = await getTenantData();
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
@@ -82,6 +83,7 @@ export default async function DashboardLayout({
                                         tenantName={tenantName}
                                         defaultOpen={defaultOpen}
                                         appName={tenantName}
+                                        logoUrl={logo}
                                     >
                                         {children}
                                     </DashboardShell>

@@ -36,7 +36,16 @@ import {
     addStockExit,
     transferStock,
     deleteInventoryItem,
+    createInventoryItem, // Added import
 } from "@/actions/admin/inventory"
+
+const UNITS = [
+    { value: "KG", label: "Kilogramos (Kg)" },
+    { value: "GR", label: "Gramos (Gr)" },
+    { value: "LT", label: "Litros (Lt)" },
+    { value: "ML", label: "Mililitros (Ml)" },
+    { value: "UN", label: "Unidades (Un)" },
+]
 
 const UNIT_LABELS: Record<string, string> = {
     KG: "Kg",
@@ -57,7 +66,7 @@ export function InventoryClient({
 }) {
     const [isPending, startTransition] = useTransition()
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [dialogType, setDialogType] = useState<"entry" | "exit" | "transfer">("entry")
+    const [dialogType, setDialogType] = useState<"entry" | "exit" | "transfer" | "create">("entry")
     const [selectedItem, setSelectedItem] = useState<string>("")
     const [selectedWarehouse, setSelectedWarehouse] = useState<string>(warehouses[0]?.id || "")
     const [toWarehouse, setToWarehouse] = useState<string>("")
@@ -65,18 +74,50 @@ export function InventoryClient({
     const [unitCost, setUnitCost] = useState("")
     const [reason, setReason] = useState("")
 
+    // Create Item State
+    const [createName, setCreateName] = useState("")
+    const [createSku, setCreateSku] = useState("")
+    const [createUnit, setCreateUnit] = useState("UN")
+    const [createMinStock, setCreateMinStock] = useState("")
+
     const alertItemIds = new Set(alerts.map((a) => a.id))
 
-    function openDialog(type: "entry" | "exit" | "transfer", itemId?: string) {
+    function openDialog(type: "entry" | "exit" | "transfer" | "create", itemId?: string) {
         setDialogType(type)
         if (itemId) setSelectedItem(itemId)
         setQuantity("")
         setUnitCost("")
         setReason("")
+        setCreateName("")
+        setCreateSku("")
+        setCreateUnit("UN")
+        setCreateMinStock("")
         setDialogOpen(true)
     }
 
     function handleSubmit() {
+        if (dialogType === "create") {
+            if (!createName.trim()) {
+                toast.error("El nombre es requerido")
+                return
+            }
+            startTransition(async () => {
+                const result = await createInventoryItem({
+                    name: createName.trim(),
+                    sku: createSku.trim() || undefined,
+                    unit: createUnit,
+                    minStock: createMinStock ? parseFloat(createMinStock) : 0,
+                })
+                if (result.success) {
+                    toast.success("Ingrediente creado correctamente")
+                    setDialogOpen(false)
+                } else {
+                    toast.error(result.error)
+                }
+            })
+            return
+        }
+
         if (!selectedItem || !quantity) {
             toast.error("Completa los campos requeridos")
             return
@@ -140,6 +181,7 @@ export function InventoryClient({
         entry: "Agregar Stock",
         exit: "Registrar Salida",
         transfer: "Traspasar Stock",
+        create: "Nuevo Ingrediente",
     }
 
     return (
@@ -166,6 +208,14 @@ export function InventoryClient({
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2 mb-6">
+                <Button
+                    size="sm"
+                    onClick={() => openDialog("create")}
+                    className="bg-primary hover:bg-primary/90"
+                >
+                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Nuevo Ingrediente
+                </Button>
                 <Button
                     size="sm"
                     onClick={() => openDialog("entry")}
@@ -294,97 +344,153 @@ export function InventoryClient({
                         <DialogTitle>{dialogTitles[dialogType]}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="dialog-item">Ingrediente</Label>
-                            <Select value={selectedItem} onValueChange={setSelectedItem}>
-                                <SelectTrigger id="dialog-item">
-                                    <SelectValue placeholder="Seleccionar ingrediente" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {items.map((item) => (
-                                        <SelectItem key={item.id} value={item.id}>
-                                            {item.name} ({UNIT_LABELS[item.unit] || item.unit})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="dialog-warehouse">
-                                {dialogType === "transfer" ? "Almacén Origen" : "Almacén"}
-                            </Label>
-                            <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
-                                <SelectTrigger id="dialog-warehouse">
-                                    <SelectValue placeholder="Seleccionar almacén" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {warehouses.map((w) => (
-                                        <SelectItem key={w.id} value={w.id}>
-                                            {w.name} {w.isDefault ? "(Principal)" : ""}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {dialogType === "transfer" && (
-                            <div className="space-y-2">
-                                <Label htmlFor="dialog-to-warehouse">Almacén Destino</Label>
-                                <Select value={toWarehouse} onValueChange={setToWarehouse}>
-                                    <SelectTrigger id="dialog-to-warehouse">
-                                        <SelectValue placeholder="Seleccionar destino" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {warehouses
-                                            .filter((w) => w.id !== selectedWarehouse)
-                                            .map((w) => (
-                                                <SelectItem key={w.id} value={w.id}>
-                                                    {w.name}
+                        {dialogType === "create" ? (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-name">Nombre *</Label>
+                                    <Input
+                                        id="create-name"
+                                        value={createName}
+                                        onChange={(e) => setCreateName(e.target.value)}
+                                        placeholder="Ej: Carne de res molida"
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-sku">SKU / Código (opcional)</Label>
+                                    <Input
+                                        id="create-sku"
+                                        value={createSku}
+                                        onChange={(e) => setCreateSku(e.target.value)}
+                                        placeholder="Ej: CARN-001"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-unit">Unidad de Medida</Label>
+                                    <Select value={createUnit} onValueChange={setCreateUnit}>
+                                        <SelectTrigger id="create-unit">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {UNITS.map((u) => (
+                                                <SelectItem key={u.value} value={u.value}>
+                                                    {u.label}
                                                 </SelectItem>
                                             ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="create-min-stock">Stock Mínimo (alerta)</Label>
+                                    <Input
+                                        id="create-min-stock"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={createMinStock}
+                                        onChange={(e) => setCreateMinStock(e.target.value)}
+                                        placeholder="Ej: 5"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Recibirás una alerta cuando el stock sea igual o menor a este valor
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="space-y-2">
+                                    <Label htmlFor="dialog-item">Ingrediente</Label>
+                                    <Select value={selectedItem} onValueChange={setSelectedItem}>
+                                        <SelectTrigger id="dialog-item">
+                                            <SelectValue placeholder="Seleccionar ingrediente" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {items.map((item) => (
+                                                <SelectItem key={item.id} value={item.id}>
+                                                    {item.name} ({UNIT_LABELS[item.unit] || item.unit})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="dialog-warehouse">
+                                        {dialogType === "transfer" ? "Almacén Origen" : "Almacén"}
+                                    </Label>
+                                    <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
+                                        <SelectTrigger id="dialog-warehouse">
+                                            <SelectValue placeholder="Seleccionar almacén" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {warehouses.map((w) => (
+                                                <SelectItem key={w.id} value={w.id}>
+                                                    {w.name} {w.isDefault ? "(Principal)" : ""}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {dialogType === "transfer" && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="dialog-to-warehouse">Almacén Destino</Label>
+                                        <Select value={toWarehouse} onValueChange={setToWarehouse}>
+                                            <SelectTrigger id="dialog-to-warehouse">
+                                                <SelectValue placeholder="Seleccionar destino" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {warehouses
+                                                    .filter((w) => w.id !== selectedWarehouse)
+                                                    .map((w) => (
+                                                        <SelectItem key={w.id} value={w.id}>
+                                                            {w.name}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="dialog-quantity">Cantidad</Label>
+                                    <Input
+                                        id="dialog-quantity"
+                                        type="number"
+                                        min="0.001"
+                                        step="0.001"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(e.target.value)}
+                                        placeholder="Ej: 10"
+                                    />
+                                </div>
+
+                                {dialogType === "entry" && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="dialog-cost">Costo Unitario ($)</Label>
+                                        <Input
+                                            id="dialog-cost"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={unitCost}
+                                            onChange={(e) => setUnitCost(e.target.value)}
+                                            placeholder="Ej: 5000"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="dialog-reason">Razón (opcional)</Label>
+                                    <Input
+                                        id="dialog-reason"
+                                        value={reason}
+                                        onChange={(e) => setReason(e.target.value)}
+                                        placeholder="Ej: Compra semanal"
+                                    />
+                                </div>
+                            </>
                         )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="dialog-quantity">Cantidad</Label>
-                            <Input
-                                id="dialog-quantity"
-                                type="number"
-                                min="0.001"
-                                step="0.001"
-                                value={quantity}
-                                onChange={(e) => setQuantity(e.target.value)}
-                                placeholder="Ej: 10"
-                            />
-                        </div>
-
-                        {dialogType === "entry" && (
-                            <div className="space-y-2">
-                                <Label htmlFor="dialog-cost">Costo Unitario ($)</Label>
-                                <Input
-                                    id="dialog-cost"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={unitCost}
-                                    onChange={(e) => setUnitCost(e.target.value)}
-                                    placeholder="Ej: 5000"
-                                />
-                            </div>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="dialog-reason">Razón (opcional)</Label>
-                            <Input
-                                id="dialog-reason"
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                placeholder="Ej: Compra semanal"
-                            />
-                        </div>
                     </div>
                     <DialogFooter>
                         <Button

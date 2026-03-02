@@ -93,12 +93,16 @@ export class RestaurantService {
             },
         });
 
-        // 4. Fetch Tenant Config (SystemSetting)
-        const systemSetting = await this.prisma.systemSetting.findFirst({
-            where: { tenantId, key: 'TENANT_CONFIG' }
+        // 4. Fetch Tenant Config (SystemSetting modules: menu, contact, etc.)
+        const systemSettings = await this.prisma.systemSetting.findMany({
+            where: { tenantId }
         });
 
-        const tenantConfig = systemSetting?.value as any || {};
+        const tenantConfig = systemSettings.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {} as Record<string, any>);
+
         const contact = tenantConfig.contact || {};
 
         // 5. Transform Data for Public SDK

@@ -64,7 +64,7 @@ async function getTenantDesign(tenantId: string) {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
     default: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
@@ -122,6 +122,31 @@ export const metadata: Metadata = {
     // google: 'google-site-verification-code',
   },
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const tenantId = await getTenantId();
+  const design = await getTenantDesign(tenantId);
+  const logoUrl = design?.logo || '/images/branding/icon.png';
+
+  return {
+    ...baseMetadata,
+    icons: {
+      icon: logoUrl,
+      apple: logoUrl,
+    },
+    openGraph: {
+      ...baseMetadata.openGraph,
+      images: [
+        {
+          url: logoUrl,
+          width: 800,
+          height: 800,
+          alt: "Logo",
+        },
+      ],
+    }
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

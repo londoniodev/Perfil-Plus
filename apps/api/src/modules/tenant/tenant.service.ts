@@ -66,17 +66,22 @@ export class TenantService {
 
     /**
      * Obtiene la apariencia del tenant para la inicialización pública de la aplicación (app/layout.tsx en frontend)
+     * Ahora también incluye el logo desde SystemSettings.
      */
     async getTenantBranding(tenantId: string) {
         this.logger.log(`[BRANDING DEBUG] getTenantBranding called with tenantId: "${tenantId}"`);
         try {
             const tenantById = await this.prisma.tenant.findFirst({
                 where: { id: tenantId },
-                select: { design: true, name: true, features: true },
+                select: { id: true, design: true, name: true, features: true },
             });
             if (tenantById) {
                 this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
-                return tenantById;
+                const menuSetting = await this.prisma.systemSetting.findFirst({
+                    where: { tenantId: tenantById.id, key: 'menu' }
+                });
+                const logo = menuSetting?.value ? (menuSetting.value as any).logo : null;
+                return { ...tenantById, logo };
             }
         } catch (error) {
             this.logger.warn(`[BRANDING DEBUG] findFirst by ID failed for "${tenantId}": ${error?.message || error}`);
@@ -86,12 +91,16 @@ export class TenantService {
         this.logger.log(`[BRANDING DEBUG] ID lookup failed, trying slug lookup for: "${tenantId}"`);
         const tenantBySlug = await this.prisma.tenant.findFirst({
             where: { slug: tenantId },
-            select: { design: true, name: true, features: true },
+            select: { id: true, design: true, name: true, features: true },
         });
 
         if (tenantBySlug) {
             this.logger.log(`[BRANDING DEBUG] Found tenant by slug: ${tenantId}`);
-            return tenantBySlug;
+            const menuSetting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: tenantBySlug.id, key: 'menu' }
+            });
+            const logo = menuSetting?.value ? (menuSetting.value as any).logo : null;
+            return { ...tenantBySlug, logo };
         }
 
         this.logger.error(`[BRANDING DEBUG] Tenant NOT FOUND for ID/Slug: "${tenantId}"`);

@@ -196,7 +196,6 @@ export const sidebarConfig: SidebarConfig = {
                 icon: Warehouse,
                 items: [
                     { title: "Ingredientes", href: "/restaurante/inventario" },
-                    { title: "Nuevo ingrediente", href: "/restaurante/inventario/nuevo" },
                     { title: "Almacenes", href: "/restaurante/inventario/almacenes" },
                     { title: "Recetas", href: "/restaurante/recetas" },
                     { title: "Conteo físico", href: "/restaurante/inventario/conteos" },

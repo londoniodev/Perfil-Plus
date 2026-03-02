@@ -14,6 +14,7 @@ import { TENANT_ID } from "@/lib/config"
 interface DashboardSidebarProps {
     features: FeatureKey[];
     tenantName: string;
+    logoUrl?: string; // Agregado para soportar logo dinámico
 }
 
 // ============================================================================
@@ -21,7 +22,7 @@ interface DashboardSidebarProps {
 // Thin wrapper that provides auth context to AdminSidebar
 // ============================================================================
 
-export function DashboardSidebar({ features, tenantName }: DashboardSidebarProps) {
+export function DashboardSidebar({ features, tenantName, logoUrl }: DashboardSidebarProps) {
     const { logout, isAdmin, isStaff, user } = useAuth()
 
     // Get navigation sections based on role
@@ -64,8 +65,18 @@ export function DashboardSidebar({ features, tenantName }: DashboardSidebarProps
     else if (user?.role === "CASHIER") subtitle = "Caja";
 
     // Brand configuration
+    // Si logoUrl existe la usamos; sino aplicamos el default estático local
     const brand = {
-        logo: (
+        logo: logoUrl ? (
+            <Image
+                src={logoUrl}
+                alt={`${tenantName} Logo`}
+                width={24}
+                height={24}
+                className="object-contain"
+                unoptimized
+            />
+        ) : (
             <Image
                 src="/images/branding/menu_logo.png"
                 alt="Logo"

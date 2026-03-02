@@ -80,8 +80,16 @@ interface SettingsFormProps {
         instagram?: string | null
         facebook?: string | null
         address?: string | null
-        menuSlogan?: string | null
-        menuLogo?: string | null
+        menu?: {
+            slogan?: string | null
+            logo?: string | null
+        }
+        contact?: {
+            whatsapp?: string | null
+            instagram?: string | null
+            facebook?: string | null
+            address?: string | null
+        }
     }
     brandingData?: any
 }
@@ -120,12 +128,12 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
             enableBlog: initialData?.enableBlog ?? true,
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
-            whatsapp: initialData?.whatsapp || "",
-            instagram: initialData?.instagram || "",
-            facebook: initialData?.facebook || "",
-            address: initialData?.address || "",
-            menuSlogan: initialData?.menuSlogan || "",
-            menuLogo: initialData?.menuLogo || "",
+            whatsapp: initialData?.contact?.whatsapp || initialData?.whatsapp || "",
+            instagram: initialData?.contact?.instagram || initialData?.instagram || "",
+            facebook: initialData?.contact?.facebook || initialData?.facebook || "",
+            address: initialData?.contact?.address || initialData?.address || "",
+            menuSlogan: initialData?.menu?.slogan || "",
+            menuLogo: initialData?.menu?.logo || "",
         },
     })
 

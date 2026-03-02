@@ -49,6 +49,15 @@ export class InventoryController {
         return this.inventoryService.createWarehouse(tenantId, dto);
     }
 
+    @Patch('warehouses/:id')
+    updateWarehouse(
+        @Param('id') id: string,
+        @CurrentTenant() tenantId: string,
+        @Body() dto: Partial<CreateWarehouseDto>,
+    ) {
+        return this.inventoryService.updateWarehouse(id, tenantId, dto);
+    }
+
     @Put('warehouses/:id')
     updateWarehouse(
         @Param('id') id: string,

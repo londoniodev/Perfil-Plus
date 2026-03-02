@@ -228,16 +228,16 @@ export function RecipesClient({
                                         <TableCell className="font-medium whitespace-nowrap">{recipe.product.name}</TableCell>
                                         <TableCell className="text-center">{recipe.yield}</TableCell>
                                         <TableCell className="text-right font-mono text-muted-foreground">
-                                            ${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            ${totalCost.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                         </TableCell>
                                         <TableCell className="text-right font-mono">
-                                            ${costPerPortion.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            ${costPerPortion.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                         </TableCell>
                                         <TableCell className="text-right font-mono font-medium">
-                                            ${salePrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            ${salePrice.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                         </TableCell>
                                         <TableCell className={`text-right font-mono font-medium ${profit > 0 ? "text-emerald-500" : profit < 0 ? "text-red-500" : ""}`}>
-                                            ${profit.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            ${profit.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-1">

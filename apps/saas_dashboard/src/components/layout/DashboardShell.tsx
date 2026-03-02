@@ -13,9 +13,10 @@ interface DashboardShellProps {
     tenantName: string
     defaultOpen: boolean
     appName: string
+    logoUrl?: string
 }
 
-export function DashboardShell({ children, features, tenantName, defaultOpen, appName }: DashboardShellProps) {
+export function DashboardShell({ children, features, tenantName, defaultOpen, appName, logoUrl }: DashboardShellProps) {
     const pathname = usePathname()
     const { breadcrumbOverrides } = useDashboard()
 
@@ -65,7 +66,7 @@ export function DashboardShell({ children, features, tenantName, defaultOpen, ap
 
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
-            <DashboardSidebar features={features} tenantName={tenantName} />
+            <DashboardSidebar features={features} tenantName={tenantName} logoUrl={logoUrl} />
             <SidebarInset>
                 <AdminHeader appName={appName} breadcrumbs={breadcrumbs} />
                 <main className="flex flex-1 flex-col min-h-screen bg-background">

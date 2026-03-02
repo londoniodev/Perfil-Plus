@@ -145,6 +145,22 @@ export async function createWarehouse(data: { name: string; isDefault?: boolean 
     }
 }
 
+export async function updateWarehouse(id: string, data: { name: string; isDefault?: boolean }) {
+    try {
+        const user = await getSessionUser()
+        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+
+        await serverFetch(`/admin/inventory/warehouses/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        })
+        revalidatePath("/restaurante/inventario")
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar almacén" }
+    }
+}
+
 export async function deleteWarehouse(id: string) {
     try {
         const user = await getSessionUser()

@@ -151,8 +151,8 @@ function ModifierPanel({
                     <div className="space-y-6">
                         {product.modifierGroups!.map((group: ModifierGroup) => {
                             const selected = selections[group.id] || new Set<string>()
-                            const isRadio = group.maxSelections === 1
-                            const isRequired = group.minSelections > 0
+                            const isRadio = ((group as any).maxSelect ?? group.maxSelections) === 1
+                            const isRequired = ((group as any).minSelect ?? group.minSelections) > 0
 
                             return (
                                 <section key={group.id} className="space-y-3">
@@ -165,7 +165,7 @@ function ModifierPanel({
                                                 </Badge>
                                             )}
                                             <span className="text-xs text-muted-foreground">
-                                                {isRadio ? "Elige 1" : `Máx ${group.maxSelections}`}
+                                                {isRadio ? "Elige 1" : `Máx ${((group as any).maxSelect ?? group.maxSelections)}`}
                                             </span>
                                         </div>
                                     </div>
@@ -175,7 +175,7 @@ function ModifierPanel({
                                             return (
                                                 <button
                                                     key={mod.id}
-                                                    onClick={() => onToggleModifier(group.id, mod.id, group.maxSelections)}
+                                                    onClick={() => onToggleModifier(group.id, mod.id, ((group as any).maxSelect ?? group.maxSelections))}
                                                     className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${isSelected
                                                         ? "border-primary bg-primary/5"
                                                         : "border-transparent bg-muted/30 hover:bg-muted/50"
@@ -425,11 +425,11 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
         const variant = selectedProduct.variants?.[0]
         if (!variant) return
 
-        // Validate required groups
         for (const group of (selectedProduct.modifierGroups || [])) {
             const selected = modifierSelections[group.id]
-            if (group.minSelections > 0 && (!selected || selected.size < group.minSelections)) {
-                toast.error(`Selecciona al menos ${group.minSelections} opción en "${group.name}"`)
+            const minSel = (group as any).minSelect ?? group.minSelections;
+            if (minSel > 0 && (!selected || selected.size < minSel)) {
+                toast.error(`Selecciona al menos ${minSel} opción en "${group.name}"`)
                 return
             }
         }
@@ -516,6 +516,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
             const result = await createOrder(tenantId, {
                 cart: sdkCart,
                 total: cartTotal,
+                status: "PREPARING", // Salta la aprobación y va directo a cocina
                 customer: {
                     name: `Mesa ${selectedTable.label}`,
                     phone: "0000000000",

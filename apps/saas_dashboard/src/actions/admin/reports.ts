@@ -4,6 +4,16 @@ import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { startOfDay, endOfDay } from "date-fns"
 
+export interface ZReportProduct {
+    productName: string
+    variantName: string | null
+    qty: number
+    totalSales: number
+    unitCost: number
+    totalCost: number
+    margin: number
+}
+
 export interface ZReport {
     totalSales: number
     orderCount: number
@@ -12,6 +22,9 @@ export interface ZReport {
         amount: number
         count: number
     }[]
+    productSummary: ZReportProduct[]
+    totalCost: number
+    totalMargin: number
     date: Date
 }
 

@@ -19,22 +19,132 @@ import {
     SelectTrigger,
     SelectValue,
     Separator,
-    AdminPageWrapper
-} from '@alvarosky/ui';
-import { toast } from 'sonner';
-import { getAdminOrders, payOrder } from '@/lib/api';
-import { Order, OrderItem } from '@/types/restaurant';
-import { Loader2, DollarSign, CreditCard, Banknote, RefreshCcw, HandCoins, Clock } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils'; // Asegúrate que esta util exista o defínela
-import { getZReport, ZReport } from '@/actions/admin/reports';
-import { getTables } from "@/actions/admin/tables";
-import {
+    AdminPageWrapper,
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    ScrollArea,
 } from '@alvarosky/ui';
+import { toast } from 'sonner';
+import { getAdminOrders, payOrder } from '@/lib/api';
+import { Order, OrderItem } from '@/types/restaurant';
+import { Loader2, DollarSign, CreditCard, Banknote, RefreshCcw, HandCoins, Clock } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+import { getZReport, ZReport } from '@/actions/admin/reports';
+import { getTables } from "@/actions/admin/tables";
+
+// ─── ZReportContent (Module-scope for React Doctor compliance) ───
+function ZReportContent({ report }: { report: ZReport }) {
+    return (
+        <div className="space-y-5 pt-2">
+            {/* Ventas Totales */}
+            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
+                <p className="text-sm text-muted-foreground uppercase font-bold tracking-wider">Ventas Totales</p>
+                <p className="text-4xl font-black text-primary">{formatCurrency(report.totalSales)}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-muted/30 rounded-lg border">
+                    <p className="text-xs text-muted-foreground uppercase font-bold">Órdenes</p>
+                    <p className="text-xl font-bold">{report.orderCount}</p>
+                </div>
+                <div className="p-3 bg-muted/30 rounded-lg border">
+                    <p className="text-xs text-muted-foreground uppercase font-bold">Fecha</p>
+                    <p className="text-sm font-bold">{new Date().toLocaleDateString()}</p>
+                </div>
+            </div>
+
+            {/* Desglose por Método */}
+            <div className="space-y-3">
+                <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b">Desglose por Método</h4>
+                {report.byMethod.map((m) => (
+                    <div key={m.method} className="flex justify-between items-center py-1">
+                        <div className="flex items-center gap-2">
+                            {m.method === 'CASH' && <Banknote className="w-4 h-4 text-green-600" aria-hidden="true" />}
+                            {m.method === 'CARD' && <CreditCard className="w-4 h-4 text-blue-600" aria-hidden="true" />}
+                            <span className="font-medium">{m.method} ({m.count})</span>
+                        </div>
+                        <span className="font-bold font-mono">{formatCurrency(m.amount)}</span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Productos Vendidos */}
+            {report.productSummary && report.productSummary.length > 0 && (
+                <section>
+                    <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b mb-2">
+                        Productos Vendidos
+                    </h4>
+                    <ScrollArea className="max-h-[250px]">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="text-xs text-muted-foreground uppercase border-b">
+                                    <th className="text-left py-2 pr-2 font-bold">Producto</th>
+                                    <th className="text-right py-2 px-1 font-bold">Cant.</th>
+                                    <th className="text-right py-2 px-1 font-bold">Venta</th>
+                                    <th className="text-right py-2 px-1 font-bold">Costo</th>
+                                    <th className="text-right py-2 pl-1 font-bold">Margen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {report.productSummary.map((p, idx) => (
+                                    <tr key={`${p.productName}-${idx}`} className="border-b border-muted/30 last:border-0">
+                                        <td className="py-1.5 pr-2">
+                                            <span className="font-medium">{p.productName}</span>
+                                            {p.variantName && (
+                                                <span className="text-xs text-muted-foreground ml-1">({p.variantName})</span>
+                                            )}
+                                        </td>
+                                        <td className="text-right py-1.5 px-1 font-mono">{p.qty}</td>
+                                        <td className="text-right py-1.5 px-1 font-mono">{formatCurrency(p.totalSales)}</td>
+                                        <td className="text-right py-1.5 px-1 font-mono text-muted-foreground">{formatCurrency(p.totalCost)}</td>
+                                        <td className="text-right py-1.5 pl-1">
+                                            <span className={`font-mono font-bold ${p.margin >= 50 ? 'text-green-600' : p.margin >= 25 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                                {p.margin.toFixed(1)}%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </ScrollArea>
+                </section>
+            )}
+
+            {/* Balance Final */}
+            <section className="bg-muted/20 p-4 rounded-xl border space-y-2">
+                <h4 className="text-sm font-bold uppercase text-muted-foreground">Balance Final</h4>
+                <Separator />
+                <div className="flex justify-between items-center">
+                    <span className="text-sm">Ventas Totales</span>
+                    <span className="font-bold font-mono">{formatCurrency(report.totalSales)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="text-sm">Costo Total</span>
+                    <span className="font-bold font-mono text-red-500">−{formatCurrency(report.totalCost)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                    <span className="font-bold">Utilidad Bruta</span>
+                    <div className="text-right">
+                        <span className="font-black text-lg text-primary font-mono">
+                            {formatCurrency(report.totalSales - report.totalCost)}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                            ({report.totalMargin.toFixed(1)}%)
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <Button className="w-full" variant="outline" onClick={() => window.print()}>
+                Imprimir Reporte
+            </Button>
+        </div>
+    );
+}
 
 export default function CashierPage() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -202,51 +312,17 @@ export default function CashierPage() {
                                 Cierre Z
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-                                    <Clock className="w-6 h-6 text-primary" />
+                                    <Clock className="w-6 h-6 text-primary" aria-hidden="true" />
                                     Reporte de Cierre Z
                                 </DialogTitle>
                             </DialogHeader>
                             {fetchingZ ? (
-                                <div className="py-10 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>
+                                <div className="py-10 flex justify-center"><Loader2 className="animate-spin text-primary" aria-hidden="true" /></div>
                             ) : zReport ? (
-                                <div className="space-y-6 pt-4">
-                                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
-                                        <p className="text-sm text-muted-foreground uppercase font-bold tracking-wider">Ventas Totales</p>
-                                        <p className="text-4xl font-black text-primary">{formatCurrency(zReport.totalSales)}</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-3 bg-muted/30 rounded-lg border">
-                                            <p className="text-xs text-muted-foreground uppercase font-bold">Órdenes</p>
-                                            <p className="text-xl font-bold">{zReport.orderCount}</p>
-                                        </div>
-                                        <div className="p-3 bg-muted/30 rounded-lg border">
-                                            <p className="text-xs text-muted-foreground uppercase font-bold">Fecha</p>
-                                            <p className="text-sm font-bold">{new Date().toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b">Desglose por Método</h4>
-                                        {zReport.byMethod.map((m) => (
-                                            <div key={m.method} className="flex justify-between items-center py-1">
-                                                <div className="flex items-center gap-2">
-                                                    {m.method === 'CASH' && <Banknote className="w-4 h-4 text-green-600" />}
-                                                    {m.method === 'CARD' && <CreditCard className="w-4 h-4 text-blue-600" />}
-                                                    <span className="font-medium">{m.method} ({m.count})</span>
-                                                </div>
-                                                <span className="font-bold font-mono">{formatCurrency(m.amount)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <Button className="w-full" variant="outline" onClick={() => window.print()}>
-                                        Imprimir Reporte
-                                    </Button>
-                                </div>
+                                <ZReportContent report={zReport} />
                             ) : (
                                 <p className="text-center py-10 text-muted-foreground">No hay datos para hoy.</p>
                             )}

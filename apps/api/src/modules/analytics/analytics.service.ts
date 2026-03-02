@@ -278,40 +278,118 @@ export class AnalyticsService {
             createdAt: { gte: startObj, lte: endObj }
         };
 
-        // 1. Conteo de ordenes del dia
-        const orderCount = await this.prisma.order.count({
-            where: ordersQuery
-        });
+        // ── Parallel batch: count, sales, payments, product breakdown ──
+        const [orderCount, salesAgg, paymentGroup, productBreakdown] = await Promise.all([
+            // 1. Conteo de órdenes del día
+            this.prisma.order.count({ where: ordersQuery }),
 
-        // 2. Suma Total Ventas del día
-        const salesAgg = await this.prisma.order.aggregate({
-            _sum: { totalAmount: true },
-            where: ordersQuery
-        });
-        const totalSales = Number(salesAgg._sum?.totalAmount || 0);
+            // 2. Suma Total Ventas del día
+            this.prisma.order.aggregate({
+                _sum: { totalAmount: true },
+                where: ordersQuery
+            }),
 
-        // 3. Ticket Promedio
-        const avgTicket = orderCount > 0 ? totalSales / orderCount : 0;
-
-        // 4. Desglose the ventas agrupadas por paymentMethod usando Prisma GroupBy en la tabla Payment
-        const paymentGroup = await this.prisma.payment.groupBy({
-            by: ['method'],
-            _sum: { amount: true },
-            _count: { id: true },
-            where: {
-                order: {
-                    tenantId,
-                    status: OrderStatus.DELIVERED,
-                    createdAt: { gte: startObj, lte: endObj }
+            // 3. Desglose por método de pago
+            this.prisma.payment.groupBy({
+                by: ['method'],
+                _sum: { amount: true },
+                _count: { id: true },
+                where: {
+                    order: {
+                        tenantId,
+                        status: OrderStatus.DELIVERED,
+                        createdAt: { gte: startObj, lte: endObj }
+                    }
                 }
-            }
-        });
+            }),
+
+            // 4. Desglose de productos vendidos (groupBy productName + variantId)
+            this.prisma.$queryRaw<{
+                productName: string;
+                variantId: string;
+                variantName: string | null;
+                qty: number;
+                totalSales: number;
+            }[]>`
+                SELECT
+                    oi."productName",
+                    oi."variantId",
+                    oi."variantName",
+                    SUM(oi."quantity")::int as qty,
+                    SUM(oi."price" * oi."quantity")::float as "totalSales"
+                FROM "OrderItem" oi
+                JOIN "Order" o ON o.id = oi."orderId"
+                WHERE o."tenantId" = ${tenantId}
+                  AND o."status" = 'DELIVERED'
+                  AND o."createdAt" >= ${startObj}
+                  AND o."createdAt" <= ${endObj}
+                GROUP BY oi."productName", oi."variantId", oi."variantName"
+                ORDER BY "totalSales" DESC
+            `
+        ]);
+
+        const totalSales = Number(salesAgg._sum?.totalAmount || 0);
+        const avgTicket = orderCount > 0 ? totalSales / orderCount : 0;
 
         const byMethod = paymentGroup.map(g => ({
             method: g.method,
             amount: Number(g._sum.amount || 0),
             count: g._count.id
         }));
+
+        // ── 5. Batch: calcular costo por producto desde recetas (raw SQL) ──
+        // JOINs: OrderItem.variantId → ProductVariant.productId → Recipe → RecipeIngredient → InventoryItem
+        const variantIds = [...new Set(productBreakdown.map(p => p.variantId))];
+
+        const recipeCosts = variantIds.length > 0
+            ? await this.prisma.$queryRaw<{
+                variantId: string;
+                costPerPortion: number;
+            }[]>`
+                SELECT
+                    pv."id" AS "variantId",
+                    COALESCE(
+                        SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / NULLIF(r."yield", 0),
+                        0
+                    )::float AS "costPerPortion"
+                FROM "ProductVariant" pv
+                JOIN "Recipe" r ON r."productId" = pv."productId"
+                JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
+                JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
+                WHERE pv."id" = ANY(${variantIds})
+                GROUP BY pv."id", r."yield"
+            `
+            : [];
+
+        // Mapa de costos por variantId
+        const costByVariant = new Map<string, number>();
+        for (const rc of recipeCosts) {
+            costByVariant.set(rc.variantId, rc.costPerPortion);
+        }
+
+        // ── 6. Ensamblar productSummary ──
+        let totalCost = 0;
+        const productSummary = productBreakdown.map(p => {
+            const unitCost = costByVariant.get(p.variantId) || 0;
+            const itemTotalCost = unitCost * p.qty;
+            const sales = Number(p.totalSales);
+            const margin = sales > 0 ? ((sales - itemTotalCost) / sales) * 100 : 0;
+            totalCost += itemTotalCost;
+
+            return {
+                productName: p.productName,
+                variantName: p.variantName,
+                qty: p.qty,
+                totalSales: sales,
+                unitCost: Math.round(unitCost * 100) / 100,
+                totalCost: Math.round(itemTotalCost * 100) / 100,
+                margin: Math.round(margin * 10) / 10,
+            };
+        });
+
+        const totalMargin = totalSales > 0
+            ? Math.round(((totalSales - totalCost) / totalSales) * 1000) / 10
+            : 0;
 
         return {
             success: true,
@@ -320,6 +398,9 @@ export class AnalyticsService {
                 orderCount,
                 avgTicket,
                 byMethod,
+                productSummary,
+                totalCost: Math.round(totalCost * 100) / 100,
+                totalMargin,
                 date: targetDate,
             }
         };

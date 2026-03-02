@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
@@ -121,8 +121,10 @@ function OrderCard({ order, onAction, busy, tableName }: {
     )
 }
 
+const EMPTY_TABLES: Table[] = []
+
 // ─── Main Waiter Client ───────────────────────────────────────────────
-export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }) {
+function WaiterClientContent({ initialTables = EMPTY_TABLES }: { initialTables?: Table[] }) {
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -304,5 +306,17 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
                 onOrderCreated={fetchOrders}
             />
         </AdminPageWrapper>
+    )
+}
+
+export function WaiterClient({ initialTables }: { initialTables?: Table[] }) {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+        }>
+            <WaiterClientContent initialTables={initialTables} />
+        </Suspense>
     )
 }

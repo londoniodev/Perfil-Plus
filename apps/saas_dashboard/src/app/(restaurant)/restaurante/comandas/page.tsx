@@ -27,6 +27,95 @@ const STATUS_GROUPS = {
     COMPLETED: ['DELIVERED', 'SERVED', 'CANCELLED', 'REFUNDED'] as OrderStatus[],
 }
 
+// ─── OrderCard (Module-scope to avoid re-creation on parent re-render) ───
+function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (orderId: string, newStatus: OrderStatus) => void }) {
+    return (
+        <Card className="mb-4 border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="p-4 pb-2">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-base font-bold">#{order.orderNumber.split('-').pop()}</CardTitle>
+                        <p className="text-xs text-muted-foreground">
+                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    </div>
+                    <Badge variant={order.orderType === 'DELIVERY' ? 'secondary' : 'outline'}>
+                        {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
+                    </Badge>
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 py-2 text-sm">
+                <div className="space-y-1 mb-3">
+                    {order.items.map((item) => (
+                        <div key={item.id} className="flex justify-between items-start">
+                            <div className="flex-1">
+                                <span className="font-medium">{item.quantity}x {item.productName}</span>
+                                {item.variantName && <span className="text-xs text-muted-foreground ml-1">({item.variantName})</span>}
+                                {item.modifiers && item.modifiers.length > 0 && (
+                                    <div className="text-xs text-muted-foreground pl-4 border-l-2 border-muted mt-1">
+                                        {item.modifiers.map((m, idx) => (
+                                            <div key={idx}>+ {m.quantity}x {m.modifierName}</div>
+                                        ))}
+                                    </div>
+                                )}
+                                {item.notes && <div className="text-xs text-amber-600 italic mt-1">Note: {item.notes}</div>}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {(order.customerName || order.notes || (order.orderType === 'DELIVERY' && order.shippingData)) && (
+                    <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
+                        {order.customerName && <p><strong>Cliente:</strong> {order.customerName}</p>}
+                        {order.orderType === 'DELIVERY' && order.shippingData && (
+                            <p><strong>Dir:</strong> {order.shippingData.address}, {order.shippingData.city}</p>
+                        )}
+                        {order.notes && <p className="text-amber-600 font-medium">Nota: {order.notes}</p>}
+                    </div>
+                )}
+            </CardContent>
+            <CardFooter className="p-2 bg-muted/20 flex gap-2 justify-end">
+                {/* Acciones según Estado */}
+                {(order.status === 'PENDING') && (
+                    <div className="flex gap-2 w-full">
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => onStatusChange(order.id, 'CANCELLED')}
+                            className="flex-1"
+                        >
+                            <AlertCircle className="w-4 h-4 mr-2" aria-hidden="true" /> Rechazar
+                        </Button>
+                        <Button
+                            size="sm"
+                            onClick={() => onStatusChange(order.id, 'PREPARING')}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                            <Utensils className="w-4 h-4 mr-2" aria-hidden="true" /> Enviar a Cocina
+                        </Button>
+                    </div>
+                )}
+                {(order.status === 'APPROVED') && (
+                    <Button size="sm" onClick={() => onStatusChange(order.id, 'PREPARING')} className="w-full">
+                        <Utensils className="w-4 h-4 mr-2" aria-hidden="true" /> Enviar a Cocina
+                    </Button>
+                )}
+                {(order.status === 'PREPARING' || order.status === 'PROCESSING') && (
+                    <Button size="sm" onClick={() => onStatusChange(order.id, 'READY')} className="w-full bg-orange-600 hover:bg-orange-700">
+                        <Clock className="w-4 h-4 mr-2" aria-hidden="true" /> Marcar Listo (Cocina)
+                    </Button>
+                )}
+                {(order.status === 'READY') && (
+                    <Button size="sm" onClick={() => onStatusChange(order.id, order.orderType === 'DINE_IN' ? 'SERVED' : 'DELIVERED')} className="w-full">
+                        {order.orderType === 'DELIVERY' ? <Truck className="w-4 h-4 mr-2" aria-hidden="true" /> : <Utensils className="w-4 h-4 mr-2" aria-hidden="true" />}
+                        {order.orderType === 'DELIVERY' ? 'Despachado' : 'Servido'}
+                    </Button>
+                )}
+            </CardFooter>
+        </Card>
+    )
+}
+
 export default function AdminOrdersPage() {
     const toast = useToast()
     const [orders, setOrders] = useState<Order[]>([])
@@ -87,108 +176,6 @@ export default function AdminOrdersPage() {
         return orders.filter(o => group.includes(o.status))
     }
 
-    const getStatusInfo = (status: OrderStatus) => {
-        switch (status) {
-            case 'PENDING': return { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' }
-            case 'APPROVED': return { label: 'Aprobado', color: 'bg-blue-100 text-blue-800' }
-            case 'PREPARING': return { label: 'En Cocina', color: 'bg-orange-100 text-orange-800' }
-            case 'PROCESSING': return { label: 'Procesando', color: 'bg-orange-100 text-orange-800' }
-            case 'READY': return { label: 'Listo', color: 'bg-green-100 text-green-800' }
-            // case 'served': return { label: 'Servido', color: 'bg-gray-100 text-gray-800' } // Case sensitive fix needed in type?
-            case 'SERVED': return { label: 'Servido', color: 'bg-gray-100 text-gray-800' }
-            case 'DELIVERED': return { label: 'Entregado', color: 'bg-gray-800 text-white' }
-            case 'CANCELLED': return { label: 'Cancelado', color: 'bg-red-100 text-red-800' }
-            default: return { label: status, color: 'bg-gray-100' }
-        }
-    }
-
-    const OrderCard = ({ order }: { order: Order }) => (
-        <Card className="mb-4 border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="p-4 pb-2">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-base font-bold">#{order.orderNumber.split('-').pop()}</CardTitle>
-                        <p className="text-xs text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                    </div>
-                    <Badge variant={order.orderType === 'DELIVERY' ? 'secondary' : 'outline'}>
-                        {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
-                    </Badge>
-                </div>
-            </CardHeader>
-            <CardContent className="p-4 py-2 text-sm">
-                <div className="space-y-1 mb-3">
-                    {order.items.map((item) => (
-                        <div key={item.id} className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <span className="font-medium">{item.quantity}x {item.productName}</span>
-                                {item.variantName && <span className="text-xs text-muted-foreground ml-1">({item.variantName})</span>}
-                                {item.modifiers && item.modifiers.length > 0 && (
-                                    <div className="text-xs text-muted-foreground pl-4 border-l-2 border-muted mt-1">
-                                        {item.modifiers.map((m, idx) => (
-                                            <div key={idx}>+ {m.quantity}x {m.modifierName}</div>
-                                        ))}
-                                    </div>
-                                )}
-                                {item.notes && <div className="text-xs text-amber-600 italic mt-1">Note: {item.notes}</div>}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {(order.customerName || order.notes || (order.orderType === 'DELIVERY' && order.shippingData)) && (
-                    <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
-                        {order.customerName && <p><strong>Cliente:</strong> {order.customerName}</p>}
-                        {order.orderType === 'DELIVERY' && order.shippingData && (
-                            <p><strong>Dir:</strong> {order.shippingData.address}, {order.shippingData.city}</p>
-                        )}
-                        {order.notes && <p className="text-amber-600 font-medium">Nota: {order.notes}</p>}
-                    </div>
-                )}
-            </CardContent>
-            <CardFooter className="p-2 bg-muted/20 flex gap-2 justify-end">
-                {/* Acciones según Estado */}
-                {/* Acciones según Estado */}
-                {(order.status === 'PENDING') && (
-                    <div className="flex gap-2 w-full">
-                        <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleStatusChange(order.id, 'CANCELLED')}
-                            className="flex-1"
-                        >
-                            <AlertCircle className="w-4 h-4 mr-2" /> Rechazar
-                        </Button>
-                        <Button
-                            size="sm"
-                            onClick={() => handleStatusChange(order.id, 'PREPARING')}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                        >
-                            <Utensils className="w-4 h-4 mr-2" /> Enviar a Cocina
-                        </Button>
-                    </div>
-                )}
-                {(order.status === 'APPROVED') && (
-                    <Button size="sm" onClick={() => handleStatusChange(order.id, 'PREPARING')} className="w-full">
-                        <Utensils className="w-4 h-4 mr-2" /> Enviar a Cocina
-                    </Button>
-                )}
-                {(order.status === 'PREPARING' || order.status === 'PROCESSING') && (
-                    <Button size="sm" onClick={() => handleStatusChange(order.id, 'READY')} className="w-full bg-orange-600 hover:bg-orange-700">
-                        <Clock className="w-4 h-4 mr-2" /> Marcar Listo (Cocina)
-                    </Button>
-                )}
-                {(order.status === 'READY') && (
-                    <Button size="sm" onClick={() => handleStatusChange(order.id, order.orderType === 'DINE_IN' ? 'SERVED' : 'DELIVERED')} className="w-full">
-                        {order.orderType === 'DELIVERY' ? <Truck className="w-4 h-4 mr-2" /> : <Utensils className="w-4 h-4 mr-2" />}
-                        {order.orderType === 'DELIVERY' ? 'Despachado' : 'Servido'}
-                    </Button>
-                )}
-            </CardFooter>
-        </Card>
-    )
-
     return (
         <AdminPageWrapper
             title="Comandas"
@@ -239,7 +226,7 @@ export default function AdminOrdersPage() {
                     <TabsContent value="COOKING" className="h-full m-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {getGroupedOrders(STATUS_GROUPS.COOKING).map(order => (
-                                <OrderCard key={order.id} order={order} />
+                                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
                             ))}
                         </div>
                         {getGroupedOrders(STATUS_GROUPS.COOKING).length === 0 && (
@@ -252,7 +239,7 @@ export default function AdminOrdersPage() {
                     <TabsContent value="READY" className="h-full m-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {getGroupedOrders(STATUS_GROUPS.READY).map(order => (
-                                <OrderCard key={order.id} order={order} />
+                                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
                             ))}
                         </div>
                         {getGroupedOrders(STATUS_GROUPS.READY).length === 0 && (
@@ -265,7 +252,7 @@ export default function AdminOrdersPage() {
                     <TabsContent value="COMPLETED" className="h-full m-0">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {getGroupedOrders(STATUS_GROUPS.COMPLETED).slice(0, 20).map(order => (
-                                <OrderCard key={order.id} order={order} />
+                                <OrderCard key={order.id} order={order} onStatusChange={handleStatusChange} />
                             ))}
                         </div>
                         {getGroupedOrders(STATUS_GROUPS.COMPLETED).length === 0 && (

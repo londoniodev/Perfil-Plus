@@ -274,11 +274,11 @@ export class OrdersService {
 
                     this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
 
-                    // SSE: notificar cocina/POS
+                    // SSE: notificar cocina/POS con la orden completa
                     this.ordersGateway.emit(this.getTenantId(), {
                         type: 'new_order',
                         orderId: order.id,
-                        data: { orderNumber, status: order.status, totalAmount: Number(totalAmount), items: dto.items.length },
+                        data: order,
                     });
 
                     // --- DEDUCCIÓN DE INVENTARIO (ATÓMICA dentro del mismo tx) ---
@@ -442,11 +442,11 @@ export class OrdersService {
                 }
             }
 
-            // SSE: notificar cambio de estado
+            // SSE: notificar cambio de estado con la orden actualizada completa
             this.ordersGateway.emit(this.getTenantId(), {
                 type: 'status_changed',
                 orderId,
-                data: { status: dto.status },
+                data: updated,
             });
 
             return updated;
@@ -454,7 +454,7 @@ export class OrdersService {
     }
 
     // ============ MIS ÓRDENES ============
-    async findMyOrders(userId: string) {
+    async findMyOrders(userId: string, take = 20, skip = 0) {
         return await this.prisma.order.findMany({
             where: {
                 userId,
@@ -472,7 +472,9 @@ export class OrdersService {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            take,
+            skip,
         });
     }
 
@@ -505,11 +507,10 @@ export class OrdersService {
 
     // ============ ADMIN: LISTAR ÓRDENES ============
     // ============ ADMIN: LISTAR ÓRDENES ============
-    async findAllAdmin(status?: OrderStatus, activeOnly: boolean = false) {
+    async findAllAdmin(status?: OrderStatus, activeOnly: boolean = false, take = 50, skip = 0) {
         if (activeOnly) {
             // Fetch active orders + recent completed/delivered
             const activeStatuses: OrderStatus[] = ['PENDING', 'APPROVED', 'PROCESSING', 'PREPARING', 'READY'];
-            // Valid Enum Values: PENDING, APPROVED, PROCESSING, PREPARING, READY, SERVED, SHIPPED, DELIVERED, CANCELLED, REFUNDED
             const completedStatuses: OrderStatus[] = ['SERVED', 'DELIVERED', 'SHIPPED', 'CANCELLED', 'REFUNDED'];
 
             const [activeOrders, recentCompleted] = await Promise.all([
@@ -538,7 +539,7 @@ export class OrdersService {
                         },
                     },
                     orderBy: { createdAt: 'desc' },
-                    take: 20 // Limit historical items
+                    take, // Paginated historical items
                 })
             ]);
 
@@ -559,6 +560,8 @@ export class OrdersService {
                 },
             },
             orderBy: { createdAt: 'desc' },
+            take,
+            skip,
         });
     }
 
@@ -681,10 +684,17 @@ export class OrdersService {
             }
 
             // SSE: notificar pago recibido
+            const updatedOrder = await tx.order.findUnique({
+                where: { id: orderId },
+                include: {
+                    items: { include: { modifiers: true, variant: { include: { product: true } } } },
+                    user: { select: { id: true, name: true, email: true } },
+                },
+            });
             this.ordersGateway.emit(this.getTenantId(), {
                 type: 'payment_received',
                 orderId,
-                data: { amount: Number(dto.amount), method: dto.method, closed: shouldClose },
+                data: { ...updatedOrder, paymentAmount: Number(dto.amount), paymentMethod: dto.method, closed: shouldClose },
             });
 
             return payment;

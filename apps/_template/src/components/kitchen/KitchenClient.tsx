@@ -144,7 +144,36 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
     }, [fetchOrders])
 
     useOrderEvents((event) => {
-        fetchOrders()
+        if (event.type === 'new_order') {
+            const order = event.data as WaiterOrder
+            // Solo agregar si es relevante para cocina (APPROVED o PREPARING)
+            if (['APPROVED', 'PREPARING'].includes(order.status)) {
+                setOrders(prev => {
+                    // Evitar duplicados
+                    if (prev.some(o => o.id === order.id)) return prev
+                    return [...prev, order].sort((a, b) =>
+                        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    )
+                })
+            }
+        } else if (event.type === 'status_changed') {
+            const updated = event.data as WaiterOrder
+            if (['APPROVED', 'PREPARING'].includes(updated.status)) {
+                // Actualizar orden existente o agregarla si no estaba
+                setOrders(prev => {
+                    const exists = prev.some(o => o.id === updated.id)
+                    if (exists) {
+                        return prev.map(o => o.id === updated.id ? updated : o)
+                    }
+                    return [...prev, updated].sort((a, b) =>
+                        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    )
+                })
+            } else {
+                // Orden salió del scope de cocina (READY, SERVED, etc) — removerla al instante
+                setOrders(prev => prev.filter(o => o.id !== event.orderId))
+            }
+        }
         if (event.type === 'new_order' || event.type === 'status_changed') {
             const audio = new Audio('/sounds/notification.mp3')
             audio.play().catch(() => {/* ignore if blocked */ })

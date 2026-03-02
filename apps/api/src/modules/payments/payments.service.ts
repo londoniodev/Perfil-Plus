@@ -295,11 +295,16 @@ export class PaymentsService {
             throw new BadRequestException('El carrito está vacío');
         }
 
+        // Batch fetch: single query replaces N findUnique calls
+        const variantIds = dto.items.map(i => i.variantId);
+        const variants = await this.prisma.productVariant.findMany({
+            where: { id: { in: variantIds } },
+            include: { product: true },
+        });
+        const variantMap = new Map(variants.map(v => [v.id, v]));
+
         for (const item of dto.items) {
-            const variant = await this.prisma.productVariant.findUnique({
-                where: { id: item.variantId },
-                include: { product: true }
-            });
+            const variant = variantMap.get(item.variantId);
 
             if (!variant) throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
             if (!variant.product.published) throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
@@ -660,15 +665,16 @@ export class PaymentsService {
             // But to minimize scope creep, let's send DigitalPurchaseEmail for the first item found or loop.
             // Let's loop for now to ensure delivery of all links.
 
-            for (const item of order.items) {
-                // Check if product is digital (simplification: assume yes for this module scope or fetch product)
-                // Ideally we should include productType in OrderItem snapshot or fetch variant again.
+            // Batch fetch: single query replaces N findUnique calls
+            const variantIds = order.items.map(i => i.variantId);
+            const variants = await this.prisma.productVariant.findMany({
+                where: { id: { in: variantIds } },
+                include: { product: true },
+            });
+            const variantMap = new Map(variants.map(v => [v.id, v]));
 
-                // Fetch variant to get slug/type
-                const variant = await this.prisma.productVariant.findUnique({
-                    where: { id: item.variantId },
-                    include: { product: true }
-                });
+            for (const item of order.items) {
+                const variant = variantMap.get(item.variantId);
 
                 if (variant && variant.product.productType === 'DIGITAL') {
                     if (order.user?.email) {

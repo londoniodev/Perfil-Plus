@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
-import { MovementType } from '@prisma/client';
+import { Prisma, MovementType } from '@prisma/client';
 import {
     CreateInventoryItemDto,
     UpdateInventoryItemDto,
@@ -496,25 +496,23 @@ export class InventoryService {
 
         await prisma.inventoryMovement.createMany({ data: movementData });
 
-        // Atomic decrement per ingredient (Postgres handles concurrency at row level)
+        // Batch upsert — single SQL statement replaces N sequential upserts
+        // Postgres INSERT...ON CONFLICT handles concurrency at row level
+        const aggregated = new Map<string, number>();
         for (const d of deductions) {
-            await prisma.warehouseStock.upsert({
-                where: {
-                    warehouseId_inventoryItemId: {
-                        warehouseId: defaultWarehouse,
-                        inventoryItemId: d.inventoryItemId,
-                    },
-                },
-                create: {
-                    warehouseId: defaultWarehouse,
-                    inventoryItemId: d.inventoryItemId,
-                    currentStock: -d.deductQty,
-                },
-                update: {
-                    currentStock: { decrement: d.deductQty },
-                },
-            });
+            aggregated.set(d.inventoryItemId, (aggregated.get(d.inventoryItemId) || 0) + d.deductQty);
         }
+
+        const values = Array.from(aggregated.entries())
+            .map(([itemId, qty]) => `('${defaultWarehouse}', '${itemId}', ${-qty})`)
+            .join(', ');
+
+        await prisma.$executeRawUnsafe(`
+            INSERT INTO "WarehouseStock" ("warehouseId", "inventoryItemId", "currentStock")
+            VALUES ${values}
+            ON CONFLICT ("warehouseId", "inventoryItemId")
+            DO UPDATE SET "currentStock" = "WarehouseStock"."currentStock" - EXCLUDED."currentStock"
+        `);
 
         // Low-stock check: delegated to Postgres in a single query
         // instead of N SELECTs per ingredient
@@ -563,40 +561,41 @@ export class InventoryService {
             },
         });
 
-        for (const movement of movements) {
-            const restoreQty = Math.abs(Number(movement.quantity));
+        if (movements.length === 0) return;
 
-            // Restore stock
-            await prisma.warehouseStock.upsert({
+        // Batch: create all reverse movements in one call
+        await prisma.inventoryMovement.createMany({
+            data: movements.map(m => ({
+                tenantId,
+                inventoryItemId: m.inventoryItemId,
+                warehouseId: m.warehouseId,
+                type: MovementType.ADJUSTMENT,
+                quantity: Math.abs(Number(m.quantity)),
+                reason: `Cancelación orden ${orderId}`,
+                reference: orderId,
+            })),
+        });
+
+        // Batch: restore stock in parallel (Prisma lacks upsertMany)
+        await Promise.all(movements.map(m => {
+            const restoreQty = Math.abs(Number(m.quantity));
+            return prisma.warehouseStock.upsert({
                 where: {
                     warehouseId_inventoryItemId: {
-                        warehouseId: movement.warehouseId,
-                        inventoryItemId: movement.inventoryItemId,
+                        warehouseId: m.warehouseId,
+                        inventoryItemId: m.inventoryItemId,
                     },
                 },
                 create: {
-                    warehouseId: movement.warehouseId,
-                    inventoryItemId: movement.inventoryItemId,
+                    warehouseId: m.warehouseId,
+                    inventoryItemId: m.inventoryItemId,
                     currentStock: restoreQty,
                 },
                 update: {
                     currentStock: { increment: restoreQty },
                 },
             });
-
-            // Create reverse movement
-            await prisma.inventoryMovement.create({
-                data: {
-                    tenantId,
-                    inventoryItemId: movement.inventoryItemId,
-                    warehouseId: movement.warehouseId,
-                    type: MovementType.ADJUSTMENT,
-                    quantity: restoreQty,
-                    reason: `Cancelación orden ${orderId}`,
-                    reference: orderId,
-                },
-            });
-        }
+        }));
 
         this.logger.log(`Stock restaurado por cancelación de orden ${orderId}`);
     }

@@ -263,39 +263,19 @@ export class LmsService {
         let hasPurchasedCourse = false;
 
         if (!lesson.course.isFree && !hasSubscription && userId) {
-            // Hotfix: Verificar si compró el curso individualmente
-            // Prisma JSON typing can be tricky, so we fetch the user's approved orders 
-            // and filter in memory since orders per user are typically manageable.
-            const userOrders = await this.prisma.order.findMany({
-                where: {
-                    userId: userId,
-                    status: 'APPROVED',
-                },
-                include: {
-                    items: {
-                        include: {
-                            variant: {
-                                include: { product: true }
-                            }
-                        }
-                    }
-                }
-            });
-
-            for (const order of userOrders) {
-                for (const item of order.items) {
-                    let specsStr = item.variant.product.specs as any;
-                    try {
-                        if (typeof specsStr === 'string') specsStr = JSON.parse(specsStr);
-                    } catch (e) { }
-
-                    if (specsStr && specsStr.courseId === lesson.course.id) {
-                        hasPurchasedCourse = true;
-                        break;
-                    }
-                }
-                if (hasPurchasedCourse) break;
-            }
+            // Verificar compra directamente en Postgres — sin cargar órdenes a memoria
+            const result = await this.prisma.$queryRaw<[{ count: number }]>`
+                SELECT COUNT(*)::int AS "count"
+                FROM "Order" o
+                JOIN "OrderItem" oi ON oi."orderId" = o."id"
+                JOIN "ProductVariant" pv ON pv."id" = oi."variantId"
+                JOIN "Product" p ON p."id" = pv."productId"
+                WHERE o."userId" = ${userId}
+                  AND o."status" = 'APPROVED'
+                  AND p."specs"::jsonb->>'courseId' = ${lesson.course.id}
+                LIMIT 1
+            `;
+            hasPurchasedCourse = (result[0]?.count ?? 0) > 0;
         }
 
         if (!lesson.course.isFree && !hasSubscription && !hasPurchasedCourse) {
@@ -435,15 +415,21 @@ export class LmsService {
             lastActivity: Date;
         }>();
 
+        // Batch: obtener conteos de lecciones por curso en una sola query
+        const courseIds = [...new Set(progress.map(p => p.lesson.course.id))];
+        const lessonCounts = await this.prisma.lesson.groupBy({
+            by: ['courseId'],
+            where: { courseId: { in: courseIds }, published: true },
+            _count: { id: true },
+        });
+        const countMap = new Map(lessonCounts.map(c => [c.courseId, c._count.id]));
+
         for (const p of progress) {
             const courseId = p.lesson.course.id;
             if (!courseProgress.has(courseId)) {
-                const totalLessons = await this.prisma.lesson.count({
-                    where: { courseId, published: true },
-                });
                 courseProgress.set(courseId, {
                     course: p.lesson.course,
-                    lessons: { completed: 0, total: totalLessons },
+                    lessons: { completed: 0, total: countMap.get(courseId) ?? 0 },
                     lastActivity: p.updatedAt,
                 });
             }

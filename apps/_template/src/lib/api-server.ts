@@ -24,6 +24,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         headers.set('Content-Type', 'application/json');
     }
     headers.set('x-tenant-id', tenantId);
+    headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');
 
     if (token && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);

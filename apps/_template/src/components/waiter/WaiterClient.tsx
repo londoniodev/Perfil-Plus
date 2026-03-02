@@ -154,11 +154,31 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
         fetchOrders()
     }, [fetchOrders])
 
-    // Real-time updates via SSE
+    // Real-time updates via SSE — actualiza state local sin re-fetch
     useOrderEvents((event) => {
-        // Refresh full list to ensure consistency (simplest approach for now)
-        // Optimization: update local state based on event data
-        fetchOrders()
+        if (event.type === 'new_order') {
+            const order = event.data as WaiterOrder
+            setOrders(prev => {
+                if (prev.some(o => o.id === order.id)) return prev
+                return [order, ...prev]
+            })
+        } else if (event.type === 'status_changed') {
+            const updated = event.data as WaiterOrder
+            setOrders(prev => {
+                const exists = prev.some(o => o.id === updated.id)
+                if (exists) {
+                    return prev.map(o => o.id === updated.id ? updated : o)
+                }
+                return [updated, ...prev]
+            })
+        } else if (event.type === 'payment_received') {
+            if (event.data.closed) {
+                // Orden cerrada por pago completo
+                setOrders(prev => prev.map(o =>
+                    o.id === event.orderId ? { ...o, status: 'DELIVERED' as any } : o
+                ))
+            }
+        }
     })
 
     const handleAction = async (orderId: string, status: string) => {

@@ -1,4 +1,5 @@
-import { IsString, IsEmail, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsObject, IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateLeadDto {
     @IsString()
@@ -35,5 +36,17 @@ export class LeadQueryDto {
     @IsOptional()
     @IsString()
     endDate?: string;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    take?: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(0)
+    skip?: number;
 }
 

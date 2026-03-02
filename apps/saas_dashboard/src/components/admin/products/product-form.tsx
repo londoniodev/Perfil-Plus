@@ -46,7 +46,9 @@ interface ProductFormProps {
     courses?: { id: string; title: string }[]
 }
 
-export function ProductForm({ initialData, courses = [] }: ProductFormProps) {
+const EMPTY_COURSES: { id: string; title: string }[] = []
+
+export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFormProps) {
     const router = useRouter()
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)

@@ -47,10 +47,12 @@ function getFallbackImage(id: string, name?: string): string {
     const sum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return FOOD_FALLBACK_IMAGES[sum % FOOD_FALLBACK_IMAGES.length]
 }
+const EMPTY_SUGGESTED_PRODUCTS: PublicProduct[] = []
+
 export function ProductModal({
     slug,
     product,
-    suggestedProducts = [],
+    suggestedProducts = EMPTY_SUGGESTED_PRODUCTS,
     onClose,
     onAddToCart,
     onProductSelect,

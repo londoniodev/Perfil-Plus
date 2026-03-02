@@ -115,7 +115,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       {
         name: 'default',
         ttl: 60000,
-        limit: 100,
+        limit: 300,
       },
       {
         name: 'auth',

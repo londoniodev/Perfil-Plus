@@ -102,59 +102,74 @@ export class InventoryCountsService {
         }
 
         return this.prisma.$transaction(async (tx) => {
+            // Paso 1: Preparar datos y calcular diferencias
+            const updates: { lineId: string; inventoryItemId: string; countedStock: number; diff: number; adjustmentType?: AdjustmentType }[] = [];
+
             for (const lineDto of dto.lines) {
                 const existingLine = count.lines.find(
                     (l) => l.inventoryItemId === lineDto.inventoryItemId,
                 );
                 if (!existingLine) continue;
 
-                const difference = lineDto.countedStock - Number(existingLine.systemStock);
+                const diff = lineDto.countedStock - Number(existingLine.systemStock);
+                updates.push({
+                    lineId: existingLine.id,
+                    inventoryItemId: lineDto.inventoryItemId,
+                    countedStock: lineDto.countedStock,
+                    diff,
+                    adjustmentType: lineDto.adjustmentType,
+                });
+            }
 
-                // Update count line
-                await tx.inventoryCountLine.update({
-                    where: { id: existingLine.id },
+            // Paso 2: Batch update de countLines (paralelo)
+            await Promise.all(updates.map(u =>
+                tx.inventoryCountLine.update({
+                    where: { id: u.lineId },
                     data: {
-                        countedStock: lineDto.countedStock,
-                        difference,
-                        adjustmentType: difference !== 0
-                            ? (lineDto.adjustmentType || AdjustmentType.MERMA)
+                        countedStock: u.countedStock,
+                        difference: u.diff,
+                        adjustmentType: u.diff !== 0
+                            ? (u.adjustmentType || AdjustmentType.MERMA)
                             : null,
                     },
+                })
+            ));
+
+            // Paso 3: Batch createMany para movements (1 query)
+            const withDiff = updates.filter(u => u.diff !== 0);
+            if (withDiff.length > 0) {
+                await tx.inventoryMovement.createMany({
+                    data: withDiff.map(u => ({
+                        tenantId,
+                        inventoryItemId: u.inventoryItemId,
+                        warehouseId: count.warehouseId,
+                        type: MovementType.ADJUSTMENT,
+                        quantity: u.diff,
+                        reason: `Ajuste por conteo físico (${u.diff > 0 ? 'sobrante' : u.adjustmentType === 'FUGA' ? 'fuga' : 'merma'})`,
+                        reference: id,
+                        createdBy: userId,
+                    })),
                 });
 
-                // If there's a difference, create adjustment movement and update stock
-                if (difference !== 0) {
-                    await tx.inventoryMovement.create({
-                        data: {
-                            tenantId,
-                            inventoryItemId: lineDto.inventoryItemId,
-                            warehouseId: count.warehouseId,
-                            type: MovementType.ADJUSTMENT,
-                            quantity: difference,
-                            reason: `Ajuste por conteo físico (${difference > 0 ? 'sobrante' : lineDto.adjustmentType === 'FUGA' ? 'fuga' : 'merma'})`,
-                            reference: id,
-                            createdBy: userId,
-                        },
-                    });
-
-                    // Update warehouse stock to match counted value
-                    await tx.warehouseStock.upsert({
+                // Paso 4: Batch upserts de stock (paralelo)
+                await Promise.all(withDiff.map(u =>
+                    tx.warehouseStock.upsert({
                         where: {
                             warehouseId_inventoryItemId: {
                                 warehouseId: count.warehouseId,
-                                inventoryItemId: lineDto.inventoryItemId,
+                                inventoryItemId: u.inventoryItemId,
                             },
                         },
                         create: {
                             warehouseId: count.warehouseId,
-                            inventoryItemId: lineDto.inventoryItemId,
-                            currentStock: lineDto.countedStock,
+                            inventoryItemId: u.inventoryItemId,
+                            currentStock: u.countedStock,
                         },
                         update: {
-                            currentStock: lineDto.countedStock,
+                            currentStock: u.countedStock,
                         },
-                    });
-                }
+                    })
+                ));
             }
 
             // Mark count as completed

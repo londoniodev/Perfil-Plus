@@ -661,6 +661,7 @@ model Order {
   @@index([status])
   @@index([orderType])
   @@index([status, createdAt]) // Optimizacion dashboard/admin queries
+  @@index([mpPaymentId]) // Webhook dedup lookup
 }
 
 model OrderItem {
@@ -732,6 +733,8 @@ model Lead {
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
+  @@index([source])
+  @@index([createdAt])
 }
 
 // ============ ANALÍTICAS DE ENTREGA ============
@@ -871,6 +874,7 @@ model InventoryMovement {
   @@index([inventoryItemId])
   @@index([warehouseId])
   @@index([type, createdAt])
+  @@index([reference]) // restoreByOrder lookup
 }
 
 // ============ RECETAS / BOM ============

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     Select,
@@ -11,7 +12,7 @@ import {
 } from "@alvarosky/ui";
 import { CalendarIcon } from "lucide-react";
 
-export function DashboardTimeSelector({ currentPeriod }: { currentPeriod: string }) {
+function DashboardTimeSelectorContent({ currentPeriod }: { currentPeriod: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -23,7 +24,7 @@ export function DashboardTimeSelector({ currentPeriod }: { currentPeriod: string
 
     return (
         <div className="flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4 text-muted-foreground hidden sm:block" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground hidden sm:block" aria-hidden="true" />
             <Select
                 defaultValue={currentPeriod || "30d"}
                 onValueChange={handlePeriodChange}
@@ -41,5 +42,13 @@ export function DashboardTimeSelector({ currentPeriod }: { currentPeriod: string
                 </SelectContent>
             </Select>
         </div>
+    );
+}
+
+export function DashboardTimeSelector({ currentPeriod }: { currentPeriod: string }) {
+    return (
+        <Suspense fallback={<div className="w-[180px] h-10 bg-muted/50 rounded-md animate-pulse" />}>
+            <DashboardTimeSelectorContent currentPeriod={currentPeriod} />
+        </Suspense>
     );
 }

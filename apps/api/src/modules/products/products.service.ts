@@ -1,4 +1,6 @@
-import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductType } from '@prisma/client';
@@ -9,9 +11,26 @@ export class ProductsService {
     private readonly logger = new Logger(ProductsService.name);
 
     constructor(
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private prisma: PrismaService,
         private storage: StorageService
     ) { }
+
+    private async invalidateMenuCache(tenantId: string) {
+        const patterns = [
+            `menu:${tenantId}:all:false`,
+            `menu:${tenantId}:all:true`,
+            `menu:${tenantId}:DIGITAL:false`,
+            `menu:${tenantId}:DIGITAL:true`,
+            `menu:${tenantId}:PHYSICAL:false`,
+            `menu:${tenantId}:PHYSICAL:true`,
+            `menu:${tenantId}:SERVICE:false`,
+            `menu:${tenantId}:SERVICE:true`,
+            `menu:${tenantId}:RESTAURANT:false`,
+            `menu:${tenantId}:RESTAURANT:true`,
+        ];
+        await Promise.all(patterns.map(key => this.cacheManager.del(key)));
+    }
 
     // ============ INCLUDES REUTILIZABLES ============
     private readonly modifierGroupsInclude = {
@@ -119,13 +138,18 @@ export class ProductsService {
             }
 
             // Retornar producto completo con relaciones
-            return await tx.product.findFirst({
+            const result = await tx.product.findFirst({
                 where: { id: product.id, tenantId },
                 include: {
                     variants: true,
                     ...this.modifierGroupsInclude,
                 },
             });
+
+            // Invalidar caché del menú
+            await this.invalidateMenuCache(tenantId);
+
+            return result;
         });
     }
 
@@ -213,13 +237,18 @@ export class ProductsService {
                 }
             }
 
-            return await tx.product.findUnique({
+            const result = await tx.product.findUnique({
                 where: { id },
                 include: {
                     variants: true,
                     ...this.modifierGroupsInclude,
                 },
             });
+
+            // Invalidar caché del menú
+            await this.invalidateMenuCache(tenantId);
+
+            return result;
         });
     }
 
@@ -234,10 +263,15 @@ export class ProductsService {
             throw new NotFoundException('Producto no encontrado en este tenant');
         }
 
-        return this.prisma.product.update({
+        const result = await this.prisma.product.update({
             where: { id },
             data: { isAvailable }
         });
+
+        // Invalidar caché del menú
+        await this.invalidateMenuCache(tenantId);
+
+        return result;
     }
 
     // ============ DESCARGAS DIGITALES ============
@@ -309,8 +343,14 @@ export class ProductsService {
         });
     }
 
-    async findAllPublished(type?: ProductType, allVariants: boolean = false) {
-        return await this.prisma.product.findMany({
+    async findAllPublished(type?: ProductType, allVariants: boolean = false, tenantId: string = 'default') {
+        const cacheKey = `menu:${tenantId}:${type || 'all'}:${allVariants}`;
+
+        // Servir desde caché si existe (TTL 5 min)
+        const cached = await this.cacheManager.get(cacheKey);
+        if (cached) return cached;
+
+        const result = await this.prisma.product.findMany({
             where: {
                 published: true,
                 ...(type ? { productType: type } : {}),
@@ -324,6 +364,9 @@ export class ProductsService {
                 categories: { include: { category: true } },
             },
         });
+
+        await this.cacheManager.set(cacheKey, result, 300_000); // 5 min TTL
+        return result;
     }
 
     async findOnePublished(slug: string, tenantId: string) {

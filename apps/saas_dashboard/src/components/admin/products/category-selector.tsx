@@ -21,7 +21,9 @@ interface CategorySelectorProps {
     onChange: (value: string[]) => void
 }
 
-export function CategorySelector({ value = [], onChange }: CategorySelectorProps) {
+const EMPTY_VALUE: string[] = []
+
+export function CategorySelector({ value = EMPTY_VALUE, onChange }: CategorySelectorProps) {
     const [open, setOpen] = React.useState(false)
     const [inputValue, setInputValue] = React.useState("")
     const [editingId, setEditingId] = React.useState<string | null>(null)

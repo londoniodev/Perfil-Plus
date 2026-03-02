@@ -1,0 +1,217 @@
+react-doctor v0.0.29
+
+[32m✔[39m Select projects to scan [2m›[22m saas_dashboard
+Scanning changes: [36mrefactor/extract-saas-dashboard[39m → [36mmain[39m
+
+[2mScanning C:\Users\Pc\Desktop\ALVARO\REPOSITORIOS\Web Projects\apps\saas_dashboard...[22m
+
+
+  [31m✗[39m fetch() inside useEffect — use a data fetching library (react-query, SWR) or server component[31m (2)[39m
+[2m    Use `useQuery()` from @tanstack/react-query, `useSWR()`, or fetch in a Server Component instead[22m
+[2m    src/components/menu/ProductModal.tsx: 97[22m
+[2m    src/components/admin/blog/PostForm.tsx: 65[22m
+
+  [31m✗[39m State reset in useEffect — use a key prop to reset component state when props change[31m (2)[39m
+[2m    For derived state, compute inline: `const x = fn(dep)`. For state resets on prop change, use a key prop: `<Component key={prop} />`[22m
+[2m    src/app/(content)/academia/cursos/page.tsx: 142[22m
+[2m    src/components/admin/products/BreadcrumbSetter.tsx: 14[22m
+
+  [31m✗[39m `combobox` role is missing required aria props `aria-controls`.
+[2m    Add missing aria props `aria-controls` to the element with `combobox` role.[22m
+[2m    src/components/admin/products/category-selector.tsx: 100[22m
+
+  [31m✗[39m React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.
+[2m    src/app/(restaurant)/restaurante/pos/_components/ProductSelectionDialog.tsx: 72[22m
+
+  [31m✗[39m Component "OrderCard" defined inside "AdminOrdersPage" — creates new instance every render, destroying state
+[2m    Move to a separate file or to module scope above the parent component[22m
+[2m    src/app/(restaurant)/restaurante/comandas/page.tsx: 105[22m
+
+  [33m⚠[39m "recharts" is a heavy library — use React.lazy() or next/dynamic for code splitting[33m (9)[39m
+[2m    Use `const Component = dynamic(() => import('library'), { ssr: false })` from next/dynamic or React.lazy()[22m
+[2m    src/components/dashboard/top-products-chart.tsx: 3[22m
+[2m    src/components/dashboard/sales-by-day-chart.tsx: 3[22m
+[2m    src/components/dashboard/order-type-chart.tsx: 4[22m
+[2m    src/components/dashboard/table-time-chart.tsx: 3[22m
+[2m    src/components/ui/chart.tsx: 4[22m
+[2m    src/components/dashboard/revenue-chart.tsx: 4[22m
+[2m    src/components/dashboard/margin-cost-chart.tsx: 6[22m
+[2m    src/components/dashboard/payment-methods-chart.tsx: 3[22m
+[2m    src/components/dashboard/production-time-chart.tsx: 3[22m
+
+  [33m⚠[39m Component "RecipesClient" has 7 useState calls — consider useReducer for related state[33m (23)[39m
+[2m    Group related state: `const [state, dispatch] = useReducer(reducer, { field1, field2, ... })`[22m
+[2m    src/components/inventory/RecipesClient.tsx: 42[22m
+[2m    src/components/inventory/InventoryClient.tsx: 66[22m
+[2m    src/app/(restaurant)/restaurante/pos/_components/POSInterface.tsx: 19[22m
+[2m    src/components/menu/ProductModal.tsx: 68[22m
+[2m    src/components/waiter/CreateOrderModal.tsx: 31[22m
+[2m    src/app/(restaurant)/restaurante/mesas/page.tsx: 43[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/page.tsx: 47[22m
+[2m    src/components/inventory/WarehousesClient.tsx: 20[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/evaluacion/[evaluationId]/page.tsx: 39[22m
+[2m    src/components/inventory/InventoryCountsClient.tsx: 35[22m
+[2m    src/app/(content)/academia/cursos/page.tsx: 42[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/lecciones/[lessonId]/page.tsx: 19[22m
+[2m    src/components/admin/blog/PostForm.tsx: 36[22m
+[2m    src/app/(restaurant)/restaurante/caja/page.tsx: 39[22m
+[2m    src/components/waiter/WaiterClient.tsx: 125[22m
+[2m    src/components/menu/MenuClient.tsx: 62[22m
+[2m    src/app/(restaurant)/restaurante/comandas/page.tsx: 30[22m
+[2m    src/app/(restaurant)/restaurante/empleados/components/employees-client.tsx: 59[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/page.tsx: 25[22m
+[2m    src/app/(content)/academia/cursos/[slug]/[courseSlug]/[lessonSlug]/page.tsx: 42[22m
+[2m    src/app/(shop)/tienda/productos/[id]/page.tsx: 32[22m
+[2m    src/app/(content)/blog/publicaciones/page.tsx: 46[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/lecciones/nuevo/page.tsx: 18[22m
+
+  [33m⚠[39m Component "RecipesClient" is 387 lines — consider breaking it into smaller focused components[33m (11)[39m
+[2m    Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.[22m
+[2m    src/components/inventory/RecipesClient.tsx: 32[22m
+[2m    src/components/inventory/InventoryClient.tsx: 58[22m
+[2m    src/components/menu/ProductModal.tsx: 50[22m
+[2m    src/app/(restaurant)/restaurante/mesas/page.tsx: 43[22m
+[2m    src/components/admin/settings/settings-form.tsx: 99[22m
+[2m    src/components/admin/products/product-form.tsx: 49[22m
+[2m    src/components/inventory/InventoryCountsClient.tsx: 29[22m
+[2m    src/app/(restaurant)/restaurante/caja/page.tsx: 39[22m
+[2m    src/components/menu/MenuClient.tsx: 56[22m
+[2m    src/app/(restaurant)/restaurante/empleados/components/employees-client.tsx: 59[22m
+[2m    src/app/(content)/academia/cursos/[slug]/[courseSlug]/[lessonSlug]/page.tsx: 38[22m
+
+  [33m⚠[39m Array index "idx" used as key — causes bugs when list is reordered or filtered[33m (14)[39m
+[2m    Use a stable unique identifier: `key={item.id}` or `key={item.slug}` — index keys break on reorder/filter[22m
+[2m    src/components/inventory/RecipesClient.tsx: 339[22m
+[2m    src/app/(core)/page.tsx: 66[22m
+[2m    src/components/kitchen/KitchenClient.tsx: 56, 63, 82[22m
+[2m    src/components/waiter/WaiterClient.tsx: 80, 90[22m
+[2m    src/app/(restaurant)/restaurante/comandas/page.tsx: 130[22m
+[2m    src/components/waiter/OrderCard.tsx: 63, 90[22m
+[2m    src/components/sections/ClientsCarouselSection.tsx: 53, 70, 89[22m
+[2m    src/components/dashboard/production-by-product-table.tsx: 57[22m
+
+  [33m⚠[39m Default prop value [] creates a new array reference every render — extract to a module-level constant[33m (6)[39m
+[2m    Move to module scope: `const EMPTY_ITEMS: Item[] = []` then use as the default value[22m
+[2m    src/components/layout/FormLayout.tsx: 46[22m
+[2m    src/components/menu/ProductModal.tsx: 53[22m
+[2m    src/components/admin/products/product-form.tsx: 49[22m
+[2m    src/components/kitchen/KitchenClient.tsx: 112[22m
+[2m    src/components/waiter/WaiterClient.tsx: 125[22m
+[2m    src/components/admin/products/category-selector.tsx: 24[22m
+
+  [33m⚠[39m Import "m" with LazyMotion instead of "motion" — saves ~30kb in bundle size[33m (5)[39m
+[2m    Use `import { LazyMotion, m } from "framer-motion"` with `domAnimation` features — saves ~30kb[22m
+[2m    src/components/menu/OrderConfirmationModal.tsx: 1[22m
+[2m    src/components/menu/ProductModal.tsx: 4[22m
+[2m    src/components/menu/NamePromptModal.tsx: 4[22m
+[2m    src/components/menu/MenuClient.tsx: 4[22m
+[2m    src/components/menu/PhoneAuthModal.tsx: 4[22m
+
+  [33m⚠[39m Enforce a clickable non-interactive element has at least one keyboard event listener.[33m (8)[39m
+[2m    Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.[22m
+[2m    src/components/menu/ProductModal.tsx: 548[22m
+[2m    src/components/settings/BrandingForm.tsx: 216[22m
+[2m    src/components/menu/MenuClient.tsx: 385, 413[22m
+[2m    src/components/admin/products/category-selector.tsx: 148, 166[22m
+[2m    src/app/(restaurant)/restaurante/pos/_components/ProductSelectionDialog.tsx: 179, 225[22m
+
+  [33m⚠[39m Static HTML elements with event handlers require a role.[33m (8)[39m
+[2m    Add a role attribute to this element, or use a semantic HTML element instead.[22m
+[2m    src/components/menu/ProductModal.tsx: 548[22m
+[2m    src/components/settings/BrandingForm.tsx: 216[22m
+[2m    src/components/menu/MenuClient.tsx: 385, 413[22m
+[2m    src/components/admin/products/category-selector.tsx: 148, 166[22m
+[2m    src/app/(restaurant)/restaurante/pos/_components/ProductSelectionDialog.tsx: 179, 225[22m
+
+  [33m⚠[39m useSearchParams() requires a <Suspense> boundary — without one, the entire page bails out to client-side rendering[33m (4)[39m
+[2m    Wrap the component using useSearchParams: `<Suspense fallback={<Skeleton />}><SearchComponent /></Suspense>`[22m
+[2m    src/components/shop/table-detector.tsx: 8[22m
+[2m    src/components/dashboard/dashboard-time-selector.tsx: 16[22m
+[2m    src/components/kitchen/KitchenClient.tsx: 116[22m
+[2m    src/components/waiter/WaiterClient.tsx: 129[22m
+
+  [33m⚠[39m useEffect simulating an event handler — move logic to an actual event handler instead[33m (7)[39m
+[2m    Move the conditional logic into onClick, onChange, or onSubmit handlers directly[22m
+[2m    src/components/shop/checkout/checkout-form.tsx: 82[22m
+[2m    src/app/(restaurant)/restaurante/mesas/page.tsx: 62[22m
+[2m    src/app/suscripcion/page.tsx: 32[22m
+[2m    src/app/(content)/academia/cursos/page.tsx: 57[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/lecciones/[lessonId]/page.tsx: 71[22m
+[2m    src/components/admin/restaurant/table-card.tsx: 41[22m
+[2m    src/app/(content)/blog/publicaciones/page.tsx: 90[22m
+
+  [33m⚠[39m The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.[33m (6)[39m
+[2m    Remove the `autoFocus` attribute.[22m
+[2m    src/app/(restaurant)/restaurante/mesas/page.tsx: 357[22m
+[2m    src/components/menu/NamePromptModal.tsx: 41[22m
+[2m    src/components/menu/MenuClient.tsx: 308[22m
+[2m    src/components/admin/products/category-selector.tsx: 118, 174[22m
+[2m    src/components/menu/PhoneAuthModal.tsx: 34[22m
+
+  [33m⚠[39m Loading Google Fonts via <link> — use next/font instead for self-hosting, zero layout shift, and no render-blocking requests[33m (2)[39m
+[2m    `import { Inter } from "next/font/google"` — self-hosted, zero layout shift, no render-blocking requests[22m
+[2m    src/app/layout.tsx: 68, 69[22m
+
+  [33m⚠[39m useState initialized from prop "initialLeads" — if this value should stay in sync with the prop, derive it during render instead
+[2m    Remove useState and compute the value inline: `const value = transform(propName)`[22m
+[2m    src/app/(core)/clientes/clientes-client.tsx: 63[22m
+
+  [33m⚠[39m Client-side redirect in useEffect — use redirect() in a server component or middleware instead[33m (6)[39m
+[2m    Use `redirect('/path')` from 'next/navigation' in a Server Component, or handle in middleware[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/page.tsx: 103[22m
+[2m    src/app/(content)/academia/cursos/temas/nuevo/page.tsx: 34[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/lecciones/[lessonId]/page.tsx: 79[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/nuevo/page.tsx: 44[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/page.tsx: 81[22m
+[2m    src/app/(content)/academia/cursos/temas/[id]/cursos/[courseId]/lecciones/nuevo/page.tsx: 27[22m
+
+  [33m⚠[39m Do not use `dangerouslySetInnerHTML` prop[33m (13)[39m
+[2m    `dangerouslySetInnerHTML` is a way to inject HTML into your React component. This is dangerous because it can easily lead to XSS vulnerabilities.[22m
+[2m    src/components/ui/chart.tsx: 81[22m
+[2m    src/components/seo/JsonLd.tsx: 26, 71, 102, 143, 193, 235, 298, 355, 386, 430, 477[22m
+[2m    src/app/(content)/academia/cursos/[slug]/[courseSlug]/[lessonSlug]/page.tsx: 262[22m
+
+  [33m⚠[39m A form label must be associated with a control.[33m (6)[39m
+[2m    Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.[22m
+[2m    src/components/menu/NamePromptModal.tsx: 34, 46[22m
+[2m    src/app/(core)/perfil/page.tsx: 109, 115, 121, 127[22m
+
+  [33m⚠[39m 13 setState calls in a single useEffect — consider using useReducer or deriving state[33m (4)[39m
+[2m    Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`[22m
+[2m    src/components/admin/blog/PostForm.tsx: 65[22m
+[2m    src/components/servicios/ServicesSelector.tsx: 317[22m
+[2m    src/app/(restaurant)/restaurante/pos/_components/ProductSelectionDialog.tsx: 50[22m
+[2m    src/components/admin/restaurant/table-card.tsx: 41[22m
+
+  [33m⚠[39m Inline render function "renderList()" — extract to a separate component for proper reconciliation[33m (6)[39m
+[2m    Extract to a named component: `const ListItem = ({ item }) => <div>{item.name}</div>`[22m
+[2m    src/components/kitchen/KitchenClient.tsx: 217[22m
+[2m    src/components/waiter/WaiterClient.tsx: 283, 286, 289, 292, 295[22m
+
+  [33m⚠[39m setQuantity(quantity + ...) — use functional update to avoid stale closures
+[2m    Use the callback form: `setState(prev => prev + 1)` to always read the latest value[22m
+[2m    src/app/(restaurant)/restaurante/pos/_components/ProductSelectionDialog.tsx: 272[22m
+
+  [33m⚠[39m useEffect(setState, []) on mount causes a flash — consider useSyncExternalStore or suppressHydrationWarning[33m (2)[39m
+[2m    Use `useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)` or add `suppressHydrationWarning` to the element[22m
+[2m    src/components/shop/cart-sheet.tsx: 13[22m
+[2m    src/components/admin/restaurant/table-card.tsx: 64[22m
+
+  [2m┌───────────────────────────────────────────────────────────┐[22m
+  [2m│[22m [32m┌─────┐[39m                                                   [2m│[22m
+  [2m│[22m [32m│ ◠ ◠ │[39m                                                   [2m│[22m
+  [2m│[22m [32m│  ▽  │[39m                                                   [2m│[22m
+  [2m│[22m [32m└─────┘[39m                                                   [2m│[22m
+  [2m│[22m React Doctor [2m(www.react.doctor)[22m                           [2m│[22m
+  [2m│[22m                                                           [2m│[22m
+  [2m│[22m [32m78[39m / 100  [32mGreat[39m                                           [2m│[22m
+  [2m│[22m                                                           [2m│[22m
+  [2m│[22m [32m███████████████████████████████████████[39m[2m░░░░░░░░░░░[22m        [2m│[22m
+  [2m│[22m                                                           [2m│[22m
+  [2m│[22m [31m✗ 7 errors[39m  [33m⚠ 142 warnings[39m  [2macross 60/209 files[22m  [2min 763ms[22m [2m│[22m
+  [2m└───────────────────────────────────────────────────────────┘[22m
+
+[2m  Full diagnostics written to C:\Users\Pc\AppData\Local\Temp\react-doctor-d0c39202-6ae1-483d-9ec4-82b57d16ab49[22m
+
+[2m  Share your results: [36mhttps://www.react.doctor/share?p=saas_dashboard&s=78&e=7&w=142&f=60[39m[22m
+

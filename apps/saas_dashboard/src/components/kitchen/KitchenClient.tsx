@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
@@ -108,8 +108,10 @@ function KitchenCard({ order, onAction, busy, tableName }: {
     )
 }
 
+const EMPTY_TABLES: Table[] = []
+
 // ─── Main Kitchen Client ─────────────────────────────────────────────
-export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] }) {
+function KitchenClientContent({ initialTables = EMPTY_TABLES }: { initialTables?: Table[] }) {
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -216,5 +218,17 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
 
             {renderList(active, "No hay comandas activas en la cocina")}
         </AdminPageWrapper>
+    )
+}
+
+export function KitchenClient({ initialTables }: { initialTables?: Table[] }) {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+        }>
+            <KitchenClientContent initialTables={initialTables} />
+        </Suspense>
     )
 }

@@ -57,18 +57,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         }
     }, [open, product])
 
-    if (!product && open) {
-        onOpenChange(false)
-        return null
-    }
-
-    const variants = product?.variants || []
-
-    // Find active variant object
-    const activeVariant = variants.find(v => v.id === selectedVariantId) || variants[0]
-    const basePrice = activeVariant ? Number(activeVariant.price) : 0
-
-    // Calculate total price of modifiers
+    // Calculate total price of modifiers (must be called before any early return)
     const modifiersTotal = useMemo(() => {
         if (!product) return 0
         let total = 0
@@ -82,6 +71,17 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         })
         return total
     }, [product, selectedModifiers])
+
+    if (!product && open) {
+        onOpenChange(false)
+        return null
+    }
+
+    const variants = product?.variants || []
+
+    // Find active variant object
+    const activeVariant = variants.find(v => v.id === selectedVariantId) || variants[0]
+    const basePrice = activeVariant ? Number(activeVariant.price) : 0
 
     const totalPrice = (basePrice + modifiersTotal) * quantity
 
@@ -259,7 +259,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                     variant="outline"
                                     size="icon"
                                     className="h-12 w-12 rounded-full shadow-sm"
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                                     disabled={quantity <= 1}
                                 >
                                     <Minus className="h-6 w-6" />
@@ -269,7 +269,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                     variant="outline"
                                     size="icon"
                                     className="h-12 w-12 rounded-full shadow-sm"
-                                    onClick={() => setQuantity(quantity + 1)}
+                                    onClick={() => setQuantity(prev => prev + 1)}
                                 >
                                     <Plus className="h-6 w-6" />
                                 </Button>

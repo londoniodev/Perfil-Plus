@@ -30,6 +30,8 @@ const maxWidthClasses = {
     full: "max-w-full",
 }
 
+const EMPTY_BREADCRUMBS: BreadcrumbItemType[] = []
+
 /**
  * FormLayout - Specialized layout for forms and settings pages
  * 
@@ -43,7 +45,7 @@ export function FormLayout({
     children,
     title,
     description,
-    breadcrumbs = [],
+    breadcrumbs = EMPTY_BREADCRUMBS,
     maxWidth = "2xl",
     actions,
 }: FormLayoutProps) {

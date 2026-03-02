@@ -25,9 +25,9 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
             return true; // Bypass Throttler
         }
 
-        // Si la petición es SSE (Server-Sent Events) conectándose a /events, BYPASS completo
+        // Si la petición es SSE (Server-Sent Events) conectándose a /events o /sse, BYPASS completo
         const urlToMatch = request.originalUrl || request.url || request.path || '';
-        if (urlToMatch.includes('/events')) {
+        if (urlToMatch.includes('/events') || urlToMatch.includes('/sse')) {
             return true;
         }
 

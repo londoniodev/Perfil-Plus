@@ -146,8 +146,6 @@ export default function AdminOrdersPage() {
     useEffect(() => {
         setMounted(true)
         fetchOrders()
-        const interval = setInterval(fetchOrders, 10000) // Poll every 10s
-        return () => clearInterval(interval)
     }, [])
 
     const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {

@@ -221,9 +221,7 @@ export default function CashierPage() {
 
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 10000); // Polling cada 10s
-        return () => clearInterval(interval);
-    }, []);
+    }, [fetchOrders]);
 
     // Helpers
     const toggleItem = (orderId: string, itemId: string) => {

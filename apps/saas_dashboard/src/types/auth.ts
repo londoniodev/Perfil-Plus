@@ -4,6 +4,7 @@ export const STAFF_ROLES: StaffRole[] = ["WAITER", "KITCHEN", "CASHIER"];
 
 export interface User {
     id: string;
+    tenantId: string;
     name: string;
     email: string;
     role: UserRole;

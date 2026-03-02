@@ -318,6 +318,7 @@ export class AuthService {
             where: { id: userId },
             select: {
                 id: true,
+                tenantId: true,
                 email: true,
                 name: true,
                 role: true,

@@ -7,7 +7,6 @@ import {
 } from "@alvarosky/ui"
 import { Table } from "@/actions/admin/tables"
 import { useMenu, useOrder } from "@alvarosky/restaurant-sdk"
-import { TENANT_ID } from "@/lib/config"
 import {
     Search, Plus, Minus, ShoppingCart, ChefHat,
     ArrowLeft, Loader2, X, Check,
@@ -22,6 +21,7 @@ interface CreateOrderModalProps {
     onClose: () => void
     tables: Table[]
     onOrderCreated: () => void
+    tenantId: string
 }
 
 interface LocalCartItem {
@@ -331,7 +331,7 @@ function CartPanel({
 }
 
 // ─── Main Component ───
-export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: CreateOrderModalProps) {
+export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tenantId }: CreateOrderModalProps) {
     const [step, setStep] = useState<ModalStep>("tables")
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [cart, setCart] = useState<LocalCartItem[]>([])
@@ -344,7 +344,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
     const [modifierSelections, setModifierSelections] = useState<Record<string, Set<string>>>({})
     const [modifierQuantity, setModifierQuantity] = useState(1)
 
-    const { categories, products, isLoading } = useMenu(TENANT_ID)
+    const { categories, products, isLoading } = useMenu(tenantId)
     const { createOrder, isSubmitting } = useOrder()
 
     // Filter products
@@ -514,7 +514,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                 })),
             }))
 
-            const result = await createOrder(TENANT_ID, {
+            const result = await createOrder(tenantId, {
                 cart: sdkCart,
                 total: cartTotal,
                 customer: {

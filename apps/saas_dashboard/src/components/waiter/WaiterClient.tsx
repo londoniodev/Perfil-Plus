@@ -300,6 +300,7 @@ function WaiterClientContent({ initialTables = EMPTY_TABLES }: { initialTables?:
 
 
             <CreateOrderModal
+                tenantId={user?.tenantId || ""}
                 isOpen={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
                 tables={initialTables}

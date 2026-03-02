@@ -38,7 +38,30 @@ import { getTables } from "@/actions/admin/tables";
 // ─── ZReportContent (Module-scope for React Doctor compliance) ───
 function ZReportContent({ report }: { report: ZReport }) {
     return (
-        <div className="space-y-5 pt-2">
+        <div className="space-y-5 pt-2 print-area print:bg-white print:text-black print:p-8">
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    .print-area, .print-area * {
+                        visibility: visible;
+                        color: black !important;
+                    }
+                    .print-area {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100vw;
+                        height: max-content;
+                        background: white !important;
+                    }
+                    .print-hide {
+                        display: none !important;
+                    }
+                }
+            `}} />
             {/* Ventas Totales */}
             <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
                 <p className="text-sm text-muted-foreground uppercase font-bold tracking-wider">Ventas Totales</p>
@@ -77,10 +100,10 @@ function ZReportContent({ report }: { report: ZReport }) {
                     <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b mb-2">
                         Productos Vendidos
                     </h4>
-                    <ScrollArea className="max-h-[250px]">
+                    <div className="max-h-[300px] overflow-y-auto pr-2 print:max-h-none print:overflow-visible">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-xs text-muted-foreground uppercase border-b">
+                                <tr className="text-xs text-muted-foreground uppercase border-b print:text-black">
                                     <th className="text-left py-2 pr-2 font-bold">Producto</th>
                                     <th className="text-right py-2 px-1 font-bold">Cant.</th>
                                     <th className="text-right py-2 px-1 font-bold">Venta</th>
@@ -93,8 +116,8 @@ function ZReportContent({ report }: { report: ZReport }) {
                                     <tr key={`${p.productName}-${idx}`} className="border-b border-muted/30 last:border-0">
                                         <td className="py-1.5 pr-2">
                                             <span className="font-medium">{p.productName}</span>
-                                            {p.variantName && (
-                                                <span className="text-xs text-muted-foreground ml-1">({p.variantName})</span>
+                                            {p.variantName && p.variantName !== "Regular" && (
+                                                <span className="text-xs text-muted-foreground ml-1 print:text-gray-600">({p.variantName})</span>
                                             )}
                                         </td>
                                         <td className="text-right py-1.5 px-1 font-mono">{p.qty}</td>
@@ -109,7 +132,7 @@ function ZReportContent({ report }: { report: ZReport }) {
                                 ))}
                             </tbody>
                         </table>
-                    </ScrollArea>
+                    </div>
                 </section>
             )}
 
@@ -139,7 +162,7 @@ function ZReportContent({ report }: { report: ZReport }) {
                 </div>
             </section>
 
-            <Button className="w-full" variant="outline" onClick={() => window.print()}>
+            <Button className="w-full print-hide" variant="outline" onClick={() => window.print()}>
                 Imprimir Reporte
             </Button>
         </div>

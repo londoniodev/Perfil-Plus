@@ -354,8 +354,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
             const product = p as PublicProduct
             const matchesCategory = activeCategory === "ALL" || product.categoryId === activeCategory || product.categories?.some((c: PublicCategory) => c.id === activeCategory)
             const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-            const isAvailable = (product as any).isAvailable !== false && (product.variants?.some(v => (v as any).stock === -1 || (v as any).stock > 0) ?? true)
-            return matchesCategory && matchesSearch && isAvailable
+            return matchesCategory && matchesSearch
         })
     }, [products, activeCategory, searchQuery])
 

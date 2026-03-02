@@ -516,7 +516,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
             const result = await createOrder(tenantId, {
                 cart: sdkCart,
                 total: cartTotal,
-                status: "PREPARING", // Salta la aprobación y va directo a cocina
+                status: "APPROVED", // Entra a cocina directo pero en espera de empezar
                 customer: {
                     name: `Mesa ${selectedTable.label}`,
                     phone: "0000000000",

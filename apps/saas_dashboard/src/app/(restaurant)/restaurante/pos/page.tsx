@@ -34,7 +34,30 @@ export default function POSPage() {
     // Real-time updates via SSE
     useOrderEvents((event) => {
         if (event.type === 'new_order' || event.type === 'status_changed') {
-            fetchActiveOrders()
+            const updated = event.data as Order
+
+            setOrders(prev => {
+                const existingIndex = prev.findIndex(o => o.id === updated.id)
+                // Filter only active DINE_IN orders to keep in state
+                const isActive = updated.orderType === 'DINE_IN' &&
+                    ['PENDING', 'APPROVED', 'PREPARING', 'PROCESSING', 'READY', 'SERVED'].includes(updated.status);
+
+                if (existingIndex >= 0) {
+                    if (isActive) {
+                        // Replace existing
+                        const newOrders = [...prev]
+                        newOrders[existingIndex] = updated
+                        return newOrders
+                    } else {
+                        // Remove from active list
+                        return prev.filter(o => o.id !== updated.id)
+                    }
+                } else if (isActive) {
+                    // Add new active order
+                    return [...prev, updated]
+                }
+                return prev
+            })
         }
     })
 

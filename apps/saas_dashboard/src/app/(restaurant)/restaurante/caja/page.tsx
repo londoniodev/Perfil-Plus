@@ -221,7 +221,7 @@ export default function CashierPage() {
 
     useEffect(() => {
         fetchOrders();
-    }, [fetchOrders]);
+    }, []);
 
     // Helpers
     const toggleItem = (orderId: string, itemId: string) => {

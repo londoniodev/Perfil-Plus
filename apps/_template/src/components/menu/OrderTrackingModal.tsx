@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle2, Copy, ArrowRight, Loader2, Package, ChefHat, Check } from "lucide-react"
-import { useState, useEffect } from "react"
+import { CheckCircle2, Copy, ArrowRight, Loader2, Package, ChefHat, Check, RefreshCw } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
 import { useOrder } from "@alvarosky/restaurant-sdk"
 import { formatCurrency } from "@/lib/utils"
 
@@ -32,19 +32,18 @@ export function OrderTrackingModal({
     const [loading, setLoading] = useState(true)
     const [copied, setCopied] = useState(false)
 
-    useEffect(() => {
-        if (isOpen && orderId) {
-            fetchOrder()
-            const interval = setInterval(fetchOrder, 15000) // Poll every 15s
-            return () => clearInterval(interval)
-        }
-    }, [isOpen, orderId])
-
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
+        setLoading(true)
         const data = await trackOrder(orderId, slug)
         if (data) setOrder(data)
         setLoading(false)
-    }
+    }, [orderId, slug, trackOrder])
+
+    useEffect(() => {
+        if (isOpen && orderId) {
+            fetchOrder()
+        }
+    }, [isOpen, orderId, fetchOrder])
 
     const handleCopy = () => {
         navigator.clipboard.writeText(orderNumber)
@@ -68,7 +67,12 @@ export function OrderTrackingModal({
                 >
                     <div className="flex justify-between items-start mb-6">
                         <div className="text-left">
-                            <h3 className="text-xl font-bold text-slate-900">Seguimiento de Pedido</h3>
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                Seguimiento
+                                <button onClick={fetchOrder} disabled={loading} className="p-1 rounded-full text-slate-400 hover:text-primary transition-colors disabled:opacity-50" aria-label="Actualizar estado">
+                                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </h3>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-sm font-mono text-slate-500">#{orderNumber}</span>
                                 <button onClick={handleCopy} className="text-slate-400 hover:text-primary">

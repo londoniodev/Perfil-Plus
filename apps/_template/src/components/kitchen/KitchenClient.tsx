@@ -137,7 +137,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [tenantId])
 
     useEffect(() => {
         fetchOrders()

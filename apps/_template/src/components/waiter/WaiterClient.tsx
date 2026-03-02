@@ -147,7 +147,7 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [tenantId])
 
     // Initial fetch
     useEffect(() => {

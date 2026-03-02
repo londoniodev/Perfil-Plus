@@ -85,7 +85,7 @@ export default function AdminBlogPage() {
         } finally {
             setLoading(false);
         }
-    }, [page, filter]);
+    }, [page, filter, toast]);
 
     useEffect(() => {
         if (isAdmin) {

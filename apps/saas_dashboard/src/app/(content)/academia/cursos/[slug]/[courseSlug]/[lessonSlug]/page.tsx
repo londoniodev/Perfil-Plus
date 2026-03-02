@@ -53,57 +53,58 @@ export default function LessonPage({
         params.then(setParamsData);
     }, [params]);
 
-    const fetchLessonAndCourse = useCallback(async () => {
-        if (!paramsData) return;
-        if (authLoading) return;
+    useEffect(() => {
+        const fetchLessonAndCourse = async () => {
+            if (!paramsData) return;
+            if (authLoading) return;
 
-        if (!isAuthenticated) {
-            setError("needsAuth");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            // Fetch Lesson
-            const lessonRes = await fetch(
-                `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
-                { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
-            );
-
-            if (lessonRes.status === 403) {
-                setError("premium");
+            if (!isAuthenticated) {
+                setError("needsAuth");
                 setLoading(false);
                 return;
             }
 
-            if (!lessonRes.ok) throw new Error("Lección no encontrada");
-
-            const lessonData = await lessonRes.json();
-            setLesson(lessonData);
-            setCompleted(lessonData.userProgress?.completed || false);
-
-            // Fetch Course (for sidebar) - only if not loaded or different course
-            if (!course || course.id !== lessonData.course.id) {
-                const courseRes = await fetch(
-                    `${API_BASE}/lms/courses/${paramsData.courseSlug}`,
+            try {
+                // Fetch Lesson
+                const lessonRes = await fetch(
+                    `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
                     { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
                 );
-                if (courseRes.ok) {
-                    const courseData = await courseRes.json();
-                    setCourse(courseData);
-                }
-            }
-        } catch (err) {
-            console.error("Error fetching data:", err);
-            setError("notFound");
-        } finally {
-            setLoading(false);
-        }
-    }, [paramsData, authLoading, isAuthenticated, course]);
 
-    useEffect(() => {
+                if (lessonRes.status === 403) {
+                    setError("premium");
+                    setLoading(false);
+                    return;
+                }
+
+                if (!lessonRes.ok) throw new Error("Lección no encontrada");
+
+                const lessonData = await lessonRes.json();
+                setLesson(lessonData);
+                setCompleted(lessonData.userProgress?.completed || false);
+
+                // Fetch Course (for sidebar) - only if not loaded or different course
+                if (!course || course.id !== lessonData.course.id) {
+                    const courseRes = await fetch(
+                        `${API_BASE}/lms/courses/${paramsData.courseSlug}`,
+                        { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
+                    );
+                    if (courseRes.ok) {
+                        const courseData = await courseRes.json();
+                        setCourse(courseData);
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setError("notFound");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchLessonAndCourse();
-    }, [fetchLessonAndCourse]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paramsData, authLoading, isAuthenticated]);
 
     const markAsComplete = async () => {
         if (!lesson) return;

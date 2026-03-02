@@ -161,7 +161,29 @@ export class ProductsService {
 
             // Sync modifier groups: borrar existentes y recrear (replace strategy)
             if (modifierGroups !== undefined) {
-                // Borrar todos los grupos existentes (cascade borra modifiers)
+                // Cascada manual: OrderItemModifier → Modifier → ModifierGroup
+                // La FK OrderItemModifier_modifierId_fkey es RESTRICT, así que
+                // primero debemos desconectar las referencias de pedidos existentes.
+                const existingGroups = await tx.modifierGroup.findMany({
+                    where: { productId: id },
+                    select: { id: true, modifiers: { select: { id: true } } },
+                });
+
+                const modifierIds = existingGroups.flatMap(g => g.modifiers.map(m => m.id));
+
+                if (modifierIds.length > 0) {
+                    // 1. Eliminar OrderItemModifier que referencian estos modifiers
+                    await tx.orderItemModifier.deleteMany({
+                        where: { modifierId: { in: modifierIds } },
+                    });
+
+                    // 2. Eliminar los Modifiers
+                    await tx.modifier.deleteMany({
+                        where: { id: { in: modifierIds } },
+                    });
+                }
+
+                // 3. Eliminar los ModifierGroups (ya vacíos)
                 await tx.modifierGroup.deleteMany({
                     where: { productId: id },
                 });

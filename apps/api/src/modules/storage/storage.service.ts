@@ -54,17 +54,21 @@ export class StorageService {
     }
 
     private getTenantId(): string {
-        // Prioridad 1: tenantId del JWT validado (puesto por JwtAuthGuard en request.user)
+        // Prioridad 1: header x-tenant-id (contiene el SLUG legible, ej: "cocinasiete")
+        // El frontend lo envía desde NEXT_PUBLIC_TENANT_ID
+        const headerTenantId = this.request.headers['x-tenant-id'];
+        if (headerTenantId) {
+            return (headerTenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
+        }
+
+        // Prioridad 2: tenantId del JWT (contiene el CUID, ej: "cm7mm6m7p000108js6k7p98w2")
+        // Fallback para requests autenticados que no envían el header
         const user = (this.request as any).user;
         if (user?.tenantId) {
             return (user.tenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
         }
 
-        // Prioridad 2: header x-tenant-id (para rutas públicas sin auth)
-        const tenantId = this.request.headers['x-tenant-id'];
-        if (!tenantId) return 'default';
-        // Sanitizar para que sea válido en S3 (solo minúsculas, números y guiones)
-        return (tenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
+        return 'default';
     }
 
     private getBucketName(isPrivate: boolean): string {

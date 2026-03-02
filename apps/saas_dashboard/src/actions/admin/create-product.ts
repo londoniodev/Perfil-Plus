@@ -70,7 +70,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
 
         // 5. Llamar a NestJS a través del nuevo cliente Server
         // serverFetch inyectará de forma segura el x-tenant-id desde el middleware de Next
-        const newProduct = await serverFetch<any>('/products', {
+        const newProduct = await serverFetch<any>('/admin/products', {
             method: 'POST',
             body: JSON.stringify(payload)
         })

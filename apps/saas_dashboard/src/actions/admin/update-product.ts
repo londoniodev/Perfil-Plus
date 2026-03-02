@@ -62,7 +62,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
         const validated = productSchema.parse(data)
         const id = validated.id
 
-        const product = await serverFetch<any>(`/products/${id}`, {
+        const product = await serverFetch<any>(`/admin/products/${id}`, {
             method: 'PUT',
             body: JSON.stringify(validated)
         })

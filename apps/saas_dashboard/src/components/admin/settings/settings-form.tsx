@@ -41,6 +41,7 @@ const settingsSchema = z.object({
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
+    orderTrackingEnabled: z.boolean().optional(),
 
     // Contact
     whatsapp: z.string().optional(),
@@ -80,6 +81,7 @@ interface SettingsFormProps {
         instagram?: string | null
         facebook?: string | null
         address?: string | null
+        orderTrackingEnabled?: boolean | null
         menu?: {
             slogan?: string | null
             logo?: string | null
@@ -132,6 +134,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
             instagram: initialData?.contact?.instagram || initialData?.instagram || "",
             facebook: initialData?.contact?.facebook || initialData?.facebook || "",
             address: initialData?.contact?.address || initialData?.address || "",
+            orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
             menuSlogan: initialData?.menu?.slogan || "",
             menuLogo: initialData?.menu?.logo || "",
         },
@@ -241,6 +244,27 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                         />
                                     </div>
 
+                                    <div className="pt-6 border-t font-semibold">Configuración de Funciones</div>
+                                    <div className="grid gap-4 sm:grid-cols-2">
+                                        <FormField
+                                            control={form.control}
+                                            name="orderTrackingEnabled"
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between p-3 rounded-lg border">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="text-base">Seguimiento de Pedidos</FormLabel>
+                                                        <p className="text-xs text-muted-foreground">Muestra el estado del pedido al cliente tras la compra.</p>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </Card>

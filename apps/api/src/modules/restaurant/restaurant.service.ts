@@ -163,6 +163,7 @@ export class RestaurantService {
                 },
                 address: contact.address || null,
                 phone: contact.whatsapp || null,
+                orderTrackingEnabled: !!tenantConfig.orderTrackingEnabled
             },
             categories,
             products: publicProducts,

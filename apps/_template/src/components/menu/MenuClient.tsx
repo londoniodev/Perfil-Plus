@@ -48,6 +48,7 @@ const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.Prod
     loading: () => <div className="fixed inset-0 bg-white/50 z-50 flex items-center justify-center"><div className="animate-spin text-primary w-10 h-10 border-4 border-current border-t-transparent rounded-full" /></div>
 })
 const NamePromptModal = dynamic(() => import("./NamePromptModal").then(mod => mod.NamePromptModal), { ssr: false })
+const OrderTrackingModal = dynamic(() => import("./OrderTrackingModal").then(mod => mod.OrderTrackingModal), { ssr: false })
 
 // ─────────────────────────────────────────────
 // Main Menu Client Component
@@ -69,6 +70,7 @@ export default function MenuClient({
     const [selectedProduct, setSelectedProduct] = useState<PublicProduct | null>(null)
     const [isCartOpen, setIsCartOpen] = useState(false)
     const [isNamePromptOpen, setIsNamePromptOpen] = useState(false)
+    const [trackingOrder, setTrackingOrder] = useState<{ isOpen: boolean; orderId: string; orderNumber: string }>({ isOpen: false, orderId: "", orderNumber: "" })
     const [isFloatingCartVisible, setIsFloatingCartVisible] = useState(true)
     const [isSearchActive, setIsSearchActive] = useState(false)
     const [categoryScrollState, setCategoryScrollState] = useState<'start' | 'middle' | 'end'>('start')
@@ -141,12 +143,17 @@ export default function MenuClient({
         setIsNamePromptOpen(true)
     }
 
-    const handleConfirmOrder = async (customerName: string, paymentMethod: "CASH" | "MERCADOPAGO") => {
+    const handleConfirmOrder = async (data: { name: string; phone: string; address?: string; paymentMethod: "CASH" | "MERCADOPAGO" }) => {
         const orderData = {
             cart,
             total: total(),
-            customer: { name: customerName, phone: "0000000000", tableNumber: table || undefined },
-            paymentMethod: paymentMethod
+            customer: {
+                name: data.name,
+                phone: data.phone,
+                tableNumber: table || undefined,
+                address: data.address
+            },
+            paymentMethod: data.paymentMethod
         }
 
         const result = await createOrder(slug, orderData)
@@ -156,12 +163,15 @@ export default function MenuClient({
             setIsCartOpen(false)
             clearCart()
 
-            if (paymentMethod === "MERCADOPAGO") {
+            if (data.paymentMethod === "MERCADOPAGO") {
                 try {
                     const res = await fetch(`/api/checkout/mercadopago`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderId: result.orderId })
+                        body: JSON.stringify({
+                            orderId: result.orderId,
+                            slug: slug
+                        })
                     })
                     const data = await res.json()
                     if (data.init_point) {
@@ -174,6 +184,12 @@ export default function MenuClient({
                     console.error("MP Fetch Error:", e)
                     alert("❌ Error conectando c/ MercadoPago")
                 }
+            } else if (restaurant.orderTrackingEnabled) {
+                setTrackingOrder({
+                    isOpen: true,
+                    orderId: result.orderId,
+                    orderNumber: (result as any).orderNumber || result.orderId
+                })
             } else {
                 alert(`✅ Orden creada exitosamente! #${(result as any).orderNumber || result.orderId}`)
             }
@@ -228,21 +244,21 @@ export default function MenuClient({
                         <div className="flex flex-1 justify-around ml-6">
                             <div className="text-center">
                                 <p className="font-bold text-lg text-slate-900 leading-tight">
-                                    {products.filter(p => !p.categories?.some((c: PublicCategory) => c.slug === 'bebidas')).length}
+                                    {products.length}
                                 </p>
                                 <p className="text-xs text-slate-500">Platos</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-bold text-lg text-slate-900 leading-tight">
-                                    {products.filter(p => p.categories?.some((c: PublicCategory) => c.slug === 'bebidas')).length}
-                                </p>
-                                <p className="text-xs text-slate-500">Bebidas</p>
                             </div>
                             <div className="text-center">
                                 <p className="font-bold text-lg text-slate-900 leading-tight">
                                     {products.reduce((acc, p) => acc + (p.likesCount || 0), 0)}
                                 </p>
                                 <p className="text-xs text-slate-500">Likes</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="font-bold text-lg text-slate-900 leading-tight">
+                                    {products.reduce((acc, p) => acc + (p.comments?.length || 0), 0)}
+                                </p>
+                                <p className="text-xs text-slate-500">Comentarios</p>
                             </div>
                         </div>
                     </div>
@@ -602,6 +618,15 @@ export default function MenuClient({
                 onClose={() => setIsNamePromptOpen(false)}
                 onConfirm={handleConfirmOrder}
                 isSubmitting={isSubmitting}
+                isTableOrder={!!table}
+            />
+
+            <OrderTrackingModal
+                isOpen={trackingOrder.isOpen}
+                onClose={() => setTrackingOrder(prev => ({ ...prev, isOpen: false }))}
+                orderId={trackingOrder.orderId}
+                orderNumber={trackingOrder.orderNumber}
+                slug={slug}
             />
         </div>
     )

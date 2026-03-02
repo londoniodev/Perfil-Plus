@@ -1,4 +1,4 @@
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class UpdateTenantConfigDto {
     // Store Info
@@ -76,4 +76,9 @@ export class UpdateTenantConfigDto {
     @IsString()
     @IsOptional()
     currency?: string;
+
+    // --- NUEVAS CONFIGURACIONES SAAS ---
+    @IsBoolean()
+    @IsOptional()
+    orderTrackingEnabled?: boolean;
 }

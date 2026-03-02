@@ -1,11 +1,28 @@
-import { Injectable, BadRequestException, Scope, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, Scope, Inject, Logger } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs/promises';
 import { join } from 'path';
+import sharp from 'sharp';
 import { PrismaService } from '../../prisma/prisma.service';
+
+/** Perfiles de optimización de imagen por carpeta */
+interface ImageProfile {
+    maxWidth: number;
+    maxHeight: number;
+    quality: number;
+}
+
+const IMAGE_PROFILES: Record<string, ImageProfile> = {
+    products: { maxWidth: 1200, maxHeight: 1200, quality: 82 },
+    branding: { maxWidth: 512, maxHeight: 512, quality: 85 },
+    images: { maxWidth: 1024, maxHeight: 1024, quality: 80 },
+    uploads: { maxWidth: 1024, maxHeight: 1024, quality: 80 },
+};
+
+const IMAGE_MIMETYPES = /^image\/(jpeg|jpg|png|gif|webp|avif|tiff|bmp)$/i;
 
 export interface UploadResult {
     key: string;
@@ -15,6 +32,7 @@ export interface UploadResult {
 
 @Injectable({ scope: Scope.REQUEST })
 export class StorageService {
+    private readonly logger = new Logger(StorageService.name);
     private s3Client: any = null;
     private endpoint: string;
     private publicUrl: string;
@@ -152,61 +170,103 @@ export class StorageService {
         }
     }
 
+    /**
+     * Optimizar imagen: redimensionar + convertir a WebP con calidad configurable.
+     * Retorna { buffer, contentType, extension } optimizados.
+     */
+    private async optimizeImage(
+        buffer: Buffer,
+        mimetype: string,
+        folder: string,
+    ): Promise<{ buffer: Buffer; contentType: string; extension: string }> {
+        // Solo optimizar si es una imagen
+        if (!IMAGE_MIMETYPES.test(mimetype)) {
+            const ext = mimetype.split('/').pop() || 'bin';
+            return { buffer, contentType: mimetype, extension: ext };
+        }
+
+        const profile = IMAGE_PROFILES[folder] || IMAGE_PROFILES['uploads'];
+        const originalSize = buffer.length;
+
+        try {
+            const optimized = await sharp(buffer)
+                .resize(profile.maxWidth, profile.maxHeight, {
+                    fit: 'inside',          // Mantener aspecto, nunca estirar
+                    withoutEnlargement: true // No agrandar imágenes pequeñas
+                })
+                .webp({ quality: profile.quality })
+                .toBuffer();
+
+            const savedPercent = Math.round((1 - optimized.length / originalSize) * 100);
+            this.logger.log(
+                `[IMAGE OPT] ${folder}: ${(originalSize / 1024).toFixed(0)}KB → ${(optimized.length / 1024).toFixed(0)}KB (${savedPercent}% ahorrado, max ${profile.maxWidth}px, q${profile.quality})`
+            );
+
+            return {
+                buffer: optimized,
+                contentType: 'image/webp',
+                extension: 'webp',
+            };
+        } catch (error) {
+            this.logger.warn(`[IMAGE OPT] No se pudo optimizar (${mimetype}), subiendo original`, error);
+            const ext = mimetype.split('/').pop() || 'bin';
+            return { buffer, contentType: mimetype, extension: ext };
+        }
+    }
+
     async uploadFile(
         file: Express.Multer.File,
         folder: string = 'uploads',
         isPrivate: boolean = false,
     ): Promise<UploadResult> {
+        // Optimizar imagen antes de subir (si aplica)
+        const isImage = IMAGE_MIMETYPES.test(file.mimetype);
+        const optimized = isImage
+            ? await this.optimizeImage(file.buffer, file.mimetype, folder)
+            : null;
+
+        const finalBuffer = optimized?.buffer ?? file.buffer;
+        const finalContentType = optimized?.contentType ?? file.mimetype;
+        const finalExtension = optimized?.extension ?? file.originalname.split('.').pop()?.toLowerCase();
+
         const driver = this.configService.get('STORAGE_DRIVER', 's3');
 
         if (driver === 'local') {
             const tenantId = await this.getTenantId();
-            const extension = file.originalname.split('.').pop()?.toLowerCase();
-            const fileName = `${randomUUID()}.${extension}`;
+            const fileName = `${randomUUID()}.${finalExtension}`;
 
-            // Estructura: uploads/<tenantId>/<folder>
-            // Nota: isPrivate no impide acceso directo en local simple, pero podríamos moverlo a carpeta fuera de public
             const uploadDir = join(process.cwd(), 'uploads', tenantId, folder);
 
             try {
                 await fs.mkdir(uploadDir, { recursive: true });
-                await fs.writeFile(join(uploadDir, fileName), file.buffer);
+                await fs.writeFile(join(uploadDir, fileName), finalBuffer);
 
                 const key = `${folder}/${fileName}`;
-                // URL: http://localhost:3001/uploads/<tenantId>/<folder>/<fileName>
                 const url = `${this.publicUrl}/${tenantId}/${key}`;
 
                 return { key, url, bucket: 'local' };
             } catch (error) {
-                console.error('Local Upload Error:', error);
+                this.logger.error('Local Upload Error:', error);
                 throw new BadRequestException('Error al subir el archivo localmente');
             }
         }
 
         const bucket = await this.getBucketName(isPrivate);
-        console.log('[StorageService DEBUG] Upload resolved:', {
-            headerTenantId: this.request.headers['x-tenant-id'] || '(not set)',
-            jwtTenantId: (this.request as any).user?.tenantId || '(no user)',
-            resolvedTenantId: await this.getTenantId(),
-            bucket,
-            folder,
-            isPrivate,
-        });
+        this.logger.log(`[Upload] bucket=${bucket}, folder=${folder}, isImage=${isImage}, optimized=${!!optimized}`);
         await this.ensureBucketExists(bucket, isPrivate);
 
         const client = await this.getS3Client();
         const { PutObjectCommand } = await import('@aws-sdk/client-s3');
 
-        const extension = file.originalname.split('.').pop()?.toLowerCase();
-        const key = `${folder}/${randomUUID()}.${extension}`;
+        const key = `${folder}/${randomUUID()}.${finalExtension}`;
 
         try {
             await client.send(
                 new PutObjectCommand({
                     Bucket: bucket,
                     Key: key,
-                    Body: file.buffer,
-                    ContentType: file.mimetype,
+                    Body: finalBuffer,
+                    ContentType: finalContentType,
                 }),
             );
 
@@ -216,7 +276,7 @@ export class StorageService {
 
             return { key, url, bucket };
         } catch (error) {
-            console.error('S3 Upload Error:', error);
+            this.logger.error('S3 Upload Error:', error);
             throw new BadRequestException('Error al subir el archivo');
         }
     }

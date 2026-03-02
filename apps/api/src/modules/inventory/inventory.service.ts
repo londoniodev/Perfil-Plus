@@ -503,15 +503,17 @@ export class InventoryService {
             aggregated.set(d.inventoryItemId, (aggregated.get(d.inventoryItemId) || 0) + d.deductQty);
         }
 
+        const { randomUUID } = await import('crypto');
+
         const values = Array.from(aggregated.entries())
-            .map(([itemId, qty]) => `('${defaultWarehouse}', '${itemId}', ${-qty})`)
+            .map(([itemId, qty]) => `('${randomUUID()}', '${defaultWarehouse}', '${itemId}', ${-qty}, CURRENT_TIMESTAMP)`)
             .join(', ');
 
         await prisma.$executeRawUnsafe(`
-            INSERT INTO "WarehouseStock" ("warehouseId", "inventoryItemId", "currentStock")
+            INSERT INTO "WarehouseStock" ("id", "warehouseId", "inventoryItemId", "currentStock", "updatedAt")
             VALUES ${values}
             ON CONFLICT ("warehouseId", "inventoryItemId")
-            DO UPDATE SET "currentStock" = "WarehouseStock"."currentStock" - EXCLUDED."currentStock"
+            DO UPDATE SET "currentStock" = "WarehouseStock"."currentStock" - EXCLUDED."currentStock", "updatedAt" = CURRENT_TIMESTAMP
         `);
 
         // Low-stock check: delegated to Postgres in a single query

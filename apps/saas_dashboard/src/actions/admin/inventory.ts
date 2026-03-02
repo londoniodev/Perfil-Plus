@@ -333,6 +333,19 @@ export async function getProductsWithoutRecipe() {
     }
 }
 
+// Added to allow admins to see ALL products in the modal, not just those without recipes
+export async function getAllProductsForRecipe() {
+    try {
+        // We can reuse the products endpoint
+        return await serverFetch<Array<{ id: string; name: string; basePrice: number; images: string[] }>>(
+            "/admin/products?published=all" // Ensure we fetch all, or whatever the default is
+        )
+    } catch (error) {
+        console.error("Error fetching all products for recipe:", error)
+        return []
+    }
+}
+
 export async function createRecipe(data: {
     productId: string
     yield?: number

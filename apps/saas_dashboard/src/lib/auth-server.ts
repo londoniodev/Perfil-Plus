@@ -7,6 +7,7 @@ interface DecodedToken {
     email: string
     role?: string
     name?: string
+    tenantId?: string
     iat: number
     exp: number
 }
@@ -43,6 +44,7 @@ export async function getSessionUser() {
             email: decoded.email,
             role: decoded.role,
             name: decoded.name,
+            tenantId: decoded.tenantId,
             accessToken: token
         }
     } catch (error) {

@@ -3,13 +3,35 @@
 // ============================================================================
 
 import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 
 /**
- * Get tenant ID from request headers (Server Components only)
- * This reads the x-tenant-id header injected by middleware
+ * Get tenant ID for API calls (Server Components only)
+ * 
+ * En saas_dashboard (multi-tenant), el tenantId del usuario viene del JWT.
+ * NEXT_PUBLIC_TENANT_ID es el ID del dashboard ("admin_build"), NO del usuario.
  */
 export async function getTenantId(): Promise<string> {
-    // 1. Intentar leer del header inyectado por middleware (si existiera)
+    // 1. Intentar extraer tenantId del JWT del usuario autenticado
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('Authentication')?.value || cookieStore.get('accessToken')?.value;
+
+        if (token) {
+            // Decodificar JWT sin verificar firma (solo lectura del payload)
+            const parts = token.split('.');
+            if (parts.length === 3) {
+                const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+                if (payload.tenantId) {
+                    return payload.tenantId;
+                }
+            }
+        }
+    } catch {
+        // Cookie/JWT no disponible
+    }
+
+    // 2. Header inyectado por middleware (si existiera)
     try {
         const headersList = await headers();
         const tenantFromHeader = headersList.get('x-tenant-id');
@@ -20,20 +42,19 @@ export async function getTenantId(): Promise<string> {
         // headers() not available (static rendering or build context)
     }
 
-    // 2. Usar la variable de entorno (siempre disponible en Next.js para NEXT_PUBLIC_*)
+    // 3. Fallback: env var (solo para rutas públicas sin auth, ej: login page)
     const envTenantId = process.env.NEXT_PUBLIC_TENANT_ID;
     if (envTenantId) {
         return envTenantId;
     }
 
-    // 3. Fallback de emergencia - esto NO debería ocurrir en producción
-    console.warn('[config-server] ⚠️ NEXT_PUBLIC_TENANT_ID is NOT SET. Falling back to "default". This WILL cause errors.');
+    console.warn('[config-server] ⚠️ No tenantId found from JWT, headers, or env. Falling back to "default".');
     return 'default';
 }
 
 /**
  * Get API headers for Server Components (async version)
- * Reads tenant ID from middleware-injected header
+ * Reads tenant ID from JWT or middleware-injected header
  */
 export async function getServerApiHeaders(additionalHeaders?: HeadersInit): Promise<HeadersInit> {
     const tenantId = await getTenantId();

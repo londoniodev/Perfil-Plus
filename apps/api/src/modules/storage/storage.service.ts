@@ -56,15 +56,9 @@ export class StorageService {
     }
 
     private async getTenantId(): Promise<string> {
-        // Prioridad 1: header x-tenant-id (contiene el SLUG legible, ej: "cocinasiete")
-        // El frontend lo envía desde NEXT_PUBLIC_TENANT_ID
-        const headerTenantId = this.request.headers['x-tenant-id'];
-        if (headerTenantId) {
-            return (headerTenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
-        }
-
-        // Prioridad 2: tenantId del JWT (contiene el CUID, ej: "cm7mm6m7p000108js6k7p98w2")
-        // Como el usuario sugiere mapear CUID a Slug, buscamos en DB
+        // Prioridad 1: tenantId del JWT (el tenant REAL del usuario autenticado)
+        // En saas_dashboard, el header x-tenant-id contiene "admin_build" (el ID del dashboard),
+        // NO el tenant del usuario. Por eso el JWT tiene prioridad absoluta.
         const user = (this.request as any).user;
         if (user?.tenantId) {
             try {
@@ -80,8 +74,14 @@ export class StorageService {
                 console.error('[StorageService] Error resolviendo slug de tenantId:', error);
             }
 
-            // Si falla la búsqueda, usamos el CUID
+            // Si falla la búsqueda del slug, usamos el CUID como fallback
             return (user.tenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
+        }
+
+        // Prioridad 2: header x-tenant-id (SOLO para rutas públicas sin autenticación)
+        const headerTenantId = this.request.headers['x-tenant-id'];
+        if (headerTenantId) {
+            return (headerTenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
         }
 
         return 'default';

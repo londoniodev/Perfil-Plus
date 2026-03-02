@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { AdminPageWrapper } from "@alvarosky/ui"
-import { getRecipes, getProductsWithoutRecipe, getInventoryItems } from "@/actions/admin/inventory"
+import { getRecipes, getAllProductsForRecipe, getInventoryItems, getAllProductsCost } from "@/actions/admin/inventory"
 import { RecipesClient } from "@/components/inventory/RecipesClient"
 
 export default async function RecipesPage() {
@@ -9,10 +9,11 @@ export default async function RecipesPage() {
     if (!user) redirect("/login")
     if (user.role !== "ADMIN") redirect("/")
 
-    const [recipes, productsWithoutRecipe, inventoryItems] = await Promise.all([
+    const [recipes, allProducts, inventoryItems, productsCost] = await Promise.all([
         getRecipes(),
-        getProductsWithoutRecipe(),
+        getAllProductsForRecipe(),
         getInventoryItems(),
+        getAllProductsCost()
     ])
 
     return (
@@ -22,8 +23,9 @@ export default async function RecipesPage() {
         >
             <RecipesClient
                 recipes={recipes}
-                productsWithoutRecipe={productsWithoutRecipe}
+                allProducts={allProducts}
                 inventoryItems={inventoryItems}
+                productsCost={productsCost}
             />
         </AdminPageWrapper>
     )

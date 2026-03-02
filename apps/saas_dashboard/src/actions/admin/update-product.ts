@@ -63,7 +63,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
         const id = validated.id
 
         const product = await serverFetch<any>(`/products/${id}`, {
-            method: 'PATCH',
+            method: 'PUT',
             body: JSON.stringify(validated)
         })
 

@@ -8,7 +8,8 @@ const s3Domain = 's3.xn--alvarolondoo-khb.dev'; // From user provided info, coul
 
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com;
+  worker-src 'self' blob:;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' data: blob: https: http: http://localhost:3001 https://${s3Domain};
   font-src 'self' https://fonts.gstatic.com;

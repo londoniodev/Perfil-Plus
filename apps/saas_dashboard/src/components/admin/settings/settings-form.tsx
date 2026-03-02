@@ -96,7 +96,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     import("react").then((React) => {
         React.useEffect(() => {
             if (typeof window !== 'undefined') {
-                setAuthToken(localStorage.getItem("accessToken") || "");
+                setAuthToken(localStorage.getItem("token") || "");
                 // Usually the tenant ID is in localStorage, or you can extract it from the current session context if available.
                 // It is required by the ImageUploader and backend API
                 const localTenant = localStorage.getItem("tenantId");

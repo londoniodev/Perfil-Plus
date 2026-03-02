@@ -60,11 +60,19 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
         }
 
         const validated = productSchema.parse(data)
-        const id = validated.id
+        const { id, ...payload } = validated
+
+        // El DTO de NestJS requiere slug
+        const slug = validated.name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
 
         const product = await serverFetch<any>(`/admin/products/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(validated)
+            body: JSON.stringify({ ...payload, slug })
         })
 
         if (!product || !product.id) {

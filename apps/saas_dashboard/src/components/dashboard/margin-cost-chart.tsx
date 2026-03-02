@@ -3,8 +3,20 @@
 import { useEffect, useState } from "react";
 import { getDashboardMetrics, type DashboardMetrics } from "@/actions/admin/inventory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@alvarosky/ui";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+    ChartConfig,
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+} from "@/components/ui/chart";
 
+const chartConfig = {
+    totalValue: {
+        label: "Costo Total",
+        color: "hsl(var(--primary))",
+    },
+} satisfies ChartConfig;
 function formatCurrency(value: number): string {
     return new Intl.NumberFormat("es-CO", {
         style: "currency",
@@ -60,7 +72,7 @@ export function MarginCostChart({ tenantId }: { tenantId: string }) {
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ChartContainer config={chartConfig} className="h-full w-full">
                         <BarChart
                             data={metrics.topExpensiveIngredients}
                             layout="vertical"
@@ -82,20 +94,23 @@ export function MarginCostChart({ tenantId }: { tenantId: string }) {
                                 fontSize={12}
                                 width={100}
                             />
-                            <Tooltip
-                                formatter={(value: number) => formatCurrency(value)}
-                                cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }}
-                                contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)" }}
+                            <ChartTooltip
+                                cursor={{ fill: 'hsl(var(--primary))', opacity: 0.1 }}
+                                content={
+                                    <ChartTooltipContent
+                                        indicator="line"
+                                        formatter={(value) => formatCurrency(value as number)}
+                                    />
+                                }
                             />
                             <Bar
                                 dataKey="totalValue"
-                                fill="var(--color-primary)"
+                                fill="var(--color-totalValue)"
                                 radius={[0, 4, 4, 0]}
                                 barSize={24}
-                                name="Costo Total"
                             />
                         </BarChart>
-                    </ResponsiveContainer>
+                    </ChartContainer>
                 </div>
             </CardContent>
         </Card>

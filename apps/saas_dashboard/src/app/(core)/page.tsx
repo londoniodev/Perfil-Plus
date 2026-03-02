@@ -204,24 +204,20 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                 <div className="space-y-4 pt-4">
                     <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
 
-                    {/* Fila 1: Top Productos (2 columnas) y Distribuciones (1 columna apilada) */}
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-                        <div className="lg:col-span-2 flex flex-col h-full">
-                            <TopProductsChart data={mappedTopProducts} />
-                        </div>
-                        <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6 h-full">
-                            <div className="flex-1">
-                                <OrderTypeChart data={mappedOrderTypes} />
-                            </div>
-                            <div className="flex-1">
-                                <PaymentMethodsChart data={mappedPaymentMethods} />
-                            </div>
-                        </div>
+                    {/* Fila 1: Tipos de Orden, Métodos de Pago y Tiempos de Entrega */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
+                        <OrderTypeChart data={mappedOrderTypes} />
+                        <PaymentMethodsChart data={mappedPaymentMethods} />
+                        <ProductionTimeChart data={mappedProductionTimes} />
                     </div>
 
-                    {/* Fila 2: Tiempos agrupados */}
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 mt-4 sm:mt-6">
-                        <ProductionTimeChart data={mappedProductionTimes} />
+                    {/* Fila 2: Productos Más Vendidos */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 mt-4 sm:mt-6">
+                        <TopProductsChart data={mappedTopProducts} />
+                    </div>
+
+                    {/* Fila 3: Tiempos de Producción por Producto */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 mt-4 sm:mt-6">
                         <ProductionByProductTable data={stats.productionTimesByProduct || []} />
                     </div>
                 </div>

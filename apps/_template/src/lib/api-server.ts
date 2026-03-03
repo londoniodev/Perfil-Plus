@@ -1,8 +1,8 @@
 import { getTenantId } from './config-server';
 import { cookies } from 'next/headers';
 
-// Fallback a localhost si no está definida en el entorno
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api').replace(/\/+$/, "");
+const API_BASE_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
 /**
  * Universal Server API Client
@@ -24,6 +24,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         headers.set('Content-Type', 'application/json');
     }
     headers.set('x-tenant-id', tenantId);
+    headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');
 
     if (token && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);

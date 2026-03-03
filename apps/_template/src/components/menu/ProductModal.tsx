@@ -23,6 +23,31 @@ import type { PublicProduct } from "@alvarosky/restaurant-sdk"
 import { PhoneAuthModal } from "./PhoneAuthModal"
 import { formatCurrency } from "@/lib/utils"
 
+// Fallback food images for products without uploaded photos
+const FOOD_FALLBACK_IMAGES = [
+    '/dashboard/images/food/food-1.png', // burger
+    '/dashboard/images/food/food-2.png', // fries
+    '/dashboard/images/food/food-3.png', // smoothie
+    '/dashboard/images/food/food-4.png', // salad
+    '/dashboard/images/food/food-5.png', // pizza
+    '/dashboard/images/food/food-6.png', // dessert
+]
+
+/** Deterministic fallback image based on product id or name */
+function getFallbackImage(id: string, name?: string): string {
+    if (name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('burger') || lowerName.includes('hamburguesa')) return FOOD_FALLBACK_IMAGES[0];
+        if (lowerName.includes('papa') || lowerName.includes('frie') || lowerName.includes('salchipapa')) return FOOD_FALLBACK_IMAGES[1];
+        if (lowerName.includes('jugo') || lowerName.includes('smoothie') || lowerName.includes('limonada') || lowerName.includes('gaseosa') || lowerName.includes('malteada')) return FOOD_FALLBACK_IMAGES[2];
+        if (lowerName.includes('ensalada') || lowerName.includes('salad') || lowerName.includes('nuggets')) return FOOD_FALLBACK_IMAGES[3];
+        if (lowerName.includes('pizza') || lowerName.includes('perro caliente')) return FOOD_FALLBACK_IMAGES[4];
+        if (lowerName.includes('postre') || lowerName.includes('brownie') || lowerName.includes('dessert')) return FOOD_FALLBACK_IMAGES[5];
+    }
+    const sum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return FOOD_FALLBACK_IMAGES[sum % FOOD_FALLBACK_IMAGES.length]
+}
+
 export function ProductModal({
     slug,
     product,
@@ -67,7 +92,8 @@ export function ProductModal({
         }
     }, [commentText])
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
+    const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
     // Load initial state
     useEffect(() => {
@@ -305,7 +331,7 @@ export function ProductModal({
                         {/* Hero Image */}
                         <div className="relative w-full aspect-square bg-slate-100">
                             <Image
-                                src={product.images?.[0] || '/placeholder.png'}
+                                src={product.images?.[0] || getFallbackImage(product.id, product.name)}
                                 alt={product.name}
                                 fill
                                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -526,7 +552,7 @@ export function ProductModal({
                                     }}>
                                         <div className="w-[140px] h-[140px] rounded-2xl overflow-hidden mb-3 relative bg-slate-100 border border-slate-200 shadow-sm">
                                             <Image
-                                                src={item.images?.[0] || '/placeholder.png'}
+                                                src={item.images?.[0] || getFallbackImage(item.id, item.name)}
                                                 alt={item.name}
                                                 fill
                                                 sizes="150px"

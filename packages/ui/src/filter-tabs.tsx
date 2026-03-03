@@ -23,7 +23,7 @@ export default function FilterTabs<T extends string>({
     onChange,
 }: FilterTabsProps<T>) {
     return (
-        <div className="filter-tabs no-scrollbar">
+        <div className="flex w-full items-center justify-start overflow-x-auto no-scrollbar gap-2 pb-2 sm:pb-0">
             {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -32,6 +32,7 @@ export default function FilterTabs<T extends string>({
                         onClick={() => onChange(tab.id)}
                         variant="filter"
                         active={isActive}
+                        className="whitespace-nowrap"
                     >
                         {tab.label}
                     </Button>

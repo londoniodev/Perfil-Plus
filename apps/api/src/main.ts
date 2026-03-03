@@ -38,39 +38,55 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration - Multi-tenant (from env var)
-  // CORS_ORIGINS should contain comma-separated list of all tenant frontend URLs
+  // CORS configuration - Multi-tenant DYNAMIC
+  // Automatically allows any subdomain of the base domains (*.alvarolondoño.dev, *.alvarolondoño.com)
+  // Plus any additional origins from CORS_ORIGINS env var
   const corsOriginsEnv = configService.get<string>('CORS_ORIGINS', '');
   const corsOriginsList = corsOriginsEnv
     .split(',')
     .map(o => o.trim())
     .filter(Boolean);
 
+  // Base domains for multi-tenant (IDN-encoded versions of alvarolondoño)
+  const allowedBaseDomains = [
+    '.xn--alvarolondoo-khb.dev',  // *.alvarolondoño.dev
+    '.xn--alvarolondoo-khb.com',  // *.alvarolondoño.com
+  ];
+
   // In development, always allow localhost
   const devOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3003', 'http://127.0.0.1:3000', 'http://127.0.0.1:3003'];
-  const allowedOrigins = isProduction
+  const explicitOrigins = isProduction
     ? corsOriginsList
     : [...corsOriginsList, ...devOrigins];
 
-  logger.log(`Active CORS Origins (${allowedOrigins.length}): ${allowedOrigins.join(', ') || 'NONE - check CORS_ORIGINS env var!'}`);
+  logger.log(`CORS: Explicit origins (${explicitOrigins.length}): ${explicitOrigins.join(', ') || 'none'}`);
+  logger.log(`CORS: Dynamic base domains: ${allowedBaseDomains.join(', ')}`);
 
   app.enableCors({
     origin: (requestOrigin, callback) => {
       // Allow server-side requests (no origin) and Postman
       if (!requestOrigin) return callback(null, true);
 
-      // Debug log
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`[CORS] Checking origin: ${requestOrigin}`);
+      // Check explicit list first
+      if (explicitOrigins.includes(requestOrigin)) {
+        return callback(null, true);
       }
 
-      // Check if origin is in the allowed list
-      if (allowedOrigins.includes(requestOrigin)) {
-        callback(null, true);
-      } else {
-        logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
-        callback(new Error(`Not allowed by CORS: ${requestOrigin}`));
+      // Check dynamic multi-tenant subdomains
+      try {
+        const originUrl = new URL(requestOrigin);
+        const hostname = originUrl.hostname;
+        const isAllowedSubdomain = allowedBaseDomains.some(base => hostname.endsWith(base));
+
+        if (isAllowedSubdomain) {
+          return callback(null, true);
+        }
+      } catch {
+        // Invalid URL, reject
       }
+
+      logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
+      callback(new Error(`Not allowed by CORS: ${requestOrigin}`));
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id', 'Cache-Control'],

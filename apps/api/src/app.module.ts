@@ -1,8 +1,10 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { redisStore } from 'cache-manager-redis-yet';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
@@ -12,6 +14,7 @@ import { join } from 'path';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { ClsModule } from 'nestjs-cls';
 
 // Core modules
 import { PrismaModule } from './prisma';
@@ -27,6 +30,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -85,6 +89,10 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         REDIS_PASSWORD: Joi.string().optional().allow(''),
       }),
     }),
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
 
     // Core modules
     PrismaModule,
@@ -98,6 +106,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     PaymentsModule,
     LeadsModule,
     EmployeesModule,
+    InventoryModule,
     EmailModule,
     RestaurantModule,
 
@@ -106,7 +115,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       {
         name: 'default',
         ttl: 60000,
-        limit: 100,
+        limit: 300,
       },
       {
         name: 'auth',
@@ -150,6 +159,19 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       inject: [ConfigService],
     }),
 
+    // Global JWT configuration (Allows JwtAuthGuard to verify globally)
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
+        },
+      }),
+    }),
+
     // Static Files (for local uploads)
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
@@ -186,7 +208,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     // Global Rate Limiting Guard
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
     },
 
     // Global Prisma Initialization Interceptor

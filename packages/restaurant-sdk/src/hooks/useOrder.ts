@@ -13,6 +13,7 @@ interface OrderData {
         notes?: string
     }
     paymentMethod?: string
+    status?: string
 }
 
 export function useOrder() {
@@ -43,7 +44,8 @@ export function useOrder() {
                 customerPhone: orderData.customer?.phone,
                 notes: orderData.customer?.notes,
                 tableNumber: orderData.customer?.tableNumber,
-                paymentMethod: orderData.paymentMethod
+                paymentMethod: orderData.paymentMethod,
+                status: orderData.status
             }
 
             const response = await fetch(`${apiUrl}/orders`, {
@@ -72,8 +74,23 @@ export function useOrder() {
         }
     }
 
+    const trackOrder = async (orderId: string, slug: string) => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+            const response = await fetch(`${apiUrl}/orders/track/${orderId}`, {
+                headers: { "x-tenant-id": slug }
+            })
+            if (!response.ok) return null
+            return await response.json()
+        } catch (err) {
+            console.error("Tracking Error:", err)
+            return null
+        }
+    }
+
     return {
         createOrder,
+        trackOrder,
         isSubmitting,
         error
     }

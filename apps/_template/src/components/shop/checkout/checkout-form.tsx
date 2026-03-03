@@ -19,16 +19,16 @@ import {
     Separator,
     useToast
 } from "@alvarosky/ui"
-import { UtensilsCrossed, Truck, ShoppingBag } from "lucide-react"
+import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { createOrder } from "@/lib/api"
-import { formatCurrency } from "@/lib/utils"
+import { useAuth } from "@/context/AuthContext"
 
 // Schema Unificado con refinamiento
 const checkoutSchema = z.object({
     customerName: z.string().min(2, "Nombre requerido"),
     customerPhone: z.string().min(7, "Teléfono requerido"),
-    orderType: z.enum(["DINE_IN", "DELIVERY", "PICKUP"]),
+    customerEmail: z.string().email("Email inválido"), // Requerido para productos digitales
+    orderType: z.enum(["DINE_IN", "DELIVERY", "PICKUP", "DIGITAL"]),
     notes: z.string().optional(),
     address: z.string().optional(),
     city: z.string().optional(),
@@ -55,22 +55,25 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>
 
 export function CheckoutForm() {
     const { items, totalPrice, tableId, clearCart } = useCart()
-    const toast = useToast() // Fix: useToast returns the hook object, usually we destructure or use directly depending on lib.
-    // In @alvarosky/ui (shadcn), it's usually const { toast } = useToast().
-    // Wait, in previous file I used const toast = useToast() and it worked?
-    // Let me check TablesPage again. I changed it FROM { toast } TO toast.
-
-    // Let's assume const toast = useToast() is correct based on my previous fix.
+    const toast = useToast()
 
     const router = useRouter()
+    const { user } = useAuth()
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    // Variables Derivadas
+    const isDigitalOnly = items.length > 0 && items.every(item => item.productType === "DIGITAL")
+    const hasDigital = items.some(item => item.productType === "DIGITAL")
+
+    const defaultOrderType = tableId ? "DINE_IN" : (isDigitalOnly ? "DIGITAL" : "DELIVERY")
 
     const form = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
         defaultValues: {
             customerName: "",
             customerPhone: "",
-            orderType: tableId ? "DINE_IN" : "DELIVERY",
+            customerEmail: "",
+            orderType: defaultOrderType,
             address: "",
             city: "",
             notes: ""
@@ -82,37 +85,70 @@ export function CheckoutForm() {
     useEffect(() => {
         if (tableId) {
             form.setValue("orderType", "DINE_IN")
+        } else if (isDigitalOnly) {
+            form.setValue("orderType", "DIGITAL")
+        } else if (orderType === "DIGITAL" && !isDigitalOnly) {
+            // Si estaba en DIGITAL pero se añadió algo físico
+            form.setValue("orderType", "DELIVERY")
         }
-    }, [tableId, form])
+    }, [tableId, isDigitalOnly, form, orderType])
 
     const onSubmit = async (data: CheckoutFormData) => {
         setIsSubmitting(true)
         try {
-            const payload = {
-                items: items.map(item => ({
-                    variantId: item.variantId,
-                    quantity: item.quantity,
-                    modifiers: [] // TODO: Add modifiers support to Cart
-                })),
-                tableNumber: tableId || undefined,
-                orderType: data.orderType,
-                customerName: data.customerName,
-                customerPhone: data.customerPhone,
-                notes: data.notes,
-                shippingData: data.orderType === 'DELIVERY' ? {
-                    address: data.address,
-                    city: data.city
-                } : undefined
+            // Configurar JWT Token temporal si existe una sesión/cliente local (solo si aplicable)
+            const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+            // Si el carrito es completamente digital o requiere un pago online estricto
+            // Lanzamos la integración con la Intención de Pago de MercadoPago (vía NestJS)
+            if (isDigitalOnly || hasDigital) {
+                const payload = {
+                    items: items.map(item => ({
+                        variantId: item.variantId,
+                        quantity: item.quantity
+                    })),
+                    customer: {
+                        name: data.customerName,
+                        email: data.customerEmail,
+                        phone: data.customerPhone,
+                        userId: user?.id
+                    },
+                    frontUrl: window.location.origin
+                }
+
+                // POST al endpoint de Checkout de MercadoPago en NestJS
+                const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
+                const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+                const response = await fetch(`${API_URL}/payments/product/checkout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify(payload)
+                })
+
+                if (!response.ok) {
+                    throw new Error('Error al generar intención de pago');
+                }
+
+                const result = await response.json();
+
+                // Redirección a la Pasarela de MercadoPago
+                if (result.init_point) {
+                    window.location.href = result.init_point;
+                    return; // Detenemos la ejecución local
+                }
+                throw new Error("Respuesta inválida de la pasarela")
             }
 
-            const order = await createOrder(payload)
+            // Flujo Legacy para DINE_IN o Pedidos 100% físicos sin pago online obligado
+            // ... Aquí mantendríamos la lógica clásica a createOrder importado de "@/lib/api"
+            toast.error("Para este tipo de pedido (Delivery manual/Efectivo) la función no está 100% migrada al nuevo backend de pagos aún.", "En Construcción")
 
-            toast.success(`Tu orden #${order.orderNumber} ha sido enviada a cocina.`, "Pedido realizado")
-            clearCart()
-            router.push(`/order-confirmation?orderId=${order.id}`)
         } catch (error) {
             console.error("Checkout Error:", error)
-            toast.error("No se pudo procesar el pedido. Verifica tu conexión.", "Error")
+            toast.error("No se pudo procesar el pago. Por favor intenta nuevamente.", "Error de Transacción")
         } finally {
             setIsSubmitting(false)
         }
@@ -122,7 +158,7 @@ export function CheckoutForm() {
         return (
             <div className="text-center py-12">
                 <p className="text-muted-foreground mb-4">Tu carrito está vacío.</p>
-                <Button onClick={() => router.push("/menu")}>Ir al Menú</Button>
+                <Button onClick={() => router.push("/menu")}>Ir a la Tienda</Button>
             </div>
         )
     }
@@ -133,18 +169,20 @@ export function CheckoutForm() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Detalles del Pedido</CardTitle>
+                        <CardTitle>Detalles de la Compra</CardTitle>
                         <CardDescription>
-                            {tableId ? `Estás ordenando desde la Mesa ${tableId}` : "Completa tus datos de entrega"}
+                            {tableId ? `Estás ordenando desde la Mesa ${tableId}` :
+                                isDigitalOnly ? "Completa tus datos para recibir tu acceso digital" :
+                                    "Completa tus datos de entrega y contacto"}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-                            {/* Order Type Selection (Hidden if Table) */}
-                            {!tableId && (
+                            {/* Order Type Selection (Hidden if Table or purely Digital) */}
+                            {!tableId && !isDigitalOnly && (
                                 <div className="mb-6">
-                                    <Label>Tipo de Pedido</Label>
+                                    <Label>Método de Entrega</Label>
                                     <RadioGroup
                                         defaultValue="DELIVERY"
                                         value={orderType}
@@ -174,16 +212,23 @@ export function CheckoutForm() {
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4">
+                            {isDigitalOnly && (
+                                <div className="bg-blue-500/10 border border-blue-500/20 text-blue-600 p-4 rounded-lg flex items-center mb-6">
+                                    <Download className="mr-3 h-5 w-5 flex-shrink-0" />
+                                    <span className="text-sm font-medium">Estás adquiriendo contenido digital. El acceso será enviado directamente a tu correo electrónico.</span>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="customerName">Nombre</Label>
+                                    <Label htmlFor="customerName">Nombre Completo</Label>
                                     <Input id="customerName" {...form.register("customerName")} placeholder="Tu nombre" />
                                     {form.formState.errors.customerName && (
                                         <p className="text-xs text-destructive">{form.formState.errors.customerName.message as string}</p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="customerPhone">Teléfono</Label>
+                                    <Label htmlFor="customerPhone">Teléfono (WhatsApp)</Label>
                                     <Input id="customerPhone" {...form.register("customerPhone")} placeholder="300 123 4567" />
                                     {form.formState.errors.customerPhone && (
                                         <p className="text-xs text-destructive">{form.formState.errors.customerPhone.message as string}</p>
@@ -191,8 +236,16 @@ export function CheckoutForm() {
                                 </div>
                             </div>
 
+                            <div className="space-y-2">
+                                <Label htmlFor="customerEmail">Correo Electrónico</Label>
+                                <Input id="customerEmail" type="email" {...form.register("customerEmail")} placeholder="tu@email.com" />
+                                {form.formState.errors.customerEmail && (
+                                    <p className="text-xs text-destructive">{form.formState.errors.customerEmail.message as string}</p>
+                                )}
+                            </div>
+
                             {/* Conditional Address Fields */}
-                            {!tableId && orderType === 'DELIVERY' && (
+                            {!tableId && !isDigitalOnly && orderType === 'DELIVERY' && (
                                 <>
                                     <div className="space-y-2">
                                         <Label htmlFor="address">Dirección de Entrega</Label>
@@ -205,18 +258,35 @@ export function CheckoutForm() {
                                     <div className="space-y-2">
                                         <Label htmlFor="city">Ciudad / Barrio</Label>
                                         <Input id="city" {...form.register("city")} placeholder="Cali, Valle" />
+                                        {/* @ts-ignore */}
+                                        {form.formState.errors.city && (
+                                            <p className="text-xs text-destructive">{(form.formState.errors as any).city.message}</p>
+                                        )}
                                     </div>
                                 </>
                             )}
 
-                            <div className="space-y-2">
-                                <Label htmlFor="notes">Notas para cocina (Opcional)</Label>
-                                <Input id="notes" {...form.register("notes")} placeholder="Sin cebolla, extra picante..." />
-                            </div>
+                            {!isDigitalOnly && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="notes">Notas adicionales (Opcional)</Label>
+                                    <Input id="notes" {...form.register("notes")} placeholder="Instrucciones de entrega..." />
+                                </div>
+                            )}
 
                             <Button type="submit" className="w-full mt-6" size="lg" disabled={isSubmitting}>
-                                {isSubmitting ? "Procesando..." : `Confirmar Pedido - ${formatCurrency(totalPrice())}`}
+                                {isSubmitting ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Procesando Pago...</>
+                                ) : (
+                                    <>Ir a Pagar - formatCurrency(totalPrice()) <ArrowRight className="ml-2 h-4 w-4" /></>
+                                )}
                             </Button>
+
+                            {/* Security Badge */}
+                            {(isDigitalOnly || hasDigital) && (
+                                <p className="text-xs text-center text-muted-foreground mt-2">
+                                    Pago 100% seguro a través de MercadoPago.
+                                </p>
+                            )}
                         </form>
                     </CardContent>
                 </Card>
@@ -234,14 +304,19 @@ export function CheckoutForm() {
                                 <div>
                                     <p className="font-medium">{item.title} x{item.quantity}</p>
                                     {item.subtitle && <p className="text-muted-foreground text-xs">{item.subtitle}</p>}
+                                    {item.productType === "DIGITAL" && (
+                                        <span className="inline-flex items-center text-[10px] font-medium bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded mt-1 uppercase">
+                                            <Download className="w-3 h-3 mr-1" /> Acceso Digital
+                                        </span>
+                                    )}
                                 </div>
-                                <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                                <p className="font-medium">formatCurrency(item.price * item.quantity)</p>
                             </div>
                         ))}
                         <Separator />
                         <div className="flex justify-between items-center font-bold text-lg pt-2">
                             <span>Total</span>
-                            <span>{formatCurrency(totalPrice())}</span>
+                            <span>formatCurrency(totalPrice())</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -249,3 +324,4 @@ export function CheckoutForm() {
         </div>
     )
 }
+

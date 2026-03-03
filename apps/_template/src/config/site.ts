@@ -12,6 +12,7 @@ export const siteConfig = {
         logo: "/favicon.ico",
         logoAlt: "Template Client Logo"
     },
+    whatsappMessage: "Hola, me gustaría recibir más información.",
     features: {
         blog: { enabled: false },
         store: { enabled: false },
@@ -21,5 +22,6 @@ export const siteConfig = {
     },
     mainNav: [
         { title: "Inicio", href: "/" },
-    ]
+    ],
+    salesPageUrl: "https://www.google.com"
 };

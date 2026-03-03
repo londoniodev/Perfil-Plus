@@ -11,45 +11,41 @@ export class CreateSubscriptionDto {
     frontUrl?: string;
 }
 
-export class WebhookPaymentDto {
+// ==================== CHECKOUT DTOs ====================
+
+export class CheckoutItemDto {
     @IsString()
-    id: string;
+    variantId: string;
 
-    @IsOptional()
-    @IsString()
-    live_mode?: string;
-
-    @IsString()
-    type: string;
-
-    @IsOptional()
-    date_created?: string;
-
-    @IsOptional()
-    user_id?: string;
-
-    @IsOptional()
-    api_version?: string;
-
-    @IsString()
-    action: string;
-
-    data: {
-        id: string;
-    };
+    @IsNumber()
+    quantity: number;
 }
 
-// ==================== EBOOK PURCHASE DTOs ====================
-export class CreateEbookPurchaseDto {
+export class CheckoutCustomerDto {
+    @IsOptional()
     @IsString()
-    ebookId: string;
+    name?: string;
 
     @IsOptional()
-    @IsEmail()
+    @IsString()
     email?: string;
 
     @IsOptional()
     @IsString()
-    frontUrl?: string;
+    phone?: string;
+
+    @IsOptional()
+    @IsString()
+    userId?: string;
 }
 
+export class CreateCheckoutDto {
+    items: CheckoutItemDto[];
+
+    @IsOptional()
+    @IsString()
+    frontUrl?: string;
+
+    @IsOptional()
+    customer?: CheckoutCustomerDto;
+}

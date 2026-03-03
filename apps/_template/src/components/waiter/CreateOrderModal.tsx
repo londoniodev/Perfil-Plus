@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useTenant } from "@/app/providers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button, Input, ScrollArea, Tabs, TabsList, TabsTrigger, TabsContent, Badge, Separator } from "@alvarosky/ui"
 import { Table } from "@/actions/admin/tables"
 import { useMenu } from "@alvarosky/restaurant-sdk"
 import { useOrder } from "@alvarosky/restaurant-sdk"
-import { TENANT_ID } from "@/lib/config"
+import { } from "@/lib/config"
 import Image from "next/image"
 import { Search, Plus, Minus, Trash2, ShoppingCart, ChefHat, ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -29,13 +30,15 @@ interface LocalCartItem {
 }
 
 export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: CreateOrderModalProps) {
+    const { tenantId } = useTenant();
+
     const [step, setStep] = useState<1 | 2>(1)
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [cart, setCart] = useState<LocalCartItem[]>([])
     const [searchQuery, setSearchQuery] = useState("")
     const [activeCategory, setActiveCategory] = useState("ALL")
 
-    const { categories, products, isLoading } = useMenu(TENANT_ID)
+    const { categories, products, isLoading } = useMenu(tenantId)
     const { createOrder, isSubmitting } = useOrder()
 
     // Filter products using safe casting to match SDK definitions
@@ -103,7 +106,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                 modifiers: []
             }))
 
-            const result = await createOrder(TENANT_ID, {
+            const result = await createOrder(tenantId, {
                 cart: sdkCart,
                 total: cartTotal,
                 customer: {

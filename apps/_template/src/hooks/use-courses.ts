@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Theme } from "@/types/lms";
 import { getThemes } from "@/lib/api";
+import { useTenant } from "@/app/providers";
 
 // ============================================================================
 // HOOK - Conectado a API real
@@ -19,6 +20,7 @@ interface UseCoursesResult {
  * Hook para obtener la lista de temas/cursos desde la API.
  */
 export function useCourses(): UseCoursesResult {
+    const { tenantId } = useTenant();
     const [themes, setThemes] = useState<Theme[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function useCourses(): UseCoursesResult {
         try {
             setIsLoading(true);
             setError(null);
-            const data = await getThemes();
+            const data = await getThemes(tenantId);
             setThemes(data);
         } catch (e) {
             setError("Error al cargar los cursos");

@@ -18,12 +18,37 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import { formatCurrency } from "@/lib/utils"
 
+// Fallback food images for products without uploaded photos
+const FOOD_FALLBACK_IMAGES = [
+    '/dashboard/images/food/food-1.png', // burger
+    '/dashboard/images/food/food-2.png', // fries
+    '/dashboard/images/food/food-3.png', // smoothie
+    '/dashboard/images/food/food-4.png', // salad
+    '/dashboard/images/food/food-5.png', // pizza
+    '/dashboard/images/food/food-6.png', // dessert
+]
+
+/** Deterministic fallback image based on product index or name */
+function getFallbackImage(index: number, name?: string): string {
+    if (name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('burger') || lowerName.includes('hamburguesa')) return FOOD_FALLBACK_IMAGES[0];
+        if (lowerName.includes('papa') || lowerName.includes('frie') || lowerName.includes('salchipapa')) return FOOD_FALLBACK_IMAGES[1];
+        if (lowerName.includes('jugo') || lowerName.includes('smoothie') || lowerName.includes('limonada') || lowerName.includes('gaseosa') || lowerName.includes('malteada')) return FOOD_FALLBACK_IMAGES[2];
+        if (lowerName.includes('ensalada') || lowerName.includes('salad') || lowerName.includes('nuggets')) return FOOD_FALLBACK_IMAGES[3];
+        if (lowerName.includes('pizza') || lowerName.includes('perro caliente')) return FOOD_FALLBACK_IMAGES[4];
+        if (lowerName.includes('postre') || lowerName.includes('brownie') || lowerName.includes('dessert')) return FOOD_FALLBACK_IMAGES[5];
+    }
+    return FOOD_FALLBACK_IMAGES[index % FOOD_FALLBACK_IMAGES.length]
+}
+
 // Lazy loaded modals to strip hundreds of KB from the initial JS bundle
 const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.ProductModal), {
     ssr: false,
     loading: () => <div className="fixed inset-0 bg-white/50 z-50 flex items-center justify-center"><div className="animate-spin text-primary w-10 h-10 border-4 border-current border-t-transparent rounded-full" /></div>
 })
 const NamePromptModal = dynamic(() => import("./NamePromptModal").then(mod => mod.NamePromptModal), { ssr: false })
+const OrderTrackingModal = dynamic(() => import("./OrderTrackingModal").then(mod => mod.OrderTrackingModal), { ssr: false })
 
 // ─────────────────────────────────────────────
 // Main Menu Client Component
@@ -45,6 +70,7 @@ export default function MenuClient({
     const [selectedProduct, setSelectedProduct] = useState<PublicProduct | null>(null)
     const [isCartOpen, setIsCartOpen] = useState(false)
     const [isNamePromptOpen, setIsNamePromptOpen] = useState(false)
+    const [trackingOrder, setTrackingOrder] = useState<{ isOpen: boolean; orderId: string; orderNumber: string }>({ isOpen: false, orderId: "", orderNumber: "" })
     const [isFloatingCartVisible, setIsFloatingCartVisible] = useState(true)
     const [isSearchActive, setIsSearchActive] = useState(false)
     const [categoryScrollState, setCategoryScrollState] = useState<'start' | 'middle' | 'end'>('start')
@@ -117,13 +143,17 @@ export default function MenuClient({
         setIsNamePromptOpen(true)
     }
 
-    const handleConfirmOrder = async (customerName: string, paymentMethod: "CASH" | "MERCADOPAGO") => {
+    const handleConfirmOrder = async (data: { name: string; phone: string; address?: string; paymentMethod: "CASH" | "MERCADOPAGO" }) => {
         const orderData = {
             cart,
             total: total(),
-            customer: { name: customerName, phone: "0000000000" },
-            tableId: table || undefined,
-            paymentMethod: paymentMethod
+            customer: {
+                name: data.name,
+                phone: data.phone,
+                tableNumber: table || undefined,
+                address: data.address
+            },
+            paymentMethod: data.paymentMethod
         }
 
         const result = await createOrder(slug, orderData)
@@ -133,12 +163,15 @@ export default function MenuClient({
             setIsCartOpen(false)
             clearCart()
 
-            if (paymentMethod === "MERCADOPAGO") {
+            if (data.paymentMethod === "MERCADOPAGO") {
                 try {
                     const res = await fetch(`/api/checkout/mercadopago`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderId: result.orderId })
+                        body: JSON.stringify({
+                            orderId: result.orderId,
+                            slug: slug
+                        })
                     })
                     const data = await res.json()
                     if (data.init_point) {
@@ -151,6 +184,12 @@ export default function MenuClient({
                     console.error("MP Fetch Error:", e)
                     alert("❌ Error conectando c/ MercadoPago")
                 }
+            } else if (restaurant.orderTrackingEnabled) {
+                setTrackingOrder({
+                    isOpen: true,
+                    orderId: result.orderId,
+                    orderNumber: (result as any).orderNumber || result.orderId
+                })
             } else {
                 alert(`✅ Orden creada exitosamente! #${(result as any).orderNumber || result.orderId}`)
             }
@@ -205,21 +244,21 @@ export default function MenuClient({
                         <div className="flex flex-1 justify-around ml-6">
                             <div className="text-center">
                                 <p className="font-bold text-lg text-slate-900 leading-tight">
-                                    {products.filter(p => !p.categories?.some((c: PublicCategory) => c.slug === 'bebidas')).length}
+                                    {products.length}
                                 </p>
                                 <p className="text-xs text-slate-500">Platos</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-bold text-lg text-slate-900 leading-tight">
-                                    {products.filter(p => p.categories?.some((c: PublicCategory) => c.slug === 'bebidas')).length}
-                                </p>
-                                <p className="text-xs text-slate-500">Bebidas</p>
                             </div>
                             <div className="text-center">
                                 <p className="font-bold text-lg text-slate-900 leading-tight">
                                     {products.reduce((acc, p) => acc + (p.likesCount || 0), 0)}
                                 </p>
                                 <p className="text-xs text-slate-500">Likes</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="font-bold text-lg text-slate-900 leading-tight">
+                                    {products.reduce((acc, p) => acc + (p.comments?.length || 0), 0)}
+                                </p>
+                                <p className="text-xs text-slate-500">Comentarios</p>
                             </div>
                         </div>
                     </div>
@@ -375,8 +414,9 @@ export default function MenuClient({
 
                         {categories.map((cat) => {
                             // Find first product image for this category
-                            const catImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
-                                || '/placeholder.png'
+                            const catProductImage = products.find(p => p.categories?.some((c: PublicCategory) => c.id === cat.id))?.images?.[0]
+                            const catIndex = categories.indexOf(cat)
+                            const catImage = catProductImage || getFallbackImage(catIndex, cat.name)
 
                             return (
                                 <div
@@ -398,6 +438,7 @@ export default function MenuClient({
                                             />
                                         </div>
                                     </div>
+
                                     <span className={`text-xs font-medium text-center truncate w-20 transition-colors ${selectedCategoryId === cat.id ? "text-primary font-bold" : "text-slate-500"
                                         }`}>
                                         {cat.name}
@@ -415,7 +456,7 @@ export default function MenuClient({
                     className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-[2px] bg-slate-100 pb-20"
                 >
                     <AnimatePresence mode="popLayout">
-                        {filteredProducts.map((product) => (
+                        {filteredProducts.map((product, productIndex) => (
                             <motion.div
                                 layout
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -428,7 +469,7 @@ export default function MenuClient({
                                 className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
                             >
                                 <Image
-                                    src={product.images?.[0] || "/placeholder.png"}
+                                    src={product.images?.[0] || getFallbackImage(productIndex, product.name)}
                                     alt={product.name}
                                     fill
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
@@ -498,7 +539,7 @@ export default function MenuClient({
                                 price: Number(p.variants?.find((va: ProductVariant) => va.id === v)?.price ?? p.basePrice) || 0,
                                 quantity: q,
                                 modifiers: m,
-                                image: p.images?.[0]
+                                image: p.images?.[0] || getFallbackImage(0, p.name)
                             })
                             setSelectedProduct(null)
                         }}
@@ -577,6 +618,15 @@ export default function MenuClient({
                 onClose={() => setIsNamePromptOpen(false)}
                 onConfirm={handleConfirmOrder}
                 isSubmitting={isSubmitting}
+                isTableOrder={!!table}
+            />
+
+            <OrderTrackingModal
+                isOpen={trackingOrder.isOpen}
+                onClose={() => setTrackingOrder(prev => ({ ...prev, isOpen: false }))}
+                orderId={trackingOrder.orderId}
+                orderNumber={trackingOrder.orderNumber}
+                slug={slug}
             />
         </div>
     )

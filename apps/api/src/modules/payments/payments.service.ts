@@ -3,9 +3,11 @@ import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { StorageService } from '../storage/storage.service';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import * as crypto from 'crypto';
 import type { Request } from 'express';
+import { CreateCheckoutDto } from './dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class PaymentsService {
@@ -19,6 +21,7 @@ export class PaymentsService {
         private prisma: PrismaService,
         private config: ConfigService,
         private emailService: EmailService,
+        private storageService: StorageService,
     ) {
         // Initialization moved to async method
     }
@@ -260,47 +263,54 @@ export class PaymentsService {
 
     // ==================== PRODUCT PURCHASES ====================
 
-    async createProductCheckout(userId: string, items: { variantId: string; quantity: number }[], frontUrl?: string) {
-        await this.initMercadoPago();
+    async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
+        // 2. Credenciales Multi-tenant
+        const setting = await this.prisma.systemSetting.findFirst({
+            where: { tenantId, key: 'MERCADOPAGO_CONFIG' },
+        });
 
-        if (!this.preference) throw new BadRequestException('Mercado Pago no configurado');
+        if (!setting || !setting.value) {
+            throw new BadRequestException('El vendedor no ha configurado MercadoPago');
+        }
 
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user) throw new NotFoundException('Usuario no encontrado');
+        const config = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
+        const accessToken = config.accessToken;
 
-        const frontendUrl = frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+        if (!accessToken) {
+            throw new BadRequestException('El vendedor no ha configurado MercadoPago');
+        }
+
+        // 3. Instanciación Dinámica (Aislado por Request Multi-tenant)
+        const client = new MercadoPagoConfig({ accessToken });
+        const preference = new Preference(client);
+
+        const frontendUrl = dto.frontUrl || this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
         const currency = await this.getTenantCurrency();
 
-        // 1. Fetch Variants & Validate Stock/Price
-        const orderItemsData: any[] = [];
-        let totalAmount = 0;
+        // 1. Seguridad de Precios / Fetch Variants
         const preferenceItems: any[] = [];
+        let totalAmount = 0;
 
-        for (const item of items) {
-            const variant = await this.prisma.productVariant.findUnique({
-                where: { id: item.variantId },
-                include: { product: true }
-            });
+        if (!dto.items || dto.items.length === 0) {
+            throw new BadRequestException('El carrito está vacío');
+        }
+
+        // Batch fetch: single query replaces N findUnique calls
+        const variantIds = dto.items.map(i => i.variantId);
+        const variants = await this.prisma.productVariant.findMany({
+            where: { id: { in: variantIds } },
+            include: { product: true },
+        });
+        const variantMap = new Map(variants.map(v => [v.id, v]));
+
+        for (const item of dto.items) {
+            const variant = variantMap.get(item.variantId);
 
             if (!variant) throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
             if (!variant.product.published) throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
 
-            // Stock check (if not infinite/digital)
-            if (variant.stock !== -1 && variant.stock < item.quantity) {
-                throw new BadRequestException(`Sin stock suficiente para: ${variant.product.name}`);
-            }
-
             const price = Number(variant.price);
-            const subtotal = price * item.quantity;
-            totalAmount += subtotal;
-
-            orderItemsData.push({
-                variantId: variant.id,
-                quantity: item.quantity,
-                price: price, // Snapshot price
-                productName: variant.product.name,
-                variantName: variant.name !== 'Standard' ? variant.name : undefined
-            });
+            totalAmount += (price * item.quantity);
 
             preferenceItems.push({
                 id: variant.id,
@@ -309,55 +319,51 @@ export class PaymentsService {
                 quantity: item.quantity,
                 unit_price: price,
                 currency_id: currency,
-                picture_url: variant.product.images?.[0]
+                picture_url: variant.product.images?.[0] || variant.product.digitalFileUrl
             });
         }
 
-        // 2. Create Order (PENDING)
-        const order = await this.prisma.order.create({
-            data: {
-                tenantId: this.getTenantId(),
-                userId,
-                orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`, // Simple generator
-                totalAmount,
-                status: 'PENDING',
-                items: {
-                    create: orderItemsData
-                }
-            }
-        });
+        // 4. Creación de Preferencia (Metadata Crítico)
+        const metadata = {
+            tenant_id: tenantId, // MercadoPago prefiere snake_case en custom objects a veces o strings simples
+            type: 'order',
+            items_json: JSON.stringify(dto.items),
+            customer_name: dto.customer?.name || '',
+            customer_email: dto.customer?.email || '',
+            customer_phone: dto.customer?.phone || '',
+            user_id: dto.customer?.userId || '',
+        };
 
-        // 3. Create MP Preference
+        const apiUrl = this.config.get<string>('API_PUBLIC_URL') || this.config.get<string>('API_URL') || 'http://localhost:3001';
+        const notificationUrl = `${apiUrl}/api/payments/webhook`;
+
         const preferenceData = {
             items: preferenceItems,
-            payer: { email: user.email, name: user.name },
+            payer: {
+                name: dto.customer?.name,
+                email: dto.customer?.email,
+            },
             back_urls: {
-                success: `${frontendUrl}/compras?status=success&orderId=${order.id}`,
-                failure: `${frontendUrl}/checkout?status=failure`,
-                pending: `${frontendUrl}/checkout?status=pending`,
+                success: `${frontendUrl}/checkout/success`,
+                failure: `${frontendUrl}/checkout/failure`,
+                pending: `${frontendUrl}/checkout/pending`,
             },
             auto_return: 'approved' as const,
-            notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook?tenantId=${this.getTenantId()}`,
-            external_reference: order.id,
-            metadata: {
-                userId,
-                type: 'order', // Critical for webhook handler
-            },
+            notification_url: notificationUrl,
+            metadata,
         };
 
         try {
-            const response = await this.preference.create({ body: preferenceData });
+            const response = await preference.create({ body: preferenceData });
             return {
-                orderId: order.id,
-                totalAmount,
+                init_point: response.init_point,
+                sandbox_init_point: response.sandbox_init_point,
                 preferenceId: response.id,
-                initPoint: response.init_point,
-                sandboxInitPoint: response.sandbox_init_point,
+                totalAmount
             };
         } catch (error) {
-            this.logger.error('Error creating product preference', error);
-            // Optional: Delete pending order if preference fails? Or keep as abandoned cart.
-            throw new BadRequestException('Error al iniciar el pago');
+            this.logger.error('Error creating product preference via MercadoPago', error);
+            throw new BadRequestException('Error al iniciar el pago con MercadoPago');
         }
     }
 
@@ -370,49 +376,195 @@ export class PaymentsService {
             return { status: 'ignored', reason: 'not a payment notification' };
         }
 
-        try {
-            await this.initMercadoPago();
-        } catch (e) {
-            return { status: 'error', reason: 'Mercado Pago configuration missing' };
+        return this.processWebhook(dataId);
+    }
+
+    private async processWebhook(dataId: string) {
+        // En este punto aún no sabemos el tenantId seguro. 
+        // 1. Debemos hacer un fetch global a todas las configs o iterar si no tenemos el tenantId a priori.
+        // Dado que MercadoPago envía la notificación globalmente, a menos que el webhook URL tenga ?tenantId=...
+        // Aquí asumimos que el Request inicial lo trajo, PERO si no lo trae, buscaremos el tenant iterativamente o de la metadata si logramos desencriptar.
+
+        // Estrategia segura: Instanciar MP "a ciegas" aquí es imposible sin accessToken.
+        // PERO si el controlador forzó la inyección de tenantId via query param (ej: /webhook?tenantId=xxx), 
+        // this.getTenantId() funcionará. Si no, tenemos un problema de diseño en MP oauth vs access_token.
+        // Asumiendo que tenantId viene por URL query (`this.getTenantId()`) o fue inyectado por el interceptor:
+
+        const tenantId = this.getTenantId();
+
+        if (tenantId === 'default' && !this.request.query['tenantId']) {
+            this.logger.error(`Webhook rejected: Unable to determine tenant for data.id=${dataId}`);
+            return { status: 'error', reason: 'tenant not identified in webhook' };
         }
 
-        if (!this.paymentClient) {
-            return { status: 'error', reason: 'Mercado Pago not configured' };
-        }
+        const resolvedTenantId = tenantId !== 'default' ? tenantId : this.request.query['tenantId'] as string;
 
         try {
-            // Obtener detalles del pago
-            const paymentData = await this.paymentClient.get({ id: dataId });
-            const payment = paymentData;
+            // 1. Recuperar Credenciales
+            const setting = await this.prisma.systemSetting.findFirst({
+                where: { tenantId: resolvedTenantId, key: 'MERCADOPAGO_CONFIG' },
+            });
 
-            if (!payment) {
+            if (!setting || !setting.value) {
+                return { status: 'error', reason: 'Mercado Pago configuration missing' };
+            }
+
+            const config = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
+            const accessToken = config.accessToken;
+
+            if (!accessToken) {
+                return { status: 'error', reason: 'Mercado Pago not configured' };
+            }
+
+            // 2. Consultar la Fuente de Verdad (MP API)
+            const client = new MercadoPagoConfig({ accessToken });
+            const paymentClient = new Payment(client);
+
+            const paymentData = await paymentClient.get({ id: dataId });
+
+            if (!paymentData) {
                 this.logger.warn(`Payment ${dataId} not found`);
                 return { status: 'error', reason: 'payment not found' };
             }
 
-            const status = payment.status;
-            const externalRef = payment.external_reference;
-            const metadata = payment.metadata as Record<string, string> | undefined;
+            const status = paymentData.status;
+            const metadata = paymentData.metadata as any;
 
-            this.logger.log(`Payment status: ${status}, external_reference: ${externalRef}`);
+            this.logger.log(`Payment status: ${status}, metadata_type: ${metadata?.type}`);
 
-            // Procesar según el estado del pago
+            // 3. Verificar Estado
             if (status === 'approved') {
                 const paymentType = metadata?.type;
 
-                if (paymentType === 'subscription' || (externalRef && !externalRef.includes('|') && !externalRef.startsWith('cm'))) {
-                    // Es una suscripción (legacy check)
-                    // NOTE: 'cm' check is hypothetical, purely relying on metadata.type is safer
-                    const userId = externalRef || metadata?.userId;
-                    if (userId && paymentType === 'subscription') {
-                        await this.activateSubscription(userId, dataId, payment.payer?.id?.toString());
+                if (paymentType === 'subscription') {
+                    // Logica de suscripcion (Legacy/Original)
+                    const userId = metadata?.userId;
+                    if (userId) {
+                        await this.activateSubscription(userId, dataId, paymentData.payer?.id?.toString());
                     }
                 } else if (paymentType === 'order') {
-                    // Es una Orden de Compra de Productos
-                    const orderId = externalRef;
-                    if (orderId) {
-                        await this.approveOrder(orderId, dataId);
+                    // 4. Extraer Metadata
+                    const itemsJson = metadata.items_json;
+                    const customerEmail = metadata.customer_email;
+                    const customerName = metadata.customer_name;
+                    const customerPhone = metadata.customer_phone;
+                    const metaTenantId = metadata.tenant_id;
+
+                    // Anti-IDOR / Spoofing check
+                    if (metaTenantId !== resolvedTenantId) {
+                        this.logger.error(`Tenant mismatch in webhook. Expected ${resolvedTenantId}, got ${metaTenantId}`);
+                        return { status: 'error', reason: 'tenant mismatch security error' };
                     }
+
+                    let items: any[] = [];
+                    try {
+                        items = typeof itemsJson === 'string' ? JSON.parse(itemsJson) : itemsJson;
+                    } catch (e) {
+                        this.logger.error('Failed to parse items_json from MP metadata', e);
+                    }
+
+                    // Avoid duplicate processing by checking if an Order with this mpPaymentId already exists
+                    const existingOrder = await this.prisma.order.findFirst({
+                        where: { mpPaymentId: dataId, tenantId: resolvedTenantId }
+                    });
+
+                    if (existingOrder) {
+                        this.logger.log(`Order for payment ${dataId} already processed.`);
+                        return { status: 'processed' };
+                    }
+
+                    // 5. Creación de la Orden (Prisma Transaction)
+                    await this.prisma.$transaction(async (tx) => {
+                        let totalAmount = 0;
+                        const orderItemsData: any[] = [];
+                        const digitalItemsDispatch: any[] = [];
+
+                        for (const item of items) {
+                            const variant = await tx.productVariant.findUnique({
+                                where: { id: item.variantId },
+                                include: { product: true }
+                            });
+
+                            if (!variant) continue;
+
+                            const price = Number(variant.price);
+                            totalAmount += (price * item.quantity);
+
+                            orderItemsData.push({
+                                variantId: variant.id,
+                                quantity: item.quantity,
+                                price: price,
+                                productName: variant.product.name,
+                                variantName: variant.name !== 'Standard' ? variant.name : null,
+                                isPaid: true,
+                            });
+
+                            if (variant.product.productType === 'DIGITAL') {
+                                digitalItemsDispatch.push(variant.product);
+                            }
+                        }
+
+                        if (orderItemsData.length === 0) {
+                            throw new Error('No valid items found for order');
+                        }
+
+                        // Generar numero de orden
+                        const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+
+                        const newOrder = await tx.order.create({
+                            data: {
+                                tenantId: resolvedTenantId,
+                                orderNumber,
+                                totalAmount,
+                                status: 'APPROVED',
+                                orderType: 'DELIVERY', // o 'DINE_IN' según modelo, asumiendo e-commerce
+                                mpPaymentId: dataId,
+                                customerName,
+                                customerPhone,
+                                notes: customerEmail ? `Email: ${customerEmail}` : '',
+                                items: {
+                                    create: orderItemsData
+                                }
+                            },
+                        });
+
+                        this.logger.log(`Order ${newOrder.orderNumber} created successfully via Webhook`);
+
+                        // 6. Despacho Digital (Lógica)
+                        if (digitalItemsDispatch.length > 0 && customerEmail) {
+                            this.logger.log(`Dispatching ${digitalItemsDispatch.length} digital items to ${customerEmail}`);
+
+                            const dispatchLinks: { productName: string; downloadUrl: string }[] = [];
+
+                            for (const product of digitalItemsDispatch) {
+                                if (product.digitalFileUrl) {
+                                    try {
+                                        // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
+                                        const downloadUrl = await this.storageService.getPresignedUrl(product.digitalFileUrl, 86400);
+                                        dispatchLinks.push({ productName: product.name, downloadUrl });
+                                    } catch (err) {
+                                        this.logger.error(`Error generating presigned URL for ${product.name}`, err);
+                                    }
+                                }
+                            }
+
+                            if (dispatchLinks.length > 0) {
+                                // Ejecutar envío de email SIN await dentro del transaction.
+                                // Usamos un `.catch` para no bloquear el Event Loop ni revertir el commit de Prisma si falla el SMTP.
+                                this.emailService.sendDigitalDelivery(customerEmail, customerName || 'Cliente', dispatchLinks)
+                                    .then((success) => {
+                                        if (success) {
+                                            this.logger.log(`Digital delivery email sent to ${customerEmail}`);
+                                        } else {
+                                            this.logger.error(`Failed to send digital delivery email to ${customerEmail}`);
+                                        }
+                                    })
+                                    .catch((e) => {
+                                        this.logger.error(`Unhandled error sending digital delivery email to ${customerEmail}`, e);
+                                    });
+                            }
+                        }
+                    });
                 }
             }
 
@@ -513,15 +665,16 @@ export class PaymentsService {
             // But to minimize scope creep, let's send DigitalPurchaseEmail for the first item found or loop.
             // Let's loop for now to ensure delivery of all links.
 
-            for (const item of order.items) {
-                // Check if product is digital (simplification: assume yes for this module scope or fetch product)
-                // Ideally we should include productType in OrderItem snapshot or fetch variant again.
+            // Batch fetch: single query replaces N findUnique calls
+            const variantIds = order.items.map(i => i.variantId);
+            const variants = await this.prisma.productVariant.findMany({
+                where: { id: { in: variantIds } },
+                include: { product: true },
+            });
+            const variantMap = new Map(variants.map(v => [v.id, v]));
 
-                // Fetch variant to get slug/type
-                const variant = await this.prisma.productVariant.findUnique({
-                    where: { id: item.variantId },
-                    include: { product: true }
-                });
+            for (const item of order.items) {
+                const variant = variantMap.get(item.variantId);
 
                 if (variant && variant.product.productType === 'DIGITAL') {
                     if (order.user?.email) {

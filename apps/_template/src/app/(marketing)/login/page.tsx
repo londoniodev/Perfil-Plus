@@ -4,7 +4,8 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -28,6 +29,7 @@ import {
 import { LoginSchema, type LoginValues } from "@/schemas/auth";
 
 function LoginForm() {
+  const { tenantId } = useTenant();
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
@@ -81,7 +83,7 @@ function LoginForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-tenant-id": TENANT_ID,
+          "x-tenant-id": tenantId,
         },
         credentials: "include",
         body: JSON.stringify(values),
@@ -110,24 +112,23 @@ function LoginForm() {
 
       const redirect = searchParams.get("redirect");
       if (redirect) {
-        router.push(redirect);
+        window.location.href = redirect;
       } else {
-        // Redirección basada en rol
         switch (data.user.role) {
           case 'WAITER':
-            router.push("/waiter?tab=active");
+            window.location.href = "/waiter?tab=active";
             break;
           case 'KITCHEN':
-            router.push("/admin/restaurant/orders");
+            window.location.href = "/dashboard/restaurante/comandas";
             break;
           case 'CASHIER':
-            router.push("/admin/restaurant/pos");
+            window.location.href = "/dashboard/restaurante/pos";
             break;
           case 'ADMIN':
-            router.push("/admin");
+            window.location.href = "/dashboard";
             break;
           default:
-            router.push("/perfil");
+            window.location.href = "/dashboard/perfil";
         }
       }
     } catch (err: any) {
@@ -136,10 +137,10 @@ function LoginForm() {
   };
 
   return (
-    <Card className="w-full border-none shadow-none bg-transparent p-0">
+    <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
       <CardHeader className="text-center px-0 pt-0">
         <CardTitle className="heading-h2 mb-2"></CardTitle>
-        <CardDescription className="text-body"></CardDescription>
+        <CardDescription className="text-slate-500"></CardDescription>
       </CardHeader>
 
       <CardContent className="px-0">
@@ -156,6 +157,7 @@ function LoginForm() {
                       icon={<Mail className="h-5 w-5" />}
                       type="email"
                       placeholder="admin@example.com"
+                      className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                       {...field}
                     />
                   </FormControl>
@@ -184,6 +186,7 @@ function LoginForm() {
                       icon={<Lock className="h-5 w-5" />}
                       type="password"
                       placeholder="••••••••"
+                      className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                       {...field}
                     />
                   </FormControl>

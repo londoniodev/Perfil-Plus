@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentsService } from './payments.service';
-import { CreateSubscriptionDto } from './dto';
+import { CreateSubscriptionDto, CreateCheckoutDto } from './dto';
 import { Public, CurrentUser, Roles } from '../../common/decorators';
 
 @Controller('payments')
@@ -44,10 +44,12 @@ export class PaymentsController {
 
     @Post('product/checkout')
     async createProductCheckout(
-        @CurrentUser('id') userId: string,
-        @Body() body: { items: { variantId: string; quantity: number }[], frontUrl?: string },
+        @Req() req: Request,
+        @Body() dto: CreateCheckoutDto,
     ) {
-        return this.paymentsService.createProductCheckout(userId, body.items, body.frontUrl);
+        // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
+        const tenantId = (req as any).tenantId || req.headers['x-tenant-id'] || 'default';
+        return this.paymentsService.createProductCheckout(dto, tenantId);
     }
 
     // ==================== WEBHOOKS ====================

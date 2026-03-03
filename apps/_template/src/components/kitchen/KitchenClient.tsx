@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import { TENANT_ID } from "@/lib/config"
+import { } from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { AdminPageWrapper, Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle } from "@alvarosky/ui"
 import { Clock, CheckCircle2, Utensils, RefreshCw, ChefHat, Loader2, Play } from "lucide-react"
@@ -109,6 +110,8 @@ function KitchenCard({ order, onAction, busy, tableName }: {
 
 // ─── Main Kitchen Client ─────────────────────────────────────────────
 export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] }) {
+    const { tenantId } = useTenant();
+
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -122,7 +125,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(undefined, true);
+            const data = await getAdminOrders(tenantId, undefined, true);
             // Cocina solo ve APPROVED, PREPARING
             const kitchenOrders = data.filter((o: any) => ["APPROVED", "PREPARING"].includes(o.status));
             // Sort por antigüedad
@@ -134,14 +137,43 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [tenantId])
 
     useEffect(() => {
         fetchOrders()
     }, [fetchOrders])
 
     useOrderEvents((event) => {
-        fetchOrders()
+        if (event.type === 'new_order') {
+            const order = event.data as WaiterOrder
+            // Solo agregar si es relevante para cocina (APPROVED o PREPARING)
+            if (['APPROVED', 'PREPARING'].includes(order.status)) {
+                setOrders(prev => {
+                    // Evitar duplicados
+                    if (prev.some(o => o.id === order.id)) return prev
+                    return [...prev, order].sort((a, b) =>
+                        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    )
+                })
+            }
+        } else if (event.type === 'status_changed') {
+            const updated = event.data as WaiterOrder
+            if (['APPROVED', 'PREPARING'].includes(updated.status)) {
+                // Actualizar orden existente o agregarla si no estaba
+                setOrders(prev => {
+                    const exists = prev.some(o => o.id === updated.id)
+                    if (exists) {
+                        return prev.map(o => o.id === updated.id ? updated : o)
+                    }
+                    return [...prev, updated].sort((a, b) =>
+                        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    )
+                })
+            } else {
+                // Orden salió del scope de cocina (READY, SERVED, etc) — removerla al instante
+                setOrders(prev => prev.filter(o => o.id !== event.orderId))
+            }
+        }
         if (event.type === 'new_order' || event.type === 'status_changed') {
             const audio = new Audio('/sounds/notification.mp3')
             audio.play().catch(() => {/* ignore if blocked */ })
@@ -151,7 +183,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(orderId, status as any);
+            await updateOrderStatus(tenantId, orderId, status as any);
             await fetchOrders()
         } catch (e: any) {
             console.error(e)

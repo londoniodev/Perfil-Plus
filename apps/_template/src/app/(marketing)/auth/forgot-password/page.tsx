@@ -12,7 +12,8 @@ import { InputWithIcon } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Ingresa un email válido'),
@@ -21,6 +22,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
+    const { tenantId } = useTenant();
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const toast = useToast();
@@ -40,7 +42,7 @@ export default function ForgotPasswordPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-tenant-id': TENANT_ID,
+                    'x-tenant-id': tenantId,
                 },
                 body: JSON.stringify(data),
             });

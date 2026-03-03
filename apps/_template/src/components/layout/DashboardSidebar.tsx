@@ -1,11 +1,12 @@
 "use client"
 
 import { useAuth } from "@/context/AuthContext"
+import { useTenant } from "@/app/providers";
 import Image from "next/image"
 import { AdminSidebar, type AdminSidebarSection } from "@alvarosky/ui"
 import { getSidebarSections, getStaffSections, getUserSections, type FeatureKey } from "@/config/sidebar.config"
 import { STAFF_ROLES } from "@/types/auth"
-import { TENANT_ID } from "@/lib/config"
+import {} from "@/lib/config"
 
 // ============================================================================
 // TYPES
@@ -22,6 +23,8 @@ interface DashboardSidebarProps {
 // ============================================================================
 
 export function DashboardSidebar({ features, tenantName }: DashboardSidebarProps) {
+    const { tenantId } = useTenant();
+
     const { logout, isAdmin, isStaff, user } = useAuth()
 
     // Get navigation sections based on role

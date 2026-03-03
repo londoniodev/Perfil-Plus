@@ -84,7 +84,7 @@ interface ProductFormProps {
     className?: string
 }
 
-export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl = "/admin/products", className }: ProductFormProps) {
+export function ProductForm({ initialData, onSubmit, apiBase, tenantId, backUrl = "/tienda/productos", className }: ProductFormProps) {
     const router = useRouter()
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)

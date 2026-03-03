@@ -134,15 +134,15 @@ export function DataTable<TData, TValue>({
             {toolbar && <div className="flex items-center justify-between">{toolbar}</div>}
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-hidden">
-                <Table>
+            <div className="rounded-lg border border-border/40 bg-card/60 backdrop-blur-xl shadow-sm transition-all duration-300 overflow-x-auto">
+                <Table className="w-full min-w-[800px]">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
-                                        className="text-xs font-medium text-muted-foreground"
+                                        className="text-xs font-medium text-muted-foreground whitespace-nowrap"
                                     >
                                         {header.isPlaceholder
                                             ? null

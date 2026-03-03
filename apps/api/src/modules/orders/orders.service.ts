@@ -9,6 +9,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Decimal } from '@prisma/client/runtime/library';
 import { OrdersGateway } from './orders.gateway';
 import { validateOrderTransition } from './domain/order-state-machine';
+import { InventoryService } from '../inventory/inventory.service';
 
 import { Inject, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
@@ -23,6 +24,7 @@ export class OrdersService {
         private prisma: PrismaService,
         private storage: StorageService,
         private ordersGateway: OrdersGateway,
+        private inventoryService: InventoryService,
     ) { }
 
     private getTenantId(): string {
@@ -192,7 +194,15 @@ export class OrdersService {
                             // New Fields
                             customerName: dto.customerName || null,
                             customerPhone: dto.customerPhone || null,
-                            notes: dto.paymentMethod ? `${dto.notes ? dto.notes + ' | ' : ''}[Pago: ${dto.paymentMethod}]` : (dto.notes || null),
+                            notes: (() => {
+                                let methodLabel = dto.paymentMethod;
+                                if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+                                if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
+                                if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
+                                const paymentNote = dto.paymentMethod ? `Forma de pago: ${methodLabel}` : null;
+                                if (dto.notes && paymentNote) return `${dto.notes}\n\n${paymentNote}`;
+                                return paymentNote || dto.notes || null;
+                            })(),
                             shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
 
                             items: {
@@ -264,12 +274,37 @@ export class OrdersService {
 
                     this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
 
-                    // SSE: notificar cocina/POS
+                    // SSE: notificar cocina/POS con la orden completa
                     this.ordersGateway.emit(this.getTenantId(), {
                         type: 'new_order',
                         orderId: order.id,
-                        data: { orderNumber, status: order.status, totalAmount: Number(totalAmount), items: dto.items.length },
+                        data: order,
                     });
+
+                    // --- DEDUCCIÓN DE INVENTARIO (ATÓMICA dentro del mismo tx) ---
+                    const productItems = orderItemsData.map((item) => {
+                        // Extract productId from the variant relationship
+                        const variant = dto.items.find((i) => i.variantId === item.variantId);
+                        return {
+                            productId: order.items.find((oi) => oi.variantId === item.variantId)?.variant?.product?.id || '',
+                            quantity: item.quantity,
+                        };
+                    }).filter((i) => i.productId);
+
+                    if (productItems.length > 0) {
+                        const inventoryResult = await this.inventoryService.deductByOrder(
+                            this.getTenantId(),
+                            order.id,
+                            productItems,
+                            tx,
+                        );
+
+                        if (inventoryResult.alerts.length > 0) {
+                            this.logger.warn(
+                                `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
+                            );
+                        }
+                    }
 
                     return order;
                 });
@@ -348,7 +383,14 @@ export class OrdersService {
                             }
                         }
                     }
-                    this.logger.log(`Stock restaurado para orden cancelada: ${orderId}`);
+                    this.logger.log(`Stock de variantes restaurado para orden cancelada: ${orderId}`);
+
+                    // Restaurar stock de inventario (ingredientes)
+                    await this.inventoryService.restoreByOrder(
+                        this.getTenantId(),
+                        orderId,
+                        tx,
+                    );
                 }
             }
 
@@ -400,11 +442,11 @@ export class OrdersService {
                 }
             }
 
-            // SSE: notificar cambio de estado
+            // SSE: notificar cambio de estado con la orden actualizada completa
             this.ordersGateway.emit(this.getTenantId(), {
                 type: 'status_changed',
                 orderId,
-                data: { status: dto.status },
+                data: updated,
             });
 
             return updated;
@@ -412,7 +454,7 @@ export class OrdersService {
     }
 
     // ============ MIS ÓRDENES ============
-    async findMyOrders(userId: string) {
+    async findMyOrders(userId: string, take = 20, skip = 0) {
         return await this.prisma.order.findMany({
             where: {
                 userId,
@@ -430,7 +472,9 @@ export class OrdersService {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            take,
+            skip,
         });
     }
 
@@ -463,11 +507,10 @@ export class OrdersService {
 
     // ============ ADMIN: LISTAR ÓRDENES ============
     // ============ ADMIN: LISTAR ÓRDENES ============
-    async findAllAdmin(status?: OrderStatus, activeOnly: boolean = false) {
+    async findAllAdmin(status?: OrderStatus, activeOnly: boolean = false, take = 50, skip = 0) {
         if (activeOnly) {
             // Fetch active orders + recent completed/delivered
             const activeStatuses: OrderStatus[] = ['PENDING', 'APPROVED', 'PROCESSING', 'PREPARING', 'READY'];
-            // Valid Enum Values: PENDING, APPROVED, PROCESSING, PREPARING, READY, SERVED, SHIPPED, DELIVERED, CANCELLED, REFUNDED
             const completedStatuses: OrderStatus[] = ['SERVED', 'DELIVERED', 'SHIPPED', 'CANCELLED', 'REFUNDED'];
 
             const [activeOrders, recentCompleted] = await Promise.all([
@@ -496,7 +539,7 @@ export class OrdersService {
                         },
                     },
                     orderBy: { createdAt: 'desc' },
-                    take: 20 // Limit historical items
+                    take, // Paginated historical items
                 })
             ]);
 
@@ -517,6 +560,8 @@ export class OrdersService {
                 },
             },
             orderBy: { createdAt: 'desc' },
+            take,
+            skip,
         });
     }
 
@@ -639,10 +684,17 @@ export class OrdersService {
             }
 
             // SSE: notificar pago recibido
+            const updatedOrder = await tx.order.findUnique({
+                where: { id: orderId },
+                include: {
+                    items: { include: { modifiers: true, variant: { include: { product: true } } } },
+                    user: { select: { id: true, name: true, email: true } },
+                },
+            });
             this.ordersGateway.emit(this.getTenantId(), {
                 type: 'payment_received',
                 orderId,
-                data: { amount: Number(dto.amount), method: dto.method, closed: shouldClose },
+                data: { ...updatedOrder, paymentAmount: Number(dto.amount), paymentMethod: dto.method, closed: shouldClose },
             });
 
             return payment;

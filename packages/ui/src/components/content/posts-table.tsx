@@ -29,15 +29,15 @@ export function PostsTable({
     className
 }: PostsTableProps) {
     return (
-        <div className={cn("w-full overflow-hidden rounded-md border", className)}>
-            <table className="w-full text-sm text-left">
+        <div className={cn("w-full overflow-x-auto rounded-lg border border-border/40 bg-card/60 backdrop-blur-xl shadow-sm transition-all duration-300", className)}>
+            <table className="w-full text-sm text-left min-w-[800px]">
                 <thead>
                     <tr>
-                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b">Título</th>
-                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[100px]">Estado</th>
-                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[100px]">Tipo</th>
-                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[120px]">Fecha</th>
-                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[150px]">Acciones</th>
+                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b whitespace-nowrap">Título</th>
+                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[100px] whitespace-nowrap">Estado</th>
+                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[100px] whitespace-nowrap">Tipo</th>
+                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[120px] whitespace-nowrap">Fecha</th>
+                        <th className="h-10 px-4 font-medium text-muted-foreground bg-muted/50 border-b w-[150px] whitespace-nowrap">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>

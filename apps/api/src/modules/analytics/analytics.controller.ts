@@ -13,8 +13,11 @@ export class AnalyticsController {
     @Get('dashboard')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
-    async getDashboard(@CurrentTenant() tenantId: string) {
-        return this.analyticsService.getDashboardStats(tenantId);
+    async getDashboard(
+        @CurrentTenant() tenantId: string,
+        @Query('period') period?: string
+    ) {
+        return this.analyticsService.getDashboardStats(tenantId, period);
     }
 
     @Get('z-report')

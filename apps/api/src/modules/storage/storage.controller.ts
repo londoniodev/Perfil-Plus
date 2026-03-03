@@ -55,11 +55,13 @@ export class StorageController {
             }),
         )
         file: Express.Multer.File,
+        @Query('folder') folder?: string,
     ) {
         console.log('Upload Image Request Received:', {
             originalname: file.originalname,
             mimetype: file.mimetype,
-            size: file.size
+            size: file.size,
+            folder
         });
 
         // Validación manual de tipo si es necesario
@@ -67,7 +69,8 @@ export class StorageController {
             console.warn('Invalid mimetype detected:', file.mimetype);
         }
 
-        return this.storageService.uploadFile(file, 'images');
+        // Respetamos folder o pasamos default 'images', para poder tener /branding/logo.png, etc.
+        return this.storageService.uploadFile(file, folder || 'images');
     }
 
     @Post('upload/video')

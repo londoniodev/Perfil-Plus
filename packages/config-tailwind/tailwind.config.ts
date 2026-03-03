@@ -80,6 +80,10 @@ export const sharedConfig: Config = {
                     border: "hsl(var(--sidebar-border))",
                     ring: "hsl(var(--sidebar-ring))",
                 },
+                // Legacy Hardcoded Colors from Cocinasiete marketing pages
+                "cs-primary": "#047857", // emerald-700
+                "cs-secondary": "#10b981", // emerald-500
+                "cs-dark": "#022c22", // emerald-900
             },
             fontFamily: {
                 sans: ["var(--font-sans)", "system-ui", "sans-serif"],

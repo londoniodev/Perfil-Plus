@@ -260,8 +260,26 @@ export class LmsService {
 
         // Verificar acceso
         // Si el curso no es gratuito y el usuario no tiene suscripción activa
-        if (!lesson.course.isFree && !hasSubscription) {
-            throw new ForbiddenException('Necesitas una suscripción activa para acceder a este contenido');
+        let hasPurchasedCourse = false;
+
+        if (!lesson.course.isFree && !hasSubscription && userId) {
+            // Verificar compra directamente en Postgres — sin cargar órdenes a memoria
+            const result = await this.prisma.$queryRaw<[{ count: number }]>`
+                SELECT COUNT(*)::int AS "count"
+                FROM "Order" o
+                JOIN "OrderItem" oi ON oi."orderId" = o."id"
+                JOIN "ProductVariant" pv ON pv."id" = oi."variantId"
+                JOIN "Product" p ON p."id" = pv."productId"
+                WHERE o."userId" = ${userId}
+                  AND o."status" = 'APPROVED'
+                  AND p."specs"::jsonb->>'courseId' = ${lesson.course.id}
+                LIMIT 1
+            `;
+            hasPurchasedCourse = (result[0]?.count ?? 0) > 0;
+        }
+
+        if (!lesson.course.isFree && !hasSubscription && !hasPurchasedCourse) {
+            throw new ForbiddenException('Necesitas una suscripción activa o haber comprado este curso para acceder al contenido.');
         }
 
         // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
@@ -397,15 +415,21 @@ export class LmsService {
             lastActivity: Date;
         }>();
 
+        // Batch: obtener conteos de lecciones por curso en una sola query
+        const courseIds = [...new Set(progress.map(p => p.lesson.course.id))];
+        const lessonCounts = await this.prisma.lesson.groupBy({
+            by: ['courseId'],
+            where: { courseId: { in: courseIds }, published: true },
+            _count: { id: true },
+        });
+        const countMap = new Map(lessonCounts.map(c => [c.courseId, c._count.id]));
+
         for (const p of progress) {
             const courseId = p.lesson.course.id;
             if (!courseProgress.has(courseId)) {
-                const totalLessons = await this.prisma.lesson.count({
-                    where: { courseId, published: true },
-                });
                 courseProgress.set(courseId, {
                     course: p.lesson.course,
-                    lessons: { completed: 0, total: totalLessons },
+                    lessons: { completed: 0, total: countMap.get(courseId) ?? 0 },
                     lastActivity: p.updatedAt,
                 });
             }
@@ -427,8 +451,62 @@ export class LmsService {
             .replace(/[^a-z0-9\s-]/g, '') // Eliminar caracteres especiales
             .replace(/\s+/g, '-') // Reemplazar espacios con guiones
             .replace(/-+/g, '-') // Reemplazar múltiples guiones con uno solo
-            .replace(/^-|-$/g, '') // Eliminar guiones al inicio o final
-            + '-' + Date.now().toString(36).substring(4); // Añadir sufijo único corto
+    }
+
+    // ==================== PURCHASING (B2C) ====================
+    async getMyPurchasedCourses(userId: string) {
+        // Encontrar todas las órdenes aprobadas del usuario
+        const orders = await this.prisma.order.findMany({
+            where: {
+                userId,
+                status: 'APPROVED',
+            },
+            include: {
+                items: {
+                    include: {
+                        variant: {
+                            include: {
+                                product: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Extraer los courseIds desde los "specs" (JSON)
+        const courseIds = new Set<string>();
+
+        for (const order of orders) {
+            for (const item of order.items) {
+                // Parse if it happens to be a string or JSON wrapper
+                let specsStr = item.variant.product.specs as any;
+                try {
+                    if (typeof specsStr === 'string') {
+                        specsStr = JSON.parse(specsStr);
+                    }
+                } catch (e) { }
+
+                if (specsStr && specsStr.courseId) {
+                    courseIds.add(specsStr.courseId);
+                }
+            }
+        }
+
+        if (courseIds.size === 0) {
+            return [];
+        }
+
+        // Buscar y devolver los cursos
+        return this.prisma.course.findMany({
+            where: {
+                id: { in: Array.from(courseIds) }
+            },
+            include: {
+                theme: { select: { id: true, title: true, slug: true } },
+                _count: { select: { lessons: true } }
+            }
+        });
     }
 }
 

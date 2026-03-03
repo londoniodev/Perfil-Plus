@@ -131,15 +131,17 @@ describe('PaymentsController', () => {
             ];
             mockPaymentsService.createProductCheckout.mockResolvedValue(mockCheckoutResult);
 
+            const mockReq = { tenantId: 'tenant-1', headers: {} } as any;
+            const dto = { items, frontUrl: 'http://localhost:3000' } as any;
+
             const result = await controller.createProductCheckout(
-                'user-1',
-                { items, frontUrl: 'http://localhost:3000' },
+                mockReq,
+                dto,
             );
 
             expect(mockPaymentsService.createProductCheckout).toHaveBeenCalledWith(
-                'user-1',
-                items,
-                'http://localhost:3000',
+                dto,
+                'tenant-1',
             );
             expect(result).toEqual(mockCheckoutResult);
         });

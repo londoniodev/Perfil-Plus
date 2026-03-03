@@ -53,12 +53,12 @@ const buttonVariants = cva(
                 ],
                 // Filter: Flat pill style
                 filter: [
-                    "px-4 py-2 text-sm",
+                    "px-4 py-2 text-sm flex-shrink-0",
                     "bg-card text-foreground",
-                    "border border-border rounded-full",
+                    "border border-border/60 rounded-full",
                     "transition-colors duration-200",
-                    "hover:bg-accent/10 hover:border-accent/50 hover:text-accent-foreground",
-                    "data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=true]:border-accent",
+                    "hover:bg-primary/10 hover:border-primary/50 hover:text-primary",
+                    "data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:border-primary data-[active=true]:shadow-sm",
                 ],
                 // Pagination: Simple squared
                 pagination: [

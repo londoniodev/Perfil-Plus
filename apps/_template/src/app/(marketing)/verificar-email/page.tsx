@@ -3,7 +3,8 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { API_BASE, TENANT_ID } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
+import { useTenant } from "@/app/providers";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
 import {
@@ -18,6 +19,7 @@ import {
 type VerificationStatus = "loading" | "success" | "error" | "expired" | "no-token";
 
 function VerifyEmailContent() {
+    const { tenantId } = useTenant();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
 
@@ -37,7 +39,7 @@ function VerifyEmailContent() {
     const verifyEmail = async () => {
         try {
             const res = await fetch(`${API_BASE}/auth/verify-email?token=${token}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: { 'x-tenant-id': tenantId },
             });
             const data = await res.json();
 
@@ -165,6 +167,7 @@ function VerifyEmailContent() {
 }
 
 function ResendVerificationForm() {
+    const { tenantId } = useTenant();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -179,7 +182,7 @@ function ResendVerificationForm() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": TENANT_ID,
+                    "x-tenant-id": tenantId,
                 },
                 body: JSON.stringify({ email }),
             });

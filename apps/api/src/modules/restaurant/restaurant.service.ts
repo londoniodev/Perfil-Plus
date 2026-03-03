@@ -21,14 +21,28 @@ export class RestaurantService {
         return tenant.id;
     }
 
-    async getPublicMenu(slug: string) {
+    async getPublicMenu(slugOrId: string) {
         // 0. Check Cache
-        const cacheKey = `public_menu:${slug}`;
+        const cacheKey = `public_menu:${slugOrId}`;
 
-        // 1. Find Tenant
-        const tenant = await this.prisma.tenant.findUnique({
-            where: { slug },
-        });
+        // 1. Find Tenant (Polymorphic: ID or Slug)
+        let tenant: any = null;
+
+        // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
+        try {
+            tenant = await this.prisma.tenant.findUnique({
+                where: { id: slugOrId }
+            });
+        } catch (e) {
+            // Probably not a valid UUID, ignore and try slug
+        }
+
+        // Fallback to Slug lookup
+        if (!tenant) {
+            tenant = await this.prisma.tenant.findUnique({
+                where: { slug: slugOrId },
+            });
+        }
 
         if (!tenant) {
             throw new NotFoundException('Restaurant not found');
@@ -79,12 +93,16 @@ export class RestaurantService {
             },
         });
 
-        // 4. Fetch Tenant Config (SystemSetting)
-        const systemSetting = await this.prisma.systemSetting.findFirst({
-            where: { tenantId, key: 'TENANT_CONFIG' }
+        // 4. Fetch Tenant Config (SystemSetting modules: menu, contact, etc.)
+        const systemSettings = await this.prisma.systemSetting.findMany({
+            where: { tenantId }
         });
 
-        const tenantConfig = systemSetting?.value as any || {};
+        const tenantConfig = systemSettings.reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {} as Record<string, any>);
+
         const contact = tenantConfig.contact || {};
 
         // 5. Transform Data for Public SDK
@@ -145,6 +163,7 @@ export class RestaurantService {
                 },
                 address: contact.address || null,
                 phone: contact.whatsapp || null,
+                orderTrackingEnabled: !!tenantConfig.orderTrackingEnabled
             },
             categories,
             products: publicProducts,

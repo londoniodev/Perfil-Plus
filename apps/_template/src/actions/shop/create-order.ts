@@ -1,6 +1,7 @@
 "use server"
 
-import { API_BASE, TENANT_ID } from "@/lib/config"
+import { API_BASE } from "@/lib/config"
+import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
@@ -51,12 +52,15 @@ export async function createOrder(data: unknown, items: unknown, tableId: string
             // TODO: Add customer info support in API if missing.
         }
 
+        const headersList = await headers()
+        const tenantId = headersList.get("x-tenant-id") || "template"
+
         // 3. Call API
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-tenant-id": TENANT_ID
+                "x-tenant-id": tenantId
             },
             body: JSON.stringify(payload)
         })

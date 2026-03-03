@@ -5,12 +5,13 @@ import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, getFontVariables } from "@alvarosky/ui";
 import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
-import { ThemeProvider } from "./providers";
+import { ThemeProvider, TenantProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { TableDetector } from "@/components/shop/table-detector";
 import { serverFetch } from "@/lib/api-server";
 import { getTenantId } from "@/lib/config-server";
+import { headers } from "next/headers";
 
 async function getTenantDesign(tenantId: string) {
   // Skip DB call during build time (static generation) — API is not accessible in Docker build context easily
@@ -22,16 +23,19 @@ async function getTenantDesign(tenantId: string) {
     // 1. El endpoint /tenant/branding es @Public() y NO requiere JWT/cookies
     // 2. serverFetch llama a cookies() que marca el fetch como dinámico,
     //    impidiendo el cache ISR y causando errores en páginas estáticas
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+    // Use INTERNAL_API_URL inside Docker for SSR to avoid external routing hops and HTTPS 404s
+    const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api').replace(/\/+$/, "");
+    const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
     const response = await fetch(`${API_URL}/tenant/branding`, {
       headers: {
         'Content-Type': 'application/json',
         'x-tenant-id': tenantId,
+        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
       },
       next: {
-        revalidate: 300,
-        tags: ['tenant-branding'],
+        revalidate: 3600,
+        tags: ['tenant-branding', `tenant-branding-${tenantId}`],
       }
     });
 
@@ -60,7 +64,7 @@ async function getTenantDesign(tenantId: string) {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
     default: `${siteConfig.name} | Psicología, cultura y decisiones conscientes`,
@@ -119,6 +123,31 @@ export const metadata: Metadata = {
   },
 };
 
+export async function generateMetadata(): Promise<Metadata> {
+  const tenantId = await getTenantId();
+  const design = await getTenantDesign(tenantId);
+  const logoUrl = design?.logo || '/images/branding/icon.png';
+
+  return {
+    ...baseMetadata,
+    icons: {
+      icon: logoUrl,
+      apple: logoUrl,
+    },
+    openGraph: {
+      ...baseMetadata.openGraph,
+      images: [
+        {
+          url: logoUrl,
+          width: 800,
+          height: 800,
+          alt: "Logo",
+        },
+      ],
+    }
+  };
+}
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -137,25 +166,43 @@ export default async function RootLayout({
   // Color fallback
   const primaryColor = design?.primary || "zinc";
 
+  const headersList = await headers();
+  const tenantFeaturesRaw = headersList.get('x-tenant-features');
+  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, x-tenant-features raw="${tenantFeaturesRaw}"`);
+  let hasDashboardFeature = true; // Default fallback publico
+  if (tenantFeaturesRaw) {
+    try {
+      const features = JSON.parse(tenantFeaturesRaw);
+      hasDashboardFeature = features.includes('dashboard');
+      console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(features)}, hasDashboardFeature=${hasDashboardFeature}`);
+    } catch (e) {
+      console.warn("Failed to parse tenant features block");
+    }
+  } else {
+    console.log(`[LAYOUT DEBUG] No x-tenant-features header found, defaulting hasDashboardFeature=true`);
+  }
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={true}
-        >
-          <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
-            <GlobalSchemas />
-            <ToastProvider>
-              <NavigationWrapper footer={<Footer />}>
-                {children}
-              </NavigationWrapper>
-              <PwaInstallPrompt />
-              <TableDetector />
-            </ToastProvider>
-          </BrandProvider>
-        </ThemeProvider>
+        <TenantProvider tenantId={tenantId}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={true}
+          >
+            <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
+              <GlobalSchemas />
+              <ToastProvider>
+                <NavigationWrapper footer={<Footer />} hasDashboardFeature={hasDashboardFeature}>
+                  {children}
+                </NavigationWrapper>
+                <PwaInstallPrompt />
+                <TableDetector />
+              </ToastProvider>
+            </BrandProvider>
+          </ThemeProvider>
+        </TenantProvider>
       </body>
     </html>
   );

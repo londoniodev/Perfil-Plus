@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTenant } from "@/app/providers";
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -9,7 +10,7 @@ import { Loader2, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
 import { ImageUploader } from "@alvarosky/ui"
-import { API_BASE, TENANT_ID } from "@/lib/config"
+import { API_BASE } from "@/lib/config"
 
 const settingsSchema = z.object({
     storeName: z.string().optional().or(z.literal("")),
@@ -85,6 +86,8 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ initialData }: SettingsFormProps) {
+    const { tenantId } = useTenant();
+
     const toast = useToast()
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -235,7 +238,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                                     <FormControl>
                                                         <ImageUploader
                                                             apiBase={API_BASE || ""}
-                                                            tenantId={TENANT_ID || ""}
+                                                            tenantId={tenantId || ""}
                                                             value={field.value || null}
                                                             onChange={field.onChange}
                                                             label="Haz clic para subir el logo (JPG, PNG, WEBP)"

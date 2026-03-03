@@ -31,6 +31,7 @@ export interface SiteHeaderProps {
     loginUrl?: string;
     registerUrl?: string;
     profileUrl?: string;
+    showAuthButtons?: boolean;
     className?: string;
 }
 
@@ -46,6 +47,7 @@ export function SiteHeader({
     loginUrl = "/login",
     registerUrl = "/registro",
     profileUrl = "/perfil",
+    showAuthButtons = true,
     className,
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -80,6 +82,7 @@ export function SiteHeader({
                                     currentPath={pathname}
                                     loginUrl={loginUrl}
                                     profileUrl={profileUrl}
+                                    showAuthButtons={showAuthButtons}
                                 />
                             </div>
                         </SheetContent>
@@ -109,6 +112,7 @@ export function SiteHeader({
                         loginUrl={loginUrl}
                         registerUrl={registerUrl}
                         profileUrl={profileUrl}
+                        showAuthButtons={showAuthButtons}
                     />
                 </nav>
 
@@ -129,9 +133,10 @@ interface DesktopNavLinksProps {
     loginUrl: string;
     registerUrl: string;
     profileUrl: string;
+    showAuthButtons?: boolean;
 }
 
-function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl }: DesktopNavLinksProps) {
+function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
         "text-base font-medium transition-colors hover:text-primary/80",
         currentPath === path ? "text-primary font-bold" : "text-foreground/80"
@@ -155,28 +160,30 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
                 </Link>
             ))}
 
-            <div className="pl-4 border-l border-border flex gap-2">
-                {isLoggedIn ? (
-                    <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-                        <Link href={profileUrl}>
-                            <IconUser size={18} className="mr-2" />
-                            Mi Panel
-                        </Link>
-                    </Button>
-                ) : (
-                    <>
-                        <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex text-foreground hover:text-accent">
-                            <Link href={registerUrl}>Registrarse</Link>
-                        </Button>
+            {showAuthButtons && (
+                <div className="pl-4 border-l border-border flex gap-2">
+                    {isLoggedIn ? (
                         <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-                            <Link href={loginUrl}>
-                                <IconLogin size={18} className="mr-2" />
-                                Entrar
+                            <Link href={profileUrl}>
+                                <IconUser size={18} className="mr-2" />
+                                Mi Panel
                             </Link>
                         </Button>
-                    </>
-                )}
-            </div>
+                    ) : (
+                        <>
+                            <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex text-foreground hover:text-accent">
+                                <Link href={registerUrl}>Registrarse</Link>
+                            </Button>
+                            <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
+                                <Link href={loginUrl}>
+                                    <IconLogin size={18} className="mr-2" />
+                                    Entrar
+                                </Link>
+                            </Button>
+                        </>
+                    )}
+                </div>
+            )}
         </>
     );
 }
@@ -189,9 +196,10 @@ interface MobileNavLinksProps {
     currentPath: string;
     loginUrl: string;
     profileUrl: string;
+    showAuthButtons?: boolean;
 }
 
-function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, profileUrl }: MobileNavLinksProps) {
+function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, profileUrl, showAuthButtons = true }: MobileNavLinksProps) {
     const linkClass = (path: string) => cn(
         "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-zinc-200 hover:bg-primary/5 transition-colors",
         currentPath === path ? "text-primary bg-primary/10 font-bold" : "text-zinc-900"
@@ -217,23 +225,25 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
                 </Link>
             ))}
 
-            <div className="p-4 mt-auto">
-                {isLoggedIn ? (
-                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
-                        <Link href={profileUrl} onClick={onClick}>
-                            <IconUser size={20} className="mr-2" />
-                            Mi Panel
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
-                        <Link href={loginUrl} onClick={onClick}>
-                            <IconLogin size={20} className="mr-2" />
-                            Entrar
-                        </Link>
-                    </Button>
-                )}
-            </div>
+            {showAuthButtons && (
+                <div className="p-4 mt-auto">
+                    {isLoggedIn ? (
+                        <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
+                            <Link href={profileUrl} onClick={onClick}>
+                                <IconUser size={20} className="mr-2" />
+                                Mi Panel
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button asChild className="w-full justify-start bg-primary hover:bg-primary/90 text-primary-foreground border-none shadow-md" size="lg">
+                            <Link href={loginUrl} onClick={onClick}>
+                                <IconLogin size={20} className="mr-2" />
+                                Entrar
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

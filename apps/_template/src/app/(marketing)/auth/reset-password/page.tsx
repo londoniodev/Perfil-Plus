@@ -13,7 +13,8 @@ import { Input } from "@alvarosky/ui";
 import { Label } from "@alvarosky/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@alvarosky/ui";
-import { API_BASE, TENANT_ID } from '@/lib/config';
+import { API_BASE } from '@/lib/config';
+import { useTenant } from "@/app/providers";
 
 
 const resetPasswordSchema = z
@@ -34,6 +35,7 @@ const resetPasswordSchema = z
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordFormContent() {
+    const { tenantId } = useTenant();
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -63,7 +65,7 @@ function ResetPasswordFormContent() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-tenant-id': TENANT_ID,
+                    'x-tenant-id': tenantId,
                 },
                 body: JSON.stringify({
                     token,
@@ -92,7 +94,7 @@ function ResetPasswordFormContent() {
 
     if (!token) {
         return (
-            <Card className="w-full border-none shadow-none bg-transparent p-0">
+            <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
                 <CardContent className="text-center pt-8">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error/10 mb-4">
                         <Lock className="h-6 w-6 text-error" />
@@ -110,7 +112,7 @@ function ResetPasswordFormContent() {
     }
 
     return (
-        <Card className="w-full border-none shadow-none bg-transparent p-0">
+        <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
             <CardHeader className="text-center px-0 pt-0">
                 <Link href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
                     <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600 font-serif">
@@ -134,7 +136,7 @@ function ResetPasswordFormContent() {
                             <Input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
-                                className="pl-10 pr-10"
+                                className="pl-10 pr-10 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                                 placeholder="••••••••"
                                 {...register('password')}
                             />
@@ -167,7 +169,7 @@ function ResetPasswordFormContent() {
                             <Input
                                 id="confirmPassword"
                                 type={showConfirmPassword ? 'text' : 'password'}
-                                className="pl-10 pr-10"
+                                className="pl-10 pr-10 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
                                 placeholder="••••••••"
                                 {...register('confirmPassword')}
                             />

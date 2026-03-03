@@ -32,6 +32,8 @@ export class LeadsService {
         return this.prisma.lead.findMany({
             where,
             orderBy: { createdAt: 'desc' },
+            take: query.take ?? 50,
+            skip: query.skip ?? 0,
         });
     }
 

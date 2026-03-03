@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTenant } from "@/app/providers";
 import { useAuth } from "@/context/AuthContext"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
-import { TENANT_ID } from "@/lib/config"
+import { } from "@/lib/config"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { Button, Badge, Separator, Card, CardContent, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, ScrollArea, AdminPageWrapper } from "@alvarosky/ui"
 import { Clock, CheckCircle2, XCircle, Utensils, Plus, RefreshCw, ChefHat, Bell, Loader2 } from "lucide-react"
@@ -119,6 +120,8 @@ function OrderCard({ order, onAction, busy, tableName }: {
 
 // ─── Main Waiter Client ───────────────────────────────────────────────
 export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }) {
+    const { tenantId } = useTenant();
+
     const { user, isAdmin, loading: authLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -137,31 +140,51 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(undefined, true);
+            const data = await getAdminOrders(tenantId, undefined, true);
             setOrders(data as any) // Type update might be needed if WaiterOrder != Order
         } catch (e) {
             // Optional: toast error
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [tenantId])
 
     // Initial fetch
     useEffect(() => {
         fetchOrders()
     }, [fetchOrders])
 
-    // Real-time updates via SSE
+    // Real-time updates via SSE — actualiza state local sin re-fetch
     useOrderEvents((event) => {
-        // Refresh full list to ensure consistency (simplest approach for now)
-        // Optimization: update local state based on event data
-        fetchOrders()
+        if (event.type === 'new_order') {
+            const order = event.data as WaiterOrder
+            setOrders(prev => {
+                if (prev.some(o => o.id === order.id)) return prev
+                return [order, ...prev]
+            })
+        } else if (event.type === 'status_changed') {
+            const updated = event.data as WaiterOrder
+            setOrders(prev => {
+                const exists = prev.some(o => o.id === updated.id)
+                if (exists) {
+                    return prev.map(o => o.id === updated.id ? updated : o)
+                }
+                return [updated, ...prev]
+            })
+        } else if (event.type === 'payment_received') {
+            if (event.data.closed) {
+                // Orden cerrada por pago completo
+                setOrders(prev => prev.map(o =>
+                    o.id === event.orderId ? { ...o, status: 'DELIVERED' as any } : o
+                ))
+            }
+        }
     })
 
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(orderId, status as any);
+            await updateOrderStatus(tenantId, orderId, status as any);
             await fetchOrders()
         } catch (e: any) {
             alert(`Error: ${e.message}`)

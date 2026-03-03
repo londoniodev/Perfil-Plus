@@ -6,7 +6,7 @@ import { SiteHeader } from "@alvarosky/ui";
 import { CartSheet } from "@/components/shop/cart-sheet";
 import { siteConfig } from "@/config/site";
 
-export function Header() {
+export function Header({ hasDashboardFeature = true }: { hasDashboardFeature?: boolean }) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
 
@@ -27,6 +27,7 @@ export function Header() {
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
+            showAuthButtons={hasDashboardFeature}
         />
     );
 }

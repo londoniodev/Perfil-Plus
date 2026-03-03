@@ -50,6 +50,7 @@
     "joi": "^18.0.2",
     "mercadopago": "^2.11.0",
     "multer": "^2.0.2",
+    "nestjs-cls": "^6.2.0",
     "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -57,7 +58,8 @@
     "prisma": "5.22.0",
     "react": "^19.2.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

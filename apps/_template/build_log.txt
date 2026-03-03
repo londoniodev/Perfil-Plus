@@ -1,0 +1,29 @@
+▲ Next.js 16.1.1 (webpack)
+- Environments: .env.production, .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for server...
+ ✓ (pwa) Compiling for client (static)...
+ ○ (pwa) Service worker: C:\Users\Pc\Desktop\ALVARO\REPOSITORIOS\Web Projects\apps\_template\public\sw.js
+ ○ (pwa)   URL: /sw.js
+ ○ (pwa)   Scope: /
+
+[1m[33mwarn[39m[22m - The class `duration-[2000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;2000ms&rsqb;` to silence this warning.
+✓ Compiled successfully in 27.2s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/(marketing)/portafolio/PortafolioContent.tsx:8:10
+Type error: Module '"@/types/marketing"' has no exported member 'Caso'.
+
+[0m [90m  6 |[39m [36mimport[39m { [33mCaseVisual[39m } [36mfrom[39m [32m"@/components/portfolio/CaseVisual"[39m[33m;[39m
+ [90m  7 |[39m [36mimport[39m { casos } [36mfrom[39m [32m"@/constants/casosData"[39m[33m;[39m
+[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m { [33mCaso[39m[33m,[39m [33mCategoriaId[39m } [36mfrom[39m [32m"@/types/marketing"[39m[33m;[39m
+ [90m    |[39m          [31m[1m^[22m[39m
+ [90m  9 |[39m [36mimport[39m {
+ [90m 10 |[39m     [33mIconBuilding[39m[33m,[39m
+ [90m 11 |[39m     [33mIconUsers[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

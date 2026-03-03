@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Post, Category } from "@/types/blog";
 import { getPosts, getCategories } from "@/lib/api";
+import { useTenant } from "@/app/providers";
 
 // ============================================================================
 // HOOK - Conectado a API real
@@ -29,6 +30,7 @@ interface UseBlogResult {
  * Soporta paginación y filtro por categoría.
  */
 export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
+    const { tenantId } = useTenant();
     const { page = 1, limit = 9, category } = options;
 
     const [posts, setPosts] = useState<Post[]>([]);
@@ -43,8 +45,8 @@ export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
             setError(null);
 
             const [postsData, categoriesData] = await Promise.all([
-                getPosts(page, limit, category),
-                getCategories(),
+                getPosts(tenantId, page, limit, category),
+                getCategories(tenantId),
             ]);
 
             setPosts(postsData.data);

@@ -97,6 +97,12 @@ export class LmsController {
     async getMyResults(@CurrentUser('id') userId: string) {
         return this.evaluationService.getUserResults(userId);
     }
+
+    // Compras
+    @Get('my-purchased-courses')
+    async getMyPurchasedCourses(@CurrentUser('id') userId: string) {
+        return this.lmsService.getMyPurchasedCourses(userId);
+    }
 }
 
 // ==================== ADMIN LMS CONTROLLER ====================

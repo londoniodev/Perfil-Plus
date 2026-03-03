@@ -111,14 +111,15 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
         return false;
     };
 
-    const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel") => {
-        if (!confirm(action === "assign" ? "¿Asignar Premium?" : "¿Cancelar Premium?")) return false;
+    const handleSubscriptionChange = async (userId: string, action: "assign" | "cancel", days?: number) => {
+        if (action === "cancel" && !confirm("¿Cancelar Premium?")) return false;
         setActionLoading(userId);
         try {
             const res = await fetch(`${API_BASE}/admin/users/${userId}/subscription`, {
                 method: action === "assign" ? "POST" : "DELETE",
                 headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
+                body: action === "assign" ? JSON.stringify({ days: days ?? 30 }) : undefined,
             });
             if (res.ok) {
                 setUsers((current) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { StatusBadge } from "../../../status-badge";
 import {
     Table,
@@ -12,6 +12,7 @@ import {
 } from "../../../table";
 import { Button } from "../../../button";
 import { Badge } from "../../../badge";
+import { PremiumDaysDialog } from "./premium-days-dialog";
 
 // ============================================================================
 // Types
@@ -34,7 +35,7 @@ export interface UsersTableProps {
     actionLoading: string | null;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;
-    onManageSubscription: (userId: string, action: "assign" | "cancel") => void;
+    onManageSubscription: (userId: string, action: "assign" | "cancel", days?: number) => void;
 }
 
 // ============================================================================
@@ -48,42 +49,68 @@ export function UsersTable({
     onDelete,
     onManageSubscription,
 }: UsersTableProps) {
+    const [premiumDialog, setPremiumDialog] = useState<{ open: boolean; userId: string; userName: string }>({
+        open: false,
+        userId: "",
+        userName: "",
+    });
+
+    const handleAssignClick = (userId: string, userName: string) => {
+        setPremiumDialog({ open: true, userId, userName });
+    };
+
+    const handleConfirmPremium = (days: number) => {
+        onManageSubscription(premiumDialog.userId, "assign", days);
+        setPremiumDialog({ open: false, userId: "", userName: "" });
+    };
+
     return (
-        <div className="rounded-lg border bg-card overflow-hidden">
-            <Table>
-                <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                        <TableHead>Usuario</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Rol</TableHead>
-                        <TableHead>Verificado</TableHead>
-                        <TableHead>Suscripción</TableHead>
-                        <TableHead>Registro</TableHead>
-                        <TableHead>Acciones</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {users.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                No se encontraron usuarios.
-                            </TableCell>
+        <>
+            <div className="rounded-lg border bg-card overflow-hidden">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead>Usuario</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Rol</TableHead>
+                            <TableHead>Verificado</TableHead>
+                            <TableHead>Suscripción</TableHead>
+                            <TableHead>Registro</TableHead>
+                            <TableHead>Acciones</TableHead>
                         </TableRow>
-                    ) : (
-                        users.map((user) => (
-                            <UserRow
-                                key={user.id}
-                                user={user}
-                                isLoading={actionLoading === user.id}
-                                onRoleChange={onRoleChange}
-                                onDelete={onDelete}
-                                onManageSubscription={onManageSubscription}
-                            />
-                        ))
-                    )}
-                </TableBody>
-            </Table>
-        </div>
+                    </TableHeader>
+                    <TableBody>
+                        {users.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                    No se encontraron usuarios.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            users.map((user) => (
+                                <UserRow
+                                    key={user.id}
+                                    user={user}
+                                    isLoading={actionLoading === user.id}
+                                    onRoleChange={onRoleChange}
+                                    onDelete={onDelete}
+                                    onManageSubscription={onManageSubscription}
+                                    onAssignPremium={handleAssignClick}
+                                />
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            <PremiumDaysDialog
+                open={premiumDialog.open}
+                onOpenChange={(open) => setPremiumDialog((prev) => ({ ...prev, open }))}
+                userName={premiumDialog.userName}
+                onConfirm={handleConfirmPremium}
+                loading={!!actionLoading}
+            />
+        </>
     );
 }
 
@@ -92,10 +119,11 @@ interface UserRowProps {
     isLoading: boolean;
     onRoleChange: (userId: string, newRole: "USER" | "ADMIN") => void;
     onDelete: (userId: string) => void;
-    onManageSubscription: (userId: string, action: "assign" | "cancel") => void;
+    onManageSubscription: (userId: string, action: "assign" | "cancel", days?: number) => void;
+    onAssignPremium: (userId: string, userName: string) => void;
 }
 
-function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription }: UserRowProps) {
+function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription, onAssignPremium }: UserRowProps) {
     const subscriptionStatus = user.subscription?.status || "Sin suscripción";
     const isActiveSubscription = subscriptionStatus === "ACTIVE";
 
@@ -147,7 +175,7 @@ function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription
                 <div className="flex items-center gap-2">
                     {!isActiveSubscription ? (
                         <Button
-                            onClick={() => onManageSubscription(user.id, "assign")}
+                            onClick={() => onAssignPremium(user.id, user.name || user.email)}
                             disabled={isLoading}
                             size="sm"
                             variant="outline"

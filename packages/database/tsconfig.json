@@ -11,8 +11,7 @@
         "declarationMap": true
     },
     "include": [
-        "index.ts",
-        "prisma"
+        "index.ts"
     ],
     "exclude": [
         "node_modules",

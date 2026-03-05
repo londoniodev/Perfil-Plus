@@ -1,10 +1,12 @@
 {
     "name": "@alvarosky/database",
     "version": "0.0.1",
-    "main": "index.ts",
-    "types": "index.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "scripts": {
-        "build": "prisma generate",
+        "build": "prisma generate && tsc",
+        "dev": "tsc --watch",
+        "clean": "rm -rf dist",
         "db:generate": "prisma generate",
         "db:push": "prisma db push",
         "db:seed": "ts-node prisma/seed.ts",
@@ -24,9 +26,9 @@
         "typescript": "^5.7.3"
     },
     "exports": {
-        ".": "./index.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
     }
 }
-
-
-

@@ -57,8 +57,8 @@ RUN apk add --no-cache openssl
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 # Copiamos las dependencias instaladas
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-# Copiamos el Schema (Por seguridad y consistencia)
-COPY --from=builder --chown=nestjs:nodejs /app/packages/database/prisma ./prisma
+# Copiamos el paquete de la base de datos para que el symlink de pnpm @alvarosky/database no se rompa
+COPY --from=builder --chown=nestjs:nodejs /app/packages/database ./packages/database
 
 USER nestjs
 

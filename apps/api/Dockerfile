@@ -57,8 +57,10 @@ RUN apk add --no-cache openssl
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 # Copiamos las dependencias instaladas
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-# Copiamos el paquete de la base de datos para que el symlink de pnpm @alvarosky/database no se rompa
-COPY --from=builder --chown=nestjs:nodejs /app/packages/database ./packages/database
+# FIX CRÍTICO: Los symlinks de pnpm se rompen entre stages de Docker.
+# Copiamos el paquete compilado DIRECTAMENTE a donde Node.js lo busca,
+# sobreescribiendo el symlink roto.
+COPY --from=builder --chown=nestjs:nodejs /app/packages/database ./node_modules/@alvarosky/database
 
 USER nestjs
 

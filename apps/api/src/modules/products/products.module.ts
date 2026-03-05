@@ -6,10 +6,9 @@ import { AuthModule } from '../auth/auth.module';
 import { StorageModule } from '../storage/storage.module';
 
 @Module({
-    imports: [AuthModule, StorageModule],
-    controllers: [ProductsController, StoreController],
-    providers: [ProductsService],
-    exports: [ProductsService],
+  imports: [AuthModule, StorageModule],
+  controllers: [ProductsController, StoreController],
+  providers: [ProductsService],
+  exports: [ProductsService],
 })
-export class ProductsModule { }
-
+export class ProductsModule {}

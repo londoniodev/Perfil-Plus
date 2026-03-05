@@ -1,52 +1,60 @@
-import { IsString, IsNumber, IsOptional, IsArray, ValidateNested, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class RecipeIngredientDto {
-    @IsString()
-    inventoryItemId: string;
+  @IsString()
+  inventoryItemId: string;
 
-    @IsNumber()
-    @Min(0.001)
-    quantity: number;
+  @IsNumber()
+  @Min(0.001)
+  quantity: number;
 
-    @IsNumber()
-    @IsOptional()
-    @Min(1)
-    wasteFactor?: number;
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  wasteFactor?: number;
 }
 
 export class CreateRecipeDto {
-    @IsString()
-    productId: string;
+  @IsString()
+  productId: string;
 
-    @IsInt()
-    @IsOptional()
-    @Min(1)
-    yield?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  yield?: number;
 
-    @IsString()
-    @IsOptional()
-    notes?: string;
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => RecipeIngredientDto)
-    ingredients: RecipeIngredientDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RecipeIngredientDto)
+  ingredients: RecipeIngredientDto[];
 }
 
 export class UpdateRecipeDto {
-    @IsInt()
-    @IsOptional()
-    @Min(1)
-    yield?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  yield?: number;
 
-    @IsString()
-    @IsOptional()
-    notes?: string;
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => RecipeIngredientDto)
-    @IsOptional()
-    ingredients?: RecipeIngredientDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RecipeIngredientDto)
+  @IsOptional()
+  ingredients?: RecipeIngredientDto[];
 }

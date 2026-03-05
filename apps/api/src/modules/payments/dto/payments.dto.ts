@@ -1,51 +1,58 @@
-import { IsString, IsOptional, IsEmail, IsNumber, IsIn, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  IsNumber,
+  IsIn,
+  IsUrl,
+} from 'class-validator';
 
 // ==================== SUBSCRIPTION DTOs ====================
 export class CreateSubscriptionDto {
-    @IsOptional()
-    @IsEmail()
-    email?: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
-    @IsOptional()
-    @IsString()
-    frontUrl?: string;
+  @IsOptional()
+  @IsString()
+  frontUrl?: string;
 }
 
 // ==================== CHECKOUT DTOs ====================
 
 export class CheckoutItemDto {
-    @IsString()
-    variantId: string;
+  @IsString()
+  variantId: string;
 
-    @IsNumber()
-    quantity: number;
+  @IsNumber()
+  quantity: number;
 }
 
 export class CheckoutCustomerDto {
-    @IsOptional()
-    @IsString()
-    name?: string;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-    @IsOptional()
-    @IsString()
-    email?: string;
+  @IsOptional()
+  @IsString()
+  email?: string;
 
-    @IsOptional()
-    @IsString()
-    phone?: string;
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
-    @IsOptional()
-    @IsString()
-    userId?: string;
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }
 
 export class CreateCheckoutDto {
-    items: CheckoutItemDto[];
+  items: CheckoutItemDto[];
 
-    @IsOptional()
-    @IsString()
-    frontUrl?: string;
+  @IsOptional()
+  @IsString()
+  frontUrl?: string;
 
-    @IsOptional()
-    customer?: CheckoutCustomerDto;
+  @IsOptional()
+  customer?: CheckoutCustomerDto;
 }

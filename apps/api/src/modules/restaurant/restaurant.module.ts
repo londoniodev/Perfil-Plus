@@ -4,8 +4,8 @@ import { RestaurantController } from './restaurant.controller';
 import { PrismaModule } from '../../prisma';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [RestaurantController],
-    providers: [RestaurantService],
+  imports: [PrismaModule],
+  controllers: [RestaurantController],
+  providers: [RestaurantService],
 })
-export class RestaurantModule { }
+export class RestaurantModule {}

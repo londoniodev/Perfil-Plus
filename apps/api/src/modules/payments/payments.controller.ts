@@ -1,15 +1,15 @@
 import {
-    Controller,
-    Post,
-    Get,
-    Delete,
-    Body,
-    Param,
-    Headers,
-    HttpCode,
-    HttpStatus,
-    RawBodyRequest,
-    Req,
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  RawBodyRequest,
+  Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { PaymentsService } from './payments.service';
@@ -18,78 +18,80 @@ import { Public, CurrentUser, Roles } from '../../common/decorators';
 
 @Controller('payments')
 export class PaymentsController {
-    constructor(private readonly paymentsService: PaymentsService) { }
+  constructor(private readonly paymentsService: PaymentsService) {}
 
-    // ==================== SUBSCRIPTIONS ====================
+  // ==================== SUBSCRIPTIONS ====================
 
-    @Post('subscription/checkout')
-    async createSubscriptionCheckout(
-        @CurrentUser('id') userId: string,
-        @Body() dto: CreateSubscriptionDto,
-    ) {
-        return this.paymentsService.createSubscriptionCheckout(userId, dto.email, dto.frontUrl);
+  @Post('subscription/checkout')
+  async createSubscriptionCheckout(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateSubscriptionDto,
+  ) {
+    return this.paymentsService.createSubscriptionCheckout(
+      userId,
+      dto.email,
+      dto.frontUrl,
+    );
+  }
+
+  @Get('subscription/status')
+  async getSubscriptionStatus(@CurrentUser('id') userId: string) {
+    return this.paymentsService.getSubscriptionStatus(userId);
+  }
+
+  @Delete('subscription')
+  async cancelSubscription(@CurrentUser('id') userId: string) {
+    return this.paymentsService.cancelSubscription(userId);
+  }
+
+  @Post('product/checkout')
+  async createProductCheckout(
+    @Req() req: Request,
+    @Body() dto: CreateCheckoutDto,
+  ) {
+    // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
+    const tenantId =
+      (req as any).tenantId || req.headers['x-tenant-id'] || 'default';
+    return this.paymentsService.createProductCheckout(dto, tenantId);
+  }
+
+  // ==================== WEBHOOKS ====================
+
+  @Post('webhook')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async handleWebhook(
+    @Body() body: any,
+    @Headers('x-signature') xSignature: string,
+    @Headers('x-request-id') xRequestId: string,
+  ) {
+    // Validación de firma (Seguridad)
+    const isValid = await this.paymentsService.verifyWebhookSignature(
+      xSignature,
+      xRequestId,
+      body?.data?.id || body?.id,
+    );
+
+    if (!isValid) {
+      return { status: 'error', reason: 'invalid signature' };
     }
 
-    @Get('subscription/status')
-    async getSubscriptionStatus(@CurrentUser('id') userId: string) {
-        return this.paymentsService.getSubscriptionStatus(userId);
+    // Mercado Pago envía el tipo de notificación y el ID
+    const type = body.type || body.topic;
+    const dataId = body.data?.id || body.id;
+
+    if (!type || !dataId) {
+      return { status: 'ignored', reason: 'missing type or data.id' };
     }
 
-    @Delete('subscription')
-    async cancelSubscription(@CurrentUser('id') userId: string) {
-        return this.paymentsService.cancelSubscription(userId);
-    }
+    return this.paymentsService.handleWebhook(type, dataId.toString());
+  }
 
+  // ==================== ADMIN ====================
 
-
-    @Post('product/checkout')
-    async createProductCheckout(
-        @Req() req: Request,
-        @Body() dto: CreateCheckoutDto,
-    ) {
-        // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
-        const tenantId = (req as any).tenantId || req.headers['x-tenant-id'] || 'default';
-        return this.paymentsService.createProductCheckout(dto, tenantId);
-    }
-
-    // ==================== WEBHOOKS ====================
-
-    @Post('webhook')
-    @Public()
-    @HttpCode(HttpStatus.OK)
-    async handleWebhook(
-        @Body() body: any,
-        @Headers('x-signature') xSignature: string,
-        @Headers('x-request-id') xRequestId: string,
-    ) {
-        // Validación de firma (Seguridad)
-        const isValid = await this.paymentsService.verifyWebhookSignature(
-            xSignature,
-            xRequestId,
-            body?.data?.id || body?.id
-        );
-
-        if (!isValid) {
-            return { status: 'error', reason: 'invalid signature' };
-        }
-
-        // Mercado Pago envía el tipo de notificación y el ID
-        const type = body.type || body.topic;
-        const dataId = body.data?.id || body.id;
-
-        if (!type || !dataId) {
-            return { status: 'ignored', reason: 'missing type or data.id' };
-        }
-
-        return this.paymentsService.handleWebhook(type, dataId.toString());
-    }
-
-    // ==================== ADMIN ====================
-
-    @Get('admin/stats')
-    @Roles('ADMIN')
-    async getPaymentStats() {
-        return this.paymentsService.getPaymentStats();
-    }
+  @Get('admin/stats')
+  @Roles('ADMIN')
+  async getPaymentStats() {
+    return this.paymentsService.getPaymentStats();
+  }
 }
-

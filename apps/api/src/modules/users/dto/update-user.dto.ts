@@ -1,13 +1,12 @@
 import { IsString, IsOptional, MaxLength, IsUrl } from 'class-validator';
 
 export class UpdateUserDto {
-    @IsOptional()
-    @IsString()
-    @MaxLength(100)
-    name?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  name?: string;
 
-    @IsOptional()
-    @IsUrl()
-    avatar?: string;
+  @IsOptional()
+  @IsUrl()
+  avatar?: string;
 }
-

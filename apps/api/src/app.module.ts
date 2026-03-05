@@ -50,7 +50,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       validationSchema: Joi.object({
         // Server
         PORT: Joi.number().default(3001),
-        NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
 
         // Database
         DATABASE_URL: Joi.string().required(),
@@ -131,7 +133,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         name: 'strict',
         ttl: 60000,
         limit: 20, // For sensitive operations
-      }
+      },
     ]),
 
     // Redis Cache
@@ -152,7 +154,10 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
           console.log('✅ Redis cache connected');
           return { store };
         } catch (error) {
-          console.warn('⚠️ Redis not available, using in-memory cache:', error.message);
+          console.warn(
+            '⚠️ Redis not available, using in-memory cache:',
+            error.message,
+          );
           return { ttl: 3600 * 1000 };
         }
       },
@@ -221,9 +226,6 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(TenantMiddleware)
-      .forRoutes('*');
+    consumer.apply(TenantMiddleware).forRoutes('*');
   }
 }
-

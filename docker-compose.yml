@@ -2,10 +2,10 @@ version: '3'
 
 services:
   web:
-    container_name: mauro-web
+    container_name: template-web
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/_template/Dockerfile
     restart: always
     ports:
       - "3000:3000"

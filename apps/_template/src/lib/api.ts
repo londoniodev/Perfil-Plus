@@ -43,7 +43,7 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
                         localStorage.setItem('refreshToken', data.refreshToken);
 
                         // 2. Update Cookie (for Middleware sync)
-                        document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
+                        document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax; Secure`;
 
                         // 3. Retry original request with NEW token
                         res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -58,7 +58,7 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
                     localStorage.removeItem('token');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('user');
-                    document.cookie = "accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+                    document.cookie = "accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax; Secure";
                     window.location.href = '/login?reason=session_expired';
                 }
             }

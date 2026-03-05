@@ -1,4 +1,17 @@
-import { Controller, Get, Patch, Delete, Post, Body, Query, Param, ParseIntPipe, DefaultValuePipe, Inject, forwardRef } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Post,
+  Body,
+  Query,
+  Param,
+  ParseIntPipe,
+  DefaultValuePipe,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { PaymentsService } from '../payments/payments.service';
 import { UpdateUserDto } from './dto';
@@ -7,72 +20,75 @@ import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
-    @Get('profile')
-    async getProfile(@CurrentUser('id') userId: string) {
-        return this.usersService.getProfile(userId);
-    }
+  @Get('profile')
+  async getProfile(@CurrentUser('id') userId: string) {
+    return this.usersService.getProfile(userId);
+  }
 
-    @Patch('profile')
-    async updateProfile(
-        @CurrentUser('id') userId: string,
-        @Body() dto: UpdateUserDto,
-    ) {
-        return this.usersService.updateProfile(userId, dto);
-    }
+  @Patch('profile')
+  async updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateUserDto,
+  ) {
+    return this.usersService.updateProfile(userId, dto);
+  }
 }
 
 @Controller('admin/users')
 @Roles(Role.ADMIN)
 export class AdminUsersController {
-    constructor(
-        private readonly usersService: UsersService,
-        @Inject(forwardRef(() => PaymentsService))
-        private readonly paymentsService: PaymentsService,
-    ) { }
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(forwardRef(() => PaymentsService))
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
-    @Get()
-    async findAll(
-        @CurrentTenant() tenantId: string,
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-        @Query('search') search?: string,
-        @Query('role') role?: Role,
-        @Query('subscription') subscription?: string,
-    ) {
-        return this.usersService.findAll(tenantId, page, limit, search, role, subscription);
-    }
+  @Get()
+  async findAll(
+    @CurrentTenant() tenantId: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+    @Query('role') role?: Role,
+    @Query('subscription') subscription?: string,
+  ) {
+    return this.usersService.findAll(
+      tenantId,
+      page,
+      limit,
+      search,
+      role,
+      subscription,
+    );
+  }
 
-    @Get(':id')
-    async findOne(@Param('id') id: string) {
-        return this.usersService.findById(id);
-    }
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.usersService.findById(id);
+  }
 
-    @Patch(':id/role')
-    async updateRole(
-        @Param('id') id: string,
-        @Body('role') role: Role,
-    ) {
-        return this.usersService.updateRole(id, role);
-    }
+  @Patch(':id/role')
+  async updateRole(@Param('id') id: string, @Body('role') role: Role) {
+    return this.usersService.updateRole(id, role);
+  }
 
-    @Post(':id/subscription')
-    async assignSubscription(
-        @Param('id') id: string,
-        @Body('days') days?: number,
-    ) {
-        return this.paymentsService.assignManualSubscription(id, days);
-    }
+  @Post(':id/subscription')
+  async assignSubscription(
+    @Param('id') id: string,
+    @Body('days') days?: number,
+  ) {
+    return this.paymentsService.assignManualSubscription(id, days);
+  }
 
-    @Delete(':id/subscription')
-    async cancelSubscription(@Param('id') id: string) {
-        return this.paymentsService.cancelSubscription(id);
-    }
+  @Delete(':id/subscription')
+  async cancelSubscription(@Param('id') id: string) {
+    return this.paymentsService.cancelSubscription(id);
+  }
 
-    @Delete(':id')
-    async remove(@Param('id') id: string) {
-        return this.usersService.remove(id);
-    }
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
 }
-

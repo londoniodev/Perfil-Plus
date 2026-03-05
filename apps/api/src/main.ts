@@ -10,11 +10,13 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   // Helmet - Headers de seguridad adicionales
-  app.use(helmet({
-    contentSecurityPolicy: false, // Manejado por Next.js frontend
-    crossOriginEmbedderPolicy: false, // Permitir embeds (videos, iframes)
-    crossOriginResourcePolicy: { policy: "cross-origin" }, // Permite cargar recursos desde otros dominios
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Manejado por Next.js frontend
+      crossOriginEmbedderPolicy: false, // Permitir embeds (videos, iframes)
+      crossOriginResourcePolicy: { policy: 'cross-origin' }, // Permite cargar recursos desde otros dominios
+    }),
+  );
 
   app.use(cookieParser());
 
@@ -44,22 +46,30 @@ async function bootstrap() {
   const corsOriginsEnv = configService.get<string>('CORS_ORIGINS', '');
   const corsOriginsList = corsOriginsEnv
     .split(',')
-    .map(o => o.trim())
+    .map((o) => o.trim())
     .filter(Boolean);
 
   // Base domains for multi-tenant (IDN-encoded versions of alvarolondoño)
   const allowedBaseDomains = [
-    '.xn--alvarolondoo-khb.dev',  // *.alvarolondoño.dev
-    '.xn--alvarolondoo-khb.com',  // *.alvarolondoño.com
+    '.xn--alvarolondoo-khb.dev', // *.alvarolondoño.dev
+    '.xn--alvarolondoo-khb.com', // *.alvarolondoño.com
   ];
 
   // In development, always allow localhost
-  const devOrigins = ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3003', 'http://127.0.0.1:3000', 'http://127.0.0.1:3003'];
+  const devOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3003',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3003',
+  ];
   const explicitOrigins = isProduction
     ? corsOriginsList
     : [...corsOriginsList, ...devOrigins];
 
-  logger.log(`CORS: Explicit origins (${explicitOrigins.length}): ${explicitOrigins.join(', ') || 'none'}`);
+  logger.log(
+    `CORS: Explicit origins (${explicitOrigins.length}): ${explicitOrigins.join(', ') || 'none'}`,
+  );
   logger.log(`CORS: Dynamic base domains: ${allowedBaseDomains.join(', ')}`);
 
   app.enableCors({
@@ -76,7 +86,9 @@ async function bootstrap() {
       try {
         const originUrl = new URL(requestOrigin);
         const hostname = originUrl.hostname;
-        const isAllowedSubdomain = allowedBaseDomains.some(base => hostname.endsWith(base));
+        const isAllowedSubdomain = allowedBaseDomains.some((base) =>
+          hostname.endsWith(base),
+        );
 
         if (isAllowedSubdomain) {
           return callback(null, true);
@@ -89,7 +101,13 @@ async function bootstrap() {
       callback(new Error(`Not allowed by CORS: ${requestOrigin}`));
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-tenant-id', 'Cache-Control'],
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'x-tenant-id',
+      'Cache-Control',
+    ],
     credentials: true,
   });
 
@@ -104,5 +122,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-
-

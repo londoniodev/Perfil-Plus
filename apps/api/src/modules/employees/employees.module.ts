@@ -5,10 +5,9 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [PrismaModule, AuthModule],
-    controllers: [EmployeesController],
-    providers: [EmployeesService],
-    exports: [EmployeesService],
+  imports: [PrismaModule, AuthModule],
+  controllers: [EmployeesController],
+  providers: [EmployeesService],
+  exports: [EmployeesService],
 })
-
-export class EmployeesModule { }
+export class EmployeesModule {}

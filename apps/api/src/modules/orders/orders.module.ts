@@ -8,10 +8,13 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [StorageModule, AuthModule, InventoryModule],
-    controllers: [OrdersController, AdminOrdersController, OrdersEventsController],
-    providers: [OrdersService, OrdersGateway],
-    exports: [OrdersService, OrdersGateway],
+  imports: [StorageModule, AuthModule, InventoryModule],
+  controllers: [
+    OrdersController,
+    AdminOrdersController,
+    OrdersEventsController,
+  ],
+  providers: [OrdersService, OrdersGateway],
+  exports: [OrdersService, OrdersGateway],
 })
-export class OrdersModule { }
-
+export class OrdersModule {}

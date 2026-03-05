@@ -9,4 +9,4 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [TablesController],
   providers: [TablesService, PrismaService],
 })
-export class TablesModule { }
+export class TablesModule {}

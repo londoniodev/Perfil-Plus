@@ -1,36 +1,48 @@
 "use client"
 
 import { ProductCard } from "./ProductCard"
-import { useMenu, useCart, type PublicProduct } from "@alvarosky/restaurant-sdk"
-import { Loader2 } from "lucide-react"
+import { useCart, type PublicProduct } from "@alvarosky/restaurant-sdk"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { API_BASE } from "@/lib/config"
 
-export function StoreClient({ tenantId }: { tenantId: string }) {
-    // Reutilizamos el SDK que ya resuelve el tenantId por debajo
-    const { products, isLoading, isError } = useMenu(tenantId)
+export function StoreClient({ tenantId, initialData = [] }: { tenantId: string, initialData: PublicProduct[] }) {
+    // Ya no usamos useMenu aquí, evitamos el render blocking
     const { addItem } = useCart()
+    const [liveStatus, setLiveStatus] = useState<Record<string, { isAvailable: boolean, likes: number }>>({})
 
-    if (isLoading) {
-        return (
-            <div className="w-full min-h-[50vh] flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                <p className="text-muted-foreground animate-pulse text-sm">Cargando catálogo...</p>
-            </div>
-        )
-    }
+    useEffect(() => {
+        const fetchLiveStatus = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/store/products/live-status`, {
+                    headers: { 'x-tenant-id': tenantId }
+                })
+                if (res.ok) {
+                    const data = await res.json()
+                    setLiveStatus(data)
+                }
+            } catch (err) {
+                console.error("Error fetching live status", err)
+            }
+        }
 
-    if (isError) {
-        return (
-            <div className="w-full py-20 text-center flex flex-col items-center">
-                <p className="text-destructive font-semibold mb-2">Hubo un error cargando el catálogo.</p>
-                <p className="text-sm text-muted-foreground">Intenta recargar la página más tarde.</p>
-            </div>
-        )
-    }
+        fetchLiveStatus()
+        // Polling ligero cada 30 segundos
+        const interval = setInterval(fetchLiveStatus, 30000)
+        return () => clearInterval(interval)
+    }, [tenantId])
 
-    // Filtramos para asegurar que no mostremos platos de comida pura si el objetivo es un E-commerce
-    // Dependiendo de tu lógica esto es opcional. Aquí dejamos pasar digitales y físicos principalmente.
-    const storeProducts = products.filter((p: any) => p.productType !== "RESTAURANT" && (p.isAvailable !== false))
+    // Filtramos e hidratamos datos usando initialData como base
+    const rawProducts = Array.isArray(initialData) ? initialData : [];
+    const storeProducts = rawProducts
+        .map((p: any) => {
+            const status = liveStatus[p.id]
+            if (status) {
+                return { ...p, isAvailable: status.isAvailable }
+            }
+            return p
+        })
+        .filter((p: any) => p.productType !== "RESTAURANT" && p.isAvailable !== false)
 
     const handleAddToCart = (product: PublicProduct) => {
         addItem({

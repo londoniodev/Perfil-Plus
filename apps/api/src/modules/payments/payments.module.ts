@@ -4,10 +4,9 @@ import { PaymentsService } from './payments.service';
 import { StorageModule } from '../storage/storage.module';
 
 @Module({
-    imports: [StorageModule],
-    controllers: [PaymentsController],
-    providers: [PaymentsService],
-    exports: [PaymentsService],
+  imports: [StorageModule],
+  controllers: [PaymentsController],
+  providers: [PaymentsService],
+  exports: [PaymentsService],
 })
-export class PaymentsModule { }
-
+export class PaymentsModule {}

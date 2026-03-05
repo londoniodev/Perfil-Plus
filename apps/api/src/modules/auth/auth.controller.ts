@@ -1,4 +1,15 @@
-import { Controller, Post, Body, Get, Query, Req, Res, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  Req,
+  Res,
+  HttpCode,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
@@ -9,203 +20,206 @@ import { Public, CurrentUser, CurrentTenant } from '../../common/decorators';
 // Cookie configuration
 // Cookie configuration helpers
 const getCookieOptions = (isProduction: boolean, domain?: string) => ({
-    httpOnly: true,
-    // Cross-site cookies (Frontend .com <-> Backend .dev) MUST be Secure and SameSite=None
-    secure: true, // Required for SameSite=None. Relies on "trust proxy" in main.ts if running behind reverse proxy
-    sameSite: 'none' as const,
-    path: '/',
-    domain: domain,
+  httpOnly: true,
+  // Cross-site cookies (Frontend .com <-> Backend .dev) MUST be Secure and SameSite=None
+  secure: true, // Required for SameSite=None. Relies on "trust proxy" in main.ts if running behind reverse proxy
+  sameSite: 'none' as const,
+  path: '/',
+  domain: domain,
 });
 
 @Controller('auth')
 export class AuthController {
-    private readonly logger = new Logger(AuthController.name);
+  private readonly logger = new Logger(AuthController.name);
 
-    constructor(
-        private readonly authService: AuthService,
-        private configService: ConfigService,
-    ) { }
+  constructor(
+    private readonly authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
-    private isProduction(): boolean {
-        return this.configService.get('NODE_ENV') === 'production';
+  private isProduction(): boolean {
+    return this.configService.get('NODE_ENV') === 'production';
+  }
+
+  @Public()
+  @Throttle({ auth: { limit: 10, ttl: 60000 } })
+  @Post('register')
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+    @CurrentTenant() tenantId: string,
+  ) {
+    const result = await this.authService.register(dto, tenantId);
+
+    // Establecer cookies (Primary method for same-domain/proxied)
+    const hostname = req.get('host') || req.hostname;
+    this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
+
+    // Retornar usuario Y tokens (Fallback for cross-domain where cookies are blocked)
+    return {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      message: result.message,
+    };
+  }
+
+  @Public()
+  @Throttle({ auth: { limit: 10, ttl: 60000 } }) // 10 attempts per minute
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+    @CurrentTenant() tenantId: string,
+  ) {
+    const result = await this.authService.login(dto, tenantId);
+
+    const hostname = req.get('host') || req.hostname;
+
+    // Log solo en desarrollo
+    if (!this.isProduction()) {
+      this.logger.debug(`Login attempt from ${hostname}`);
     }
 
-    @Public()
-    @Throttle({ auth: { limit: 10, ttl: 60000 } })
-    @Post('register')
-    async register(
-        @Body() dto: RegisterDto,
-        @Res({ passthrough: true }) res: Response,
-        @Req() req: Request,
-        @CurrentTenant() tenantId: string,
-    ) {
-        const result = await this.authService.register(dto, tenantId);
+    // Establecer cookies
+    this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
 
-        // Establecer cookies (Primary method for same-domain/proxied)
-        const hostname = req.get('host') || req.hostname;
-        this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
+    return {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    };
+  }
 
-        // Retornar usuario Y tokens (Fallback for cross-domain where cookies are blocked)
-        return {
-            user: result.user,
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            message: result.message,
-        };
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: { refreshToken?: string }, // Allow passing token in body too
+  ) {
+    // Leer refresh token de la cookie O del body (fallback)
+    const refreshToken = req.cookies?.refreshToken || body.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401);
+      return { message: 'No refresh token provided' };
     }
 
-    @Public()
-    @Throttle({ auth: { limit: 10, ttl: 60000 } }) // 10 attempts per minute
-    @Post('login')
-    @HttpCode(HttpStatus.OK)
-    async login(
-        @Body() dto: LoginDto,
-        @Res({ passthrough: true }) res: Response,
-        @Req() req: Request,
-        @CurrentTenant() tenantId: string,
-    ) {
-        const result = await this.authService.login(dto, tenantId);
+    const tokens = await this.authService.refreshToken(refreshToken);
 
-        const hostname = req.get('host') || req.hostname;
+    // Establecer nuevas cookies
+    const hostname = req.get('host') || req.hostname;
+    this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, hostname);
 
-        // Log solo en desarrollo
-        if (!this.isProduction()) {
-            this.logger.debug(`Login attempt from ${hostname}`);
-        }
+    return {
+      message: 'Tokens refreshed successfully',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
+  }
 
-        // Establecer cookies
-        this.setAuthCookies(res, result.accessToken, result.refreshToken, hostname);
+  @Public() // IMPORTANT: Logout must work even with expired/invalid tokens
+  @SkipThrottle() // No limitar logout para evitar bloqueos
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const hostname = req.get('host') || req.hostname;
 
-        return {
-            user: result.user,
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-        };
-    }
+    // ALWAYS clear cookies, regardless of token validity
+    this.clearAuthCookies(res, hostname);
 
-    @Public()
-    @Post('refresh')
-    @HttpCode(HttpStatus.OK)
-    async refreshToken(
-        @Req() req: Request,
-        @Res({ passthrough: true }) res: Response,
-        @Body() body: { refreshToken?: string }, // Allow passing token in body too
-    ) {
-        // Leer refresh token de la cookie O del body (fallback)
-        const refreshToken = req.cookies?.refreshToken || body.refreshToken;
+    return { message: 'Sesión cerrada correctamente' };
+  }
 
-        if (!refreshToken) {
-            res.status(401);
-            return { message: 'No refresh token provided' };
-        }
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body('email') email: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.authService.forgotPassword(email, tenantId);
+  }
 
-        const tokens = await this.authService.refreshToken(refreshToken);
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: { token: string; password: string }) {
+    return this.authService.resetPassword(dto.token, dto.password);
+  }
 
-        // Establecer nuevas cookies
-        const hostname = req.get('host') || req.hostname;
-        this.setAuthCookies(res, tokens.accessToken, tokens.refreshToken, hostname);
+  @Get('me')
+  async getMe(@CurrentUser('id') userId: string) {
+    return this.authService.getMe(userId);
+  }
 
-        return {
-            message: 'Tokens refreshed successfully',
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken
-        };
-    }
+  // ============ Email Verification ============
 
-    @Public() // IMPORTANT: Logout must work even with expired/invalid tokens
-    @SkipThrottle() // No limitar logout para evitar bloqueos
-    @Post('logout')
-    @HttpCode(HttpStatus.OK)
-    async logout(
-        @Req() req: Request,
-        @Res({ passthrough: true }) res: Response,
-    ) {
-        const hostname = req.get('host') || req.hostname;
+  @Public()
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    return this.authService.verifyEmail(token);
+  }
 
-        // ALWAYS clear cookies, regardless of token validity
-        this.clearAuthCookies(res, hostname);
+  @Public()
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(
+    @Body('email') email: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.authService.resendVerificationEmail(email, tenantId);
+  }
 
-        return { message: 'Sesión cerrada correctamente' };
-    }
+  // ============ Cookie Helpers ============
 
-    @Public()
-    @Post('forgot-password')
-    @HttpCode(HttpStatus.OK)
-    async forgotPassword(@Body('email') email: string, @CurrentTenant() tenantId: string) {
-        return this.authService.forgotPassword(email, tenantId);
-    }
+  private setAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+    hostname?: string,
+  ) {
+    const isProd = this.isProduction();
 
-    @Public()
-    @Post('reset-password')
-    @HttpCode(HttpStatus.OK)
-    async resetPassword(
-        @Body() dto: { token: string; password: string },
-    ) {
-        return this.authService.resetPassword(dto.token, dto.password);
-    }
+    // Simplificado: No establecer dominio explícito.
+    // Esto crea una cookie "Host Only" para el dominio de la API (ej: api.xn--...).
+    // El navegador la enviará en peticiones fetch a la API siempre que credentials: 'include' esté activo.
+    // Esto evita problemas con Punycode y subdominios.
 
+    // Access token cookie (7 días)
+    res.cookie('accessToken', accessToken, {
+      ...getCookieOptions(isProd, undefined),
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+    });
 
-    @Get('me')
-    async getMe(@CurrentUser('id') userId: string) {
-        return this.authService.getMe(userId);
-    }
+    // Refresh token cookie (30 días)
+    res.cookie('refreshToken', refreshToken, {
+      ...getCookieOptions(isProd, undefined),
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+    });
+  }
 
-    // ============ Email Verification ============
+  private clearAuthCookies(res: Response, hostname?: string) {
+    const isProd = this.isProduction();
 
-    @Public()
-    @Get('verify-email')
-    async verifyEmail(@Query('token') token: string) {
-        return this.authService.verifyEmail(token);
-    }
+    const clearOptions = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? ('none' as const) : ('lax' as const),
+      path: '/',
+    };
 
-    @Public()
-    @Post('resend-verification')
-    @HttpCode(HttpStatus.OK)
-    async resendVerification(@Body('email') email: string, @CurrentTenant() tenantId: string) {
-        return this.authService.resendVerificationEmail(email, tenantId);
-    }
+    // Clear without domain (Host Only match)
+    res.clearCookie('accessToken', clearOptions);
+    res.clearCookie('refreshToken', clearOptions);
 
-    // ============ Cookie Helpers ============
-
-    private setAuthCookies(res: Response, accessToken: string, refreshToken: string, hostname?: string) {
-        const isProd = this.isProduction();
-
-        // Simplificado: No establecer dominio explícito.
-        // Esto crea una cookie "Host Only" para el dominio de la API (ej: api.xn--...).
-        // El navegador la enviará en peticiones fetch a la API siempre que credentials: 'include' esté activo.
-        // Esto evita problemas con Punycode y subdominios.
-
-        // Access token cookie (7 días)
-        res.cookie('accessToken', accessToken, {
-            ...getCookieOptions(isProd, undefined),
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
-        });
-
-        // Refresh token cookie (30 días)
-        res.cookie('refreshToken', refreshToken, {
-            ...getCookieOptions(isProd, undefined),
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
-        });
-    }
-
-    private clearAuthCookies(res: Response, hostname?: string) {
-        const isProd = this.isProduction();
-
-        const clearOptions = {
-            httpOnly: true,
-            secure: isProd,
-            sameSite: isProd ? 'none' as const : 'lax' as const,
-            path: '/',
-        };
-
-        // Clear without domain (Host Only match)
-        res.clearCookie('accessToken', clearOptions);
-        res.clearCookie('refreshToken', clearOptions);
-
-        // Extra safely: set expired cookies with maxAge=0
-        res.cookie('accessToken', '', { ...clearOptions, maxAge: 0 });
-        res.cookie('refreshToken', '', { ...clearOptions, maxAge: 0 });
-    }
-
+    // Extra safely: set expired cookies with maxAge=0
+    res.cookie('accessToken', '', { ...clearOptions, maxAge: 0 });
+    res.cookie('refreshToken', '', { ...clearOptions, maxAge: 0 });
+  }
 }
-

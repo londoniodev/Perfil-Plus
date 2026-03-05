@@ -3,9 +3,8 @@ import { BlogController, AdminBlogController } from './blog.controller';
 import { BlogService } from './blog.service';
 
 @Module({
-    controllers: [BlogController, AdminBlogController],
-    providers: [BlogService],
-    exports: [BlogService],
+  controllers: [BlogController, AdminBlogController],
+  providers: [BlogService],
+  exports: [BlogService],
 })
-export class BlogModule { }
-
+export class BlogModule {}

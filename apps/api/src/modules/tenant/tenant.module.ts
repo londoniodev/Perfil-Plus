@@ -9,4 +9,4 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [TenantController],
   providers: [TenantService, PrismaService],
 })
-export class TenantModule { }
+export class TenantModule {}

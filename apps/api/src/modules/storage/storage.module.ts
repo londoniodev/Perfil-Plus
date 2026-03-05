@@ -4,10 +4,9 @@ import { StorageService } from './storage.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    controllers: [StorageController],
-    providers: [StorageService],
-    exports: [StorageService],
+  imports: [PrismaModule],
+  controllers: [StorageController],
+  providers: [StorageService],
+  exports: [StorageService],
 })
-export class StorageModule { }
-
+export class StorageModule {}

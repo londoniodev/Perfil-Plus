@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { TablesService } from './tables.service';
 import { CreateTableDto } from './dto/create-table.dto';
 import { UpdateTableDto } from './dto/update-table.dto';
@@ -10,50 +19,43 @@ import { Role } from '@prisma/client';
 
 @Controller('tables')
 export class TablesController {
-    constructor(private readonly tablesService: TablesService) { }
+  constructor(private readonly tablesService: TablesService) {}
 
-    @Get()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    // Quité el restricción de ADMIN porque un EMPOYEE/WAITER o un PUBLIC puede necesitar ver las mesas
-    findAll(@CurrentTenant() tenantId: string) {
-        return this.tablesService.findAll(tenantId);
-    }
+  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  // Quité el restricción de ADMIN porque un EMPOYEE/WAITER o un PUBLIC puede necesitar ver las mesas
+  findAll(@CurrentTenant() tenantId: string) {
+    return this.tablesService.findAll(tenantId);
+  }
 
-    @Get(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    findOne(@CurrentTenant() tenantId: string, @Param('id') id: string) {
-        return this.tablesService.findOne(tenantId, id);
-    }
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  findOne(@CurrentTenant() tenantId: string, @Param('id') id: string) {
+    return this.tablesService.findOne(tenantId, id);
+  }
 
-    @Post()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    create(
-        @CurrentTenant() tenantId: string,
-        @Body() createDto: CreateTableDto
-    ) {
-        return this.tablesService.create(tenantId, createDto);
-    }
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  create(@CurrentTenant() tenantId: string, @Body() createDto: CreateTableDto) {
+    return this.tablesService.create(tenantId, createDto);
+  }
 
-    @Patch(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    update(
-        @CurrentTenant() tenantId: string,
-        @Param('id') id: string,
-        @Body() updateDto: UpdateTableDto,
-    ) {
-        return this.tablesService.update(tenantId, id, updateDto);
-    }
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  update(
+    @CurrentTenant() tenantId: string,
+    @Param('id') id: string,
+    @Body() updateDto: UpdateTableDto,
+  ) {
+    return this.tablesService.update(tenantId, id, updateDto);
+  }
 
-    @Delete(':id')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    remove(
-        @CurrentTenant() tenantId: string,
-        @Param('id') id: string,
-    ) {
-        return this.tablesService.remove(tenantId, id);
-    }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  remove(@CurrentTenant() tenantId: string, @Param('id') id: string) {
+    return this.tablesService.remove(tenantId, id);
+  }
 }
-

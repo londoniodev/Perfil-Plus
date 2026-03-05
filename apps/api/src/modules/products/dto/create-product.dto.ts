@@ -1,92 +1,100 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductType } from '@prisma/client';
 import { CreateModifierGroupDto } from './create-modifier-group.dto';
 
 export class CreateProductVariantDto {
-    @IsString()
-    @IsOptional()
-    name?: string;
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    sku?: string;
+  @IsString()
+  @IsOptional()
+  sku?: string;
 
-    @IsNumber()
-    @IsOptional()
-    price?: number;
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 
-    @IsNumber()
-    @IsOptional()
-    stock?: number;
+  @IsNumber()
+  @IsOptional()
+  stock?: number;
 
-    @IsBoolean()
-    @IsOptional()
-    isDefault?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  isDefault?: boolean;
 
-    @IsOptional()
-    attributes?: any;
+  @IsOptional()
+  attributes?: any;
 }
 
 export class CreateProductDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    slug: string;
+  @IsString()
+  slug: string;
 
-    @IsString()
-    description: string;
+  @IsString()
+  description: string;
 
-    @IsEnum(ProductType)
-    productType: ProductType;
+  @IsEnum(ProductType)
+  productType: ProductType;
 
-    @IsNumber()
-    basePrice: number;
+  @IsNumber()
+  basePrice: number;
 
-    @IsArray()
-    @IsString({ each: true })
-    images: string[];
+  @IsArray()
+  @IsString({ each: true })
+  images: string[];
 
-    @IsString()
-    @IsOptional()
-    digitalFileUrl?: string;
+  @IsString()
+  @IsOptional()
+  digitalFileUrl?: string;
 
-    @IsString()
-    @IsOptional()
-    previewUrl?: string;
+  @IsString()
+  @IsOptional()
+  previewUrl?: string;
 
-    @IsOptional()
-    specs: any; // JSONB flexible
+  @IsOptional()
+  specs: any; // JSONB flexible
 
-    @IsBoolean()
-    @IsOptional()
-    published?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  published?: boolean;
 
-    // Initial Inventory (Auto-create default variant)
-    @IsNumber()
-    @IsOptional()
-    stock?: number;
+  // Initial Inventory (Auto-create default variant)
+  @IsNumber()
+  @IsOptional()
+  stock?: number;
 
-    @IsString()
-    @IsOptional()
-    sku?: string;
+  @IsString()
+  @IsOptional()
+  sku?: string;
 
-    @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    categories?: string[];
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  categories?: string[];
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateProductVariantDto)
-    @IsOptional()
-    variants?: CreateProductVariantDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductVariantDto)
+  @IsOptional()
+  variants?: CreateProductVariantDto[];
 
-    // Restaurante: Grupos de modificadores (opcional)
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateModifierGroupDto)
-    @IsOptional()
-    modifierGroups?: CreateModifierGroupDto[];
+  // Restaurante: Grupos de modificadores (opcional)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateModifierGroupDto)
+  @IsOptional()
+  modifierGroups?: CreateModifierGroupDto[];
 }

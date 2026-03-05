@@ -18,8 +18,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:seed": "ts-node prisma/seed.ts"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@alvarosky/database": "workspace:*",
@@ -35,7 +34,6 @@
     "@nestjs/platform-express": "^11.1.11",
     "@nestjs/serve-static": "^5.0.4",
     "@nestjs/throttler": "^6.5.0",
-    "@prisma/client": "5.22.0",
     "@react-email/components": "^1.0.4",
     "@react-email/render": "^2.0.2",
     "@types/cookie-parser": "^1.4.10",
@@ -55,7 +53,6 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.17.1",
-    "prisma": "5.22.0",
     "react": "^19.2.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",

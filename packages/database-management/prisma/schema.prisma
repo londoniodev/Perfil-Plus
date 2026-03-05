@@ -15,7 +15,7 @@ datasource db {
 // Using String instead of enum for database compatibility
 
 model Tenant {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   name      String?  // Display name: "Daniela Coach" - optional for legacy rows
   slug      String   @unique // Subdomain/identifier: "daniela"
   dbName    String   // Database name: "db_daniela"

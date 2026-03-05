@@ -1,4 +1,10 @@
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
@@ -6,21 +12,34 @@ import { ProductType } from '@prisma/client';
 
 @Controller('store/products')
 export class StoreController {
-    constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) { }
 
-    @Public()
-    @Get()
-    async findAll(
-        @CurrentTenant() tenantId: string,
-        @Query('type') type?: ProductType,
-        @Query('allVariants') allVariants?: string,
-    ) {
-        return this.productsService.findAllPublished(type, allVariants === 'true', tenantId);
-    }
+  @Public()
+  @Get('live-status')
+  async getLiveStatus(@CurrentTenant() tenantId: string) {
+    return this.productsService.getLiveStatus(tenantId);
+  }
 
-    @Public()
-    @Get(':slug')
-    async findOne(@Param('slug') slug: string, @CurrentTenant() tenantId: string) {
-        return this.productsService.findOnePublished(slug, tenantId);
-    }
+  @Public()
+  @Get()
+  async findAll(
+    @CurrentTenant() tenantId: string,
+    @Query('type') type?: ProductType,
+    @Query('allVariants') allVariants?: string,
+  ) {
+    return this.productsService.findAllPublished(
+      type,
+      allVariants === 'true',
+      tenantId,
+    );
+  }
+
+  @Public()
+  @Get(':slug')
+  async findOne(
+    @Param('slug') slug: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.productsService.findOnePublished(slug, tenantId);
+  }
 }

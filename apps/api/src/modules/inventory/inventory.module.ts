@@ -6,9 +6,9 @@ import { InventoryController } from './inventory.controller';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [AuthModule],
-    controllers: [InventoryController],
-    providers: [InventoryService, RecipesService, InventoryCountsService],
-    exports: [InventoryService],
+  imports: [AuthModule],
+  controllers: [InventoryController],
+  providers: [InventoryService, RecipesService, InventoryCountsService],
+  exports: [InventoryService],
 })
-export class InventoryModule { }
+export class InventoryModule {}

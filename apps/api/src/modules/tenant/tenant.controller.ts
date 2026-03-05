@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Patch, Post, UseGuards, Query, Headers, BadRequestException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UseGuards,
+  Query,
+  Headers,
+  BadRequestException,
+} from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -12,54 +22,55 @@ import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('tenant')
 export class TenantController {
-    constructor(private readonly tenantService: TenantService) { }
+  constructor(private readonly tenantService: TenantService) {}
 
-    @Public()
-    @SkipThrottle()
-    @Get('identify')
-    async identifyTenant(
-        @Query('domain') domain: string,
-        @Headers('x-internal-token') token: string,
-    ) {
-        return this.tenantService.identifyTenant(domain, token);
-    }
+  @Public()
+  @SkipThrottle()
+  @Get('identify')
+  async identifyTenant(
+    @Query('domain') domain: string,
+    @Headers('x-internal-token') token: string,
+  ) {
+    return this.tenantService.identifyTenant(domain, token);
+  }
 
-    // Endpoint SaaS the aprovisionamiento automático the Tenants
-    @Post()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN) // Sólo administradores globales thel SaaS pueden crear inquilinos en producción.
-    async createTenant(@Body() createDto: CreateTenantDto) {
-        return this.tenantService.create(createDto);
-    }
+  // Endpoint SaaS the aprovisionamiento automático the Tenants
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN) // Sólo administradores globales thel SaaS pueden crear inquilinos en producción.
+  async createTenant(@Body() createDto: CreateTenantDto) {
+    return this.tenantService.create(createDto);
+  }
 
-    // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.
-    @Public()
-    @SkipThrottle()
-    @Get('branding')
-    async getTenantBranding(@CurrentTenant() tenantId: string) {
-        return this.tenantService.getTenantBranding(tenantId);
-    }
+  // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.
+  @Public()
+  @SkipThrottle()
+  @Get('branding')
+  async getTenantBranding(@CurrentTenant() tenantId: string) {
+    return this.tenantService.getTenantBranding(tenantId);
+  }
 
-    // Endpoint público para obtener datos de marketing (Landing page)
-    @Public()
-    @SkipThrottle()
-    @Get('marketing')
-    async getTenantMarketing(@Query('tenant') tenantId: string) {
-        if (!tenantId) {
-            throw new BadRequestException('El id del tenant es requerido (ej. ?tenant=...)');
-        }
-        return this.tenantService.getTenantMarketing(tenantId);
+  // Endpoint público para obtener datos de marketing (Landing page)
+  @Public()
+  @SkipThrottle()
+  @Get('marketing')
+  async getTenantMarketing(@Query('tenant') tenantId: string) {
+    if (!tenantId) {
+      throw new BadRequestException(
+        'El id del tenant es requerido (ej. ?tenant=...)',
+      );
     }
+    return this.tenantService.getTenantMarketing(tenantId);
+  }
 
-    // Uso estrictamente protegido por administradores para configurar el Theme
-    @Patch('branding')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
-    async updateTenantBranding(
-        @CurrentTenant() tenantId: string,
-        @Body() updateDto: UpdateBrandingDto,
-    ) {
-        return this.tenantService.updateTenantBranding(tenantId, updateDto);
-    }
+  // Uso estrictamente protegido por administradores para configurar el Theme
+  @Patch('branding')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateTenantBranding(
+    @CurrentTenant() tenantId: string,
+    @Body() updateDto: UpdateBrandingDto,
+  ) {
+    return this.tenantService.updateTenantBranding(tenantId, updateDto);
+  }
 }
-

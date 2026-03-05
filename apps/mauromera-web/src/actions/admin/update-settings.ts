@@ -5,7 +5,6 @@ import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { TENANT_ID } from "@/lib/config"
 
 // Schema de validación
 const settingsSchema = z.object({
@@ -72,7 +71,7 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
 
         // 3. Obtener configuración actual para mergear
         const tenantConfigSetting = await prisma.systemSetting.findUnique({
-            where: { tenantId_key: { tenantId: TENANT_ID, key: "TENANT_CONFIG" } }
+            where: { key: "TENANT_CONFIG" }
         })
 
         let currentConfig: any = {}
@@ -114,10 +113,9 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
 
         // TENANT_CONFIG
         await prisma.systemSetting.upsert({
-            where: { tenantId_key: { tenantId: TENANT_ID, key: "TENANT_CONFIG" } },
+            where: { key: "TENANT_CONFIG" },
             create: {
                 id: crypto.randomUUID(),
-                tenantId: TENANT_ID,
                 key: "TENANT_CONFIG",
                 value: newConfig,
                 isPublic: false
@@ -135,10 +133,9 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
                 pass: newConfig.smtp.auth?.pass,
             }
             await prisma.systemSetting.upsert({
-                where: { tenantId_key: { tenantId: TENANT_ID, key: "SMTP_CONFIG" } },
+                where: { key: "SMTP_CONFIG" },
                 create: {
                     id: crypto.randomUUID(),
-                    tenantId: TENANT_ID,
                     key: "SMTP_CONFIG",
                     value: smtpConfigForService,
                     isPublic: false
@@ -149,12 +146,12 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
             })
         }
 
+        // MERCADOPAGO_CONFIG
         if (newConfig.mercadopago) {
             await prisma.systemSetting.upsert({
-                where: { tenantId_key: { tenantId: TENANT_ID, key: "MERCADOPAGO_CONFIG" } },
+                where: { key: "MERCADOPAGO_CONFIG" },
                 create: {
                     id: crypto.randomUUID(),
-                    tenantId: TENANT_ID,
                     key: "MERCADOPAGO_CONFIG",
                     value: newConfig.mercadopago,
                     isPublic: false
@@ -167,13 +164,10 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
 
         // 6. Sincronizar con legacy StoreSettings (Opcional)
         // Solo sincronizamos campos permitidos para el admin de tenant
-        const legacySettings = await prisma.storeSettings.findFirst({ where: { tenantId: TENANT_ID } })
+        const legacySettings = await prisma.storeSettings.findFirst()
         const legacyData = {
-            tenantId: TENANT_ID,
             mpPublicKey: newConfig.mercadopago?.publicKey,
             mpAccessToken: newConfig.mercadopago?.accessToken,
-            storeName: currentConfig.storeName,
-            storeEmail: currentConfig.storeEmail
         }
 
         if (legacySettings) {

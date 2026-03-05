@@ -5,7 +5,6 @@ import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { TENANT_ID } from "@/lib/config"
 
 // Schema de validación para variantes
 const variantSchema = z.object({
@@ -70,7 +69,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         // Verificar si el slug ya existe
         let slug = baseSlug
         let counter = 1
-        while (await prisma.product.findUnique({ where: { tenantId_slug: { tenantId: TENANT_ID, slug } } })) {
+        while (await prisma.product.findUnique({ where: { slug } })) {
             slug = `${baseSlug}-${counter}`
             counter++
         }
@@ -115,7 +114,6 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
             // Crear producto
             const newProduct = await tx.product.create({
                 data: {
-                    tenantId: TENANT_ID,
                     name: validated.name,
                     slug,
                     description: validated.description,
@@ -129,7 +127,6 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
 
             // Preparar datos de variantes para inserción por lotes
             const variantsToCreate = (variantsData ?? []).map((variant, i) => ({
-                tenantId: TENANT_ID,
                 productId: newProduct.id,
                 sku: variant.sku || `${newProduct.id.slice(0, 8).toUpperCase()}-${i + 1}`,
                 name: variant.name ?? undefined,

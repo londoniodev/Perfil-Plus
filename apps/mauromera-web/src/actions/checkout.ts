@@ -6,7 +6,6 @@ import { getSessionUser } from "@/lib/auth-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { TENANT_ID } from "@/lib/config"
 
 // ========== SCHEMAS DE VALIDACIÓN ==========
 const cartItemSchema = z.object({
@@ -60,7 +59,7 @@ export async function placeOrder(
 
         // 3. Obtener configuración del Tenant (incluyendo MercadoPago y Moneda)
         const tenantConfig = await prisma.systemSetting.findUnique({
-            where: { tenantId_key: { tenantId: TENANT_ID, key: "TENANT_CONFIG" } }
+            where: { key: "TENANT_CONFIG" }
         })
 
         let currencyId = "COP" // Default
@@ -172,7 +171,6 @@ export async function placeOrder(
             // Crear orden con snapshots de producto
             const newOrder = await tx.order.create({
                 data: {
-                    tenantId: TENANT_ID,
                     userId: user.id,
                     orderNumber,
                     totalAmount,

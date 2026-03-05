@@ -19,5 +19,22 @@ services:
       timeout: 5s
       retries: 5
 
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: pgbouncer_local
+    environment:
+      - DB_USER=admin
+      - DB_PASSWORD=password123
+      - DB_HOST=db-local
+      - DB_NAME=mauromera_local
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=2000
+      - DEFAULT_POOL_SIZE=20
+      - IGNORE_STARTUP_PARAMETERS=extra_float_digits
+    ports:
+      - "6432:5432"
+    depends_on:
+      - db-local
+
 volumes:
   postgres_data_local:

@@ -15,9 +15,13 @@ export default async function TiendaPage() {
     // Pre-fetch catálogo pesado con ISR de 5 minutos
     let initialData = []
     try {
-        const res = await fetch(`${API_BASE}/store/products?allVariants=true`, {
+        // Inyectamos el tenantId en la query params estrictamente para mutar el Cache Key de Next.js
+        const res = await fetch(`${API_BASE}/store/products?tenantId=${tenantId}&allVariants=true`, {
             headers: { 'x-tenant-id': tenantId },
-            next: { revalidate: 300 }
+            next: {
+                revalidate: 300,
+                tags: [`menu-${tenantId}`]
+            }
         })
         if (res.ok) {
             initialData = await res.json()

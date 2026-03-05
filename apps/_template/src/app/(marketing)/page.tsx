@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { getTenantId } from "@/lib/config-server";
 import { TenantMarketingData } from "@/types/marketing";
 
-import MauroLanding from "@/components/legacy/mauromera/Landing";
-import DeborahLanding from "@/components/legacy/deborahmoscoso/Landing";
+import MauroLanding from "@/components/storefronts/mauromera/Landing";
+import DeborahLanding from "@/components/storefronts/deborahmoscoso/Landing";
 import DefaultLanding from "@/components/marketing/DefaultLanding";
-import CocinasieteLanding from "@/components/legacy/cocinasiete/Landing";
+import CocinasieteLanding from "@/components/storefronts/cocinasiete/Landing";
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 

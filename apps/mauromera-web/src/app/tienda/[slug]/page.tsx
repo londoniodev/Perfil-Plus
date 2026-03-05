@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import { PrismaClient } from "@prisma/client"
 import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
-import { TENANT_ID } from "@/lib/config"
 
 const prisma = new PrismaClient()
 
@@ -15,8 +14,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const { slug } = await params
 
     // Fetch seguro con Variantes
-    const product = await prisma.product.findFirst({
-        where: { slug, tenantId: TENANT_ID },
+    const product = await prisma.product.findUnique({
+        where: { slug },
         include: {
             variants: {
                 orderBy: { price: 'asc' }

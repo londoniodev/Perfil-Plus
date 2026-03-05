@@ -10,8 +10,7 @@ import { ClsService } from 'nestjs-cls';
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+  implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
   public readonly secure: ReturnType<typeof this.createExtendedClient>;
@@ -35,6 +34,9 @@ export class PrismaService
   }
 
   private createExtendedClient() {
+    // CRÍTICO: Capturamos cls en una variable de closure porque
+    // dentro de $extends, 'this' ya NO se refiere a PrismaService.
+    const cls = this.cls;
     return this.$extends({
       query: {
         $allModels: {
@@ -46,13 +48,14 @@ export class PrismaService
               'PasswordResetToken',
               'PlatformUser',
               'SystemSettings',
+              'Tenant',
             ];
 
             if (globalModels.includes(model)) {
               return query(args);
             }
 
-            const safeTenantId = this.cls.get('tenantId');
+            const safeTenantId = cls.get('tenantId');
 
             if (safeTenantId) {
               if (

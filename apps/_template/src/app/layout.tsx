@@ -173,7 +173,8 @@ export default async function RootLayout({
   if (tenantFeaturesRaw) {
     try {
       const features = JSON.parse(tenantFeaturesRaw);
-      hasDashboardFeature = features.includes('dashboard');
+      // Mostrar navegación completa si el tenant tiene cualquier módulo activo
+      hasDashboardFeature = features.includes('dashboard') || features.length > 0;
       console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(features)}, hasDashboardFeature=${hasDashboardFeature}`);
     } catch (e) {
       console.warn("Failed to parse tenant features block");

@@ -86,8 +86,9 @@ export async function middleware(request: NextRequest) {
     }
 
     const requestHeaders = new Headers(request.headers);
-    // Inyectar TENANT ID y FEATURES dinámico
+    // Inyectar TENANT ID, SLUG y FEATURES dinámico
     requestHeaders.set('x-tenant-id', tenantId);
+    requestHeaders.set('x-tenant-slug', tenantSlugToQuery);
     requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
 
     if (shouldRewrite) {

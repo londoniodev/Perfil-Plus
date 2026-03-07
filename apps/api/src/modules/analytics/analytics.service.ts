@@ -147,7 +147,7 @@ export class AnalyticsService {
     }));
 
     // b. Payment Methods
-    const paymentGroup = await this.prisma.secure.payment.groupBy({
+    const paymentGroup = await this.prisma.payment.groupBy({
       by: ['method'],
       _count: { id: true },
       _sum: { amount: true },
@@ -161,7 +161,7 @@ export class AnalyticsService {
 
     // 6. Rankings (Bar Charts)
     // a. Top Products
-    const topProductsItems = await this.prisma.secure.orderItem.groupBy({
+    const topProductsItems = await this.prisma.orderItem.groupBy({
       by: ['productName'],
       _sum: { quantity: true },
       where: {
@@ -194,7 +194,7 @@ export class AnalyticsService {
 
     // b. Production Times (Average Stages)
     const prodTimesAgg =
-      await this.prisma.secure.orderDeliveryAnalytics.aggregate({
+      await this.prisma.orderDeliveryAnalytics.aggregate({
         _avg: { timeToPrepare: true, timeToShip: true, timeToDeliver: true },
         where: { order: { tenantId, createdAt: dateQuery } },
       });
@@ -322,7 +322,7 @@ export class AnalyticsService {
         }),
 
         // 3. Desglose por método de pago
-        this.prisma.secure.payment.groupBy({
+        this.prisma.payment.groupBy({
           by: ['method'],
           _sum: { amount: true },
           _count: { id: true },

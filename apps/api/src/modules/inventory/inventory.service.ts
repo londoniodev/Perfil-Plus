@@ -20,7 +20,7 @@ import {
 export class InventoryService {
   private readonly logger = new Logger(InventoryService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // ================================================================
   // WAREHOUSES
@@ -522,7 +522,7 @@ export class InventoryService {
 
     const fragments = Array.from(aggregated.entries()).map(
       ([itemId, qty]) =>
-        Prisma.sql`(${randomUUID()}::uuid, ${defaultWarehouse}::uuid, ${itemId}::uuid, ${-qty}, CURRENT_TIMESTAMP)`,
+        Prisma.sql`(gen_random_uuid(), ${defaultWarehouse}::uuid, ${itemId}::uuid, ${-qty}, CURRENT_TIMESTAMP)`,
     );
 
     await prisma.$executeRaw`
@@ -530,7 +530,7 @@ export class InventoryService {
             VALUES ${Prisma.join(fragments)}
             ON CONFLICT ("warehouseId", "inventoryItemId")
             DO UPDATE SET 
-                "currentStock" = "WarehouseStock"."currentStock" - EXCLUDED."currentStock", 
+                "currentStock" = "WarehouseStock"."currentStock" + EXCLUDED."currentStock", 
                 "updatedAt" = CURRENT_TIMESTAMP
         `;
 

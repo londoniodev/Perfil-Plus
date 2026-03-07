@@ -30,7 +30,7 @@ export class AnalyticsService {
   private cache = new Map<string, { data: any; timestamp: number }>();
   private readonly CACHE_TTL = 60000; // 60 segundos cache para evitar asfixiar DB (Requerimiento Estricto)
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getDashboardStats(tenantId: string, period: string = '30d') {
     const now = new Date();
@@ -98,27 +98,29 @@ export class AnalyticsService {
     });
 
     // 4. Sales/Revenue Chart (Area)
-    // STRICT OPTIMIZATION: Calculations must be done at DB level, no JS array loading.
-    const revenueRaw = await this.prisma.$queryRaw<
-      { date: Date; total: number }[]
-    >`
-            SELECT DATE("createdAt") as date, SUM("totalAmount") as total
-            FROM "Order"
-            WHERE "tenantId" = ${tenantId}
-            AND "status" = 'DELIVERED'
-            AND "createdAt" >= ${StartDate}
-            AND "createdAt" <= ${EndDate}
-            GROUP BY DATE("createdAt")
-            ORDER BY DATE("createdAt") ASC
-        `;
-
     const sumByDay: Record<string, number> = {};
-    for (const row of revenueRaw) {
-      sumByDay[formatYMD(row.date)] = Number(row.total || 0);
+    try {
+      const revenueRaw = await this.prisma.$queryRaw<
+        { date: Date; total: number }[]
+      >`
+              SELECT DATE("createdAt") as date, SUM("totalAmount") as total
+              FROM "Order"
+              WHERE "tenantId" = ${tenantId}
+              AND "status" = 'DELIVERED'
+              AND "createdAt" >= ${StartDate}
+              AND "createdAt" <= ${EndDate}
+              GROUP BY DATE("createdAt")
+              ORDER BY DATE("createdAt") ASC
+          `;
+
+      for (const row of revenueRaw) {
+        sumByDay[formatYMD(row.date)] = Number(row.total || 0);
+      }
+    } catch (e) {
+      this.logger.error('Error fetching revenue raw for dashboard', e);
     }
 
     const revenueByDay: { date: string; total: number }[] = [];
-    // Extract days logic: iterate between StartDate and EndDate
     const diffDays = Math.ceil(
       (EndDate.getTime() - StartDate.getTime()) / (1000 * 3600 * 24),
     );
@@ -212,25 +214,30 @@ export class AnalyticsService {
     ];
 
     // b.2. Production Times by Product
-    const prodTimesByProductRaw = await this.prisma.$queryRaw<
-      { productName: string; avgMinutes: number }[]
-    >`
-            SELECT oi."productName", COALESCE(AVG(oda."timeToShip"), 0) as "avgMinutes"
-            FROM "OrderItem" oi
-            JOIN "OrderDeliveryAnalytics" oda ON oi."orderId" = oda."orderId"
-            JOIN "Order" o ON o.id = oi."orderId"
-            WHERE o."tenantId" = ${tenantId}
-            AND o."createdAt" >= ${StartDate} 
-            AND o."createdAt" <= ${EndDate}
-            AND oda."timeToShip" IS NOT NULL
-            GROUP BY oi."productName"
-            ORDER BY "avgMinutes" DESC
-            LIMIT 10
-        `;
-    const productionTimesByProduct = prodTimesByProductRaw.map((r) => ({
-      productName: r.productName,
-      avgMinutes: Math.round(Number(r.avgMinutes || 0)),
-    }));
+    let productionTimesByProduct = [];
+    try {
+      const prodTimesByProductRaw = await this.prisma.$queryRaw<
+        { productName: string; avgMinutes: number }[]
+      >`
+              SELECT oi."productName", COALESCE(AVG(oda."timeToShip"), 0) as "avgMinutes"
+              FROM "OrderItem" oi
+              JOIN "OrderDeliveryAnalytics" oda ON oi."orderId" = oda."orderId"
+              JOIN "Order" o ON o.id = oi."orderId"
+              WHERE o."tenantId" = ${tenantId}
+              AND o."createdAt" >= ${StartDate} 
+              AND o."createdAt" <= ${EndDate}
+              AND oda."timeToShip" IS NOT NULL
+              GROUP BY oi."productName"
+              ORDER BY "avgMinutes" DESC
+              LIMIT 10
+          `;
+      productionTimesByProduct = prodTimesByProductRaw.map((r) => ({
+        productName: r.productName,
+        avgMinutes: Math.round(Number(r.avgMinutes || 0)),
+      }));
+    } catch (e) {
+      this.logger.error('Error fetching product prod times raw for dashboard', e);
+    }
 
     // c. Table Occupancy (Dine In)
     const totalUsers = await this.prisma.secure.user.count({
@@ -371,11 +378,11 @@ export class AnalyticsService {
     const recipeCosts =
       variantIds.length > 0
         ? await this.prisma.$queryRaw<
-            {
-              variantId: string;
-              costPerPortion: number;
-            }[]
-          >`
+          {
+            variantId: string;
+            costPerPortion: number;
+          }[]
+        >`
                 SELECT
                     pv."id" AS "variantId",
                     COALESCE(

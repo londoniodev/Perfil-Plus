@@ -219,7 +219,15 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                         <FormControl>
                                             <div className="relative">
                                                 <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                                <Input {...field} type="number" step="0.01" min="0" className="pl-7 bg-background" placeholder="0.00" />
+                                                <Input
+                                                    {...field}
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    className="pl-7 bg-background"
+                                                    placeholder="0.00"
+                                                    onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                                />
                                             </div>
                                         </FormControl>
                                         <FormMessage />
@@ -482,7 +490,13 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                                 <FormItem>
                                                     <FormLabel className="text-xs">Stock</FormLabel>
                                                     <FormControl>
-                                                        <Input {...field} type="number" min="0" placeholder="0" />
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
+                                                            min="0"
+                                                            placeholder="0"
+                                                            onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                                        />
                                                     </FormControl>
                                                 </FormItem>
                                             )}

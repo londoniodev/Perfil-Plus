@@ -475,6 +475,7 @@ export default function MenuClient({
                                     sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
+
                                 {((product as any).isAvailable === false) && (
                                     <div className="absolute inset-0 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">
                                         <span className="text-slate-800 text-xs font-bold px-2 py-1 border border-slate-300 rounded-full bg-white/80 shadow-sm">

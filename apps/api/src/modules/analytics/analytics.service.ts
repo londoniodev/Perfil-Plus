@@ -214,7 +214,7 @@ export class AnalyticsService {
     ];
 
     // b.2. Production Times by Product
-    let productionTimesByProduct = [];
+    let productionTimesByProduct: { productName: string; avgMinutes: number }[] = [];
     try {
       const prodTimesByProductRaw = await this.prisma.$queryRaw<
         { productName: string; avgMinutes: number }[]

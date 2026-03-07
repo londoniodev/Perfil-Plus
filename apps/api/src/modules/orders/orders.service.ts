@@ -31,7 +31,7 @@ export class OrdersService {
     private storage: StorageService,
     private ordersGateway: OrdersGateway,
     private inventoryService: InventoryService,
-  ) {}
+  ) { }
 
   private getTenantId(): string {
     const tenantId = this.request.headers['x-tenant-id'] as string;
@@ -272,11 +272,18 @@ export class OrdersService {
           });
 
           // 8.5 Initialize Delivery Analytics explicitly to avoid type issues
+          const analyticsData: any = {
+            orderId: order.id,
+            pendingAt: new Date(),
+          };
+
+          if (dto.status === 'PREPARING') {
+            analyticsData.preparingAt = new Date();
+            analyticsData.timeToPrepare = 0; // nació en cocina
+          }
+
           const analytics = await tx.orderDeliveryAnalytics.create({
-            data: {
-              orderId: order.id,
-              pendingAt: new Date(),
-            },
+            data: analyticsData,
           });
 
           // 9. Capturar Lead si hay teléfono

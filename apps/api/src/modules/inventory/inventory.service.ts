@@ -522,7 +522,7 @@ export class InventoryService {
 
     const fragments = Array.from(aggregated.entries()).map(
       ([itemId, qty]) =>
-        Prisma.sql`(gen_random_uuid(), ${defaultWarehouse}::uuid, ${itemId}::uuid, ${-qty}, CURRENT_TIMESTAMP)`,
+        Prisma.sql`(${randomUUID()}::uuid, ${defaultWarehouse}::uuid, ${itemId}::uuid, ${-qty}, CURRENT_TIMESTAMP)`,
     );
 
     await prisma.$executeRaw`

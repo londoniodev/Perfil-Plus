@@ -17,7 +17,7 @@ import {
 
 @Injectable()
 export class LmsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // ==================== THEMES ====================
 
@@ -61,12 +61,12 @@ export class LmsService {
         evaluation: { select: { id: true } },
         ...(includeCourses
           ? {
-              courses: {
-                where: { published: true },
-                orderBy: { order: 'asc' as const },
-                include: { _count: { select: { lessons: true } } },
-              },
-            }
+            courses: {
+              where: { published: true },
+              orderBy: { order: 'asc' as const },
+              include: { _count: { select: { lessons: true } } },
+            },
+          }
           : {}),
       },
     });
@@ -288,18 +288,22 @@ export class LmsService {
 
     if (!lesson.course.isFree && !hasSubscription && userId) {
       // Verificar compra directamente en Postgres — sin cargar órdenes a memoria
-      const result = await this.prisma.$queryRaw<[{ count: number }]>`
-                SELECT COUNT(*)::int AS "count"
-                FROM "Order" o
-                JOIN "OrderItem" oi ON oi."orderId" = o."id"
-                JOIN "ProductVariant" pv ON pv."id" = oi."variantId"
-                JOIN "Product" p ON p."id" = pv."productId"
-                WHERE o."userId" = ${userId}
-                  AND o."status" = 'APPROVED'
-                  AND p."specs"::jsonb->>'courseId' = ${lesson.course.id}
-                LIMIT 1
-            `;
-      hasPurchasedCourse = (result[0]?.count ?? 0) > 0;
+      try {
+        const result = await this.prisma.$queryRaw<[{ count: number }]>`
+                  SELECT COUNT(*)::int AS "count"
+                  FROM "Order" o
+                  JOIN "OrderItem" oi ON oi."orderId" = o."id"
+                  JOIN "ProductVariant" pv ON pv."id" = oi."variantId"
+                  JOIN "Product" p ON p."id" = pv."productId"
+                  WHERE o."userId" = ${userId}
+                    AND o."status" = 'APPROVED'
+                    AND p."specs"::jsonb->>'courseId' = ${lesson.course.id}
+                  LIMIT 1
+              `;
+        hasPurchasedCourse = (result[0]?.count ?? 0) > 0;
+      } catch (e) {
+        hasPurchasedCourse = false;
+      }
     }
 
     if (!lesson.course.isFree && !hasSubscription && !hasPurchasedCourse) {
@@ -533,7 +537,7 @@ export class LmsService {
           if (typeof specsStr === 'string') {
             specsStr = JSON.parse(specsStr);
           }
-        } catch (e) {}
+        } catch (e) { }
 
         if (specsStr && specsStr.courseId) {
           courseIds.add(specsStr.courseId);

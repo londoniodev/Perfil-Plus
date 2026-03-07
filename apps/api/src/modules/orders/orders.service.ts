@@ -482,14 +482,14 @@ export class OrdersService {
           analyticsUpdate.timeToPrepare = Math.floor(
             (now.getTime() - analytics.pendingAt.getTime()) / 1000,
           );
-        } else if (dto.status === 'SHIPPED' && !analytics.shippedAt) {
+        } else if ((dto.status === 'SHIPPED' || dto.status === 'READY') && !analytics.shippedAt) {
           analyticsUpdate.shippedAt = now;
           if (analytics.preparingAt) {
             analyticsUpdate.timeToShip = Math.floor(
               (now.getTime() - analytics.preparingAt.getTime()) / 1000,
             );
           }
-        } else if (dto.status === 'DELIVERED' && !analytics.deliveredAt) {
+        } else if ((dto.status === 'DELIVERED' || dto.status === 'SERVED') && !analytics.deliveredAt) {
           analyticsUpdate.deliveredAt = now;
           if (analytics.shippedAt) {
             analyticsUpdate.timeToDeliver = Math.floor(

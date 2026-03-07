@@ -109,7 +109,7 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
                 orderType: "DINE_IN",
                 tableNumber: tableId,
                 items: orderItems,
-                status: "PREPARING" // Autosend to kitchen
+                status: "APPROVED" // Autosend to kitchen queue
                 // TODO: Pass waitstaff/user info if API supports it
             })
         })

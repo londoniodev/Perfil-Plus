@@ -101,7 +101,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
     }));
 
     const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({
-        step: p.stage === 'Preparation' ? 'Preparación' : p.stage === 'Shipping' ? 'Embalaje/Envío' : 'Entrega',
+        step: p.stage === 'Preparation' ? 'Espera a preparar' : p.stage === 'Shipping' ? 'Tiempo de Cocción' : 'Servicio a Mesa',
         time: p.minutes
     }));
 

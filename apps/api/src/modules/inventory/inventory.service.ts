@@ -522,7 +522,7 @@ export class InventoryService {
 
     const fragments = Array.from(aggregated.entries()).map(
       ([itemId, qty]) =>
-        Prisma.sql`(${randomUUID()}::uuid, ${defaultWarehouse}::uuid, ${itemId}::uuid, ${-qty}, CURRENT_TIMESTAMP)`,
+        Prisma.sql`(${randomUUID()}, ${defaultWarehouse}, ${itemId}, ${-qty}, CURRENT_TIMESTAMP)`,
     );
 
     await prisma.$executeRaw`
@@ -550,7 +550,7 @@ export class InventoryService {
                        ii."minStock"::float AS min_stock
                 FROM "InventoryItem" ii
                 LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
-                WHERE ii."id" = ANY(${uniqueItemIds}::uuid[])
+                WHERE ii."id" = ANY(${uniqueItemIds})
                   AND ii."minStock" > 0
                   AND ii."tenantId" = ${tenantId}
                 GROUP BY ii."id", ii."name", ii."minStock"

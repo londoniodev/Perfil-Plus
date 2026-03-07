@@ -3,6 +3,7 @@
 import { API_BASE, TENANT_ID } from "@/lib/config"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { headers } from "next/headers"
 
 // Strict TypeScript schema to prevent malicious or flawed payloads (No arrays of any allowed)
 const CreateOrderSchema = z.object({
@@ -51,12 +52,15 @@ export async function createOrder(data: unknown, items: unknown, tableId: string
             // TODO: Add customer info support in API if missing.
         }
 
+        const resolvedHeaders = await headers();
+        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
+
         // 3. Call API
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-tenant-id": TENANT_ID
+                "x-tenant-id": dynamicTenantId
             },
             body: JSON.stringify(payload)
         })

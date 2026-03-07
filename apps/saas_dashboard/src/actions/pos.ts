@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { API_BASE, TENANT_ID } from "../lib/config"
+import { API_BASE, TENANT_ID, getApiHeaders } from "../lib/config"
+import { headers } from "next/headers"
 
 
 // --- TYPES ---
@@ -38,10 +39,13 @@ const createPOSOrderSchema = z.object({
 
 export async function getPOSProducts() {
     try {
+        const resolvedHeaders = await headers();
+        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
+
         const res = await fetch(
             `${API_BASE}/store/products?type=RESTAURANT&allVariants=true`,
             {
-                headers: { "x-tenant-id": TENANT_ID },
+                headers: { "x-tenant-id": dynamicTenantId },
                 cache: "no-store",
             }
         )
@@ -98,12 +102,15 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
             })) || []
         }))
 
+        const resolvedHeaders = await headers();
+        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
+
         // Call API to create order (Ensures Tenant Context & Logic)
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-tenant-id": TENANT_ID
+                "x-tenant-id": dynamicTenantId
             },
             body: JSON.stringify({
                 orderType: "DINE_IN",

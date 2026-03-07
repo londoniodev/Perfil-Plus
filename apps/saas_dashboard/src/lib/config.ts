@@ -21,11 +21,12 @@ export const TENANT_ID = envTenantId;
 /**
  * Get API headers with tenant ID
  * Use this for all API calls to ensure tenant context is passed
+ * For Server Actions, pass the dynamically resolved CUID as dynamicTenantId.
  */
-export function getApiHeaders(additionalHeaders?: HeadersInit): HeadersInit {
+export function getApiHeaders(additionalHeaders?: HeadersInit, dynamicTenantId?: string): HeadersInit {
     return {
         'Content-Type': 'application/json',
-        'x-tenant-id': TENANT_ID,
+        'x-tenant-id': dynamicTenantId || TENANT_ID,
         ...additionalHeaders,
     };
 }

@@ -25,7 +25,7 @@ export function Header({ hasDashboardFeature = true }: { hasDashboardFeature?: b
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
-            showAuthButtons={hasDashboardFeature}
+            showAuthButtons={false}
         />
     );
 }

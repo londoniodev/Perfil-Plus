@@ -5,7 +5,7 @@ import { getTenantId } from "@/lib/config-server";
 export async function Footer() {
     const tenantId = await getTenantId();
 
-    const isDeborah = tenantId === "soydeborasoysaludable" || tenantId === "deborahmoscoso";
+    const isDeborah = tenantId === "soydeborasoysaludable" || tenantId === "deborahmoscoso" || tenantId === "cm7mman6x000208jsf3h9h2k1";
 
     const businessName = isDeborah ? "Deborah Moscoso" : siteConfig.name;
     const businessEmail = isDeborah ? "info@soydeborasoysaludable.com" : siteConfig.email;

@@ -39,10 +39,10 @@ export function HeroSection() {
                             hidden: { opacity: 0, y: 40 },
                             visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } }
                         }}
-                        className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white mb-8 leading-[0.85]"
+                        className="text-5xl md:text-7xl lg:text-[8rem] font-black tracking-tighter text-white mb-8 leading-[0.9]"
                     >
-                        TRANSFORMA <br />
-                        <span className="text-fuchsia-500 italic">TU VIDA</span>
+                        COACHING & <br />
+                        <span className="text-fuchsia-500 italic">SUPLEMENTACIÓN</span>
                     </motion.h1>
                     <motion.p
                         variants={{
@@ -51,8 +51,7 @@ export function HeroSection() {
                         }}
                         className="text-xl md:text-2xl text-zinc-300 mb-12 max-w-2xl mx-auto leading-relaxed opacity-80"
                     >
-                        Coaching de alto rendimiento y suplementación premium.
-                        El físico y la mentalidad que mereces comienzan aquí.
+                        Programas de coaching de alto rendimiento, planes de nutrición personalizados y tienda oficial de suplementación premium.
                     </motion.p>
                     <motion.div
                         variants={{

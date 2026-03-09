@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
 
                     <div className="prose" style={{ color: "var(--foreground-muted)", lineHeight: "1.8" }}>
                         <p style={{ marginBottom: "2rem" }}>
-                            En Mauro Mera, consultor organizacional y psicólogo, nos tomamos muy en serio la privacidad de tus datos. Esta política describe cómo recopilamos, usamos y protegemos tu información personal cuando interactúas con nuestro sitio web y servicios, incluyendo las herramientas impulsadas por Inteligencia Artificial como Explora.
+                            Nos tomamos muy en serio la privacidad de tus datos. Esta política describe cómo recopilamos, usamos y protegemos tu información personal cuando interactúas con nuestro sitio web y servicios, productos y herramientas de gestión provistos.
                         </p>
 
                         <h2 className="heading-h2 mt-12 mb-6 text-foreground">

@@ -100,7 +100,7 @@ export function SiteHeader({
                         alt={logoAlt}
                         width={200}
                         height={80}
-                        className={cn("h-8 md:h-10 w-auto object-contain transition-all group-hover:scale-105", isWhiteText && "brightness-0 invert")}
+                        className={cn("h-8 md:h-10 w-auto object-contain rounded-full transition-all group-hover:scale-105", isWhiteText && "brightness-0 invert")}
                         priority
                         unoptimized={logoUnoptimized}
                     />

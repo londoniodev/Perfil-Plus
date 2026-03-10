@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     const description = post.metaDescription || post.excerpt;
 
     return {
-      title: `${title} | Blog - Mauro Mera`,
+      title: `${title} | Blog`,
       description,
       authors: [{ name: post.authorName }],
       openGraph: {
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     };
   } catch {
     return {
-      title: "Artículo no encontrado | Blog - Mauro Mera",
+      title: "Artículo no encontrado | Blog",
     };
   }
 }
@@ -88,7 +88,7 @@ export default async function PostPage({ params }: PostPageProps) {
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Mauro Mera",
+      "name": post.authorName,
       "url": SITE_URL
     },
     "datePublished": post.publishedAt || post.createdAt,
@@ -112,8 +112,12 @@ export default async function PostPage({ params }: PostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <article className="min-h-screen bg-background pb-20">
-        <div className="container mx-auto px-4 pt-32 md:pt-32">
+      <article className="min-h-screen bg-zinc-950 text-white pb-20 relative">
+        {/* Ambient glows */}
+        <div className="absolute top-20 left-1/4 w-[400px] h-[400px] bg-fuchsia-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-40 right-1/4 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="container mx-auto px-4 sm:px-6 pt-28 md:pt-32 relative z-10">
           <div className="max-w-4xl mx-auto">
             <BlogBackButton />
 
@@ -152,7 +156,7 @@ export default async function PostPage({ params }: PostPageProps) {
               )}
 
               {post.isContentLimited && (
-                <div className="bg-card text-card-foreground p-8 rounded-xl border border-border shadow-lg mb-12 relative overflow-hidden">
+                <div className="bg-white/5 backdrop-blur-md text-white p-8 rounded-xl border border-white/10 shadow-lg mb-12 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <IconLock className="w-24 h-24" />
                   </div>
@@ -171,18 +175,20 @@ export default async function PostPage({ params }: PostPageProps) {
 
               <div
                 className={`
-                       prose prose-slate lg:prose-lg dark:prose-invert max-w-none font-sans
-                       prose-headings:font-bold prose-headings:tracking-tight
-                       prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                       prose prose-invert lg:prose-lg max-w-none font-sans
+                       prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-white
+                       prose-p:text-zinc-300 prose-li:text-zinc-300
+                       prose-strong:text-white
+                       prose-a:text-fuchsia-400 prose-a:no-underline hover:prose-a:underline
                        prose-img:rounded-xl prose-img:shadow-md
-                       ${post.isContentLimited ? "opacity-50 blur-[2px] select-none pointer-events-none h-[400px] overflow-hidden relative after:absolute after:inset-0 after:bg-gradient-to-b after:from-transparent after:to-background" : ""}
+                       ${post.isContentLimited ? "opacity-50 blur-[2px] select-none pointer-events-none h-[400px] overflow-hidden relative after:absolute after:inset-0 after:bg-gradient-to-b after:from-transparent after:to-zinc-950" : ""}
                     `}
                 dangerouslySetInnerHTML={{ __html: html }}
               />
 
               {/* Attachments */}
               {!post.isContentLimited && post.attachments && post.attachments.length > 0 && (
-                <div className="mt-16 pt-8 border-t border-border">
+                <div className="mt-16 pt-8 border-t border-white/10">
                   <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                     📎 Archivos Adjuntos
                   </h3>
@@ -211,7 +217,7 @@ export default async function PostPage({ params }: PostPageProps) {
               )}
 
               {/* Share Bottom & Tags */}
-              <div className="mt-12 pt-8 border-t border-border space-y-8">
+              <div className="mt-12 pt-8 border-t border-white/10 space-y-8">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <span className="font-semibold text-lg">¿Te gustó este artículo? ¡Compártelo!</span>
                   <ShareButtons url={postUrl} title={post.title} />
@@ -224,7 +230,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <aside className="hidden lg:block">
               <div className="sticky top-32 space-y-8">
                 {toc.length > 0 && (
-                  <div className="bg-card/50 backdrop-blur-sm p-6 rounded-xl border border-border">
+                  <div className="bg-white/5 backdrop-blur-md p-6 rounded-xl border border-white/10">
                     <TableOfContents items={toc} />
                   </div>
                 )}

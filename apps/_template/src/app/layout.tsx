@@ -46,12 +46,16 @@ async function getTenantDesign(tenantId: string) {
 
     const data = await response.json();
 
-    // Fallback robusto en caso de que la data venga incompleta o la API falle silenciosamente sin error
-    return data?.design ?? {
-      colors: { primary: "#000000" }, // Default safe color
+    // La API devuelve { design: { primary, mode, radius, ... }, logo: "https://s3..." }
+    // Fusionamos design + logo para que el layout pueda acceder a design.logo
+    const design = data?.design ?? {
+      colors: { primary: "#000000" },
       fonts: { heading: "Inter", body: "Inter" },
       radius: 0.5
     };
+
+    // El logo viene de SystemSettings (key='menu' → .logo), inyectado al nivel raíz por la API
+    return { ...design, logo: data?.logo || null };
   } catch (e) {
     console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);
     return {

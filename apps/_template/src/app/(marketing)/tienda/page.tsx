@@ -31,13 +31,16 @@ export default async function TiendaPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-zinc-950 flex flex-col pt-24">
+            {/* Background Ambient */}
+            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+
             {/* Storefront Header */}
-            <header className="bg-white border-b border-slate-200 py-12 px-6 sm:px-10 lg:px-20 text-center">
-                <h1 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+            <header className="relative z-10 py-12 px-6 sm:px-10 lg:px-20 text-center">
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
                     Nuestra Tienda
                 </h1>
-                <p className="max-w-2xl mx-auto text-lg text-slate-500">
+                <p className="max-w-2xl mx-auto text-lg text-zinc-400">
                     Descubre nuestra colección de productos exclusivos. Compra segura, rápida y con entrega inmediata para archivos digitales.
                 </p>
             </header>

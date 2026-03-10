@@ -30,18 +30,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     return (
-        <div className="container py-8 md:py-12">
-            {/* Breadcrumbs simplificados */}
-            <div className="mb-8">
-                <PageHeader
-                    title="Tienda"
-                    description={`/ ${product.name}`}
-                    className="py-0 md:py-0"
-                />
-            </div>
+        <div className="min-h-screen bg-zinc-950 flex flex-col pt-24">
+            <div className="container py-8 md:py-12 relative z-10">
+                {/* Breadcrumbs simplificados */}
+                <div className="mb-8">
+                    <PageHeader
+                        title="Tienda"
+                        description={`/ ${product.name}`}
+                        className="py-0 md:py-0 text-white"
+                    />
+                </div>
 
-            {/* Renderizamos el Cliente Component */}
-            <ProductConfigurator product={product} />
+                {/* Renderizamos el Cliente Component */}
+                <div className="dark text-foreground">
+                    <ProductConfigurator product={product} />
+                </div>
+            </div>
         </div>
     )
 }

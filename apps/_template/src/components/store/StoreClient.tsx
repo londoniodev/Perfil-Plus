@@ -66,10 +66,10 @@ export function StoreClient({ tenantId, initialData = [] }: { tenantId: string, 
 
     if (!storeProducts || storeProducts.length === 0) {
         return (
-            <div className="w-full py-20 text-center flex flex-col items-center border border-dashed rounded-xl bg-slate-50">
+            <div className="w-full py-20 text-center flex flex-col items-center border border-white/10 rounded-xl bg-white/5 backdrop-blur-md">
                 <PackageIcon placeholder />
-                <h3 className="text-lg font-bold text-slate-800 mt-4">Catálogo Vacío</h3>
-                <p className="text-muted-foreground">Aún no hay productos disponibles en esta tienda.</p>
+                <h3 className="text-lg font-bold text-white mt-4">Catálogo Vacío</h3>
+                <p className="text-zinc-400 mt-2">Aún no hay productos disponibles en esta tienda.</p>
             </div>
         )
     }

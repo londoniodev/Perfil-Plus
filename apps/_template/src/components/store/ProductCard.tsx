@@ -27,7 +27,7 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
     const isAvailable = product.isAvailable !== false
 
     return (
-        <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+        <div className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-white/20 transition-all duration-300">
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
                 {isDigital && (
@@ -49,7 +49,7 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
 
             {/* Image Section */}
             <div
-                className="relative aspect-square w-full bg-slate-50 overflow-hidden cursor-pointer"
+                className="relative aspect-square w-full bg-white/5 overflow-hidden cursor-pointer"
                 onClick={() => onViewDetails?.(product)}
                 role="button"
                 tabIndex={0}
@@ -74,22 +74,22 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
             <div className="flex flex-col flex-1 p-5">
                 <div className="flex-1">
                     <h3
-                        className="font-bold text-lg text-slate-900 line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors"
+                        className="font-bold text-lg text-white line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors"
                         onClick={() => onViewDetails?.(product)}
                     >
                         {product.name}
                     </h3>
                     {product.description && (
-                        <p className="mt-2 text-sm text-slate-500 line-clamp-2">
+                        <p className="mt-2 text-sm text-zinc-400 line-clamp-2">
                             {product.description}
                         </p>
                     )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-end justify-between gap-4">
+                <div className="mt-4 pt-4 border-t border-white/10 flex items-end justify-between gap-4">
                     <div className="flex flex-col">
-                        <span className="text-xs text-slate-500 font-medium mb-0.5">Precio</span>
-                        <span className="font-extrabold text-xl text-slate-900 tracking-tight">
+                        <span className="text-xs text-zinc-400 font-medium mb-0.5">Precio</span>
+                        <span className="font-extrabold text-xl text-white tracking-tight">
                             {formatCurrency(Number(product.basePrice))}
                         </span>
                     </div>

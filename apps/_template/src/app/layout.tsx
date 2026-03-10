@@ -13,13 +13,11 @@ import { getTenantId } from "@/lib/config-server";
 import { headers } from "next/headers";
 
 const PwaInstallPrompt = dynamic(
-  () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt),
-  { ssr: false }
+  () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt)
 );
 
 const TableDetector = dynamic(
-  () => import("@/components/shop/table-detector").then((mod) => mod.TableDetector),
-  { ssr: false }
+  () => import("@/components/shop/table-detector").then((mod) => mod.TableDetector)
 );
 
 async function getTenantDesign(tenantId: string) {

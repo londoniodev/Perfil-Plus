@@ -2,6 +2,11 @@ import { headers } from "next/headers";
 import { Fill } from "@alvarosky/ui";
 import { EmprendeContent as DeborahEmprende } from "@/components/storefronts/deborahmoscoso/emprende/EmprendeContent";
 
+export const metadata = {
+    title: "Emprende Conmigo",
+    description: "Únete a mi equipo de distribución, trabaja desde casa y transforma tu estilo de vida gestionando tu propio negocio de suplementación inteligente."
+};
+
 export default async function EmprendePage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";

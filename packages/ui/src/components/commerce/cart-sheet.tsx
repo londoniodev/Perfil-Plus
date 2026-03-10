@@ -49,7 +49,7 @@ export function CartSheet({
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-zinc-700/50 bg-zinc-900/50 hover:bg-zinc-800 hover:text-white transition-all duration-300">
+                <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-zinc-700/50 bg-zinc-900/50 hover:bg-zinc-800 hover:text-white transition-all duration-300">
                     <ShoppingCart className="h-5 w-5" />
                     {items.length > 0 && (
                         <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-sm">
@@ -92,6 +92,7 @@ export function CartSheet({
                                         <div className="flex items-center gap-3 bg-zinc-900/50 rounded-full pl-3 pr-1 py-1 border border-zinc-800/50">
                                             <span className="text-xs text-zinc-400 font-medium">Qty: {item.quantity}</span>
                                             <Button
+                                                aria-label="Eliminar artículo"
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-6 w-6 text-zinc-400 hover:text-red-400 hover:bg-red-950/30 rounded-full transition-colors"

@@ -36,6 +36,12 @@ import { cookies } from "next/headers";
 import type { FeatureKey } from "@/config/sidebar.config";
 
 import { ThemeProvider } from "./providers";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Panel de Administración",
+    description: "Plataforma de gestión SaaS, restaurante, tienda y academia.",
+};
 
 export default async function DashboardLayout({
     children,

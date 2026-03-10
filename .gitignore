@@ -83,3 +83,11 @@ scripts/set-admin-mauro.js
 # Scripts & Imports
 apps/deborahmoscoso-web/1770777527569-product-exports-01KH591H8JDNXQQXXA9RX931X5.csv
 apps/api/scripts/import-products.ts
+# Audit Reports (Performance, SEO, React Doctor)
+.unlighthouse/
+react-doctor-report*.txt
+react-doctor.json
+*-prune.txt
+run-unlighthouse.mjs
+dump-cookies.mjs
+unlighthouse.config.*

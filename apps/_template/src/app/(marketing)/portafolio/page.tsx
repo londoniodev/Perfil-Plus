@@ -2,6 +2,11 @@ import { headers } from "next/headers";
 import { Fill } from "@alvarosky/ui";
 import MauroPortafolio from "@/components/storefronts/mauromera/portafolio/PortafolioContent";
 
+export const metadata = {
+    title: "Portafolio y Casos de Éxito",
+    description: "Conoce mis trabajos, proyectos destacados y casos de éxito reales."
+};
+
 export default async function PortafolioPage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";

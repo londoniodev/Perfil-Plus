@@ -61,7 +61,7 @@ export function CartSheet() {
 
     if (!isMounted) {
         return (
-            <Button variant="ghost" size="icon" className="relative" disabled>
+            <Button variant="ghost" size="icon" className="relative" disabled aria-label="Cargando carrito">
                 <div className="h-5 w-5 bg-muted rounded-full animate-pulse" />
             </Button>
         )

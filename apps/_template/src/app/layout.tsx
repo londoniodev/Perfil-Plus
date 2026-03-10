@@ -4,14 +4,23 @@ import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, getFontVariables } from "@alvarosky/ui";
-import { PwaInstallPrompt } from "@alvarosky/ui/pwa-install-prompt";
+import dynamic from "next/dynamic";
 import { ThemeProvider, TenantProvider } from "./providers";
 import { BrandProvider } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
-import { TableDetector } from "@/components/shop/table-detector";
 import { serverFetch } from "@/lib/api-server";
 import { getTenantId } from "@/lib/config-server";
 import { headers } from "next/headers";
+
+const PwaInstallPrompt = dynamic(
+  () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt),
+  { ssr: false }
+);
+
+const TableDetector = dynamic(
+  () => import("@/components/shop/table-detector").then((mod) => mod.TableDetector),
+  { ssr: false }
+);
 
 async function getTenantDesign(tenantId: string) {
   // Skip DB call during build time (static generation) — API is not accessible in Docker build context easily

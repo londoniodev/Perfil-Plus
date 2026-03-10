@@ -238,6 +238,37 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
     );
 }
 
+async function DashboardContentWrapper({ period }: { period: string }) {
+    const tenant = await getTenantData();
+    const isFirstTime = !tenant.features || tenant.features.length === 0;
+
+    if (isFirstTime) {
+        return (
+            <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-16 px-4">
+                    <div className="rounded-full bg-primary/10 p-4 mb-4">
+                        <Sparkles className="h-12 w-12 text-primary" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">
+                        ¡Bienvenido a tu Panel de Administración!
+                    </h2>
+                    <p className="text-muted-foreground text-center mb-6 max-w-md">
+                        Tu plataforma está lista. Configura las funcionalidades que necesitas para comenzar a gestionar tu negocio.
+                    </p>
+                    <Button size="lg" asChild>
+                        <Link href="/configuracion">
+                            <Settings className="mr-2 h-5 w-5" />
+                            Configurar mi Negocio
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return <DashboardMetrics tenant={tenant} period={period} />;
+}
+
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
@@ -254,9 +285,7 @@ export default async function AdminDashboardPage(props: PageProps) {
         redirect("/perfil");
     }
 
-    const tenant = await getTenantData();
     const period = (searchParams.period as string) || "30d";
-    const isFirstTime = !tenant.features || tenant.features.length === 0;
 
     const currentDate = new Date().toLocaleDateString("es-ES", {
         weekday: "long",
@@ -290,32 +319,9 @@ export default async function AdminDashboardPage(props: PageProps) {
                         </CardContent>
                     </Card>
 
-                    {isFirstTime ? (
-                        /* Empty State - First Time Setup */
-                        <Card className="border-dashed">
-                            <CardContent className="flex flex-col items-center justify-center py-16 px-4">
-                                <div className="rounded-full bg-primary/10 p-4 mb-4">
-                                    <Sparkles className="h-12 w-12 text-primary" />
-                                </div>
-                                <h2 className="text-2xl font-bold mb-2">
-                                    ¡Bienvenido a tu Panel de Administración!
-                                </h2>
-                                <p className="text-muted-foreground text-center mb-6 max-w-md">
-                                    Tu plataforma está lista. Configura las funcionalidades que necesitas para comenzar a gestionar tu negocio.
-                                </p>
-                                <Button size="lg" asChild>
-                                    <Link href="/configuracion">
-                                        <Settings className="mr-2 h-5 w-5" />
-                                        Configurar mi Negocio
-                                    </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <Suspense key={period} fallback={<DashboardSkeleton />}>
-                            <DashboardMetrics tenant={tenant} period={period} />
-                        </Suspense>
-                    )}
+                    <Suspense key={period} fallback={<DashboardSkeleton />}>
+                        <DashboardContentWrapper period={period} />
+                    </Suspense>
                 </div>
             </div>
         </div>

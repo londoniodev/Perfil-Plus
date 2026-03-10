@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@alvarosky/ui";
 import { motion } from "framer-motion";
 
@@ -9,10 +10,14 @@ export function HeroSection() {
         <section className="relative w-full w-screen max-w-[100vw] min-h-[100dvh] flex items-center justify-center overflow-hidden bg-zinc-950">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"
                     alt="Deborah Moscoso"
-                    className="w-full h-full object-cover opacity-30"
+                    fill
+                    priority
+                    quality={90}
+                    sizes="100vw"
+                    className="object-cover opacity-30"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/60 to-zinc-950 z-10" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.15)_0%,transparent_70%)]" />

@@ -2,6 +2,11 @@ import { headers } from "next/headers";
 import { Fill } from "@alvarosky/ui";
 import { AboutContent as DeborahAbout } from "@/components/storefronts/deborahmoscoso/quien-soy/AboutContent";
 
+export const metadata = {
+    title: "Quién Soy",
+    description: "Conoce mi historia, mi filosofía y cómo conecto la nutrición consciente con el entrenamiento para Transformarte."
+};
+
 export default async function QuienSoyPage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";

@@ -17,7 +17,7 @@ const benefits = [
 
 export function CoachingSection() {
     return (
-        <section className="py-32 bg-zinc-950 relative overflow-hidden font-lexend">
+        <section className="py-32 bg-zinc-950 relative w-full w-screen max-w-[100vw] overflow-hidden font-lexend">
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
 
             <div className="container px-4">

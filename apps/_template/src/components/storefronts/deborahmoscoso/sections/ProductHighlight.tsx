@@ -35,7 +35,7 @@ const categories = [
 
 export function ProductHighlight() {
     return (
-        <section className="py-24 bg-zinc-950">
+        <section className="py-24 bg-zinc-950 w-full w-screen max-w-[100vw] overflow-x-hidden">
             <div className="container px-4">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div className="max-w-2xl">

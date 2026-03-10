@@ -52,7 +52,12 @@ export default async function MarketingHubPage() {
     case "mauromera":
       return <MauroLanding data={safeData} />;
     case "soydeborasoysaludable":
-      return <DeborahLanding data={safeData} />;
+    case "cm7mman6x000208jsf3h9h2k1":
+      return (
+        <div className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0">
+          <DeborahLanding data={safeData} />
+        </div>
+      );
     case "cocinasiete":
       return <CocinasieteLanding data={safeData} />;
     default:

@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
 
     return (
         <AuthLayout>
-            <Card className="w-full border-none shadow-none bg-transparent p-0">
+            <Card className="w-full border-none shadow-none bg-transparent p-0 text-zinc-100">
                 <CardHeader className="text-center px-0 pt-0">
                     <CardTitle className="heading-h2 mb-2"></CardTitle>
                     <CardDescription className="text-body text-base">
@@ -79,6 +79,7 @@ export default function ForgotPasswordPage() {
                                     id="email"
                                     type="email"
                                     placeholder="tu@email.com"
+                                    className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                                     {...register('email')}
                                 />
                                 {errors.email && (

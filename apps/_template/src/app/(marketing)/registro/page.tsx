@@ -61,7 +61,7 @@ export default function RegisterPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center p-8 bg-background">
-                <Card className="w-full max-w-[500px] text-center border-green-500/20 shadow-2xl shadow-green-500/10 bg-card/60 backdrop-blur-md">
+                <Card className="w-full max-w-[500px] text-center border-green-500/20 shadow-2xl shadow-green-500/10 bg-zinc-950/80 backdrop-blur-md">
                     <CardHeader>
                         <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg animate-pulse">
                             <CheckCircle className="h-10 w-10" />
@@ -105,7 +105,7 @@ export default function RegisterPage() {
 
     return (
         <AuthLayout>
-            <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
+            <Card className="w-full border-none shadow-none bg-transparent p-0 text-zinc-100">
                 <CardHeader className="text-center px-0 pt-0">
                     <CardTitle className="heading-h2 mb-2"></CardTitle>
                     <CardDescription className="text-slate-500">
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                                 required
                                 placeholder="Tu nombre"
                                 minLength={2}
-                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                             />
                         </div>
 
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 required
                                 placeholder="tucorreo@ejemplo.com"
-                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                             />
                         </div>
 
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                                 required
                                 placeholder="Mínimo 8 caracteres"
                                 minLength={8}
-                                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                                className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                             />
                         </div>
 

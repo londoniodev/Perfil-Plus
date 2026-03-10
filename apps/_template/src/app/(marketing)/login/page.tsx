@@ -137,7 +137,7 @@ function LoginForm() {
   };
 
   return (
-    <Card className="w-full border-none shadow-none bg-transparent p-0 text-slate-900">
+    <Card className="w-full border-none shadow-none bg-transparent p-0 text-zinc-100">
       <CardHeader className="text-center px-0 pt-0">
         <CardTitle className="heading-h2 mb-2"></CardTitle>
         <CardDescription className="text-slate-500"></CardDescription>
@@ -157,7 +157,7 @@ function LoginForm() {
                       icon={<Mail className="h-5 w-5" />}
                       type="email"
                       placeholder="admin@example.com"
-                      className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                      className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                       {...field}
                     />
                   </FormControl>
@@ -186,7 +186,7 @@ function LoginForm() {
                       icon={<Lock className="h-5 w-5" />}
                       type="password"
                       placeholder="••••••••"
-                      className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                      className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                       {...field}
                     />
                   </FormControl>

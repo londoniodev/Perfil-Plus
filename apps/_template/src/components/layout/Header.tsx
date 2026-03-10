@@ -12,10 +12,15 @@ export function Header({ hasDashboardFeature = true }: { hasDashboardFeature?: b
 
     const navLinks = [
         { label: "Inicio", href: "/" },
+        { label: "Quien Soy", href: "/quien-soy" },
         { label: "Servicios", href: "/servicios" },
         { label: "Tienda", href: "/tienda" },
+        { label: "Blog", href: "/blog" },
+        { label: "Emprende", href: "/emprende" },
         { label: "Mi Cuenta", href: "/perfil" },
     ];
+
+    const isHome = pathname === "/";
 
     return (
         <SiteHeader
@@ -26,6 +31,7 @@ export function Header({ hasDashboardFeature = true }: { hasDashboardFeature?: b
             pathname={pathname}
             cartComponent={<CartSheet />}
             showAuthButtons={false}
+            transparentIsDark={isHome}
         />
     );
 }

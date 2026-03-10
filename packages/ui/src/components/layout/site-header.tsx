@@ -32,6 +32,7 @@ export interface SiteHeaderProps {
     registerUrl?: string;
     profileUrl?: string;
     showAuthButtons?: boolean;
+    transparentIsDark?: boolean;
     className?: string;
 }
 
@@ -48,10 +49,13 @@ export function SiteHeader({
     registerUrl = "/registro",
     profileUrl = "/perfil",
     showAuthButtons = true,
+    transparentIsDark = false,
     className,
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isScrolled = useScroll(10);
+
+    const isWhiteText = !isScrolled && transparentIsDark;
 
     return (
         <header className={cn(
@@ -65,7 +69,7 @@ export function SiteHeader({
                 <div className="lg:hidden ml-2">
                     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn(!isScrolled ? "text-black" : "text-foreground")}>
+                            <Button variant="ghost" size="icon" className={cn(!isScrolled ? "text-black" : "text-foreground", isWhiteText && !isScrolled ? "text-white" : "")}>
                                 <IconMenu size={28} />
                                 <span className="sr-only">Menú</span>
                             </Button>
@@ -96,7 +100,7 @@ export function SiteHeader({
                         alt={logoAlt}
                         width={200}
                         height={80}
-                        className="h-8 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                        className={cn("h-8 md:h-10 w-auto object-contain transition-all group-hover:scale-105", isWhiteText && "brightness-0 invert")}
                         priority
                         unoptimized={logoUnoptimized}
                     />
@@ -113,12 +117,15 @@ export function SiteHeader({
                         registerUrl={registerUrl}
                         profileUrl={profileUrl}
                         showAuthButtons={showAuthButtons}
+                        isWhiteText={isWhiteText}
                     />
                 </nav>
 
                 {/* Cart Button (Desktop & Mobile) */}
                 <div className="flex items-center gap-2 mr-2">
-                    {cartComponent}
+                    <div className={cn(isWhiteText && "text-white")}>
+                        {cartComponent}
+                    </div>
                 </div>
             </div>
         </header>
@@ -134,12 +141,13 @@ interface DesktopNavLinksProps {
     registerUrl: string;
     profileUrl: string;
     showAuthButtons?: boolean;
+    isWhiteText?: boolean;
 }
 
-function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true }: DesktopNavLinksProps) {
+function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true, isWhiteText = false }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "text-base font-medium transition-colors hover:text-primary/80",
-        currentPath === path ? "text-primary font-bold" : "text-foreground/80"
+        "text-base font-medium transition-colors hover:text-primary",
+        currentPath === path ? "text-primary font-bold" : (isWhiteText ? "text-white/90" : "text-foreground/80")
     );
 
     return (

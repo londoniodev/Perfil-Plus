@@ -1,203 +1,101 @@
-import Link from "next/link";
 import { headers } from "next/headers";
-import { getPosts, getCategories } from "@/lib/api";
-import { Post, Category } from "@/types/blog";
-import { Metadata } from "next";
-import { BreadcrumbSchema, CollectionPageSchema } from "@/components/seo/JsonLd";
-import { BlogFilter } from "./BlogFilter";
-import { Card, CardContent, CardFooter } from "@alvarosky/ui";
-import { Badge } from "@alvarosky/ui";
-import { IconArrowRight } from "@alvarosky/ui";
-import { PageHeader, AdaptiveImage } from "@alvarosky/ui";
+import { getTenantId } from "@/lib/config-server";
+import { Fill } from "@alvarosky/ui";
+import { Card, CardContent, CardHeader, CardTitle, Badge } from "@alvarosky/ui";
+import Link from "next/link";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
-export const metadata: Metadata = {
-  title: "Blog | Artículos y Recursos",
-  description: "Artículos, reflexiones, herramientas y estrategias para transformar tu vida personal y profesional.",
-  openGraph: {
-    title: "Blog | Artículos y Recursos",
-    description: "Reflexiones, herramientas y estrategias para transformar tu vida personal y profesional.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Blog",
-    description: "Artículos y recursos.",
-  },
-  alternates: {
-    canonical: "/blog",
-  },
-};
+async function getBlogPosts(tenantId: string) {
+  try {
+    const res = await fetch(`${INTERNAL_API_URL}/blog/posts?limit=12`, {
+      headers: {
+        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
+        'x-tenant-id': tenantId
+      },
+      next: {
+        revalidate: 3600,
+        tags: ["tenant-blog", `tenant-blog-${tenantId}`],
+      },
+    });
 
-interface BlogPageProps {
-  searchParams: Promise<{ page?: string; category?: string }>;
+    if (!res.ok) return { data: [] };
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching blog posts for tenant ${tenantId}:`, error);
+    return { data: [] };
+  }
 }
 
-export default async function BlogPage({ searchParams }: BlogPageProps) {
+export default async function BlogPage() {
   const headersList = await headers();
-  const tenantId = headersList.get("x-tenant-id") || "template";
+  const tenantId = headersList.get("x-tenant-id") || await getTenantId();
 
-  const params = await searchParams;
-  const page = Number(params.page) || 1;
-  const category = params.category;
-
-  let posts: Post[] = [];
-  let categories: Category[] = [];
-  let totalPages = 1;
-  let error = false;
-
-  try {
-    const [postsData, categoriesData] = await Promise.all([
-      getPosts(tenantId, page, 9, category),
-      getCategories(tenantId),
-    ]);
-    posts = postsData.data;
-    totalPages = postsData.meta.totalPages;
-    categories = categoriesData;
-  } catch (e) {
-    error = true;
-    console.error("Error fetching blog data:", e);
+  if (!tenantId) {
+    return (
+      <Fill>
+        <h1 className="text-2xl font-bold mb-4">Blog no disponible</h1>
+      </Fill>
+    );
   }
 
-  return (
-    <>
-      <BreadcrumbSchema items={[
-        { name: "Inicio", url: SITE_URL },
-        { name: "Blog", url: `${SITE_URL}/blog` },
-      ]} />
-      <CollectionPageSchema
-        name="Blog"
-        description="Artículos, reflexiones y recursos."
-        url={`${SITE_URL}/blog`}
-        itemListElement={posts.slice(0, 10).map(post => ({
-          name: post.title,
-          url: `${SITE_URL}/blog/${post.slug}`,
-        }))}
-      />
-
-      <div className="min-h-screen bg-background pb-12">
-        <PageHeader
-          className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
-          title="Blog"
-          description="Reflexiones, herramientas y estrategias para transformar tu vida personal y profesional."
-        />
-
-        <section>
-          <div className="container px-4 mx-auto">
-            <BlogFilter categories={categories} activeCategory={category} />
-
-            {error ? (
-              <div className="py-12 text-center text-error bg-error/5 rounded-xl border border-error/20">
-                <p>No se pudieron cargar los artículos. Inténtalo más tarde.</p>
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="py-24 text-center border-2 border-dashed border-border rounded-xl">
-                <div className="text-6xl mb-4 opacity-50" aria-hidden="true">📝</div>
-                <p className="text-xl text-foreground-muted font-medium">No hay artículos disponibles en este momento.</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {posts.map((post) => (
-                    <BlogCard key={post.id} post={post} />
-                  ))}
-                </div>
-
-                {totalPages > 1 && (
-                  <nav className="mt-16 flex items-center justify-center gap-4" aria-label="Paginación del blog">
-                    {page > 1 && (
-                      <Link
-                        href={`/blog?page=${page - 1}${category ? `&category=${category}` : ""}`}
-                        className="px-6 py-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors text-sm font-medium"
-                      >
-                        ← Anterior
-                      </Link>
-                    )}
-                    <span className="text-sm font-medium text-foreground-muted bg-muted py-3 px-6 rounded-lg">
-                      Página {page} de {totalPages}
-                    </span>
-                    {page < totalPages && (
-                      <Link
-                        href={`/blog?page=${page + 1}${category ? `&category=${category}` : ""}`}
-                        className="px-6 py-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors text-sm font-medium"
-                      >
-                        Siguiente →
-                      </Link>
-                    )}
-                  </nav>
-                )}
-              </>
-            )}
-          </div>
-        </section>
-      </div>
-    </>
-  );
-}
-
-function BlogCard({ post }: { post: Post }) {
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat('es-CO', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      }).format(date);
-    } catch {
-      return dateString;
-    }
-  };
+  const { data: posts } = await getBlogPosts(tenantId);
 
   return (
-    <Link href={`/blog/${post.slug}`} className="group h-full block" prefetch={false}>
-      <Card className="h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card">
-        <div className="relative">
-          {post.coverImage ? (
-            <AdaptiveImage
-              src={post.coverImage}
-              alt={post.title}
-              aspectRatio="video"
-              className="transition-transform duration-700 group-hover:scale-105"
-            />
-          ) : (
-            <div className="aspect-video w-full flex items-center justify-center bg-accent/20 text-accent text-5xl">
-              <span aria-hidden="true">📝</span>
-            </div>
-          )}
-          {post.isPremium && (
-            <div className="absolute top-4 right-4 z-10">
-              <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg">PREMIUM</Badge>
-            </div>
-          )}
+    <section className="relative pb-20 pt-16 md:pb-32 md:pt-24 min-h-[80vh]">
+      <div className="container px-4">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-fuchsia-500">Blog</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Últimos artículos, consejos y reflexiones sobre entrenamiento, nutrición y mentalidad.
+          </p>
         </div>
 
-        <CardContent className="flex-1 p-6 flex flex-col">
-          <div className="flex items-center gap-3 text-xs text-foreground-muted mb-4 font-medium uppercase tracking-wider">
-            {post.categories.length > 0 && (
-              <span className="text-primary">{post.categories[0].name}</span>
-            )}
-            <span className="w-1 h-1 rounded-full bg-border" aria-hidden="true" />
-            <time dateTime={post.createdAt}>
-              {formatDate(post.createdAt)}
-            </time>
+        {!posts || posts.length === 0 ? (
+          <div className="text-center py-20 bg-muted/20 rounded-2xl border border-dashed border-border">
+            <h3 className="text-xl font-medium mb-2">Aún no hay entradas</h3>
+            <p className="text-muted-foreground">Pronto publicaremos nuevos artículos.</p>
           </div>
-
-          <h2 className="heading-h3 mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
-            {post.title}
-          </h2>
-
-          <p className="text-foreground-muted text-sm leading-relaxed line-clamp-3 mb-4 flex-1">
-            {post.excerpt || (post.content ? post.content.substring(0, 100).replace(/<[^>]*>?/gm, '') + '...' : '')}
-          </p>
-        </CardContent>
-        <CardFooter className="px-6 pb-6 pt-0 mt-auto">
-          <span className="text-sm font-semibold text-primary flex items-center gap-2 group-hover:gap-3 transition-all">
-            Leer artículo <IconArrowRight className="w-4 h-4" aria-hidden="true" />
-          </span>
-        </CardFooter>
-      </Card>
-    </Link>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post: any) => (
+              <Link href={`/blog/${post.slug}`} key={post.id}>
+                <Card className="h-full bg-background/50 hover:bg-muted/30 transition-all border-border/50 hover:border-primary/50 overflow-hidden group cursor-pointer">
+                  {post.coverImage && (
+                    <div className="w-full h-48 overflow-hidden">
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className={!post.coverImage ? "pt-8" : ""}>
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {post.category && (
+                        <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+                          {post.category.name}
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
+                      {post.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
+                      {post.excerpt || "Haz clic para leer el artículo completo..."}
+                    </p>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

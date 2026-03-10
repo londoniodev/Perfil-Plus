@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 
 export function HeroSection() {
     return (
-        <section className="relative w-full w-screen max-w-[100vw] min-h-[90vh] flex items-center justify-center overflow-hidden bg-zinc-950">
+        <section className="relative w-full w-screen max-w-[100vw] min-h-[100dvh] flex items-center justify-center overflow-hidden bg-zinc-950">
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 <img

@@ -45,7 +45,15 @@ export default async function DashboardLayout({
     // 1. Validate Session Server-Side
     const user = await getSessionUser();
     if (!user) {
-        redirect("/login?reason=session_expired");
+        // En Next.js, un redirect relativo es capturado por el basePath (/dashboard).
+        // Para redirigir al portal público de autenticación, usamos una URL absoluta
+        // construida dinámicamente a partir del proxy.
+        const headersList = await cookies(); // Dummy hack? No, use headers from next/headers
+        const h = await import("next/headers");
+        const hdrs = await h.headers();
+        const host = hdrs.get("x-forwarded-host") || hdrs.get("host") || "localhost:3000";
+        const proto = hdrs.get("x-forwarded-proto") || "https";
+        redirect(`${proto}://${host}/login?reason=session_expired`);
     }
 
     const cookieStore = await cookies();

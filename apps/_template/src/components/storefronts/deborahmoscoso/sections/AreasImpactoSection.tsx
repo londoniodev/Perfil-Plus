@@ -123,7 +123,7 @@ export function AreasImpactoSection() {
 
             {/* Scrollable Text Content */}
             <div className="relative z-10">
-                <div className="container max-w-6xl">
+                <div className="container mx-auto max-w-6xl">
                     <h2 className="section-title text-center mb-12 pt-24 relative z-20 text-4xl md:text-7xl lg:text-8xl font-bold tracking-tight drop-shadow-2xl">
                         Áreas de impacto
                     </h2>

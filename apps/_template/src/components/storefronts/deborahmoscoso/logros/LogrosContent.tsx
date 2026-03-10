@@ -37,7 +37,7 @@ export function LogrosContent() {
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none" />
             <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[150px] pointer-events-none" />
 
-            <div className="container relative z-10 px-4">
+            <div className="container mx-auto relative z-10 px-4">
                 <motion.div
                     initial="hidden"
                     animate="visible"

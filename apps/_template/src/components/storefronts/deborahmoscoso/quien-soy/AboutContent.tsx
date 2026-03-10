@@ -29,7 +29,7 @@ export function AboutContent() {
             <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-fuchsia-600/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="container relative z-10 px-4">
+            <div className="container mx-auto relative z-10 px-4">
                 <motion.div
                     initial="hidden"
                     animate="visible"

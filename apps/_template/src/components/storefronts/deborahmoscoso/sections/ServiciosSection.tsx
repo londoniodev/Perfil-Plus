@@ -11,7 +11,7 @@ import { GLASS_CARD_STYLES } from "@/constants/styles";
 export function ServiciosSection() {
     return (
         <section className="py-20 md:py-32 bg-background" id="servicios">
-            <div className="container">
+            <div className="container mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg mb-8">Rutas de acompañamiento</h2>
                     <p className="text-muted-foreground max-w-xl mx-auto mt-4">

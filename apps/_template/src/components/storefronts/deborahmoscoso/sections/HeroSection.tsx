@@ -18,7 +18,7 @@ export function HeroSection() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,70,239,0.15)_0%,transparent_70%)]" />
             </div>
 
-            <div className="container relative z-20 px-4 pt-20 text-center">
+            <div className="container mx-auto relative z-20 px-4 pt-20 text-center">
                 <motion.div
                     initial="hidden"
                     animate="visible"

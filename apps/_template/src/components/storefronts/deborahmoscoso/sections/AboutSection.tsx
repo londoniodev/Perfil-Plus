@@ -6,7 +6,7 @@ import ProfileCarousel from "../layout/ProfileCarousel";
 export function AboutSection() {
     return (
         <section className="py-20 md:py-32 bg-background" id="quien-soy">
-            <div className="container">
+            <div className="container mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <ProfileCarousel />
 

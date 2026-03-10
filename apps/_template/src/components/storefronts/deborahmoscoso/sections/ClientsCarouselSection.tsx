@@ -38,7 +38,7 @@ export function ClientsCarouselSection() {
 
     return (
         <section className="py-20 md:py-32 overflow-hidden bg-background">
-            <div className="container text-center mb-32 md:mb-48">
+            <div className="container mx-auto text-center mb-32 md:mb-48">
                 <h2 className="text-5xl md:text-6xl font-bold text-white drop-shadow-lg mb-8 tracking-tight font-sans">
                     Empresas que confían en nosotros
                 </h2>

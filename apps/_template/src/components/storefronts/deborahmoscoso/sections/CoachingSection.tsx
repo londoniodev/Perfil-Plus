@@ -20,7 +20,7 @@ export function CoachingSection() {
         <section className="py-32 bg-zinc-950 relative w-full w-screen max-w-[100vw] overflow-hidden font-lexend">
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
 
-            <div className="container px-4">
+            <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}

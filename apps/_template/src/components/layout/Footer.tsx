@@ -2,7 +2,7 @@ import { SiteFooter } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { getTenantId } from "@/lib/config-server";
 
-export async function Footer() {
+export async function Footer({ logo }: { logo?: string }) {
     const tenantId = await getTenantId();
 
     const isDeborah = tenantId === "soydeborasoysaludable" || tenantId === "deborahmoscoso" || tenantId === "cm7mman6x000208jsf3h9h2k1";
@@ -24,26 +24,24 @@ export async function Footer() {
         { label: "Términos y Condiciones", href: "/terminos-y-condiciones" },
     ];
 
+    const finalLogo = logo || siteConfig.branding.logo;
+
     return (
-        <div className="flex flex-col w-full bg-background relative z-10">
+        <div className="hidden md:flex flex-col w-full bg-background relative z-10 border-t border-border/40 pb-8">
             <SiteFooter
-                logo={siteConfig.branding.logo}
+                logo={finalLogo}
                 logoAlt={siteConfig.branding.logoAlt}
                 tagline={isDeborah ? "Transformando físicos y mentalidades." : "Transformar el mundo empieza por cuidar el mundo interno."}
                 links={footerLinks}
                 companyName={businessName}
+                className="border-none py-8 pb-4"
             />
-            {/* Meta Legal & Contact Info Band */}
-            <div className="border-t border-border/40 py-6 bg-zinc-50 dark:bg-zinc-950">
-                <div className="container mx-auto px-4 text-center flex flex-col items-center justify-center gap-2">
-                    <p className="text-sm text-muted-foreground font-medium">
-                        {businessName}
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm text-muted-foreground/80">
-                        <span>Email: <a href={`mailto:${businessEmail}`} className="hover:text-foreground hover:underline transition-all">{businessEmail}</a></span>
-                        <span className="hidden sm:inline text-border">•</span>
-                        <span>Teléfono: {businessPhone}</span>
-                    </div>
+            {/* Meta Legal & Contact Info Band unificada */}
+            <div className="container mx-auto px-4 text-center flex flex-col items-center justify-center gap-2 mt-4">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-xs text-muted-foreground/60 font-medium">
+                    <span>Email: <a href={`mailto:${businessEmail}`} className="hover:text-foreground hover:underline transition-all">{businessEmail}</a></span>
+                    <span className="hidden sm:inline text-border">•</span>
+                    <span>Teléfono: {businessPhone}</span>
                 </div>
             </div>
         </div>

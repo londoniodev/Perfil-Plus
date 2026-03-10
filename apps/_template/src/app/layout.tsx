@@ -165,6 +165,7 @@ export default async function RootLayout({
   const design = await getTenantDesign(tenantId);
   // Color fallback
   const primaryColor = design?.primary || "zinc";
+  const logoUrl = design?.logo || '/images/branding/icon.png';
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
@@ -195,7 +196,7 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                <NavigationWrapper footer={<Footer />} hasDashboardFeature={hasDashboardFeature}>
+                <NavigationWrapper footer={<Footer logo={logoUrl} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
                   {children}
                 </NavigationWrapper>
                 <PwaInstallPrompt />

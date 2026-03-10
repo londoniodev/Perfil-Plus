@@ -1,9 +1,15 @@
 import { headers } from "next/headers";
 import { Fill } from "@alvarosky/ui";
+import { AboutContent as DeborahAbout } from "@/components/storefronts/deborahmoscoso/quien-soy/AboutContent";
 
 export default async function QuienSoyPage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";
+    const tenantId = headersList.get("x-tenant-id") || "";
+
+    if (tenantSlug === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") {
+        return <DeborahAbout />;
+    }
 
     return (
         <section className="relative pb-20 pt-16 md:pb-32 md:pt-24 min-h-[80vh] flex flex-col items-center justify-center">

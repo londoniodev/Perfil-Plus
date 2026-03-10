@@ -563,7 +563,7 @@ export default function MenuClient({
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 {cart.map((item) => (
                                     <div key={item.variantId} className="flex gap-4 items-center">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        {/* eslint_disable-next-line @next/next/no-img-element */}
                                         {item.image && (
                                             <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
                                                 <Image

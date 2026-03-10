@@ -7,7 +7,7 @@ import { AdaptiveImage } from "../../adaptive-image"
 import { Button } from "../../button"
 import { Badge } from "../../badge"
 import { useToast } from "../../toast"
-import { Check, ShoppingCart, Download } from "lucide-react"
+import { Check, ShoppingCart, Download, FileText } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 // ============================================
@@ -193,10 +193,29 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                 </div>
 
                 {/* Especificaciones Técnicas (JSON) */}
-                {product.specs && Object.keys(product.specs).length > 0 && (
+                {product.specs && Object.keys(product.specs).filter(k => k !== 'attachments').length > 0 && (
                     <div className="pt-6 border-t">
                         <h3 className="mb-4 text-sm font-medium">Especificaciones</h3>
-                        <ProductSpecs specs={product.specs} />
+                        <ProductSpecs specs={Object.fromEntries(Object.entries(product.specs).filter(([k]) => k !== 'attachments'))} />
+                    </div>
+                )}
+
+                {/* Documentos Adjuntos (Dinámicos) */}
+                {product.specs?.attachments && Array.isArray(product.specs.attachments) && product.specs.attachments.length > 0 && (
+                    <div className="pt-6 border-t space-y-3">
+                        <h3 className="text-sm font-medium">Documentos Adjuntos</h3>
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                            {product.specs.attachments.map((doc: any, i: number) => (
+                                doc.url && (
+                                    <Button key={i} variant="outline" className="w-full sm:w-auto" asChild>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            {doc.name || `Documento ${i + 1}`}
+                                        </a>
+                                    </Button>
+                                )
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

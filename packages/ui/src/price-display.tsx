@@ -13,7 +13,7 @@ interface PriceDisplayProps {
 export function PriceDisplay({
     price,
     salePrice,
-    currency = "USD",
+    currency = "COP",
     size = "default",
     className,
 }: PriceDisplayProps) {

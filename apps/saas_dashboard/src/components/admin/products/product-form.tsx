@@ -34,6 +34,7 @@ export const extendedProductSchema = productSchema.extend({
     weight: z.string().optional(),
     dimensions: z.string().optional(),
     variants: z.array(z.any()).optional(),
+    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional(),
 })
 
 export type ProductFormValues = z.infer<typeof extendedProductSchema>
@@ -78,6 +79,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
         format: initialData?.specs?.format || "",
         weight: initialData?.specs?.weight || "",
         dimensions: initialData?.specs?.dimensions || "",
+        attachments: initialData?.specs?.attachments || [],
         variants: initialData?.variants?.map((v: any) => ({
             ...v,
             price: v.price ? Number(v.price) : null
@@ -98,6 +100,11 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
         name: "variants",
     })
 
+    const { fields: attachmentFields, append: appendAttachment, remove: removeAttachment } = useFieldArray({
+        control: form.control,
+        name: "attachments",
+    })
+
     const productType = form.watch("productType")
 
     const handleSubmit = async (data: ProductFormValues) => {
@@ -106,6 +113,10 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
         try {
             // Construir specs
             const specs: Record<string, any> = {}
+            if (data.attachments && data.attachments.length > 0) {
+                specs.attachments = data.attachments.filter(a => a.name && a.url);
+            }
+
             if (data.productType === "DIGITAL") {
                 if (data.downloadUrl) specs.downloadUrl = data.downloadUrl;
                 if (data.videoUrl) specs.videoUrl = data.videoUrl;
@@ -442,6 +453,80 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                         )}
                     </Card>
                 )}
+
+                {/* Documentos Adjuntos Dinámicos */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Documentos Adjuntos</CardTitle>
+                            <CardDescription>Cualquier archivo PDF, ficha técnica o manual descargable</CardDescription>
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => appendAttachment({ name: "", url: "" })}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Agregar Documento
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {attachmentFields.map((field, index) => (
+                            <div key={field.id} className="grid grid-cols-12 gap-4 items-start p-4 border rounded-lg bg-card/50">
+                                <div className="col-span-12 sm:col-span-5">
+                                    <FormField
+                                        control={form.control}
+                                        name={`attachments.${index}.name`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs">Nombre del documento (Ej: Ficha Técnica)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="Nombre descriptivo" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-span-12 sm:col-span-6">
+                                    <FormField
+                                        control={form.control}
+                                        name={`attachments.${index}.url`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs">Archivo PDF</FormLabel>
+                                                <FormControl>
+                                                    <PrivateDocumentDropzone
+                                                        endpoint={`${API_BASE}/storage/upload/ebook`}
+                                                        token={authToken}
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-span-12 sm:col-span-1 flex justify-end mt-6">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeAttachment(index)}
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                        {attachmentFields.length === 0 && (
+                            <p className="text-sm text-muted-foreground text-center py-4">No hay documentos adjuntos. Haz clic en "Agregar Documento".</p>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* 4. Variantes (Solo si no tiene modifiers simples, o mixto - por ahora mantenemos simple) */}
                 {/* 

@@ -36,9 +36,22 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
             headers,
         };
 
-        // Las Server Actions suelen requerir no cachear las mutaciones
+        // Cache Strategy (ISR On-Demand via Tags)
         if (!options?.cache && !options?.next) {
-            fetchOptions.cache = 'no-store';
+            // Si es GET, aplicamos caché híbrido atado al Tenant por defecto
+            if (!options?.method || options.method === 'GET') {
+                const urlObj = new URL(`${API_BASE_URL}${endpoint}`);
+                // Etiquetamos el caché por tenant y por la base del endpoint para purgado selectivo
+                const baseTag = urlObj.pathname.split('/').filter(Boolean)[0] || 'general';
+                
+                fetchOptions.cache = 'force-cache';
+                fetchOptions.next = {
+                    tags: [`tenant-${tenantId}`, `tenant-${tenantId}-${baseTag}`]
+                };
+            } else {
+                // Las Server Actions y Mutaciones requieren no cachear
+                fetchOptions.cache = 'no-store';
+            }
         }
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);

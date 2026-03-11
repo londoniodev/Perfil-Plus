@@ -18,9 +18,9 @@ export default async function TiendaPage() {
         // Inyectamos el tenantId en la query params estrictamente para mutar el Cache Key de Next.js
         const res = await fetch(`${API_BASE}/store/products?tenantId=${tenantId}&allVariants=true`, {
             headers: { 'x-tenant-id': tenantId },
+            cache: 'force-cache',
             next: {
-                revalidate: 300,
-                tags: [`menu-${tenantId}`]
+                tags: [`tenant-${tenantId}`, `tenant-${tenantId}-store`]
             }
         })
         if (res.ok) {

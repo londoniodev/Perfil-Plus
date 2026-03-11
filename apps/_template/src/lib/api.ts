@@ -13,11 +13,15 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
         ...options?.headers,
     });
 
+    const urlObj = new URL(`${API_BASE_URL}${endpoint}`);
+    const baseTag = urlObj.pathname.split('/').filter(Boolean)[0] || 'general';
+
     let res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         credentials: 'include',
         headers: getHeaders(token),
-        next: { revalidate: 60 },
+        cache: (!options?.method || options.method === 'GET') ? 'force-cache' : 'no-store',
+        next: { tags: [`tenant-${tenantId}`, `tenant-${tenantId}-${baseTag}`] },
     });
 
     // Client-side 401 handling (Refresh Token Dance)
@@ -50,7 +54,8 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
                             ...options,
                             credentials: 'include',
                             headers: getHeaders(data.accessToken),
-                            next: { revalidate: 60 },
+                            cache: (!options?.method || options.method === 'GET') ? 'force-cache' : 'no-store',
+                            next: { tags: [`tenant-${tenantId}`, `tenant-${tenantId}-${baseTag}`] },
                         });
                     }
                 } else {

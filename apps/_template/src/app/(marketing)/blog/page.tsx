@@ -51,10 +51,12 @@ export default async function BlogPage() {
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
         <header className="text-center mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium mb-6">
-            <BookOpen className="w-4 h-4" aria-hidden="true" />
-            Artículos & Consejos
-          </div>
+          {tenantSlug !== 'mauromera' && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-sm font-medium mb-6">
+              <BookOpen className="w-4 h-4" aria-hidden="true" />
+              Artículos & Consejos
+            </div>
+          )}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-4">
             Blog
           </h1>

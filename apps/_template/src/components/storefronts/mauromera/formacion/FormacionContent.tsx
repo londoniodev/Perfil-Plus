@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { IconTarget, IconBrain, IconZap } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
+import { IconAward } from "@alvarosky/ui";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@alvarosky/ui";
 import { Badge } from "@alvarosky/ui";
 import { PageHeader } from "@alvarosky/ui";
@@ -35,7 +36,8 @@ export default function FormacionContent() {
     return (
         <div className="min-h-screen">
             <PageHeader
-                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 md:pt-32 mb-12"
+                variant="marketing"
+                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 md:pt-32 mb-12 md:mb-16"
                 title="Cursos que transforman carreras"
                 description="Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones con enfoque en psicología aplicada y desarrollo personal."
             />

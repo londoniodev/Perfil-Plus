@@ -5,25 +5,31 @@ import { Separator } from "./separator"
 interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string
     description?: string
+    badge?: string
+    badgeIcon?: React.ReactNode
     separated?: boolean
-    variant?: "default" | "admin"
+    variant?: "default" | "admin" | "marketing"
 }
 
 export function PageHeader({
     title,
     description,
+    badge,
+    badgeIcon,
     separated = false,
     variant = "default",
     className,
     children,
     ...props
 }: PageHeaderProps) {
-    const isCentered = variant === "default"
+    const isCentered = variant === "default" || variant === "marketing"
+    const isMarketing = variant === "marketing"
 
     return (
         <section
             className={cn(
-                "flex flex-col gap-1 py-2 md:py-8 mt-4 md:mt-8",
+                "flex flex-col gap-1",
+                !isMarketing && "py-2 md:py-8 mt-4 md:mt-8",
                 isCentered ? "items-center text-center" : "items-start text-left w-full",
                 className
             )}
@@ -33,14 +39,34 @@ export function PageHeader({
                 "flex flex-col gap-1.5",
                 isCentered ? "max-w-4xl mx-auto" : "w-full"
             )}>
+                {/* Badge (Solo para Marketing o si se pasa explícito) */}
+                {badge && (
+                    <div className="flex justify-center mb-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+                            {badgeIcon && <span className="[&>svg]:w-4 [&>svg]:h-4">{badgeIcon}</span>}
+                            {badge}
+                        </div>
+                    </div>
+                )}
+
                 {/* Header (Título Responsivo) */}
-                <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
+                <h1 className={cn(
+                    "font-bold tracking-tight text-foreground",
+                    isMarketing 
+                        ? "text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" 
+                        : "text-2xl md:text-3xl lg:text-4xl"
+                )}>
                     {title}
                 </h1>
 
                 {/* Footer (Descripción con balance de texto) */}
                 {description && (
-                    <p className="text-sm text-muted-foreground text-balance md:text-base lg:text-lg">
+                    <p className={cn(
+                        "text-muted-foreground text-balance",
+                        isMarketing 
+                            ? "text-base sm:text-lg max-w-2xl mx-auto leading-relaxed" 
+                            : "text-sm md:text-base lg:text-lg"
+                    )}>
                         {description}
                     </p>
                 )}
@@ -51,7 +77,6 @@ export function PageHeader({
                 <div className={cn(
                     "mt-4 flex flex-wrap gap-2 w-full",
                     isCentered ? "items-center justify-center" : "justify-start",
-                    // En móvil: botones full width o compartidos (flex-1). En desktop: auto.
                     "[&>button]:flex-1 sm:[&>button]:flex-none sm:w-auto"
                 )}>
                     {children}

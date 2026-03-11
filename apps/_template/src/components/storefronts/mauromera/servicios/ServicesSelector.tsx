@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@alvarosky/ui";
+import { PageHeader } from "@alvarosky/ui";
 import {
     Card,
     CardContent,
@@ -338,6 +339,13 @@ export function ServicesSelector() {
             />
 
             <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+                <PageHeader
+                    variant="marketing"
+                    title="Servicios"
+                    description="Desde consultoría estratégica para empresas hasta orientación vocacional y psicoterapia clínica."
+                    className="mb-12 md:mb-16"
+                />
+
                 {/* Selector Tabs */}
                 <div className="flex justify-center mb-16">
                     <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border">

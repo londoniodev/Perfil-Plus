@@ -29,10 +29,10 @@ interface Categoria {
 }
 
 const categorias: Categoria[] = [
-    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "hsl(var(--primary))" },
-    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "hsl(var(--accent))" },
+    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "#3b82f6" },
+    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "#0ea5e9" },
     { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" },
-    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "hsl(var(--success))" },
+    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "#10b981" },
 ];
 
 // ============================================================================
@@ -47,7 +47,8 @@ export default function PortafolioContent() {
     return (
         <div className="min-h-screen bg-background">
             <PageHeader
-                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 md:pt-32 mb-12"
+                variant="marketing"
+                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 md:pt-32 mb-12 md:mb-16"
                 title="Portafolio"
                 description="Explora nuestros casos de éxito y transformaciones reales en empresas y líderes."
             />

@@ -35,14 +35,14 @@ async function getTenantDesign(tenantId: string) {
     const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
 
     const response = await fetch(`${API_URL}/tenant/branding`, {
+      cache: 'force-cache',
       headers: {
         'Content-Type': 'application/json',
         'x-tenant-id': tenantId,
         'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
       },
       next: {
-        revalidate: 3600,
-        tags: ['tenant-branding', `tenant-branding-${tenantId}`],
+        tags: ['tenant-branding', `tenant-branding-${tenantId}`, `tenant-${tenantId}-branding`],
       }
     });
 

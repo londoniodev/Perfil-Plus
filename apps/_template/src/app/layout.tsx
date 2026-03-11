@@ -189,7 +189,8 @@ export default async function RootLayout({
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
-  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, x-tenant-features raw="${tenantFeaturesRaw}"`);
+  const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId; // Fallback to tenantId if no slug
+  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, slug=${tenantSlugRaw}, x-tenant-features raw="${tenantFeaturesRaw}"`);
 
   let hasDashboardFeature = true; // Default fallback publico
   let featureArray: string[] = [];
@@ -207,6 +208,8 @@ export default async function RootLayout({
     console.log(`[LAYOUT DEBUG] No x-tenant-features header found, defaulting hasDashboardFeature=true`);
   }
 
+  const isMauroMera = tenantSlugRaw === "mauromera";
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
@@ -218,9 +221,9 @@ export default async function RootLayout({
         >
           <ThemeProvider
             attribute="class"
-            defaultTheme={tenantId === "mauromera" ? "dark" : "light"}
-            enableSystem={tenantId !== "mauromera"}
-            forcedTheme={tenantId === "mauromera" ? "dark" : undefined}
+            defaultTheme={isMauroMera ? "dark" : "light"}
+            enableSystem={!isMauroMera}
+            forcedTheme={isMauroMera ? "dark" : undefined}
           >
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />

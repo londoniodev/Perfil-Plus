@@ -28,6 +28,7 @@ export function Footer({
             { label: "Inicio", href: "/" },
             { label: "Términos", href: "/terminos" }
         ];
+        if (features.includes("ECOMMERCE")) finalFooterLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });
         if (features.includes("RESTAURANT")) finalFooterLinks.push({ label: "Menú", href: "/menu" });
     }

@@ -17,7 +17,7 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
     // Fallback: Si no hay base de datos de menús configurada, se genera plug & play basado en Features
     if (!navLinks || navLinks.length === 0) {
         navLinks = [{ label: "Inicio", href: "/" }];
-        if (features.includes("SHOP")) navLinks.push({ label: "Tienda", href: "/tienda" });
+        if (features.includes("ECOMMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/cursos" });
         if (features.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
         if (features.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });

@@ -1,28 +1,16 @@
 import { SiteFooter } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
 import { getTenantId } from "@/lib/config-server";
+import { getTenantNavConfig } from "@/config/tenant-nav";
 
 export async function Footer({ logo }: { logo?: string }) {
     const tenantId = await getTenantId();
+    const config = getTenantNavConfig(tenantId);
 
-    const isDeborah = tenantId === "soydeborasoysaludable" || tenantId === "deborahmoscoso" || tenantId === "cm7mman6x000208jsf3h9h2k1";
-
-    const businessName = isDeborah ? "Deborah Moscoso" : siteConfig.name;
-    const businessEmail = isDeborah ? "info@soydeborasoysaludable.com" : siteConfig.email;
-    const businessPhone = isDeborah ? "+1 305-555-1234" : siteConfig.phone; // Placeholder realista
-
-    const footerLinks = [
-        { label: "Inicio", href: "/" },
-        { label: "Servicios", href: "/servicios" },
-        { label: "Tienda", href: "/tienda" },
-        {
-            label: "Contacto",
-            href: `https://wa.me/${businessPhone.replace(/[^0-9]/g, '')}`,
-            external: true
-        },
-        { label: "Privacidad", href: "/politica-de-privacidad" },
-        { label: "Términos y Condiciones", href: "/terminos-y-condiciones" },
-    ];
+    const businessName = config.companyName;
+    const businessEmail = config.contact.email;
+    const businessPhone = config.contact.phone;
+    const footerLinks = config.footer;
 
     const finalLogo = logo || siteConfig.branding.logo;
 
@@ -31,7 +19,7 @@ export async function Footer({ logo }: { logo?: string }) {
             <SiteFooter
                 logo={finalLogo}
                 logoAlt={siteConfig.branding.logoAlt}
-                tagline={isDeborah ? "Transformando físicos y mentalidades." : "Transformar el mundo empieza por cuidar el mundo interno."}
+                tagline={config.tagline}
                 links={footerLinks}
                 companyName={businessName}
                 className="border-none py-8 pb-4"

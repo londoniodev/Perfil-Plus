@@ -337,7 +337,7 @@ export function ServicesSelector() {
                 style={{ background: currentTabColor }}
             />
 
-            <div className="container relative z-10">
+            <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Selector Tabs */}
                 <div className="flex justify-center mb-16">
                     <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border">

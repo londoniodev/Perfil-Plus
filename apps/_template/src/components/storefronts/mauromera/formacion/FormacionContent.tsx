@@ -35,14 +35,14 @@ export default function FormacionContent() {
     return (
         <div className="min-h-screen">
             <PageHeader
-                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 md:pt-32 mb-12"
                 title="Cursos que transforman carreras"
                 description="Programas diseñados para desarrollar líderes, mejorar equipos y potenciar organizaciones con enfoque en psicología aplicada y desarrollo personal."
             />
 
             {/* Courses Grid */}
             <section className="py-16">
-                <div className="container">
+                <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {cursos.map((curso, index) => (
@@ -82,7 +82,7 @@ export default function FormacionContent() {
 
             {/* CTA Section */}
             <section className="py-12 text-center">
-                <div className="container">
+                <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <h2 className="heading-h2 mb-4">¿Listo para dar el siguiente paso?</h2>
                     <p className="max-w-[600px] mx-auto mt-4 mb-8 text-body">
                         Únete a cientos de profesionales que ya han transformado su carrera con nuestros programas.

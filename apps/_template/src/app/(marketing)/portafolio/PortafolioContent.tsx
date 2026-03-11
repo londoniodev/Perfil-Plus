@@ -47,7 +47,7 @@ export default function PortafolioContent() {
     return (
         <div className="min-h-screen bg-background">
             <PageHeader
-                className="container px-4 mx-auto pt-32 md:pt-32 mb-12"
+                className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 md:pt-32 mb-12"
                 title="Portafolio"
                 description="Explora nuestros casos de éxito y transformaciones reales en empresas y líderes."
             />
@@ -86,7 +86,7 @@ interface CategoryFilterBarProps {
 
 function CategoryFilterBar({ categorias, activeCategory, onCategoryChange }: CategoryFilterBarProps) {
     return (
-        <div className="container flex justify-center">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center">
             <div className="flex gap-2 p-1 rounded-full bg-muted/50 border border-border backdrop-blur-md">
                 {categorias.map((cat) => {
                     const isActive = activeCategory === cat.id;
@@ -127,7 +127,7 @@ function CaseSection({ caso, index }: CaseSectionProps) {
 
     return (
         <section className={cn("py-20 md:py-18", index === 0 && "pt-12")}>
-            <div className="container">
+            <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className={cn(
                     "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center",
                     isReversed && "lg:[&>*:first-child]:order-2"

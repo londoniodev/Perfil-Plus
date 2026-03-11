@@ -34,7 +34,7 @@ async function getTenantDesign(tenantId: string) {
     const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:3001/api').replace(/\/+$/, "");
     const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
     const finalEndpoint = `${API_URL}/tenant/branding`;
-    
+
     console.log(`[SSR BRANDING DEBUG] Fetching tenant ${tenantId} from: ${finalEndpoint}`);
 
     const response = await fetch(finalEndpoint, {
@@ -64,8 +64,8 @@ async function getTenantDesign(tenantId: string) {
       radius: 0.5
     };
 
-    return { 
-      ...design, 
+    return {
+      ...design,
       logo: data?.logo || null,
       headerLinks: data?.headerLinks || null,
       footerLinks: data?.footerLinks || null
@@ -190,10 +190,10 @@ export default async function RootLayout({
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
   console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, x-tenant-features raw="${tenantFeaturesRaw}"`);
-  
+
   let hasDashboardFeature = true; // Default fallback publico
   let featureArray: string[] = [];
-  
+
   if (tenantFeaturesRaw) {
     try {
       featureArray = JSON.parse(tenantFeaturesRaw);
@@ -210,10 +210,10 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
-        <TenantProvider 
-          tenantId={tenantId} 
-          features={featureArray} 
-          headerLinks={headerLinks} 
+        <TenantProvider
+          tenantId={tenantId}
+          features={featureArray}
+          headerLinks={headerLinks}
           footerLinks={footerLinks}
         >
           <ThemeProvider

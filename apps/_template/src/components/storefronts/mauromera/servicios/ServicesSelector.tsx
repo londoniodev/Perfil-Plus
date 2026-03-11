@@ -324,7 +324,7 @@ export function ServicesSelector() {
 
     const tabs = [
         { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "#3b82f6" },
-        { id: "explora", label: "Explora", icon: <IconCompass />, color: "#0ea5e9" },
+        { id: "explora", label: "Explora", icon: <IconCompass />, color: "#f97316" }, // Orange
         { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "#10b981" },
     ];
 

@@ -29,10 +29,10 @@ interface Categoria {
 }
 
 const categorias: Categoria[] = [
-    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "#3b82f6" },
-    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "#0ea5e9" },
-    { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" },
-    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "#10b981" },
+    { id: "Empresas", label: "Empresas", icon: <IconBuilding />, color: "#3b82f6" }, // Blue
+    { id: "Explora", label: "Explora", icon: <IconCompass />, color: "#f97316" }, // Orange
+    { id: "Liderazgo", label: "Liderazgo", icon: <IconUsers />, color: "#9c27b0" }, // Purple
+    { id: "Bienestar", label: "Bienestar", icon: <IconHeart />, color: "#10b981" }, // Emerald
 ];
 
 // ============================================================================

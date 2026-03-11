@@ -51,10 +51,10 @@ export function PageHeader({
 
                 {/* Header (Título Responsivo) */}
                 <h1 className={cn(
-                    "font-bold tracking-tight text-foreground",
+                    "tracking-tight",
                     isMarketing 
-                        ? "text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" 
-                        : "text-2xl md:text-3xl lg:text-4xl"
+                        ? "text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-white" 
+                        : "text-2xl md:text-3xl lg:text-4xl font-bold text-foreground"
                 )}>
                     {title}
                 </h1>

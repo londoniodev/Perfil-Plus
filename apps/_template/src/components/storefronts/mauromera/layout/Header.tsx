@@ -5,10 +5,14 @@ import { usePathname } from "next/navigation";
 import { SiteHeader } from "@alvarosky/ui";
 import { CartSheet } from "@/components/shop/cart-sheet";
 import { siteConfig } from "@/config/site";
+import { useTenant } from "@/app/providers";
 
 export function Header() {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
+    const { features } = useTenant();
+
+    const hasDashboard = features?.includes("dashboard") || features?.includes("DASHBOARD");
 
     const navLinks = [
         { label: "Inicio", href: "/" },
@@ -28,6 +32,7 @@ export function Header() {
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
+            showAuthButtons={hasDashboard}
         />
     );
 }

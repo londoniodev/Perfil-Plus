@@ -93,7 +93,15 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     }),
     ClsModule.forRoot({
       global: true,
-      middleware: { mount: true },
+      middleware: { 
+        mount: true,
+        setup: (cls, req: any) => {
+          const tenantId = req.headers['x-tenant-id'] as string;
+          if (tenantId) {
+            cls.set('tenantId', tenantId);
+          }
+        }
+      },
     }),
 
     // Core modules

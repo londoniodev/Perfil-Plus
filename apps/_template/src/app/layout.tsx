@@ -56,7 +56,7 @@ async function getTenantDesign(tenantId: string) {
 
     const data = await response.json();
 
-    // La API devuelve { design: { primary, mode, radius, ... }, logo: "https://s3..." }
+    // La API devuelve { name: '...', design: { primary, mode, radius, ... }, logo: "https://s3..." }
     // Fusionamos design + logo + links para que el layout pueda acceder a todo
     const design = data?.design ?? {
       colors: { primary: "#000000" },
@@ -65,6 +65,8 @@ async function getTenantDesign(tenantId: string) {
     };
 
     return {
+      name: data?.name || null,
+      tagline: data?.tagline || null,
       ...design,
       logo: data?.logo || null,
       headerLinks: data?.headerLinks || null,
@@ -73,6 +75,8 @@ async function getTenantDesign(tenantId: string) {
   } catch (e) {
     console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);
     return {
+      name: null,
+      tagline: null,
       colors: { primary: "#000000" },
       fonts: { heading: "Inter", body: "Inter" },
       radius: 0.5
@@ -145,15 +149,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
   const logoUrl = design?.logo || '/images/branding/icon.png';
+  const siteName = design?.name || siteConfig.name;
+  const tagline = design?.tagline || siteConfig.description;
 
   return {
     ...baseMetadata,
+    title: {
+      default: `${siteName} | ${tagline}`,
+      template: `%s | ${siteName}`,
+    },
+    description: tagline,
     icons: {
       icon: logoUrl,
       apple: logoUrl,
     },
     openGraph: {
       ...baseMetadata.openGraph,
+      title: `${siteName} | ${tagline}`,
+      description: tagline,
+      siteName: siteName,
       images: [
         {
           url: logoUrl,

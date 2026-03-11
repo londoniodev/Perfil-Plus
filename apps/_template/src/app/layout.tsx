@@ -224,7 +224,7 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                <NavigationWrapper footer={<Footer logo={logoUrl} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
+                <NavigationWrapper footer={<Footer logo={logoUrl} footerLinks={footerLinks} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
                   {children}
                 </NavigationWrapper>
                 <PwaInstallPrompt />

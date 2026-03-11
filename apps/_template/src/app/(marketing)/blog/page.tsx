@@ -30,6 +30,7 @@ async function getBlogPosts(tenantId: string) {
 export default async function BlogPage() {
   const headersList = await headers();
   const tenantId = headersList.get("x-tenant-id") || await getTenantId();
+  const tenantSlug = headersList.get("x-tenant-slug") || "";
 
   if (!tenantId) {
     return (
@@ -58,7 +59,9 @@ export default async function BlogPage() {
             Blog
           </h1>
           <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            Últimos artículos, consejos y reflexiones sobre entrenamiento, nutrición y mentalidad.
+            {tenantSlug === 'mauromera' 
+              ? "Explora mis reflexiones sobre liderazgo, cultura organizacional y desarrollo personal." 
+              : "Últimos artículos, consejos y reflexiones sobre entrenamiento, nutrición y mentalidad."}
           </p>
         </header>
 

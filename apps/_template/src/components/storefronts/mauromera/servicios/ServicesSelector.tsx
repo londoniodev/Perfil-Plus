@@ -322,15 +322,15 @@ export function ServicesSelector() {
     }, []);
 
     const tabs = [
-        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "hsl(var(--primary))" },
-        { id: "explora", label: "Explora", icon: <IconCompass />, color: "hsl(var(--accent))" },
-        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "hsl(var(--success))" },
+        { id: "empresas", label: "Empresas", icon: <IconBuilding />, color: "#3b82f6" },
+        { id: "explora", label: "Explora", icon: <IconCompass />, color: "#0ea5e9" },
+        { id: "psicoterapia", label: "Psicoterapia", icon: <IconHeart />, color: "#10b981" },
     ];
 
     const currentTabColor = tabs.find(t => t.id === activeTab)?.color || "var(--primary)";
 
     return (
-        <section className="relative pb-20 pt-0 md:pb-32 md:pt-0 overflow-hidden">
+        <section className="relative pb-20 pt-32 md:pb-32 md:pt-40 overflow-hidden">
             {/* Background Glows */}
             <div
                 className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[150px] opacity-20 pointer-events-none transition-colors duration-700"

@@ -35,11 +35,6 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
                         <CloudDownload className="w-3.5 h-3.5" /> Descarga Digital
                     </span>
                 )}
-                {isPhysical && (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100/90 backdrop-blur-sm text-indigo-700 text-xs font-bold rounded-full shadow-sm">
-                        <Package className="w-3.5 h-3.5" /> Envío Físico
-                    </span>
-                )}
                 {!isAvailable && (
                     <span className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-sm">
                         AGOTADO

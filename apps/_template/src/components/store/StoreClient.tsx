@@ -3,12 +3,14 @@
 import { ProductCard } from "./ProductCard"
 import { useCart, type PublicProduct } from "@alvarosky/restaurant-sdk"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { API_BASE } from "@/lib/config"
 
 export function StoreClient({ tenantId, initialData = [] }: { tenantId: string, initialData: PublicProduct[] }) {
     // Ya no usamos useMenu aquí, evitamos el render blocking
     const { addItem } = useCart()
+    const router = useRouter()
     const [liveStatus, setLiveStatus] = useState<Record<string, { isAvailable: boolean, likes: number }>>({})
 
     useEffect(() => {
@@ -57,11 +59,9 @@ export function StoreClient({ tenantId, initialData = [] }: { tenantId: string, 
         toast.success(`Añadido al carrito: ${product.name}`)
     }
 
-    const handleViewDetails = (product: PublicProduct) => {
-        // Por ahora lo re-dirigimos o abrimos un modal, en E-commerce suele ser una página `/tienda/producto-x`
-        // o disparamos un modal. Por MVP, delegamos la acción al toast o abrimos alerta.
-        // TODO: Expandir modal de detalles.
-        toast.info(`Viendo detalles de: ${product.name}`)
+    const handleViewDetails = (product: PublicProduct & { slug?: string }) => {
+        if (!product.slug && !product.id) return
+        router.push(`/tienda/${product.slug || product.id}`)
     }
 
     if (!storeProducts || storeProducts.length === 0) {

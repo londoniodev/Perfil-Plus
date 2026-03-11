@@ -218,8 +218,9 @@ export default async function RootLayout({
         >
           <ThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem={true}
+            defaultTheme={tenantId === "mauromera" ? "dark" : "light"}
+            enableSystem={tenantId !== "mauromera"}
+            forcedTheme={tenantId === "mauromera" ? "dark" : undefined}
           >
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />

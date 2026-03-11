@@ -10,25 +10,25 @@ import { PageHeader } from "@alvarosky/ui";
 export default function FormacionContent() {
     const cursos = [
         {
-            title: "Liderazgo Transformacional",
-            description: "Desarrolla las habilidades necesarias para liderar equipos de alto rendimiento y generar impacto positivo en tu organización.",
-            level: "Intermedio",
-            duration: "8 semanas",
+            title: "Fotografía de Retrato",
+            description: "Aprenda las técnicas fundamentales para capturar la esencia the las personas con iluminación natural y encuadres perfectos.",
+            level: "Básico",
+            duration: "4 semanas",
             icon: <IconTarget />,
         },
         {
-            title: "Psicología Organizacional",
-            description: "Comprende el comportamiento humano en el contexto laboral y mejora el clima organizacional de tu empresa.",
-            level: "Básico",
+            title: "Iluminación en Estudio",
+            description: "Domina el uso The flashes, modificadores y esquemas the luz profesionales para fotografía comercial y The producto.",
+            level: "Intermedio",
             duration: "6 semanas",
-            icon: <IconBrain />,
+            icon: <IconZap />,
         },
         {
-            title: "Inteligencia Emocional",
-            description: "Aprende a gestionar tus emociones y las de tu equipo para mejorar la comunicación y productividad.",
-            level: "Básico",
-            duration: "4 semanas",
-            icon: <IconZap />,
+            title: "Edición y Retoque Digital",
+            description: "Domina Lightroom y Photoshop para llevar tus imágenes crudas al siguiente nivel con flujo de trabajo profesional.",
+            level: "Avanzado",
+            duration: "8 semanas",
+            icon: <IconBrain />,
         }
     ];
 

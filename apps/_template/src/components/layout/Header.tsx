@@ -6,15 +6,21 @@ import { SiteHeader } from "@alvarosky/ui";
 import { CartSheet } from "@/components/shop/cart-sheet";
 import { siteConfig } from "@/config/site";
 import { useTenant } from "@/app/providers";
-import { getTenantNavConfig } from "@/config/tenant-nav";
 
 export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeature?: boolean, logo?: string }) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
-    const { tenantId } = useTenant();
+    const { features, headerLinks } = useTenant();
 
-    const config = getTenantNavConfig(tenantId);
-    const navLinks = config.header;
+    let navLinks = headerLinks;
+
+    // Fallback: Si no hay base de datos de menús configurada, se genera plug & play basado en Features
+    if (!navLinks || navLinks.length === 0) {
+        navLinks = [{ label: "Inicio", href: "/" }];
+        if (features.includes("SHOP")) navLinks.push({ label: "Tienda", href: "/tienda" });
+        if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/cursos" });
+        if (features.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
+    }
 
     const isHome = pathname === "/";
     const finalLogo = logo || siteConfig.branding.logo;

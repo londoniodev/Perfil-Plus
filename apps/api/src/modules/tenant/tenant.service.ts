@@ -95,17 +95,23 @@ export class TenantService {
     try {
       const tenantById = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
-        select: { id: true, design: true, name: true, features: true },
+        select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
       });
       if (tenantById) {
         this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
         const menuSetting = await this.prisma.secure.systemSetting.findFirst({
           where: { tenantId: tenantById.id, key: 'menu' },
         });
-        const logo = menuSetting?.value
-          ? (menuSetting.value as any).logo
-          : null;
-        return { ...tenantById, logo };
+        
+        const menuData = (menuSetting?.value as any) || {};
+        const logo = menuData.logo || null;
+        const headerLinks = menuData.headerLinks || null;
+        const footerLinks = menuData.footerLinks || null;
+        const contactEmail = menuData.contactEmail || tenantById.ownerEmail || null;
+        const contactPhone = menuData.contactPhone || null;
+        const tagline = menuData.tagline || tenantById.notes || 'Plataforma Profesional';
+        
+        return { ...tenantById, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
       }
     } catch (error) {
       this.logger.warn(
@@ -119,7 +125,7 @@ export class TenantService {
     );
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
-      select: { id: true, design: true, name: true, features: true },
+      select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
     });
 
     if (tenantBySlug) {
@@ -127,8 +133,16 @@ export class TenantService {
       const menuSetting = await this.prisma.secure.systemSetting.findFirst({
         where: { tenantId: tenantBySlug.id, key: 'menu' },
       });
-      const logo = menuSetting?.value ? (menuSetting.value as any).logo : null;
-      return { ...tenantBySlug, logo };
+      
+      const menuData = (menuSetting?.value as any) || {};
+      const logo = menuData.logo || null;
+      const headerLinks = menuData.headerLinks || null;
+      const footerLinks = menuData.footerLinks || null;
+      const contactEmail = menuData.contactEmail || tenantBySlug.ownerEmail || null;
+      const contactPhone = menuData.contactPhone || null;
+      const tagline = menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
+      
+      return { ...tenantBySlug, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
     }
 
     this.logger.error(

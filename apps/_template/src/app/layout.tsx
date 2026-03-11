@@ -177,17 +177,22 @@ export default async function RootLayout({
   // Color fallback
   const primaryColor = design?.primary || "zinc";
   const logoUrl = design?.logo || '/images/branding/icon.png';
+  const headerLinks = design?.headerLinks || null;
+  const footerLinks = design?.footerLinks || null;
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
   console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, x-tenant-features raw="${tenantFeaturesRaw}"`);
+  
   let hasDashboardFeature = true; // Default fallback publico
+  let featureArray: string[] = [];
+  
   if (tenantFeaturesRaw) {
     try {
-      const features = JSON.parse(tenantFeaturesRaw);
+      featureArray = JSON.parse(tenantFeaturesRaw);
       // Mostrar navegación completa si el tenant tiene cualquier módulo activo
-      hasDashboardFeature = features.includes('dashboard') || features.length > 0;
-      console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(features)}, hasDashboardFeature=${hasDashboardFeature}`);
+      hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
+      console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(featureArray)}, hasDashboardFeature=${hasDashboardFeature}`);
     } catch (e) {
       console.warn("Failed to parse tenant features block");
     }
@@ -198,7 +203,12 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
-        <TenantProvider tenantId={tenantId}>
+        <TenantProvider 
+          tenantId={tenantId} 
+          features={featureArray} 
+          headerLinks={headerLinks} 
+          footerLinks={footerLinks}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="light"

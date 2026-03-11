@@ -1,16 +1,35 @@
 import { SiteFooter } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
-import { getTenantId } from "@/lib/config-server";
-import { getTenantNavConfig } from "@/config/tenant-nav";
 
-export async function Footer({ logo }: { logo?: string }) {
-    const tenantId = await getTenantId();
-    const config = getTenantNavConfig(tenantId);
+interface FooterProps {
+    logo?: string;
+    businessName?: string;
+    businessEmail?: string;
+    businessPhone?: string;
+    tagline?: string;
+    footerLinks?: { label: string; href: string; external?: boolean }[] | null;
+    features?: string[];
+}
 
-    const businessName = config.companyName;
-    const businessEmail = config.contact.email;
-    const businessPhone = config.contact.phone;
-    const footerLinks = config.footer;
+export function Footer({ 
+    logo, 
+    businessName = "Cliente Plataforma", 
+    businessEmail = "hola@plataforma.com", 
+    businessPhone = "+57 300 000 0000", 
+    tagline = "Creciendo contigo",
+    footerLinks = null,
+    features = []
+}: FooterProps) {
+    let finalFooterLinks = footerLinks;
+
+    // Fallback Automático si no hay links configurados en DB
+    if (!finalFooterLinks || finalFooterLinks.length === 0) {
+        finalFooterLinks = [
+            { label: "Inicio", href: "/" },
+            { label: "Términos", href: "/terminos" }
+        ];
+        if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });
+    }
 
     const finalLogo = logo || siteConfig.branding.logo;
 
@@ -19,8 +38,8 @@ export async function Footer({ logo }: { logo?: string }) {
             <SiteFooter
                 logo={finalLogo}
                 logoAlt={siteConfig.branding.logoAlt}
-                tagline={config.tagline}
-                links={footerLinks}
+                tagline={tagline}
+                links={finalFooterLinks as any}
                 companyName={businessName}
                 className="border-none py-8 pb-4"
             />

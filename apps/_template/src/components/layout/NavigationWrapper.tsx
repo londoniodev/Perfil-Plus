@@ -10,11 +10,9 @@ export function NavigationWrapper({ children, footer, hasDashboardFeature = true
     const isDashboard = pathname?.startsWith("/perfil") ||
         pathname?.startsWith("/dashboard") ||
         pathname?.includes("/mis-compras") ||
-        pathname?.startsWith("/cursos") || // Mis Cursos (LMS)
         pathname?.startsWith("/suscripcion") ||
         pathname?.startsWith("/waiter") ||
-        pathname?.startsWith("/kitchen") ||
-        pathname?.startsWith("/dashboard");
+        pathname?.startsWith("/kitchen");
 
     const isAuthPage = pathname === "/login" ||
         pathname === "/registro" ||

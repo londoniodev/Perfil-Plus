@@ -29,6 +29,7 @@ export function Footer({
             { label: "Términos", href: "/terminos" }
         ];
         if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });
+        if (features.includes("RESTAURANT")) finalFooterLinks.push({ label: "Menú", href: "/menu" });
     }
 
     const finalLogo = logo || siteConfig.branding.logo;

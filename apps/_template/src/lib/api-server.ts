@@ -30,6 +30,12 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         headers.set('Authorization', `Bearer ${token}`);
     }
 
+    let currentEndpoint = endpoint;
+    if (!options?.method || options.method === 'GET') {
+        const separator = currentEndpoint.includes('?') ? '&' : '?';
+        currentEndpoint = `${currentEndpoint}${separator}_tenantCacheId=${tenantId}`;
+    }
+
     try {
         const fetchOptions: RequestInit = {
             ...options,
@@ -40,7 +46,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         if (!options?.cache && !options?.next) {
             // Si es GET, aplicamos caché híbrido atado al Tenant por defecto
             if (!options?.method || options.method === 'GET') {
-                const urlObj = new URL(`${API_BASE_URL}${endpoint}`);
+                const urlObj = new URL(`${API_BASE_URL}${endpoint}`); // Usamos el endpoint original para el tag
                 // Etiquetamos el caché por tenant y por la base del endpoint para purgado selectivo
                 const baseTag = urlObj.pathname.split('/').filter(Boolean)[0] || 'general';
                 
@@ -54,7 +60,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+        const response = await fetch(`${API_BASE_URL}${currentEndpoint}`, fetchOptions);
 
         if (!response.ok) {
             let errorMessage = `API Error: ${response.status} ${response.statusText}`;

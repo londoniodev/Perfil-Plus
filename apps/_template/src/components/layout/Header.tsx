@@ -20,6 +20,7 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
         if (features.includes("SHOP")) navLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/cursos" });
         if (features.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
+        if (features.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
     }
 
     const isHome = pathname === "/";

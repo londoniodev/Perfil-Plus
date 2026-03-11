@@ -16,7 +16,13 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
     const urlObj = new URL(`${API_BASE_URL}${endpoint}`);
     const baseTag = urlObj.pathname.split('/').filter(Boolean)[0] || 'general';
 
-    let res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    let currentEndpoint = endpoint;
+    if (!options?.method || options.method === 'GET') {
+        const separator = currentEndpoint.includes('?') ? '&' : '?';
+        currentEndpoint = `${currentEndpoint}${separator}_tenantCacheId=${tenantId}`;
+    }
+
+    let res = await fetch(`${API_BASE_URL}${currentEndpoint}`, {
         ...options,
         credentials: 'include',
         headers: getHeaders(token),
@@ -50,7 +56,7 @@ async function fetchAPI<T>(endpoint: string, tenantId: string, options?: Request
                         document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax; Secure`;
 
                         // 3. Retry original request with NEW token
-                        res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        res = await fetch(`${API_BASE_URL}${currentEndpoint}`, {
                             ...options,
                             credentials: 'include',
                             headers: getHeaders(data.accessToken),

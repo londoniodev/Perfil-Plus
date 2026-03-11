@@ -12,17 +12,27 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
     const { isAuthenticated } = useAuth();
     const { features, headerLinks } = useTenant();
 
-    let navLinks = headerLinks;
+    // Hacemos una copia para no mutar el array original del context
+    let navLinks = headerLinks ? [...headerLinks] : [];
 
     // Fallback: Si no hay base de datos de menús configurada, se genera plug & play basado en Features
-    if (!navLinks || navLinks.length === 0) {
+    if (navLinks.length === 0) {
         navLinks = [{ label: "Inicio", href: "/" }];
-        if (features.includes("ECOMMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
+        if (features.some(f => f.toUpperCase() === "ECOMMERCE" || f.toUpperCase() === "ECOMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/cursos" });
         if (features.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
         if (features.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
+    } else {
+        // Validación forzosa para E-commerce. Si la DB omitió incluir "Tienda", pero el Tenant tiene el feature, the lo forzamos.
+        const hasEcommerceFeature = features.some(f => f.toUpperCase() === "ECOMMERCE" || f.toUpperCase() === "ECOMERCE");
+        const hasTiendaLink = navLinks.some(link => link.href === "/tienda");
+        
+        if (hasEcommerceFeature && !hasTiendaLink) {
+            navLinks.push({ label: "Tienda", href: "/tienda" });
+        }
     }
 
+    const hasDashboard = features.some(f => f.toUpperCase() === "DASHBOARD");
     const isHome = pathname === "/";
     const finalLogo = logo || siteConfig.branding.logo;
 
@@ -34,7 +44,7 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
-            showAuthButtons={false}
+            showAuthButtons={hasDashboard}
             transparentIsDark={isHome}
         />
     );

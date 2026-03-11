@@ -145,7 +145,7 @@ const ContentExplora = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             <Card className={cn(GLASS_CARD_STYLES, "h-full")}>
                 <CardHeader>
-                    <CardTitle className="text-xl font-bold text-accent">Para jóvenes y familias</CardTitle>
+                    <CardTitle className="text-xl font-bold text-[#f97316]">Para jóvenes y familias</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground mb-6 text-sm">
@@ -158,8 +158,8 @@ const ContentExplora = () => (
                             { icon: <IconHeart />, label: "Padres que acompañan" },
                             { icon: <IconCompass />, label: "Proyectos de vida" },
                         ].map((tag, i) => (
-                            <div key={i} className="flex flex-col items-center justify-center p-4 rounded-lg bg-accent/5 border border-accent/20 text-center gap-2">
-                                <span className="text-accent text-2xl">{tag.icon}</span>
+                            <div key={i} className="flex flex-col items-center justify-center p-4 rounded-lg bg-[#f97316]/5 border border-[#f97316]/20 text-center gap-2">
+                                <span className="text-[#f97316] text-2xl">{tag.icon}</span>
                                 <span className="text-xs font-medium text-foreground/80">{tag.label}</span>
                             </div>
                         ))}
@@ -169,10 +169,10 @@ const ContentExplora = () => (
 
             <Card className={cn(GLASS_CARD_STYLES, "h-full")}>
                 <CardHeader>
-                    <CardTitle className="text-xl font-bold text-accent">Lo que incluye el programa</CardTitle>
+                    <CardTitle className="text-xl font-bold text-[#f97316]">Lo que incluye el programa</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <FeatureList iconColor="var(--accent)" items={[
+                    <FeatureList iconColor="#f97316" items={[
                         "Test de perfil vocacional profundo (Intereses + Aptitudes).",
                         "Sesión de análisis y entrega de resultados (Online).",
                         "Acceso a la plataforma Explora con Asistente IA.",
@@ -183,17 +183,17 @@ const ContentExplora = () => (
             </Card>
         </div>
 
-        <div className="bg-accent/5 border border-accent/20 rounded-2xl p-8 mb-12 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="bg-[#f97316]/5 border border-[#f97316]/20 rounded-2xl p-8 mb-12 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#f97316]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10 max-w-3xl mx-auto text-center">
-                <h3 className="text-xl font-bold text-accent mb-4">
+                <h3 className="text-xl font-bold text-[#f97316] mb-4">
                     ¿Por qué es diferente?
                 </h3>
                 <p className="text-muted-foreground leading-relaxed mb-6">
                     La mayoría de tests te dan una lista fría de carreras. <strong>Explora</strong> combina data precisa con acompañamiento humano. Usamos IA para procesar miles de opciones, pero la decisión la tomas tú con criterio y acompañamiento experto.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-black">Data-driven</span>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#f97316] text-white">Data-driven</span>
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-background border border-border text-foreground">100% Personalizado</span>
                     <span className="px-3 py-1 rounded-full text-xs font-medium bg-background border border-border text-foreground">Moderno</span>
                 </div>
@@ -201,7 +201,7 @@ const ContentExplora = () => (
         </div>
 
         <div className="text-center">
-            <Button asChild variant="accent" size="lg" className="shadow-lg hover:shadow-xl hover:shadow-accent/20 transition-all hover:-translate-y-1">
+            <Button asChild size="lg" style={{ background: "#f97316", color: "white", borderColor: "#f97316" }} className="shadow-lg hover:shadow-xl hover:shadow-[#f97316]/20 transition-all hover:-translate-y-1">
                 <Link
                     href="https://app.universoexplora.tech"
                     target="_blank"

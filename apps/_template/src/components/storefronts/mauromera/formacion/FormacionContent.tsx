@@ -11,22 +11,22 @@ import { PageHeader } from "@alvarosky/ui";
 export default function FormacionContent() {
     const cursos = [
         {
-            title: "Fotografía de Retrato",
-            description: "Aprenda las técnicas fundamentales para capturar la esencia the las personas con iluminación natural y encuadres perfectos.",
-            level: "Básico",
-            duration: "4 semanas",
+            title: "Liderazgo Consciente",
+            description: "Aprende a transformar la cultura the tu equipo mejorando la comunicación y gestionando el estrés organizacional.",
+            level: "Avanzado",
+            duration: "8 semanas",
             icon: <IconTarget />,
         },
         {
-            title: "Iluminación en Estudio",
-            description: "Domina el uso The flashes, modificadores y esquemas the luz profesionales para fotografía comercial y The producto.",
+            title: "Gestión de la Ansiedad en Equipos",
+            description: "Herramientas de psicología aplicada para reducir la fatiga mental y prevenir burnout en entornos the alta demanda.",
             level: "Intermedio",
             duration: "6 semanas",
             icon: <IconZap />,
         },
         {
-            title: "Edición y Retoque Digital",
-            description: "Domina Lightroom y Photoshop para llevar tus imágenes crudas al siguiente nivel con flujo de trabajo profesional.",
+            title: "Orientación y Propósito (Explora)",
+            description: "Programa intensivo diseñado para re-conectar líderes ejecutivos con sus motivadores intrínsecos.",
             level: "Avanzado",
             duration: "8 semanas",
             icon: <IconBrain />,

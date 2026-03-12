@@ -84,6 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const token = localStorage.getItem("token");
 
+            // Si no hay token ni refreshToken, el usuario es invitado — no llamar al backend
+            if (!token && !localStorage.getItem("refreshToken")) {
+                setUser(null);
+                return;
+            }
+
             // Local expiration check to avoid sending expired tokens to backend
             if (token) {
                 try {
@@ -159,12 +165,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             if (!res.ok) {
+                // Detectar si el usuario TENÍA sesión ANTES de limpiar
+                const hadToken = !!localStorage.getItem("token") || !!localStorage.getItem("refreshToken");
+
                 // API returned error (401, etc) - clear everything
                 setUser(null);
                 clearAllAuthData();
 
-                // Si es 401, redirigir explícitamente a login con mensaje
-                if (res.status === 401) {
+                // Solo redirigir si el usuario TENÍA un token (estaba logueado y expiró)
+                // Los invitados (sin token previo) NO deben ser redirigidos
+                if (res.status === 401 && hadToken) {
                     router.replace("/login?reason=session_expired");
                 }
                 return;

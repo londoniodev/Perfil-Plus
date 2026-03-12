@@ -37,6 +37,8 @@ export async function POST(req: Request) {
             customer: {
                 name: order.customerName,
                 phone: order.customerPhone,
+                email: order.customerEmail,
+                identification: order.identification,
             },
             existingOrderId: orderId,
             // URL a la que volverá el usuario tras el pago

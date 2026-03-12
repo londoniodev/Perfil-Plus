@@ -45,6 +45,7 @@ export class PaymentsController {
   }
 
   @Post('product/checkout')
+  @Public()
   async createProductCheckout(
     @Req() req: Request,
     @Body() dto: CreateCheckoutDto,

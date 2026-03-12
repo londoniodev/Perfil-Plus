@@ -11,6 +11,7 @@ export interface CartItem {
     quantity: number
     productType: "DIGITAL" | "PHYSICAL" | "SERVICE"
     modifiers?: { id: string; name: string; price: number }[]
+    notes?: string
 }
 
 interface CartStore {

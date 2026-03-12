@@ -46,6 +46,12 @@ export class OrdersController {
     return this.ordersService.getOrderForTracking(id);
   }
 
+  @Get(':id')
+  @Public()
+  async findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(id);
+  }
+
   @Get('product/:productId/download')
   async downloadByProduct(
     @CurrentUser('id') userId: string,

@@ -62,7 +62,12 @@ export class CheckoutCustomerDto {
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   lng?: number;
+
+  @IsOptional()
+  @IsString()
+  identification?: string;
 }
 
 export class CreateCheckoutDto {

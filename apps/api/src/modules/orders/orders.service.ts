@@ -226,6 +226,8 @@ export class OrdersService {
               // New Fields
               customerName: dto.customerName || null,
               customerPhone: dto.customerPhone || null,
+              customerEmail: dto.customerEmail || null,
+              identification: dto.identification || null,
               notes: (() => {
                 let methodLabel = dto.paymentMethod;
                 if (methodLabel === 'CASH') methodLabel = 'Efectivo';
@@ -611,6 +613,29 @@ export class OrdersService {
           select: {
             productName: true,
             quantity: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Orden no encontrada');
+    }
+
+    return order;
+  }
+
+  // ============ OBTENER UNA ORDEN (Detallada) ============
+  async findOne(id: string) {
+    const order = await this.prisma.secure.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            modifiers: true,
+            variant: {
+              include: { product: true },
+            },
           },
         },
       },

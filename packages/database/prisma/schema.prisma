@@ -650,6 +650,8 @@ model Order {
   // Guest / CRM fields
   customerName  String?
   customerPhone String?
+  customerEmail String?
+  identification String?
   notes         String?     // Notas generales de la orden
 
   // Domiciliario asignado

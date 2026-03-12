@@ -30,6 +30,7 @@ const checkoutSchema = z.object({
     customerName: z.string().min(2, "Nombre requerido"),
     customerPhone: z.string().min(7, "Teléfono requerido"),
     customerEmail: z.string().email("Email inválido"), // Requerido para productos digitales
+    identification: z.string().optional(),
     orderType: z.enum(["DINE_IN", "DELIVERY", "PICKUP", "DIGITAL"]),
     notes: z.string().optional(),
     address: z.string().optional(),
@@ -87,6 +88,7 @@ export function CheckoutForm() {
             orderType: defaultOrderType,
             address: "",
             city: "",
+            identification: "",
             lat: undefined,
             lng: undefined,
             notes: ""
@@ -115,17 +117,23 @@ export function CheckoutForm() {
             const payload = {
                 items: items.map(item => ({
                     variantId: item.variantId,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    notes: item.notes,
+                    modifiers: item.modifiers?.map(m => ({
+                        modifierId: m.id,
+                        quantity: 1
+                    }))
                 })),
                 customer: {
                     name: data.customerName,
                     email: data.customerEmail,
-                    phone: data.customerPhone,
+                    phone: data.customerPhone.replace(/\D/g, ''), // Sanitización proactiva
                     userId: user?.id,
                     address: data.address,
                     city: data.city,
                     lat: data.lat,
-                    lng: data.lng
+                    lng: data.lng,
+                    identification: data.identification,
                 },
                 frontUrl: window.location.origin
             }
@@ -257,6 +265,15 @@ export function CheckoutForm() {
                                 <Input id="customerEmail" type="email" {...form.register("customerEmail")} placeholder="tu@email.com" />
                                 {form.formState.errors.customerEmail && (
                                     <p className="text-xs text-destructive">{form.formState.errors.customerEmail.message as string}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="identification">Número de Documento (DNI/Cédula)</Label>
+                                <Input id="identification" {...form.register("identification")} placeholder="12345678" />
+                                <p className="text-[10px] text-muted-foreground">Opcional: Ayuda a agilizar tu pago en Mercado Pago.</p>
+                                {form.formState.errors.identification && (
+                                    <p className="text-xs text-destructive">{form.formState.errors.identification.message as string}</p>
                                 )}
                             </div>
 

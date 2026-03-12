@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsInt, Min } from 'class-validator';
 import { DriverStatus } from '@prisma/client';
 
 export class UpdateDriverDto {
@@ -13,4 +13,9 @@ export class UpdateDriverDto {
   @IsEnum(DriverStatus)
   @IsOptional()
   status?: DriverStatus;
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  maxCapacity?: number;
 }

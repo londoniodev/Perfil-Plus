@@ -126,6 +126,7 @@ export class DeliveryDriversService {
         ...(dto.phone && { phone: dto.phone }),
         ...(dto.vehicle !== undefined && { vehicle: dto.vehicle }),
         ...(dto.status && { status: dto.status }),
+        ...(dto.maxCapacity !== undefined && { maxCapacity: dto.maxCapacity }),
       },
       include: {
         user: {

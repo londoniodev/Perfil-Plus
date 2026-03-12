@@ -1,5 +1,6 @@
 import { getMyActiveOrders } from "@/actions/driver"
 import { DriverOrderCard } from "@/components/driver/DriverOrderCard"
+import { DriverMobileHeader } from "@/components/driver/DriverMobileHeader"
 import { PackageX } from "lucide-react"
 import { Suspense } from "react"
 import { Skeleton } from "@alvarosky/ui"
@@ -12,27 +13,26 @@ async function DriverOrdersList() {
 
     if (orders.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                <PackageX className="w-16 h-16 mb-4 opacity-50" />
-                <h3 className="text-xl font-bold text-gray-700">Sin Asignaciones</h3>
+            <section className="flex flex-col items-center justify-center h-64 text-gray-500" aria-label="Sin pedidos">
+                <PackageX className="w-16 h-16 mb-4 opacity-50" aria-hidden="true" />
+                <h2 className="text-xl font-bold text-gray-700">Sin Asignaciones</h2>
                 <p className="text-sm mt-2">Actualmente no tienes pedidos pendientes.</p>
-            </div>
+            </section>
         )
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4" aria-label="Lista de pedidos asignados">
             {orders.map((order: any) => (
                 <DriverOrderCard 
                     key={order.id} 
                     order={order} 
                     onDelivered={async () => {
                         "use server"
-                        // Dummy server action for revalidation if needed from client proxy
                     }} 
                 />
             ))}
-        </div>
+        </section>
     )
 }
 
@@ -48,13 +48,8 @@ function OrdersSkeleton() {
 export default function DriverDashboardPage() {
     return (
         <main className="min-h-screen bg-gray-50 pb-20">
-            {/* Header Móvil */}
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm px-4 py-4 mb-6">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">Mis Pedidos</h1>
-                <p className="text-sm text-gray-500">Ruta sugerida. Entregas pendientes.</p>
-            </div>
+            <DriverMobileHeader />
 
-            {/* Layout centrado y restringido a Mobile (max-w-md) para confort de una mano */}
             <div className="px-4 max-w-md mx-auto">
                 <Suspense fallback={<OrdersSkeleton />}>
                     <DriverOrdersList />

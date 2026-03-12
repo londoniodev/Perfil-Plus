@@ -6,12 +6,36 @@ import { serverFetch } from "@/lib/api-server"
 export async function getMyActiveOrders() {
     try {
         const orders = await serverFetch<any[]>("/driver/orders");
-        // El endpoint /driver/orders del backend ya debe estar filtrando las órdenes del driver logueado
-        // y devolviendo solo ASSIGNED o IN_TRANSIT.
         return orders || [];
     } catch (error) {
         console.error("Error fetching driver orders:", error);
         return [];
+    }
+}
+
+export async function getDriverProfile() {
+    try {
+        const profile = await serverFetch<any>("/driver/profile");
+        return profile;
+    } catch (error) {
+        console.error("Error fetching driver profile:", error);
+        return null;
+    }
+}
+
+export async function updateDriverStatus(status: string) {
+    try {
+        await serverFetch('/driver/status', {
+            method: 'PATCH',
+            body: JSON.stringify({ status }),
+        });
+
+        revalidatePath('/driver/pedidos');
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating driver status:", error);
+        return { success: false, error: error.message };
     }
 }
 
@@ -22,9 +46,7 @@ export async function markOrderAsDelivered(orderId: string) {
             body: JSON.stringify({ status: 'DELIVERED' })
         });
 
-        // Revalidate paths that show orders to the driver
         revalidatePath('/driver/pedidos');
-        // Adicionalmente se refrescará para el admin
         revalidatePath('/restaurante/despachos');
         revalidatePath('/restaurante/comandas');
 

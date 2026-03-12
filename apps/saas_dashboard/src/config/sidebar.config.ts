@@ -20,7 +20,7 @@ import {
     DollarSign,
     UserCog,
     Warehouse,
-    Truck,
+    Bike,
 } from "lucide-react";
 import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
 import type { UserRole } from "@/types/auth";
@@ -194,8 +194,11 @@ export const sidebarConfig: SidebarConfig = {
             },
             {
                 title: "Despachos",
-                href: "/restaurante/despachos",
-                icon: Truck,
+                icon: Bike,
+                items: [
+                    { title: "Asignación de Pedidos", href: "/restaurante/despachos" },
+                    { title: "Domiciliarios", href: "/restaurante/despachos/domiciliarios" },
+                ],
             },
             {
                 title: "Inventarios",
@@ -315,7 +318,7 @@ export function getStaffSections(role: UserRole, features: FeatureKey[]): Sideba
                     {
                         title: "Mis Entregas",
                         href: "/driver/pedidos",
-                        icon: Truck,
+                        icon: Bike,
                     },
                 ],
             }];

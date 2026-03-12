@@ -1,7 +1,7 @@
 import { serverFetch } from "@/lib/api-server"
 import { ProductForm } from "@/components/admin/products/product-form"
 import { AdminPageWrapper } from "@alvarosky/ui"
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 import { BreadcrumbSetter } from "@/components/admin/products/BreadcrumbSetter"
 
 interface EditProductPageProps {
@@ -40,7 +40,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     const product = await getProduct(id)
 
     if (!product) {
-        notFound()
+        // En vez de renderizar un 404 estático que puede romper si el layout no halla los params/tokens previstos, 
+        // forzamos al usuario a re-autenticarse si la API devuelve "null" indicando JWT caducado.
+        redirect('/login?callbackUrl=/admin/products/' + id)
     }
 
     return (

@@ -625,16 +625,36 @@ export class OrdersService {
     return order;
   }
 
-  // ============ OBTENER UNA ORDEN (Detallada) ============
+  // ============ OBTENER UNA ORDEN (Pública/Segura) ============
   async findOne(id: string) {
     const order = await this.prisma.secure.order.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        totalAmount: true,
+        orderType: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        identification: true,
+        createdAt: true,
         items: {
-          include: {
-            modifiers: true,
-            variant: {
-              include: { product: true },
+          select: {
+            id: true,
+            productName: true,
+            variantName: true,
+            quantity: true,
+            price: true,
+            variantId: true,
+            modifiers: {
+              select: {
+                id: true,
+                modifierName: true,
+                quantity: true,
+                priceAdjustment: true,
+              },
             },
           },
         },

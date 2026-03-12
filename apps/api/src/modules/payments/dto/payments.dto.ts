@@ -71,4 +71,8 @@ export class CreateCheckoutDto {
 
   @IsOptional()
   customer?: CheckoutCustomerDto;
+
+  @IsOptional()
+  @IsString()
+  existingOrderId?: string;
 }

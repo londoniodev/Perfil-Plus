@@ -381,6 +381,7 @@ export class PaymentsService {
       city: dto.customer?.city || '',
       lat: dto.customer?.lat?.toString() || '',
       lng: dto.customer?.lng?.toString() || '',
+      existing_order_id: dto.existingOrderId || '',
     };
 
     const apiUrl =
@@ -525,6 +526,7 @@ export class PaymentsService {
           const city = metadata.city;
           const lat = metadata.lat ? parseFloat(metadata.lat) : undefined;
           const lng = metadata.lng ? parseFloat(metadata.lng) : undefined;
+          const existingOrderId = metadata.existing_order_id;
 
           // Anti-IDOR / Spoofing check
           if (metaTenantId !== resolvedTenantId) {
@@ -590,31 +592,64 @@ export class PaymentsService {
               throw new Error('No valid items found for order');
             }
 
-            // Generar numero de orden
-            const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+            let newOrder;
 
-            const newOrder = await tx.order.create({
-              data: {
-                tenantId: resolvedTenantId,
-                orderNumber,
-                totalAmount,
-                status: 'APPROVED',
-                orderType: 'DELIVERY', // o 'DINE_IN' según modelo, asumiendo e-commerce
-                mpPaymentId: dataId,
-                customerName,
-                customerPhone,
-                notes: customerEmail ? `Email: ${customerEmail}` : '',
-                shippingData: address ? {
-                  address,
-                  city,
-                  lat,
-                  lng
-                } : undefined,
-                items: {
-                  create: orderItemsData,
+            if (existingOrderId) {
+              const preExisting = await tx.order.findUnique({
+                where: { id: existingOrderId }
+              });
+
+              if (!preExisting) {
+                this.logger.error(`Order ${existingOrderId} not found for payment ${dataId}`);
+                throw new Error(`Order ${existingOrderId} not found`);
+              }
+
+              newOrder = await tx.order.update({
+                where: { id: existingOrderId },
+                data: {
+                  status: 'APPROVED',
+                  mpPaymentId: dataId,
+                  // Actualizar envío en caso de haberlo incluido
+                  shippingData: address ? {
+                    address,
+                    city,
+                    lat,
+                    lng
+                  } : preExisting.shippingData ?? undefined,
                 },
-              },
-            });
+              });
+
+              await tx.orderItem.updateMany({
+                where: { orderId: existingOrderId },
+                data: { isPaid: true },
+              });
+            } else {
+              // Generar numero de orden
+              const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+
+              newOrder = await tx.order.create({
+                data: {
+                  tenantId: resolvedTenantId,
+                  orderNumber,
+                  totalAmount,
+                  status: 'APPROVED',
+                  orderType: 'DELIVERY', // o 'DINE_IN' según modelo, asumiendo e-commerce
+                  mpPaymentId: dataId,
+                  customerName,
+                  customerPhone,
+                  notes: customerEmail ? `Email: ${customerEmail}` : '',
+                  shippingData: address ? {
+                    address,
+                    city,
+                    lat,
+                    lng
+                  } : undefined,
+                  items: {
+                    create: orderItemsData,
+                  },
+                },
+              });
+            }
 
             this.logger.log(
               `Order ${newOrder.orderNumber} created successfully via Webhook`,

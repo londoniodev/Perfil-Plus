@@ -38,6 +38,7 @@ export async function POST(req: Request) {
                 name: order.customerName,
                 phone: order.customerPhone,
             },
+            existingOrderId: orderId,
             // URL a la que volverá el usuario tras el pago
             frontUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/menu/${slug}`
         };

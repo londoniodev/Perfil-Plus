@@ -379,9 +379,9 @@ export class PaymentsService {
       user_id: dto.customer?.userId || '',
       address: dto.customer?.address || '',
       city: dto.customer?.city || '',
-      lat: dto.customer?.lat?.toString() || '',
       lng: dto.customer?.lng?.toString() || '',
       existing_order_id: dto.existingOrderId || '',
+      identification: dto.customer?.identification || '',
     };
 
     const apiUrl =
@@ -545,6 +545,7 @@ export class PaymentsService {
           const lat = metadata.lat ? parseFloat(metadata.lat) : undefined;
           const lng = metadata.lng ? parseFloat(metadata.lng) : undefined;
           const existingOrderId = metadata.existing_order_id;
+          const identification = metadata.identification;
 
           // Anti-IDOR / Spoofing check
           if (metaTenantId !== resolvedTenantId) {
@@ -634,6 +635,8 @@ export class PaymentsService {
                     lat,
                     lng
                   } : preExisting.shippingData ?? undefined,
+                  customerEmail: customerEmail || preExisting.customerEmail,
+                  identification: identification || preExisting.identification,
                 },
               });
 
@@ -655,7 +658,9 @@ export class PaymentsService {
                   mpPaymentId: dataId,
                   customerName,
                   customerPhone,
-                  notes: customerEmail ? `Email: ${customerEmail}` : '',
+                  customerEmail,
+                  identification,
+                  notes: '',
                   shippingData: address ? {
                     address,
                     city,

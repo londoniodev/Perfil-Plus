@@ -41,7 +41,7 @@ export async function updateDriverStatus(status: string) {
 
 export async function markOrderAsDelivered(orderId: string) {
     try {
-        await serverFetch(`/orders/${orderId}/status`, {
+        await serverFetch(`/driver/orders/${orderId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status: 'DELIVERED' })
         });
@@ -56,3 +56,4 @@ export async function markOrderAsDelivered(orderId: string) {
         return { success: false, error: error.message };
     }
 }
+

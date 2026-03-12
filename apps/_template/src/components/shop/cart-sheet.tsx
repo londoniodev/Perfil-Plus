@@ -19,44 +19,8 @@ export function CartSheet() {
     }, [])
 
     const handleCheckout = async () => {
-        // Validación B2B2C Auth-First
-        const hasDigitalOrPhysical = cart.items.some(
-            (item) => item.productType === "DIGITAL" || item.productType === "PHYSICAL"
-        )
-
-        if (hasDigitalOrPhysical && !user) {
-            router.push("/login?redirect=/checkout")
-            return
-        }
-
-        setIsCheckoutProcessing(true)
-
-        try {
-            // Importar la Server Action dinámicamente
-            const { placeOrder } = await import("@/actions/checkout")
-
-            // Preparar datos del carrito
-            const cartItems = cart.items.map(item => ({
-                variantId: item.variantId,
-                quantity: item.quantity
-            }))
-
-            // Ejecutar Server Action
-            const result = await placeOrder(cartItems)
-
-            if (result.success && result.paymentUrl) {
-                // Redirigir a Mercado Pago
-                window.location.href = result.paymentUrl
-            } else {
-                // Mostrar error
-                alert(result.error || "Error al procesar la orden")
-                setIsCheckoutProcessing(false)
-            }
-        } catch (error) {
-            console.error("Error en checkout:", error)
-            alert("Error al conectar con el servidor")
-            setIsCheckoutProcessing(false)
-        }
+        // Redirigir siempre a la página de checkout (donde se capturan datos de invitado o login)
+        router.push("/checkout")
     }
 
     if (!isMounted) {

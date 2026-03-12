@@ -45,11 +45,8 @@ export async function placeOrder(
     shippingData?: ShippingData
 ): Promise<PlaceOrderResult> {
     try {
-        // 1. Validar autenticación
+        // 1. Validar autenticación (Opcional para Guests)
         const user = await getSessionUser()
-        if (!user) {
-            return { success: false, error: "Usuario no autenticado" }
-        }
 
         // 2. Validar inputs con Zod
         const validated = placeOrderSchema.parse({ cartItems, shippingData })
@@ -59,7 +56,7 @@ export async function placeOrder(
         const createOrderPayload = {
             orderType: "DELIVERY", // Default asumiendo e-commerce basado en la existencia de shippingData
             status: "PENDING",
-            customerName: validated.shippingData?.name || user.name || "Cliente E-commerce",
+            customerName: validated.shippingData?.name || user?.name || "Cliente E-commerce",
             customerPhone: validated.shippingData?.phone || "0000000000",
             shippingData: validated.shippingData || undefined,
             items: validated.cartItems.map(item => ({

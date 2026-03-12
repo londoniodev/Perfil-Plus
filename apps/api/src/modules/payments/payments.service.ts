@@ -393,8 +393,14 @@ export class PaymentsService {
     const preferenceData = {
       items: preferenceItems,
       payer: {
-        name: dto.customer?.name,
-        email: dto.customer?.email,
+        name: dto.customer?.name || 'Cliente',
+        surname: dto.customer?.name ? '' : 'Invitado',
+        email: dto.customer?.email || `invitado@${tenantId}.com`,
+        phone: dto.customer?.phone ? { area_code: '', number: dto.customer.phone } : undefined,
+        address: dto.customer?.address ? { 
+          street_name: dto.customer.address, 
+          zip_code: dto.customer.city || '' 
+        } : undefined,
       },
       back_urls: {
         success: `${frontendUrl}/checkout/success`,

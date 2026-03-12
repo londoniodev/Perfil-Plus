@@ -20,6 +20,7 @@ import {
     DollarSign,
     UserCog,
     Warehouse,
+    Truck,
 } from "lucide-react";
 import type { AdminSidebarSection, AdminSidebarNavGroup, AdminSidebarNavItem } from "@alvarosky/ui";
 import type { UserRole } from "@/types/auth";
@@ -192,6 +193,11 @@ export const sidebarConfig: SidebarConfig = {
                 icon: QrCode,
             },
             {
+                title: "Despachos",
+                href: "/restaurante/despachos",
+                icon: Truck,
+            },
+            {
                 title: "Inventarios",
                 icon: Warehouse,
                 items: [
@@ -298,6 +304,18 @@ export function getStaffSections(role: UserRole, features: FeatureKey[]): Sideba
                             { title: "Ver carta", href: "/restaurante/menu" },
                             { title: "Nuevo plato", href: "/restaurante/menu/nuevo" },
                         ],
+                    },
+                ],
+            }];
+
+        case 'DRIVER':
+            return [{
+                label: "Domiciliario",
+                groups: [
+                    {
+                        title: "Mis Entregas",
+                        href: "/driver/pedidos",
+                        icon: Truck,
                     },
                 ],
             }];

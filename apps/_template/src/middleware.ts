@@ -67,7 +67,8 @@ export async function middleware(request: NextRequest) {
         '/suscripcion',
         '/waiter',
         '/whatsapp',
-        '/clientes'
+        '/clientes',
+        '/driver',
     ];
     const shouldRewrite = rewritesPaths.some(path => url.pathname === path || url.pathname.startsWith(`${path}/`));
 

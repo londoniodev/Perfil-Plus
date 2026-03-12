@@ -124,6 +124,9 @@ function LoginForm() {
           case 'CASHIER':
             window.location.href = "/dashboard/restaurante/pos";
             break;
+          case 'DRIVER':
+            window.location.href = "/dashboard/driver/pedidos";
+            break;
           case 'ADMIN':
             window.location.href = "/dashboard";
             break;

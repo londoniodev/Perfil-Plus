@@ -23,9 +23,21 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto, tenantId: string) {
+    // Resolver tenantId si viene como slug desde local (.env)
+    let actualTenantId = tenantId;
+    if (!tenantId.startsWith('c')) {
+      const tenant = await this.prisma.secure.tenant.findUnique({
+        where: { slug: tenantId },
+        select: { id: true }
+      });
+      if (tenant) {
+        actualTenantId = tenant.id;
+      }
+    }
+
     // Verificar si el email ya existe en este tenant
     const existingUser = await this.prisma.secure.user.findFirst({
-      where: { tenantId, email: dto.email.toLowerCase() },
+      where: { tenantId: actualTenantId, email: dto.email.toLowerCase() },
     });
 
     if (existingUser) {
@@ -38,7 +50,7 @@ export class AuthService {
     // Crear usuario
     const user = await this.prisma.secure.user.create({
       data: {
-        tenantId,
+        tenantId: actualTenantId,
         email: dto.email.toLowerCase(),
         password: hashedPassword,
         name: dto.name,
@@ -77,9 +89,21 @@ export class AuthService {
     const MAX_FAILED_ATTEMPTS = 5;
     const LOCKOUT_DURATION_MINUTES = 15;
 
+    // Resolver tenantId si viene como slug desde local (.env)
+    let actualTenantId = tenantId;
+    if (!tenantId.startsWith('c')) {
+      const tenant = await this.prisma.secure.tenant.findUnique({
+        where: { slug: tenantId },
+        select: { id: true }
+      });
+      if (tenant) {
+        actualTenantId = tenant.id;
+      }
+    }
+
     // Buscar usuario
     const user = await this.prisma.secure.user.findFirst({
-      where: { tenantId, email: dto.email.toLowerCase() },
+      where: { tenantId: actualTenantId, email: dto.email.toLowerCase() },
       select: {
         id: true,
         email: true,
@@ -236,8 +260,20 @@ export class AuthService {
   }
 
   async resendVerificationEmail(email: string, tenantId: string) {
+    // Resolver tenantId si viene como slug desde local (.env)
+    let actualTenantId = tenantId;
+    if (!tenantId.startsWith('c')) {
+      const tenant = await this.prisma.secure.tenant.findUnique({
+        where: { slug: tenantId },
+        select: { id: true }
+      });
+      if (tenant) {
+        actualTenantId = tenant.id;
+      }
+    }
+
     const user = await this.prisma.secure.user.findFirst({
-      where: { tenantId, email: email.toLowerCase() },
+      where: { tenantId: actualTenantId, email: email.toLowerCase() },
     });
 
     if (!user) {
@@ -438,8 +474,20 @@ export class AuthService {
     };
   }
   async forgotPassword(email: string, tenantId: string) {
+    // Resolver tenantId si viene como slug desde local (.env)
+    let actualTenantId = tenantId;
+    if (!tenantId.startsWith('c')) {
+      const tenant = await this.prisma.secure.tenant.findUnique({
+        where: { slug: tenantId },
+        select: { id: true }
+      });
+      if (tenant) {
+        actualTenantId = tenant.id;
+      }
+    }
+
     const user = await this.prisma.secure.user.findFirst({
-      where: { tenantId, email: email.toLowerCase() },
+      where: { tenantId: actualTenantId, email: email.toLowerCase() },
     });
 
     if (!user) {

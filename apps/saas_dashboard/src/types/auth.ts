@@ -1,6 +1,6 @@
-export type UserRole = "USER" | "ADMIN" | "WAITER" | "KITCHEN" | "CASHIER";
-export type StaffRole = "WAITER" | "KITCHEN" | "CASHIER";
-export const STAFF_ROLES: StaffRole[] = ["WAITER", "KITCHEN", "CASHIER"];
+export type UserRole = "USER" | "ADMIN" | "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
+export type StaffRole = "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
+export const STAFF_ROLES: StaffRole[] = ["WAITER", "KITCHEN", "CASHIER", "DRIVER"];
 
 export interface User {
     id: string;

@@ -390,13 +390,21 @@ export class PaymentsService {
       'http://localhost:3001';
     const notificationUrl = `${apiUrl}/api/payments/webhook`;
 
+    const fullName = (dto.customer?.name || 'Cliente').trim();
+    const nameParts = fullName.split(/\s+/);
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Cliente';
+
     const preferenceData = {
       items: preferenceItems,
       payer: {
-        name: dto.customer?.name || 'Cliente',
-        surname: dto.customer?.name ? '' : 'Invitado',
+        name: firstName,
+        surname: lastName,
         email: dto.customer?.email || `invitado@${tenantId}.com`,
-        phone: dto.customer?.phone ? { area_code: '', number: dto.customer.phone.replace(/\D/g, '') } : undefined,
+        phone: dto.customer?.phone ? { 
+          area_code: '57', 
+          number: dto.customer.phone.replace(/\D/g, '') 
+        } : undefined,
         identification: dto.customer?.identification ? { 
           type: 'CC', 
           number: dto.customer.identification.replace(/\D/g, '') 

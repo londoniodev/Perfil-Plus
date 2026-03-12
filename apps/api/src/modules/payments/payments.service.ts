@@ -377,6 +377,10 @@ export class PaymentsService {
       customer_email: dto.customer?.email || '',
       customer_phone: dto.customer?.phone || '',
       user_id: dto.customer?.userId || '',
+      address: dto.customer?.address || '',
+      city: dto.customer?.city || '',
+      lat: dto.customer?.lat?.toString() || '',
+      lng: dto.customer?.lng?.toString() || '',
     };
 
     const apiUrl =
@@ -517,6 +521,10 @@ export class PaymentsService {
           const customerName = metadata.customer_name;
           const customerPhone = metadata.customer_phone;
           const metaTenantId = metadata.tenant_id;
+          const address = metadata.address;
+          const city = metadata.city;
+          const lat = metadata.lat ? parseFloat(metadata.lat) : undefined;
+          const lng = metadata.lng ? parseFloat(metadata.lng) : undefined;
 
           // Anti-IDOR / Spoofing check
           if (metaTenantId !== resolvedTenantId) {
@@ -596,6 +604,12 @@ export class PaymentsService {
                 customerName,
                 customerPhone,
                 notes: customerEmail ? `Email: ${customerEmail}` : '',
+                shippingData: address ? {
+                  address,
+                  city,
+                  lat,
+                  lng
+                } : undefined,
                 items: {
                   create: orderItemsData,
                 },

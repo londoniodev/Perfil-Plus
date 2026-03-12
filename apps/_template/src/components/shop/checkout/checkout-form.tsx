@@ -112,56 +112,59 @@ export function CheckoutForm() {
             // Configurar JWT Token temporal si existe una sesión/cliente local (solo si aplicable)
             const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-            // Si el carrito es completamente digital o requiere un pago online estricto
-            // Lanzamos la integración con la Intención de Pago de MercadoPago (vía NestJS)
-            if (isDigitalOnly || hasDigital) {
-                const payload = {
-                    items: items.map(item => ({
-                        variantId: item.variantId,
-                        quantity: item.quantity
-                    })),
-                    customer: {
-                        name: data.customerName,
-                        email: data.customerEmail,
-                        phone: data.customerPhone,
-                        userId: user?.id
-                    },
-                    frontUrl: window.location.origin
-                }
-
-                // POST al endpoint de Checkout de MercadoPago en NestJS
-                const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
-                const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
-                const response = await fetch(`${API_URL}/payments/product/checkout`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                    },
-                    body: JSON.stringify(payload)
-                })
-
-                if (!response.ok) {
-                    throw new Error('Error al generar intención de pago');
-                }
-
-                const result = await response.json();
-
-                // Redirección a la Pasarela de MercadoPago
-                if (result.init_point) {
-                    window.location.href = result.init_point;
-                    return; // Detenemos la ejecución local
-                }
-                throw new Error("Respuesta inválida de la pasarela")
+            const payload = {
+                items: items.map(item => ({
+                    variantId: item.variantId,
+                    quantity: item.quantity
+                })),
+                customer: {
+                    name: data.customerName,
+                    email: data.customerEmail,
+                    phone: data.customerPhone,
+                    userId: user?.id,
+                    address: data.address,
+                    city: data.city,
+                    lat: data.lat,
+                    lng: data.lng
+                },
+                frontUrl: window.location.origin
             }
 
-            // Flujo Legacy para DINE_IN o Pedidos 100% físicos sin pago online obligado
-            // ... Aquí mantendríamos la lógica clásica a createOrder importado de "@/lib/api"
-            toast.error("Para este tipo de pedido (Delivery manual/Efectivo) la función no está 100% migrada al nuevo backend de pagos aún.", "En Construcción")
+            // POST al endpoint de Checkout de MercadoPago en NestJS
+            const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
+            const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+            const response = await fetch(`${API_URL}/payments/product/checkout`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(payload)
+            })
 
-        } catch (error) {
+            if (!response.ok) {
+                // Leer el error del backend si existe para mejor feedback
+                let errorMsg = 'Error al generar intención de pago';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) errorMsg = typeof errorData.message === 'string' ? errorData.message : errorData.message[0];
+                } catch(e) {}
+                
+                throw new Error(errorMsg);
+            }
+
+            const result = await response.json();
+
+            // Redirección a la Pasarela de MercadoPago
+            if (result.init_point) {
+                window.location.href = result.init_point;
+                return; // Detenemos la ejecución local
+            }
+            throw new Error("Respuesta inválida de la pasarela")
+
+        } catch (error: any) {
             console.error("Checkout Error:", error)
-            toast.error("No se pudo procesar el pago. Por favor intenta nuevamente.", "Error de Transacción")
+            toast.error(error.message || "No se pudo procesar el pago. Por favor intenta nuevamente.", "Error de Transacción")
         } finally {
             setIsSubmitting(false)
         }

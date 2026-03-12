@@ -5,7 +5,10 @@ import {
   IsNumber,
   IsIn,
   IsUrl,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // ==================== SUBSCRIPTION DTOs ====================
 export class CreateSubscriptionDto {
@@ -63,6 +66,9 @@ export class CheckoutCustomerDto {
 }
 
 export class CreateCheckoutDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CheckoutItemDto)
   items: CheckoutItemDto[];
 
   @IsOptional()

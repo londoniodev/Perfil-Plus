@@ -11,6 +11,14 @@ interface OrderData {
         phone: string
         tableNumber?: string
         notes?: string
+        address?: string
+    }
+    shippingData?: {
+        name: string
+        phone: string
+        address: string
+        lat?: number
+        lng?: number
     }
     paymentMethod?: string
     status?: string
@@ -39,13 +47,14 @@ export function useOrder() {
 
             const payload = {
                 items,
-                orderType: "DINE_IN", // Default, can be passed in orderData
+                orderType: orderData.shippingData ? "DELIVERY" : "DINE_IN",
                 customerName: orderData.customer?.name || "Invitado",
                 customerPhone: orderData.customer?.phone,
                 notes: orderData.customer?.notes,
                 tableNumber: orderData.customer?.tableNumber,
                 paymentMethod: orderData.paymentMethod,
-                status: orderData.status
+                status: orderData.status,
+                shippingData: orderData.shippingData
             }
 
             const response = await fetch(`${apiUrl}/orders`, {

@@ -143,7 +143,7 @@ export default function MenuClient({
         setIsNamePromptOpen(true)
     }
 
-    const handleConfirmOrder = async (data: { name: string; phone: string; address?: string; paymentMethod: "CASH" | "MERCADOPAGO" }) => {
+    const handleConfirmOrder = async (data: { name: string; phone: string; address?: string; lat?: number; lng?: number; paymentMethod: "CASH" | "MERCADOPAGO" }) => {
         const orderData = {
             cart,
             total: total(),
@@ -153,6 +153,13 @@ export default function MenuClient({
                 tableNumber: table || undefined,
                 address: data.address
             },
+            shippingData: data.address ? {
+                name: data.name,
+                phone: data.phone,
+                address: data.address,
+                lat: data.lat,
+                lng: data.lng
+            } : undefined,
             paymentMethod: data.paymentMethod
         }
 

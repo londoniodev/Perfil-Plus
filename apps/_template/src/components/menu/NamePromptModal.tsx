@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { User, Phone, MapPin, CreditCard, Banknote, X } from "lucide-react"
+import { LocationPicker } from "../shop/checkout/location-picker"
 
 export function NamePromptModal({
     isOpen,
@@ -13,13 +14,15 @@ export function NamePromptModal({
 }: {
     isOpen: boolean
     onClose: () => void
-    onConfirm: (data: { name: string; phone: string; address?: string; paymentMethod: "CASH" | "MERCADOPAGO" }) => void
+    onConfirm: (data: { name: string; phone: string; address?: string; lat?: number; lng?: number; paymentMethod: "CASH" | "MERCADOPAGO" }) => void
     isSubmitting: boolean
     isTableOrder?: boolean
 }) {
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
     const [address, setAddress] = useState("")
+    const [lat, setLat] = useState<number | undefined>(undefined)
+    const [lng, setLng] = useState<number | undefined>(undefined)
     const [paymentMethod, setPaymentMethod] = useState<"CASH" | "MERCADOPAGO">("CASH")
 
     // Cargar datos desde localStorage al abrir el modal
@@ -46,6 +49,8 @@ export function NamePromptModal({
             name,
             phone,
             address: isTableOrder ? undefined : address,
+            lat: isTableOrder ? undefined : lat,
+            lng: isTableOrder ? undefined : lng,
             paymentMethod
         }
 
@@ -55,14 +60,14 @@ export function NamePromptModal({
         onConfirm(data)
     }
 
-    const isValid = name.trim() !== "" && phone.trim() !== "" && (isTableOrder || address.trim() !== "")
+    const isValid = name.trim() !== "" && phone.trim() !== "" && (isTableOrder || (address.trim() !== "" && lat !== undefined && lng !== undefined))
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <motion.div
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="bg-white border border-slate-200 shadow-2xl rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md overflow-hidden"
+                className="bg-white border border-slate-200 shadow-2xl rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex justify-between items-center mb-6">
                     <div>
@@ -112,22 +117,36 @@ export function NamePromptModal({
                         </div>
                     </div>
 
-                    {/* Dirección (Solo si no es mesa) */}
+                    {/* Dirección + Mapa GPS (Solo si no es mesa) */}
                     {!isTableOrder && (
-                        <div className="space-y-1.5">
-                            <label htmlFor="customer-address" className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Dirección de Entrega</label>
-                            <div className="relative">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                <input
-                                    id="customer-address"
-                                    type="text"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Ej: Calle 10 #20-30, Apto 401"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                />
+                        <>
+                            <div className="space-y-1.5">
+                                <label htmlFor="customer-address" className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Dirección de Entrega</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <input
+                                        id="customer-address"
+                                        type="text"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="Ej: Calle 10 #20-30, Apto 401"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    />
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Mapa GPS para ubicación exacta */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Ubicación GPS</label>
+                                <p className="text-xs text-slate-400 ml-1 mb-1">Toca el mapa para marcar tu ubicación exacta</p>
+                                <div className="rounded-2xl overflow-hidden border border-slate-200">
+                                    <LocationPicker onLocationChange={(loc) => { setLat(loc.lat); setLng(loc.lng) }} />
+                                </div>
+                                {lat && lng && (
+                                    <p className="text-xs text-emerald-600 font-medium ml-1">📍 Ubicación seleccionada</p>
+                                )}
+                            </div>
+                        </>
                     )}
                 </div>
 

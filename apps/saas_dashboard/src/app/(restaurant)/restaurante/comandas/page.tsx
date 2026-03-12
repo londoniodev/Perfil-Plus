@@ -105,11 +105,17 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                         <Clock className="w-4 h-4 mr-2" aria-hidden="true" /> Marcar Listo (Cocina)
                     </Button>
                 )}
-                {(order.status === 'READY') && (
-                    <Button size="sm" onClick={() => onStatusChange(order.id, order.orderType === 'DINE_IN' ? 'SERVED' : 'DELIVERED')} className="w-full">
-                        {order.orderType === 'DELIVERY' ? <Truck className="w-4 h-4 mr-2" aria-hidden="true" /> : <Utensils className="w-4 h-4 mr-2" aria-hidden="true" />}
-                        {order.orderType === 'DELIVERY' ? 'Despachado' : 'Servido'}
+                {(order.status === 'READY') && order.orderType !== 'DELIVERY' && (
+                    <Button size="sm" onClick={() => onStatusChange(order.id, 'SERVED')} className="w-full">
+                        <Utensils className="w-4 h-4 mr-2" aria-hidden="true" />
+                        Servido
                     </Button>
+                )}
+                {(order.status === 'READY') && order.orderType === 'DELIVERY' && (
+                    <div className="w-full text-center text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md px-3 py-2 font-medium">
+                        <Truck className="w-4 h-4 inline mr-1" aria-hidden="true" />
+                        Gestionar desde <strong>Despachos</strong>
+                    </div>
                 )}
             </CardFooter>
         </Card>

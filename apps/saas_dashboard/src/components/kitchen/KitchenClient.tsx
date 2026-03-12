@@ -24,7 +24,7 @@ function KitchenCard({ order, onAction, busy, tableName }: {
 }) {
     const nextAction: Record<string, { label: string; icon: React.ReactNode; status: string; color: string }> = {
         APPROVED: { label: "Empezar", icon: <Play className="w-4 h-4" />, status: "PREPARING", color: "bg-blue-600 hover:bg-blue-700" },
-        PREPARING: { label: "Listo", icon: <CheckCircle2 className="w-4 h-4" />, status: "READY", color: "bg-green-600 hover:bg-green-700 text-white shadow-none ring-0 focus:ring-0" },
+        PREPARING: { label: "Marcar Listo", icon: <CheckCircle2 className="w-4 h-4" />, status: "READY", color: "bg-green-600 hover:bg-green-700 text-white shadow-none ring-0 focus:ring-0" },
     }
 
     const action = nextAction[order.status]

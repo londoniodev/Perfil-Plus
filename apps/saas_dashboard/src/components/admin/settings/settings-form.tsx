@@ -61,19 +61,25 @@ interface SettingsFormProps {
         storeName?: string | null
         storeEmail?: string | null
         currency?: string | null
-        mpPublicKey?: string | null
-        mpAccessToken?: string | null
-        mpWebhookSecret?: string | null
-        mpClientId?: string | null
-        mpClientSecret?: string | null
+        MERCADOPAGO_CONFIG?: {
+            publicKey?: string | null
+            accessToken?: string | null
+            webhookSecret?: string | null
+            clientId?: string | null
+            clientSecret?: string | null
+        }
         theme?: string | null
-        primaryColor?: string | null
-        smtpHost?: string | null
-        smtpPort?: number | null
-        smtpSecure?: boolean | null
-        smtpUser?: string | null
-        smtpPass?: string | null
-        apiKeyOpenAI?: string | null
+        primary_color?: string | null
+        smtp?: {
+            host?: string | null
+            port?: number | null
+            secure?: boolean | null
+            auth?: {
+                user?: string | null
+                pass?: string | null
+            }
+        }
+        api_key_openai?: string | null
         enableBlog?: boolean | null
         enableStore?: boolean | null
         enableLMS?: boolean | null
@@ -114,19 +120,19 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
             storeName: initialData?.storeName || "",
             storeEmail: initialData?.storeEmail || "",
             currency: initialData?.currency || "COP",
-            mpPublicKey: initialData?.mpPublicKey || "",
-            mpAccessToken: initialData?.mpAccessToken || "",
-            mpWebhookSecret: initialData?.mpWebhookSecret || "",
-            mpClientId: initialData?.mpClientId || "",
-            mpClientSecret: initialData?.mpClientSecret || "",
+            mpPublicKey: initialData?.MERCADOPAGO_CONFIG?.publicKey || "",
+            mpAccessToken: initialData?.MERCADOPAGO_CONFIG?.accessToken || "",
+            mpWebhookSecret: initialData?.MERCADOPAGO_CONFIG?.webhookSecret || "",
+            mpClientId: initialData?.MERCADOPAGO_CONFIG?.clientId || "",
+            mpClientSecret: initialData?.MERCADOPAGO_CONFIG?.clientSecret || "",
             theme: initialData?.theme || "",
-            primaryColor: initialData?.primaryColor || "#6366f1",
-            smtpHost: initialData?.smtpHost || "",
-            smtpPort: initialData?.smtpPort || 587,
-            smtpSecure: initialData?.smtpSecure ?? false,
-            smtpUser: initialData?.smtpUser || "",
-            smtpPass: initialData?.smtpPass || "",
-            apiKeyOpenAI: initialData?.apiKeyOpenAI || "",
+            primaryColor: initialData?.primary_color || "#6366f1",
+            smtpHost: initialData?.smtp?.host || "",
+            smtpPort: initialData?.smtp?.port || 587,
+            smtpSecure: initialData?.smtp?.secure ?? false,
+            smtpUser: initialData?.smtp?.auth?.user || "",
+            smtpPass: initialData?.smtp?.auth?.pass || "",
+            apiKeyOpenAI: initialData?.api_key_openai || "",
             enableBlog: initialData?.enableBlog ?? true,
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
@@ -350,7 +356,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Access Token</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.mpAccessToken ? "******** (Configurado)" : "APP_USR-xxx"} className="font-mono text-sm" />
+                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.MERCADOPAGO_CONFIG?.accessToken ? "******** (Configurado)" : "APP_USR-xxx"} className="font-mono text-sm" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -363,7 +369,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Webhook Secret</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.mpWebhookSecret ? "******** (Oculto por seguridad)" : "v1-xxx"} className="font-mono text-sm" />
+                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.MERCADOPAGO_CONFIG?.webhookSecret ? "******** (Oculto por seguridad)" : "v1-xxx"} className="font-mono text-sm" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

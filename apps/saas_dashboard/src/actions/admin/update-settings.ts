@@ -38,6 +38,7 @@ const settingsSchema = z.object({
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
+    orderTrackingEnabled: z.boolean().optional(),
 
     // Social & Contact
     whatsapp: z.string().optional(),
@@ -85,6 +86,13 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
         // 4. Preparar nuevos objetos de configuración
         const newConfig = {
             ...currentConfig,
+            storeName: validated.storeName ?? currentConfig.storeName,
+            storeEmail: validated.storeEmail ?? currentConfig.storeEmail,
+            currency: validated.currency ?? currentConfig.currency,
+            enableBlog: validated.enableBlog ?? currentConfig.enableBlog,
+            enableStore: validated.enableStore ?? currentConfig.enableStore,
+            enableLMS: validated.enableLMS ?? currentConfig.enableLMS,
+            orderTrackingEnabled: validated.orderTrackingEnabled ?? currentConfig.orderTrackingEnabled,
             theme: validated.theme ?? currentConfig.theme,
             primary_color: validated.primaryColor ?? currentConfig.primary_color,
             api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,

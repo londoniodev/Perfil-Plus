@@ -23,6 +23,7 @@ import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed } fr
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { LocationPicker } from "./location-picker"
+import { formatCurrency } from "@/lib/utils"
 
 // Schema Unificado con refinamiento
 const checkoutSchema = z.object({
@@ -301,7 +302,7 @@ export function CheckoutForm() {
                                 {isSubmitting ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Procesando Pago...</>
                                 ) : (
-                                    <>Ir a Pagar - formatCurrency(totalPrice()) <ArrowRight className="ml-2 h-4 w-4" /></>
+                                    <>Ir a Pagar - {formatCurrency(totalPrice())} <ArrowRight className="ml-2 h-4 w-4" /></>
                                 )}
                             </Button>
 
@@ -334,13 +335,13 @@ export function CheckoutForm() {
                                         </span>
                                     )}
                                 </div>
-                                <p className="font-medium">formatCurrency(item.price * item.quantity)</p>
+                                <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
                             </div>
                         ))}
                         <Separator />
                         <div className="flex justify-between items-center font-bold text-lg pt-2">
                             <span>Total</span>
-                            <span>formatCurrency(totalPrice())</span>
+                            <span>{formatCurrency(totalPrice())}</span>
                         </div>
                     </CardContent>
                 </Card>

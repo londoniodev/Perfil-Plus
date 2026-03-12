@@ -33,6 +33,9 @@ COPY --from=pruner /app/out/full/ .
 # Generate Prisma Client
 RUN pnpm run build --filter=@alvarosky/database
 
+# Run Unit Tests (CI/CD Quality Gate)
+RUN pnpm --filter @alvarosky/api test --ci --passWithNoTests
+
 # Build the project
 RUN pnpm run build --filter=@alvarosky/api...
 

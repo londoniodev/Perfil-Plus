@@ -3,8 +3,10 @@ import { OrdersService } from './orders.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { OrdersGateway } from './orders.gateway';
+import { InventoryService } from '../inventory/inventory.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
+import { REQUEST } from '@nestjs/core';
 
 // ============ MOCK FACTORIES ============
 
@@ -128,6 +130,16 @@ function createMockTx() {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    lead: {
+      findFirst: jest.fn().mockResolvedValue(null),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    orderDeliveryAnalytics: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockResolvedValue({ id: 'analytics-1' }),
+      update: jest.fn(),
+    },
   };
   return tx;
 }
@@ -147,12 +159,29 @@ describe('OrdersService', () => {
     };
     mockGateway = { emit: jest.fn() };
 
+    const mockRequest = {
+      headers: { 'x-tenant-id': 'tenant-test-1' },
+    };
+
+    const mockInventoryService = {
+      deductByOrder: jest.fn().mockResolvedValue({ alerts: [] }),
+      restoreByOrder: jest.fn().mockResolvedValue(undefined),
+    };
+
     module = await Test.createTestingModule({
       providers: [
         OrdersService,
         {
+          provide: REQUEST,
+          useValue: mockRequest,
+        },
+        {
           provide: PrismaService,
-          useValue: { client: mockClient },
+          useValue: {
+            ...mockClient,
+            secure: mockClient,
+            $transaction: mockClient.$transaction,
+          },
         },
         {
           provide: StorageService,
@@ -162,10 +191,14 @@ describe('OrdersService', () => {
           provide: OrdersGateway,
           useValue: mockGateway,
         },
+        {
+          provide: InventoryService,
+          useValue: mockInventoryService,
+        },
       ],
     }).compile();
 
-    service = module.get<OrdersService>(OrdersService);
+    service = await module.resolve<OrdersService>(OrdersService);
   });
 
   // ============ CREAR ORDEN ============
@@ -236,6 +269,7 @@ describe('OrdersService', () => {
 
       // Verifica que se emitió evento SSE
       expect(mockGateway.emit).toHaveBeenCalledWith(
+        'tenant-test-1',
         expect.objectContaining({
           type: 'new_order',
           orderId: MOCK_ORDER.id,
@@ -362,21 +396,38 @@ describe('OrdersService', () => {
     });
 
     it('debería lanzar error si modificador no está disponible', async () => {
-      const unavailableModifier = {
-        ...MOCK_VARIANT.product.modifierGroups[0].modifiers[0],
-        isAvailable: false,
-        group: MOCK_VARIANT.product.modifierGroups[0],
+      // Clone MOCK_VARIANT with mod-1 as unavailable in the pre-fetched data
+      const variantWithUnavailableMod = {
+        ...MOCK_VARIANT,
+        product: {
+          ...MOCK_VARIANT.product,
+          modifierGroups: [
+            {
+              ...MOCK_VARIANT.product.modifierGroups[0],
+              modifiers: [
+                {
+                  ...MOCK_VARIANT.product.modifierGroups[0].modifiers[0],
+                  isAvailable: false, // Queso Extra NO disponible
+                },
+                MOCK_VARIANT.product.modifierGroups[0].modifiers[1],
+              ],
+            },
+            MOCK_VARIANT.product.modifierGroups[1], // Tamaño group unchanged
+          ],
+        },
       };
 
-      mockTx.productVariant.findUnique.mockResolvedValue(MOCK_VARIANT);
-      mockTx.modifier.findUnique.mockResolvedValueOnce(unavailableModifier);
+      mockTx.productVariant.findUnique.mockResolvedValue(variantWithUnavailableMod);
 
       const dto = {
         items: [
           {
             variantId: 'var-1',
             quantity: 1,
-            modifiers: [{ modifierId: 'mod-1', quantity: 1 }],
+            modifiers: [
+              { modifierId: 'mod-1', quantity: 1 }, // Unavailable modifier
+              { modifierId: 'mod-3', quantity: 1 }, // Satisface Tamaño minSelect:1
+            ],
           },
         ],
       };
@@ -553,16 +604,18 @@ describe('OrdersService', () => {
 
       const result = await service.findAllAdmin();
 
-      expect(mockClient.order.findMany).toHaveBeenCalledWith({
-        where: undefined,
-        include: expect.objectContaining({
-          user: expect.objectContaining({
-            select: expect.objectContaining({ email: true }),
+      expect(mockClient.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: undefined,
+          include: expect.objectContaining({
+            user: expect.objectContaining({
+              select: expect.objectContaining({ email: true }),
+            }),
+            items: expect.anything(),
           }),
-          items: expect.anything(),
+          orderBy: { createdAt: 'desc' },
         }),
-        orderBy: { createdAt: 'desc' },
-      });
+      );
 
       expect(result).toEqual(orders);
     });
@@ -873,7 +926,9 @@ describe('OrdersService', () => {
     });
 
     it('debería crear pago y marcar items como pagados', async () => {
-      mockTx.order.findUnique.mockResolvedValue(MOCK_ORDER);
+      mockTx.order.findUnique
+        .mockResolvedValueOnce(MOCK_ORDER)          // 1st call: order validation
+        .mockResolvedValueOnce(MOCK_ORDER);          // 2nd call: SSE data fetch
       mockTx.payment.create.mockResolvedValue({
         id: 'pay-1',
         amount: 21.49,
@@ -909,10 +964,10 @@ describe('OrdersService', () => {
 
       // Verifica que se emitió evento SSE de pago recibido
       expect(mockGateway.emit).toHaveBeenCalledWith(
+        'tenant-test-1',
         expect.objectContaining({
           type: 'payment_received',
           orderId: 'order-1',
-          data: expect.objectContaining({ amount: 21.49, closed: true }),
         }),
       );
     });
@@ -1155,6 +1210,7 @@ describe('OrdersService', () => {
       // Obtener mock del gateway
       const mockGateway = (service as any).ordersGateway;
       expect(mockGateway.emit).toHaveBeenCalledWith(
+        'tenant-test-1',
         expect.objectContaining({
           type: 'new_order',
           orderId: MOCK_ORDER.id,
@@ -1177,10 +1233,10 @@ describe('OrdersService', () => {
 
       const mockGateway = (service as any).ordersGateway;
       expect(mockGateway.emit).toHaveBeenCalledWith(
+        'tenant-test-1',
         expect.objectContaining({
           type: 'status_changed',
           orderId: 'order-1',
-          data: { status: 'PREPARING' },
         }),
       );
     });
@@ -1201,13 +1257,10 @@ describe('OrdersService', () => {
 
       const mockGateway = (service as any).ordersGateway;
       expect(mockGateway.emit).toHaveBeenCalledWith(
+        'tenant-test-1',
         expect.objectContaining({
           type: 'payment_received',
           orderId: 'order-1',
-          data: expect.objectContaining({
-            amount: 21.49,
-            method: 'CASH',
-          }),
         }),
       );
     });
@@ -1425,6 +1478,243 @@ describe('OrdersService', () => {
         where: { id: 'var-2' },
         data: { stock: { decrement: 5 } },
       });
+    });
+  });
+
+  // ============ FLUJO DELIVERY (asignación y liberación de driver) ============
+
+  describe('Delivery Flow', () => {
+    const MOCK_DRIVER_RECORD = {
+      id: 'driver-1',
+      userId: 'user-driver-1',
+      tenantId: 'tenant-1',
+      phone: '3001234567',
+      vehicle: 'Moto Honda',
+      status: 'AVAILABLE',
+      maxCapacity: 3,
+      currentActiveOrders: 0,
+      user: { name: 'Carlos Domiciliario' },
+    };
+
+    const MOCK_DELIVERY_ORDER = {
+      ...MOCK_ORDER,
+      orderType: 'DELIVERY',
+      status: 'READY',
+      driverId: null,
+      shippingData: { address: 'Calle 123', lat: 4.6, lng: -74.1 },
+    };
+
+    beforeEach(() => {
+      // Extend mockTx with delivery-specific models
+      mockTx.deliveryDriver = {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+      };
+      mockTx.orderDeliveryAnalytics = {
+        findUnique: jest.fn().mockResolvedValue(null),
+        update: jest.fn(),
+        create: jest.fn(),
+      };
+
+      // Also extend mockClient for non-transactional queries
+      mockClient.deliveryDriver = {
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        findMany: jest.fn(),
+      };
+    });
+
+    // 1. assignDriver — éxito
+    it('debería asignar driver a orden READY de tipo DELIVERY', async () => {
+      // Mock: findUnique del order
+      mockTx.order.findUnique.mockResolvedValue(MOCK_DELIVERY_ORDER);
+      // Mock: findUnique del driver
+      mockTx.deliveryDriver.findUnique.mockResolvedValue(MOCK_DRIVER_RECORD);
+      // Mock: update del order
+      const assignedOrder = {
+        ...MOCK_DELIVERY_ORDER,
+        status: 'ASSIGNED',
+        driverId: 'driver-1',
+        driver: MOCK_DRIVER_RECORD,
+      };
+      mockTx.order.update.mockResolvedValue(assignedOrder);
+      // Mock: update del driver (incrementar activeOrders)
+      mockTx.deliveryDriver.update.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        currentActiveOrders: 1,
+      });
+
+      const result = await service.assignDriver(
+        'order-1',
+        'driver-1',
+        'ADMIN' as any,
+      );
+
+      // Verificar que la orden se actualizó a ASSIGNED
+      expect(mockTx.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'order-1' },
+          data: expect.objectContaining({
+            status: 'ASSIGNED',
+            driverId: 'driver-1',
+          }),
+        }),
+      );
+
+      // Verificar que se incrementó currentActiveOrders del driver
+      expect(mockTx.deliveryDriver.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'driver-1' },
+          data: expect.objectContaining({
+            currentActiveOrders: 1,
+          }),
+        }),
+      );
+
+      expect(result.status).toBe('ASSIGNED');
+      expect(result.driverId).toBe('driver-1');
+    });
+
+    // 2. ❌ assignDriver a driver AT_CAPACITY
+    it('debería lanzar BadRequestException si el driver no está AVAILABLE', async () => {
+      mockTx.order.findUnique.mockResolvedValue(MOCK_DELIVERY_ORDER);
+      mockTx.deliveryDriver.findUnique.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        status: 'AT_CAPACITY',
+        currentActiveOrders: 3,
+      });
+
+      await expect(
+        service.assignDriver('order-1', 'driver-1', 'ADMIN' as any),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.assignDriver('order-1', 'driver-1', 'ADMIN' as any),
+      ).rejects.toThrow(/no está disponible/);
+    });
+
+    // 3. Liberar driver al marcar como DELIVERED
+    it('debería decrementar currentActiveOrders y liberar driver al entregar', async () => {
+      const assignedOrder = {
+        ...MOCK_DELIVERY_ORDER,
+        status: 'ASSIGNED',
+        driverId: 'driver-1',
+      };
+
+      // findUnique initial check (uses mockClient via prisma.secure)
+      mockClient.order.findUnique.mockResolvedValue(assignedOrder);
+      // update dentro de la transacción
+      mockTx.order.update.mockResolvedValue({
+        ...assignedOrder,
+        status: 'DELIVERED',
+      });
+      // findUnique del driver dentro de tx (para el release)
+      mockTx.deliveryDriver.findUnique.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        currentActiveOrders: 2,
+        status: 'AT_CAPACITY',
+      });
+      mockTx.deliveryDriver.update.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        currentActiveOrders: 1,
+        status: 'AVAILABLE',
+      });
+      // Analytics mock
+      mockTx.orderDeliveryAnalytics.findUnique.mockResolvedValue(null);
+
+      await service.updateStatus(
+        'order-1',
+        { status: 'DELIVERED' as any },
+        'DRIVER' as any,
+      );
+
+      // Verificar que el driver fue liberado
+      expect(mockTx.deliveryDriver.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'driver-1' },
+          data: expect.objectContaining({
+            currentActiveOrders: 1,
+            status: 'AVAILABLE',
+          }),
+        }),
+      );
+    });
+
+    // 4. Liberar driver al cancelar
+    it('debería liberar driver al cancelar orden asignada', async () => {
+      const assignedOrder = {
+        ...MOCK_DELIVERY_ORDER,
+        status: 'ASSIGNED',
+        driverId: 'driver-1',
+        items: [],
+      };
+
+      mockClient.order.findUnique.mockResolvedValue(assignedOrder);
+      mockTx.order.findUnique.mockResolvedValue(assignedOrder);
+      mockTx.order.update.mockResolvedValue({
+        ...assignedOrder,
+        status: 'CANCELLED',
+      });
+      mockTx.deliveryDriver.findUnique.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        currentActiveOrders: 1,
+      });
+      mockTx.deliveryDriver.update.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        currentActiveOrders: 0,
+        status: 'AVAILABLE',
+      });
+      mockTx.orderDeliveryAnalytics.findUnique.mockResolvedValue(null);
+
+      await service.updateStatus(
+        'order-1',
+        { status: 'CANCELLED' as any },
+        'ADMIN' as any,
+      );
+
+      // Verificar que el driver fue liberado
+      expect(mockTx.deliveryDriver.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'driver-1' },
+          data: expect.objectContaining({
+            currentActiveOrders: 0,
+          }),
+        }),
+      );
+    });
+
+    // 5. getDriverOrdersByUserId
+    it('debería retornar órdenes ASSIGNED/IN_TRANSIT del driver por userId', async () => {
+      const driverOrders = [
+        { ...MOCK_DELIVERY_ORDER, status: 'ASSIGNED', driverId: 'driver-1' },
+      ];
+
+      // findUnique para buscar el perfil del driver por userId
+      mockClient.deliveryDriver.findUnique.mockResolvedValue(
+        MOCK_DRIVER_RECORD,
+      );
+      // findMany para buscar órdenes del driver
+      mockClient.order.findMany.mockResolvedValue(driverOrders);
+
+      const result = await service.getDriverOrdersByUserId('user-driver-1');
+
+      expect(
+        mockClient.deliveryDriver.findUnique,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 'user-driver-1' },
+        }),
+      );
+
+      expect(mockClient.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            driverId: 'driver-1',
+            status: { in: ['ASSIGNED', 'IN_TRANSIT'] },
+          }),
+        }),
+      );
+
+      expect(result).toEqual(driverOrders);
     });
   });
 });

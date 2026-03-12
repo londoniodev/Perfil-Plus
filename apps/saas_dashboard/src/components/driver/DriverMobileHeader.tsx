@@ -9,15 +9,6 @@ type DriverProfile = {
     status: "AVAILABLE" | "AT_CAPACITY" | "OFFLINE"
 }
 
-async function getDriverProfile(): Promise<DriverProfile | null> {
-    try {
-        const { serverFetch } = await import("@/lib/api-server")
-        return null // This won't work from client, we'll use the action
-    } catch {
-        return null
-    }
-}
-
 export function DriverMobileHeader() {
     const toast = useToast()
     const [status, setStatus] = useState<string | null>(null)

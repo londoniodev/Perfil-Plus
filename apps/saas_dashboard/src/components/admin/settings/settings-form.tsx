@@ -337,7 +337,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Public Key</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} placeholder="APP_USR-xxx" className="font-mono text-sm" />
+                                                    <Input {...field} autoComplete="off" placeholder="APP_USR-xxx" className="font-mono text-sm" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -350,7 +350,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Access Token</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} type="password" placeholder="APP_USR-xxx" className="font-mono text-sm" />
+                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.mpAccessToken ? "******** (Configurado)" : "APP_USR-xxx"} className="font-mono text-sm" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -363,7 +363,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Webhook Secret</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} type="password" placeholder="xxx" className="font-mono text-sm" />
+                                                    <Input {...field} autoComplete="new-password" type="password" placeholder={initialData?.mpWebhookSecret ? "******** (Oculto por seguridad)" : "v1-xxx"} className="font-mono text-sm" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

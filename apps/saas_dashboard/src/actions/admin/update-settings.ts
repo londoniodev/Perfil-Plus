@@ -88,13 +88,13 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
             theme: validated.theme ?? currentConfig.theme,
             primary_color: validated.primaryColor ?? currentConfig.primary_color,
             api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
-            mercadopago: {
-                ...currentConfig.mercadopago,
-                publicKey: validated.mpPublicKey ?? currentConfig.mercadopago?.publicKey,
-                accessToken: validated.mpAccessToken ?? currentConfig.mercadopago?.accessToken,
-                webhookSecret: validated.mpWebhookSecret ?? currentConfig.mercadopago?.webhookSecret,
-                clientId: validated.mpClientId ?? currentConfig.mercadopago?.clientId,
-                clientSecret: validated.mpClientSecret ?? currentConfig.mercadopago?.clientSecret,
+            MERCADOPAGO_CONFIG: {
+                ...currentConfig.MERCADOPAGO_CONFIG,
+                publicKey: validated.mpPublicKey ?? currentConfig.MERCADOPAGO_CONFIG?.publicKey,
+                accessToken: validated.mpAccessToken ?? currentConfig.MERCADOPAGO_CONFIG?.accessToken,
+                webhookSecret: validated.mpWebhookSecret ?? currentConfig.MERCADOPAGO_CONFIG?.webhookSecret,
+                clientId: validated.mpClientId ?? currentConfig.MERCADOPAGO_CONFIG?.clientId,
+                clientSecret: validated.mpClientSecret ?? currentConfig.MERCADOPAGO_CONFIG?.clientSecret,
             },
             smtp: {
                 ...currentConfig.smtp,

@@ -54,6 +54,10 @@ export class UpdateTenantConfigDto {
 
   @IsObject()
   @IsOptional()
+  MERCADOPAGO_CONFIG?: Record<string, any>;
+
+  @IsObject()
+  @IsOptional()
   smtp?: Record<string, any>;
 
   @IsObject()

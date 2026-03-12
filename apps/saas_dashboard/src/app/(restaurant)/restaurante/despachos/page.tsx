@@ -191,7 +191,7 @@ export default function DespachosBoard() {
                         ) : (
                             <div className="space-y-6">
                                 {/* Componente de Ruta por cada Domiciliario activo */}
-                                {Object.values(ordersByDriver).map(({ driver, orders }) => (
+                                {Object.values(ordersByDriver).map(({ driver, orders }: any) => (
                                     <div key={driver.id} className="bg-background rounded-lg border shadow-sm overflow-hidden">
                                         <div className="bg-blue-100/50 p-3 border-b flex justify-between items-center">
                                             <div>

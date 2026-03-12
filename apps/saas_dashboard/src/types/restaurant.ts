@@ -1,4 +1,4 @@
-export type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'READY' | 'SERVED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+export type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'READY' | 'SERVED' | 'ASSIGNED' | 'IN_TRANSIT' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
 export type OrderType = 'DINE_IN' | 'TAKE_AWAY' | 'DELIVERY';
 
 export interface Modifier {
@@ -45,4 +45,6 @@ export interface Order {
         name: string;
         email: string;
     };
+    driverId?: string;
+    driver?: any;
 }

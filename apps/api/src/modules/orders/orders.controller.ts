@@ -105,4 +105,38 @@ export class AdminOrdersController {
   ) {
     return this.ordersService.toggleItemPrepared(orderId, itemId, isPrepared);
   }
+
+  @Patch(':id/assign-driver')
+  @Roles(Role.ADMIN, Role.CASHIER)
+  async assignDriver(
+    @Param('id') id: string,
+    @Body('driverId') driverId: string,
+    @CurrentUser('role') role: Role,
+  ) {
+    return this.ordersService.assignDriver(id, driverId, role);
+  }
+}
+
+// ============ DRIVER: Mis pedidos asignados ============
+
+@Controller('driver/orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.DRIVER, Role.ADMIN)
+export class DriverOrdersController {
+  constructor(private readonly ordersService: OrdersService) {}
+
+  @Get()
+  async getMyOrders(@CurrentUser('id') userId: string) {
+    // Buscar el driver por userId, luego obtener sus órdenes
+    return this.ordersService.getDriverOrdersByUserId(userId);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateOrderStatusDto,
+    @CurrentUser('role') role: Role,
+  ) {
+    return this.ordersService.updateStatus(id, dto, role);
+  }
 }

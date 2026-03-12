@@ -106,7 +106,7 @@ export function BlogCard({ post, onDelete, viewUrl }: BlogCardProps) {
                     asChild
                     title="Editar"
                 >
-                    <Link href={`/blog/publicaciones/${post.id}`}>
+                    <Link href={`/blog/publicaciones/editar/${post.id}`}>
                         <Pencil size={16} />
                     </Link>
                 </Button>

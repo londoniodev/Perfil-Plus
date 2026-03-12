@@ -9,7 +9,7 @@ import { CreateEmployeeDto, UpdateEmployeeDto } from './dto';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
-const STAFF_ROLES: Role[] = [Role.WAITER, Role.KITCHEN, Role.CASHIER];
+const STAFF_ROLES: Role[] = [Role.WAITER, Role.KITCHEN, Role.CASHIER, Role.DRIVER];
 
 @Injectable()
 export class EmployeesService {

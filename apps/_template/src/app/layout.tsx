@@ -200,6 +200,10 @@ export default async function RootLayout({
   const logoUrl = design?.logo || '/images/branding/icon.png';
   const headerLinks = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;
+  const contactPhone = design?.contactPhone || null;
+  const contactEmail = design?.contactEmail || null;
+  const businessName = design?.name || null;
+  const tenantTagline = design?.tagline || null;
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
@@ -232,6 +236,10 @@ export default async function RootLayout({
           features={featureArray}
           headerLinks={headerLinks}
           footerLinks={footerLinks}
+          contactPhone={contactPhone}
+          contactEmail={contactEmail}
+          businessName={businessName}
+          tagline={tenantTagline}
         >
           <ThemeProvider
             attribute="class"
@@ -242,7 +250,7 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                <NavigationWrapper footer={<Footer logo={logoUrl} footerLinks={footerLinks} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
+                <NavigationWrapper footer={<Footer logo={logoUrl} footerLinks={footerLinks} businessName={businessName || undefined} businessEmail={contactEmail || undefined} businessPhone={contactPhone || undefined} tagline={tenantTagline || undefined} features={featureArray} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
                   {children}
                 </NavigationWrapper>
                 <PwaInstallPrompt />

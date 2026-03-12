@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { API_BASE } from "../lib/config"
 
 export interface OrderEvent {
-    type: 'new_order' | 'status_changed' | 'payment_received';
+    type: 'new_order' | 'status_changed' | 'payment_received' | 'driver_assigned';
     orderId: string;
     data: Record<string, any>;
 }

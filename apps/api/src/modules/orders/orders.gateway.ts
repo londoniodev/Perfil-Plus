@@ -15,7 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 // ============ TIPOS DE EVENTOS ============
 
 export interface OrderEvent {
-  type: 'new_order' | 'status_changed' | 'payment_received';
+  type: 'new_order' | 'status_changed' | 'payment_received' | 'driver_assigned';
   orderId: string;
   data: Record<string, any>;
 }

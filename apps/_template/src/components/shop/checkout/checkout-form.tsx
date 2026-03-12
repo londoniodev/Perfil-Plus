@@ -22,6 +22,7 @@ import {
 import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
+import { LocationPicker } from "./location-picker"
 
 // Schema Unificado con refinamiento
 const checkoutSchema = z.object({
@@ -32,6 +33,8 @@ const checkoutSchema = z.object({
     notes: z.string().optional(),
     address: z.string().optional(),
     city: z.string().optional(),
+    lat: z.number().optional(),
+    lng: z.number().optional()
 }).superRefine((data, ctx) => {
     if (data.orderType === "DELIVERY") {
         if (!data.address || data.address.length < 5) {
@@ -46,6 +49,13 @@ const checkoutSchema = z.object({
                 code: z.ZodIssueCode.custom,
                 message: "Ciudad requerida",
                 path: ["city"],
+            });
+        }
+        if (!data.lat || !data.lng) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Selecciona tu ubicación en el mapa",
+                path: ["lat"],
             });
         }
     }
@@ -76,6 +86,8 @@ export function CheckoutForm() {
             orderType: defaultOrderType,
             address: "",
             city: "",
+            lat: undefined,
+            lng: undefined,
             notes: ""
         }
     })
@@ -261,6 +273,18 @@ export function CheckoutForm() {
                                         {/* @ts-ignore */}
                                         {form.formState.errors.city && (
                                             <p className="text-xs text-destructive">{(form.formState.errors as any).city.message}</p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-1 sm:col-span-2 space-y-2 mt-4 z-0">
+                                        <Label>Ubicación GPS Exacta (Requerida)</Label>
+                                        <div className="text-xs text-muted-foreground mb-2">Mueve el mapa y el marcador hasta la puerta de tu dirección.</div>
+                                        <LocationPicker onLocationChange={(loc) => {
+                                            form.setValue("lat", loc.lat)
+                                            form.setValue("lng", loc.lng)
+                                        }} />
+                                        {/* @ts-ignore */}
+                                        {form.formState.errors.lat && (
+                                            <p className="text-xs text-destructive">{(form.formState.errors as any).lat.message}</p>
                                         )}
                                     </div>
                                 </>

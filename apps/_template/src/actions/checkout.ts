@@ -16,7 +16,9 @@ const shippingDataSchema = z.object({
     address: z.string().min(1, "La dirección es requerida"),
     city: z.string().min(1, "La ciudad es requerida"),
     phone: z.string().min(1, "El teléfono es requerido"),
-    name: z.string().min(1, "El nombre es requerido")
+    name: z.string().min(1, "El nombre es requerido"),
+    lat: z.number().optional(),
+    lng: z.number().optional()
 }).optional()
 
 const placeOrderSchema = z.object({

@@ -31,6 +31,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { RestaurantModule } from './modules/restaurant/restaurant.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { DeliveryDriversModule } from './modules/delivery-drivers/delivery-drivers.module';
 
 // Guards
 import { JwtAuthGuard, RolesGuard } from './common/guards';
@@ -117,6 +118,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     LeadsModule,
     EmployeesModule,
     InventoryModule,
+    DeliveryDriversModule,
     EmailModule,
     RestaurantModule,
 

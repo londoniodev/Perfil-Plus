@@ -1,7 +1,13 @@
+"use client";
+
 import { SiteFooter } from "@alvarosky/ui";
 import { siteConfig } from "@/config/site";
+import { useTenant } from "@/app/providers";
 
 export function Footer() {
+    const { contactPhone, businessName, tagline } = useTenant();
+    const phone = contactPhone || siteConfig.phone;
+
     const footerLinks = [
         { label: "Inicio", href: "/" },
         { label: "Portafolio", href: "/portafolio" },
@@ -9,7 +15,7 @@ export function Footer() {
         { label: "Blog", href: "/blog" },
         {
             label: "Contacto",
-            href: `https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}`,
+            href: `https://wa.me/${phone.replace(/[^0-9]/g, '')}`,
             external: true
         },
         { label: "Privacidad", href: "/politica-de-privacidad" },
@@ -19,9 +25,9 @@ export function Footer() {
         <SiteFooter
             logo={siteConfig.branding.logo}
             logoAlt={siteConfig.branding.logoAlt}
-            tagline="Transformar el mundo empieza por cuidar el mundo interno."
+            tagline={tagline || "Transformar el mundo empieza por cuidar el mundo interno."}
             links={footerLinks}
-            companyName={siteConfig.name}
+            companyName={businessName || siteConfig.name}
         />
     );
 }

@@ -15,6 +15,10 @@ export type TenantContextType = {
     features: string[];
     headerLinks?: PublicNavItem[] | null;
     footerLinks?: PublicNavItem[] | null;
+    contactPhone?: string | null;
+    contactEmail?: string | null;
+    businessName?: string | null;
+    tagline?: string | null;
 };
 
 const TenantContext = createContext<TenantContextType>({ 
@@ -31,16 +35,24 @@ export function TenantProvider({
     tenantId,
     features = [],
     headerLinks = null,
-    footerLinks = null
+    footerLinks = null,
+    contactPhone = null,
+    contactEmail = null,
+    businessName = null,
+    tagline = null,
 }: { 
     children: React.ReactNode, 
     tenantId: string,
     features?: string[],
     headerLinks?: PublicNavItem[] | null,
     footerLinks?: PublicNavItem[] | null,
+    contactPhone?: string | null,
+    contactEmail?: string | null,
+    businessName?: string | null,
+    tagline?: string | null,
 }) {
     return (
-        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks }}>
+        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline }}>
             {children}
         </TenantContext.Provider>
     );

@@ -6,75 +6,78 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@alvarosky/ui";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
-
-const whatsappUrl = `https://wa.me/${siteConfig.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`;
-
-const areas = [
-    {
-        name: "Cultura Organizacional",
-        description: "Estrategia y valores, transformación cultural, experiencia del empleado y planes de acción.",
-        image: "/areas_impacto/cultura_organizacional.avif",
-        imageDesktop: "/areas_impacto/cultura_organizacional_desktop.avif",
-        href: "/servicios#empresas",
-        accentColor: "rgba(91, 141, 239, 0.8)",
-        secondaryButton: {
-            label: "Conversemos",
-            href: whatsappUrl
-        }
-    },
-    {
-        name: "Liderazgo Consciente",
-        description: "Desarrollo de líderes que inspiran y transforman equipos.",
-        image: "/areas_impacto/liderazgo_consciente.avif",
-        imageDesktop: "/areas_impacto/liderazgo_consciente_desktop.avif",
-        href: "/servicios#empresas",
-        accentColor: "rgba(232, 168, 56, 0.8)",
-        secondaryButton: {
-            label: "Conversemos",
-            href: whatsappUrl
-        }
-    },
-    {
-        name: "Orientación Vocacional y Profesional",
-        description: "Método validado y herramientas de IA para la exploración y elección de camino profesional con criterio y propósito.",
-        image: "/areas_impacto/orientacion_vocacional.avif",
-        imageDesktop: "/areas_impacto/orientacion_vocacional_desktop.avif",
-        href: "/servicios#explora",
-        accentColor: "rgba(56, 189, 189, 0.8)",
-        secondaryButton: {
-            label: "Prueba el Método",
-            href: siteConfig.salesPageUrl || "/metodo"
-        }
-    },
-    {
-        name: "Psicoterapia Clínica",
-        description: "Espacio seguro para sanar y ordenar el mundo interno.",
-        image: "/areas_impacto/psicoterapia_clinica.avif",
-        imageDesktop: "/areas_impacto/psicoterapia_clinica_desktop.avif",
-        href: "/servicios#psicoterapia",
-        accentColor: "rgba(76, 175, 80, 0.8)",
-        secondaryButton: {
-            label: "Conversemos",
-            href: whatsappUrl
-        }
-    },
-    {
-        name: "Talleres Experienciales",
-        description: "Aprendizaje que se vive, no solo se entiende.",
-        image: "/areas_impacto/talleres_experienciales.avif",
-        imageDesktop: "/areas_impacto/talleres_experienciales_desktop.avif",
-        href: "/servicios#empresas",
-        accentColor: "rgba(156, 39, 176, 0.8)",
-        secondaryButton: {
-            label: "Diagnóstico de Equipo",
-            href: whatsappUrl
-        }
-    },
-];
+import { useTenant } from "@/app/providers";
 
 export function AreasImpactoSection() {
     const [activeIndex, setActiveIndex] = useState(0);
     const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+    const { contactPhone } = useTenant();
+
+    const phone = contactPhone || siteConfig.phone;
+    const whatsappUrl = `https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`;
+
+    const areas = [
+        {
+            name: "Cultura Organizacional",
+            description: "Estrategia y valores, transformación cultural, experiencia del empleado y planes de acción.",
+            image: "/areas_impacto/cultura_organizacional.avif",
+            imageDesktop: "/areas_impacto/cultura_organizacional_desktop.avif",
+            href: "/servicios#empresas",
+            accentColor: "rgba(91, 141, 239, 0.8)",
+            secondaryButton: {
+                label: "Conversemos",
+                href: whatsappUrl
+            }
+        },
+        {
+            name: "Liderazgo Consciente",
+            description: "Desarrollo de líderes que inspiran y transforman equipos.",
+            image: "/areas_impacto/liderazgo_consciente.avif",
+            imageDesktop: "/areas_impacto/liderazgo_consciente_desktop.avif",
+            href: "/servicios#empresas",
+            accentColor: "rgba(232, 168, 56, 0.8)",
+            secondaryButton: {
+                label: "Conversemos",
+                href: whatsappUrl
+            }
+        },
+        {
+            name: "Orientación Vocacional y Profesional",
+            description: "Método validado y herramientas de IA para la exploración y elección de camino profesional con criterio y propósito.",
+            image: "/areas_impacto/orientacion_vocacional.avif",
+            imageDesktop: "/areas_impacto/orientacion_vocacional_desktop.avif",
+            href: "/servicios#explora",
+            accentColor: "rgba(56, 189, 189, 0.8)",
+            secondaryButton: {
+                label: "Prueba el Método",
+                href: siteConfig.salesPageUrl || "/metodo"
+            }
+        },
+        {
+            name: "Psicoterapia Clínica",
+            description: "Espacio seguro para sanar y ordenar el mundo interno.",
+            image: "/areas_impacto/psicoterapia_clinica.avif",
+            imageDesktop: "/areas_impacto/psicoterapia_clinica_desktop.avif",
+            href: "/servicios#psicoterapia",
+            accentColor: "rgba(76, 175, 80, 0.8)",
+            secondaryButton: {
+                label: "Conversemos",
+                href: whatsappUrl
+            }
+        },
+        {
+            name: "Talleres Experienciales",
+            description: "Aprendizaje que se vive, no solo se entiende.",
+            image: "/areas_impacto/talleres_experienciales.avif",
+            imageDesktop: "/areas_impacto/talleres_experienciales_desktop.avif",
+            href: "/servicios#empresas",
+            accentColor: "rgba(156, 39, 176, 0.8)",
+            secondaryButton: {
+                label: "Diagnóstico de Equipo",
+                href: whatsappUrl
+            }
+        },
+    ];
 
     useEffect(() => {
         const observer = new IntersectionObserver(

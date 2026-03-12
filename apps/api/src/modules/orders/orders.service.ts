@@ -508,6 +508,46 @@ export class OrdersService {
             data: analyticsUpdate,
           });
         }
+
+        // Update pickedUpAt when IN_TRANSIT
+        if (dto.status === 'IN_TRANSIT' && analytics.assignedAt && !analytics.pickedUpAt) {
+          const now2 = new Date();
+          await tx.orderDeliveryAnalytics.update({
+            where: { id: analytics.id },
+            data: {
+              pickedUpAt: now2,
+              timeToPickup: Math.floor(
+                (now2.getTime() - analytics.assignedAt.getTime()) / 1000,
+              ),
+            },
+          });
+        }
+      }
+
+      // 4. Liberar domiciliario cuando se completa o cancela la entrega
+      if (
+        (dto.status === 'DELIVERED' || dto.status === 'CANCELLED') &&
+        order.driverId
+      ) {
+        const driver = await tx.deliveryDriver.findUnique({
+          where: { id: order.driverId },
+        });
+
+        if (driver) {
+          const newActiveOrders = Math.max(0, driver.currentActiveOrders - 1);
+          const newStatus = driver.status === 'OFFLINE' ? 'OFFLINE' : 'AVAILABLE';
+
+          await tx.deliveryDriver.update({
+            where: { id: order.driverId },
+            data: {
+              currentActiveOrders: newActiveOrders,
+              status: newStatus,
+            },
+          });
+          this.logger.log(
+            `Domiciliario ${order.driverId} liberado tras ${dto.status === 'DELIVERED' ? 'entrega' : 'cancelación'} (órdenes activas: ${newActiveOrders})`,
+          );
+        }
       }
 
       // SSE: notificar cambio de estado con la orden actualizada completa
@@ -869,5 +909,154 @@ export class OrdersService {
     });
 
     return updatedItem;
+  }
+
+  // ============ ASIGNACIÓN DE DOMICILIARIO ============
+  async assignDriver(orderId: string, driverId: string, userRole: Role) {
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Verificar que la orden existe, es DELIVERY y está READY
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!order) {
+        throw new NotFoundException('Orden no encontrada');
+      }
+
+      if (order.orderType !== 'DELIVERY') {
+        throw new BadRequestException(
+          'Solo se pueden asignar domiciliarios a órdenes de tipo DELIVERY',
+        );
+      }
+
+      if (order.status !== 'READY') {
+        throw new BadRequestException(
+          `La orden debe estar en estado READY para asignar domiciliario. Estado actual: ${order.status}`,
+        );
+      }
+
+      // 2. Verificar que el driver existe y está disponible
+      const driver = await tx.deliveryDriver.findUnique({
+        where: { id: driverId },
+        include: { user: { select: { name: true } } },
+      });
+
+      if (!driver) {
+        throw new NotFoundException('Domiciliario no encontrado');
+      }
+
+      if (driver.status !== 'AVAILABLE') {
+        throw new BadRequestException(
+          `El domiciliario ${driver.user.name} no está disponible. Estado: ${driver.status}`,
+        );
+      }
+
+      // 3. Validate transition
+      validateOrderTransition(order.status, 'ASSIGNED', userRole);
+
+      const now = new Date();
+
+      // 4. Calcular secuencia y actualizar orden
+      const deliverySequence = driver.currentActiveOrders + 1;
+      
+      const updated = await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'ASSIGNED',
+          driverId,
+          assignedAt: now,
+          deliverySequence,
+        },
+        include: {
+          items: { include: { modifiers: true } },
+          driver: {
+            include: {
+              user: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+      });
+
+      // 5. Actualizar capacidad del driver
+      const newActiveOrders = driver.currentActiveOrders + 1;
+      const newStatus =
+        newActiveOrders >= driver.maxCapacity ? 'AT_CAPACITY' : driver.status;
+
+      await tx.deliveryDriver.update({
+        where: { id: driverId },
+        data: {
+          currentActiveOrders: newActiveOrders,
+          status: newStatus,
+        },
+      });
+
+      // 6. Actualizar analytics
+      const analytics = await tx.orderDeliveryAnalytics.findUnique({
+        where: { orderId },
+      });
+
+      if (analytics) {
+        const timeToAssign = analytics.shippedAt
+          ? Math.floor((now.getTime() - analytics.shippedAt.getTime()) / 1000)
+          : analytics.preparingAt
+            ? Math.floor(
+                (now.getTime() - analytics.preparingAt.getTime()) / 1000,
+              )
+            : undefined;
+
+        await tx.orderDeliveryAnalytics.update({
+          where: { id: analytics.id },
+          data: {
+            driverId,
+            assignedAt: now,
+            timeToAssign,
+          },
+        });
+      }
+
+      // 7. Emitir SSE
+      this.ordersGateway.emit(this.getTenantId(), {
+        type: 'driver_assigned',
+        orderId,
+        data: updated,
+      });
+
+      this.logger.log(
+        `Orden ${order.orderNumber} asignada a domiciliario ${driver.user.name}`,
+      );
+
+      return updated;
+    });
+  }
+
+  // ============ ÓRDENES DEL DOMICILIARIO ============
+  async getDriverOrders(driverId: string) {
+    return this.prisma.secure.order.findMany({
+      where: {
+        driverId,
+        status: { in: ['ASSIGNED', 'IN_TRANSIT'] },
+      },
+      include: {
+        items: {
+          include: {
+            modifiers: true,
+            variant: { include: { product: true } },
+          },
+        },
+      },
+      orderBy: { assignedAt: 'desc' },
+    });
+  }
+
+  async getDriverOrdersByUserId(userId: string) {
+    const driver = await this.prisma.secure.deliveryDriver.findUnique({
+      where: { userId },
+    });
+
+    if (!driver) {
+      throw new NotFoundException('Perfil de domiciliario no encontrado');
+    }
+
+    return this.getDriverOrders(driver.id);
   }
 }

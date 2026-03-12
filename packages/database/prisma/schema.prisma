@@ -51,6 +51,8 @@ model Tenant {
   inventoryMovements InventoryMovement[]
   recipes         Recipe[]
   inventoryCounts InventoryCount[]
+  // Domicilios
+  deliveryDrivers DeliveryDriver[]
 }
 
 // ============ USUARIOS Y AUTH ============
@@ -60,6 +62,7 @@ enum Role {
   WAITER    // Mesero: solo pedidos
   KITCHEN   // Cocina: solo comandas (KDS)
   CASHIER   // Caja: POS, mesas, menú, caja
+  DRIVER    // Domiciliario: entregas a domicilio
 }
 
 model User {
@@ -88,6 +91,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
   orders                  Order[]
+  deliveryDriver          DeliveryDriver?
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -616,6 +620,8 @@ enum OrderStatus {
   PREPARING  // En cocina (restaurante)
   READY      // Listo para servir (restaurante)
   SERVED     // Servido en mesa (restaurante)
+  ASSIGNED   // Asignado a domiciliario
+  IN_TRANSIT // En camino (domiciliario)
   SHIPPED    // Enviado (físicos)
   DELIVERED  // Entregado/Completado
   CANCELLED  // Cancelado
@@ -646,12 +652,18 @@ model Order {
   customerPhone String?
   notes         String?     // Notas generales de la orden
 
+  // Domiciliario asignado
+  driverId        String?
+  assignedAt      DateTime?
+  deliverySequence Int?       // Orden en la secuencia de entrega del driver
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   // Relaciones
-  tenant        Tenant      @relation(fields: [tenantId], references: [id])
-  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  driver        DeliveryDriver? @relation(fields: [driverId], references: [id])
   items         OrderItem[]
   payments      Payment[]
   deliveryAnalytics OrderDeliveryAnalytics?
@@ -661,6 +673,7 @@ model Order {
   @@index([userId])
   @@index([status])
   @@index([orderType])
+  @@index([driverId])
   @@index([status, createdAt]) // Optimizacion dashboard/admin queries
   @@index([mpPaymentId]) // Webhook dedup lookup
 }
@@ -749,10 +762,48 @@ model OrderDeliveryAnalytics {
   timeToPrepare   Int?      // Segundos entre pending -> preparing
   timeToShip      Int?      // Segundos entre preparing -> shipped
   timeToDeliver   Int?      // Segundos entre shipped -> delivered
+
+  // Delivery Driver Analytics
+  driverId        String?
+  assignedAt      DateTime? // Cuándo se asignó al domiciliario
+  pickedUpAt      DateTime? // Cuándo el domiciliario recogió el pedido
+  timeToAssign    Int?      // Segundos entre ready -> assigned
+  timeToPickup    Int?      // Segundos entre assigned -> picked up
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ============ DOMICILIARIOS ============
+
+enum DriverStatus {
+  AVAILABLE    // Disponible para recibir pedidos
+  AT_CAPACITY  // Ha alcanzado su capacidad máxima
+  OFFLINE      // Fuera de servicio
+}
+
+model DeliveryDriver {
+  id          String       @id @default(cuid())
+  tenantId    String
+  userId      String       @unique
+  vehicle     String?      // "Moto", "Bicicleta", "Carro"
+  phone       String
+  status      DriverStatus @default(OFFLINE)
+  
+  // Batching de pedidos
+  currentActiveOrders Int @default(0)
+  maxCapacity         Int @default(3)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id])
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
 }
 
 // ============ CONFIGURACIÓN DEL SISTEMA (MULTI-TENANT) ============

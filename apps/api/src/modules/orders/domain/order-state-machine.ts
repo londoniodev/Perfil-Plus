@@ -19,21 +19,25 @@ export const ORDER_TRANSITIONS: AllowedTransition[] = [
   // 2. Kitchen Flow
   { from: ['PREPARING'], to: 'READY', roles: ['ADMIN', 'KITCHEN'] }, // Food is ready
 
-  // 3. Service Flow
+  // 3. Service Flow (Dine-in)
   { from: ['READY'], to: 'SERVED', roles: ['ADMIN', 'WAITER'] }, // Waiter serves table
 
-  // 4. Payment/Completion (Cashier)
-  // Note: DELIVERED usually means "Complete/Paid" in some flows, or just "Delivered" in delivery.
-  // For restaurant, SERVED might be the end of "active" service, but payment makes it COMPLETED/DELIVERED.
+  // 4. Delivery Flow
+  { from: ['READY'], to: 'ASSIGNED', roles: ['ADMIN', 'CASHIER'] }, // Admin assigns driver
+  { from: ['ASSIGNED'], to: 'IN_TRANSIT', roles: ['ADMIN', 'DRIVER'] }, // Driver picks up
+  { from: ['IN_TRANSIT'], to: 'DELIVERED', roles: ['ADMIN', 'DRIVER'] }, // Driver delivers
+
+  // 5. Payment/Completion (Cashier)
   { from: ['SERVED', 'READY'], to: 'DELIVERED', roles: ['ADMIN', 'CASHIER'] },
 
-  // 5. Cancellation (Anytime before delivered?)
+  // 6. Cancellation (before delivery in transit)
   {
-    from: ['PENDING', 'APPROVED', 'PREPARING', 'READY'],
+    from: ['PENDING', 'APPROVED', 'PREPARING', 'READY', 'ASSIGNED'],
     to: 'CANCELLED',
     roles: ['ADMIN', 'CASHIER', 'WAITER'],
   },
 ];
+
 
 export function validateOrderTransition(
   currentStatus: OrderStatus,

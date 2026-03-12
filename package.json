@@ -13,6 +13,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/fs-extra": "^11.0.4",
     "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
     "fs-extra": "^11.3.3",
     "prettier": "^3.0.0",
     "prisma": "5.22.0",

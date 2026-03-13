@@ -82,10 +82,9 @@ export function CheckoutForm() {
         if (waParam && !cartLoaded) {
             const fetchWaCart = async () => {
                 try {
-                    // El API Gateway en Dokploy normalmente hace proxy de /api al backend
-                    // Asumimos que la ruta completa es algo como /api/wa-cart/ID
-                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-                    const res = await fetch(`${apiUrl}/api/wa-cart/${waParam}`)
+                    const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+                    const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+                    const res = await fetch(`${API_URL}/wa-cart/${waParam}`)
                     
                     if (!res.ok) {
                         throw new Error(res.status === 404 ? 'enlace-expirado' : 'error-servidor')
@@ -105,6 +104,8 @@ export function CheckoutForm() {
                     } else {
                         toast.error("Hubo un problema cargando tu carrito.")
                     }
+                    setCartLoaded(true); // Prevenir el loop infinito de re-intentos
+                    router.replace("/checkout"); // Limpiar url
                 } finally {
                     setIsLoadingWaCart(false)
                 }

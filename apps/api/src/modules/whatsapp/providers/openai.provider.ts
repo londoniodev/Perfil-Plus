@@ -186,7 +186,8 @@ export class OpenAiProvider implements AiProvider {
                      },
                    });
 
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?wa=${waCart.id}`;
+                   // Usamos punycode para evitar que Meta API rechace la URL por la 'ñ'
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${waCart.id}`;
                    detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    toolResponseText = JSON.stringify({

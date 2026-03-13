@@ -41,7 +41,6 @@ model Tenant {
   tags               Tag[]
   themes             Theme[]
   users              User[]
-  waCarts            WaCart[]
   waConversations    WaConversation[]
   waMessages         WaMessage[]
   waCustomers        WaCustomer[]
@@ -829,19 +828,6 @@ model WaMessage {
   @@index([tenantId])
   @@index([conversationId])
   @@index([role])
-}
-
-model WaCart {
-  id            String   @id @default(cuid())
-  tenantId      String
-  customerPhone String?
-  customerData  Json?
-  cartData      Json
-  createdAt     DateTime @default(now())
-  expiresAt     DateTime
-  tenant        Tenant   @relation(fields: [tenantId], references: [id])
-
-  @@index([tenantId])
 }
 
 model WaCustomer {

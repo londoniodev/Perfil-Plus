@@ -3,7 +3,10 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -23,7 +26,16 @@ function slugify(text: string) {
 export class CategoriesService {
   private readonly logger = new Logger(CategoriesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
+
+  private async invalidateMenuCache(tenantId: string) {
+    const key = `tenant:${tenantId}:menu_context`;
+    await this.cacheManager.del(key);
+    this.logger.log(`[Tenant: ${tenantId}] Caché de menú de WhatsApp invalidado.`);
+  }
 
   async findAll(tenantId: string) {
     return this.prisma.secure.category.findMany({
@@ -59,13 +71,16 @@ export class CategoriesService {
       throw new BadRequestException('Ya existe una categoría con este nombre.');
     }
 
-    return this.prisma.secure.category.create({
+    const category = await this.prisma.secure.category.create({
       data: {
         tenantId,
         name: createDto.name,
         slug,
       },
     });
+
+    await this.invalidateMenuCache(tenantId);
+    return category;
   }
 
   async update(tenantId: string, id: string, updateDto: UpdateCategoryDto) {
@@ -91,13 +106,16 @@ export class CategoriesService {
         throw new BadRequestException('El nombre genera un slug ya en uso.');
     }
 
-    return this.prisma.secure.category.update({
+    const category = await this.prisma.secure.category.update({
       where: { id }, // Ya confirmamos que le pertenece al tenantId arriba. Opcional podria ser un UpdateMany pero Update arroja el error de Unique más rapido y devuelve registro
       data: {
         name: updateDto.name,
         slug,
       },
     });
+
+    await this.invalidateMenuCache(tenantId);
+    return category;
   }
 
   async remove(tenantId: string, id: string) {
@@ -127,6 +145,8 @@ export class CategoriesService {
     await this.prisma.secure.category.delete({
       where: { id },
     });
+
+    await this.invalidateMenuCache(tenantId);
 
     this.logger.log(`Categoria eliminada ID: ${id} x Tenant ID: ${tenantId}`);
     return { success: true };

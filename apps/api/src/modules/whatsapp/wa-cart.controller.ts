@@ -1,5 +1,6 @@
-import { Controller, Get, Param, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Controller, Get, Param, NotFoundException, Logger, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Public } from '../../common/decorators/public.decorator';
 
 @Public()
@@ -7,34 +8,32 @@ import { Public } from '../../common/decorators/public.decorator';
 export class WaCartController {
   private readonly logger = new Logger(WaCartController.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   /**
    * GET /api/wa-cart/:id
-   * Endpoint público que retorna los datos del carrito temporal de WhatsApp.
+   * Endpoint público que retorna los datos del carrito temporal de WhatsApp desde Redis.
    */
   @Get(':id')
   async getCart(@Param('id') id: string) {
-    const cart = await (this.prisma as any).waCart.findUnique({
-      where: { id },
-    });
+    const redisKey = `wa_cart:${id}`;
+    const cachedData = await this.cacheManager.get<string>(redisKey);
 
-    if (!cart) {
-      this.logger.warn(`Carrito no encontrado: ${id}`);
-      throw new NotFoundException('Carrito no encontrado.');
+    if (!cachedData) {
+      this.logger.warn(`Carrito no encontrado o expirado en Redis: ${id}`);
+      throw new NotFoundException('El enlace de pago es inválido o ya expiró.');
     }
 
-    // Verificar expiración
-    if (new Date() > new Date(cart.expiresAt)) {
-      this.logger.warn(`Carrito expirado: ${id}`);
-      throw new NotFoundException('Este enlace de carrito ha expirado.');
+    try {
+      const cart = JSON.parse(cachedData);
+      return {
+        items: cart.items,
+        customerData: cart.customerData,
+        source: 'redis'
+      };
+    } catch (error) {
+      this.logger.error(`Error parseando carrito de Redis (${id}): ${error.message}`);
+      throw new NotFoundException('Error al recuperar los datos del carrito.');
     }
-
-    return {
-      items: cart.cartData,
-      customerData: cart.customerData, // Perfil pre-llenado
-      createdAt: cart.createdAt,
-      expiresAt: cart.expiresAt,
-    };
   }
 }

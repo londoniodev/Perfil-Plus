@@ -35,6 +35,7 @@ export class ProductsService {
       `menu:${tenantId}:SERVICE:true`,
       `menu:${tenantId}:RESTAURANT:false`,
       `menu:${tenantId}:RESTAURANT:true`,
+      `tenant:${tenantId}:menu_context`,
     ];
     await Promise.all(patterns.map((key) => this.cacheManager.del(key)));
   }

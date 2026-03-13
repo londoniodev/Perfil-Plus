@@ -1,4 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { AiProvider, AiResponse } from './ai-provider.interface';
 import { OpenAI } from 'openai';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -8,7 +10,10 @@ export class OpenAiProvider implements AiProvider {
   private readonly logger = new Logger(OpenAiProvider.name);
   private openai: OpenAI;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -204,35 +209,38 @@ export class OpenAiProvider implements AiProvider {
                    });
                 } else {
                    // ==========================================
-                   // PERSISTIR CARRITO EN BD (URL CORTA)
+                   // PERSISTIR CARRITO EN REDIS (Caché Efímera)
                    // ==========================================
-                   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+                   const cartId = `wa-${Date.now().toString(36)}-${Math.random().toString(36).substring(7)}`;
 
                    // Obtener perfil del cliente para hidratar el checkout
                    const customer = await (this.prisma.secure as any).waCustomer.findUnique({
                      where: { tenantId_phone: { tenantId, phone: customerPhone } }
                    });
 
-                   const waCart = await (this.prisma as any).waCart.create({
-                     data: {
-                       tenantId,
-                       customerPhone,
-                       customerData: customer ? {
-                         name: customer.name,
-                         address: customer.address,
-                         phone: customer.phone,
-                         lat: customer.lat,
-                         lng: customer.lng
-                       } : {
-                         phone: customerPhone // Siempre tenemos el teléfono
-                       },
-                       cartData: foundProducts,
-                       expiresAt,
-                     },
-                   });
+                   const cartPayload = {
+                     items: foundProducts,
+                     customerData: customer ? {
+                       name: customer.name,
+                       address: customer.address,
+                       phone: customer.phone,
+                       lat: customer.lat,
+                       lng: customer.lng
+                     } : {
+                       phone: customerPhone
+                     }
+                   };
+
+                   await this.cacheManager.set(
+                     `wa_cart:${cartId}`,
+                     JSON.stringify(cartPayload),
+                     86400000 // 24 horas en milisegundos
+                   );
+
+                   this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);
 
                    // Usamos punycode para evitar que Meta API rechace la URL por la 'ñ'
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${waCart.id}`;
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;
                    detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    toolResponseText = JSON.stringify({

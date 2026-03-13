@@ -53,6 +53,8 @@ model Tenant {
   inventoryCounts InventoryCount[]
   // Domicilios
   deliveryDrivers DeliveryDriver[]
+  // WhatsApp
+  waConversations WaConversation[]
 }
 
 // ============ USUARIOS Y AUTH ============
@@ -1000,4 +1002,47 @@ model InventoryCountLine {
   inventoryItem InventoryItem  @relation(fields: [inventoryItemId], references: [id])
 
   @@unique([countId, inventoryItemId])
+}
+
+// ============ WHATSAPP ============
+
+enum WaConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum WaMessageRole {
+  USER
+  ASSISTANT
+}
+
+model WaConversation {
+  id            String               @id @default(cuid())
+  tenantId      String
+  customerPhone String
+  status        WaConversationStatus @default(OPEN)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  tenant        Tenant               @relation(fields: [tenantId], references: [id])
+  messages      WaMessage[]
+
+  @@unique([tenantId, customerPhone, status], name: "active_conversation", map: "WaConversation_active_conversation_idx")
+  @@index([tenantId])
+  @@index([customerPhone])
+  @@index([tenantId, status])
+}
+
+model WaMessage {
+  id             String        @id @default(cuid())
+  conversationId String
+  waMessageId    String        @unique // ID del mensaje proveído por Meta
+  role           WaMessageRole
+  content        String        @db.Text
+  createdAt      DateTime      @default(now())
+
+  conversation   WaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([role])
 }

@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WhatsappController } from './whatsapp.controller';
 import { WhatsappProcessor } from './whatsapp.processor';
+import { OpenAiProvider } from './providers/openai.provider';
+import { RestaurantContextService } from './services/restaurant-context.service';
+import { MetaApiService } from './services/meta-api.service';
+import { UsageGuardService } from './services/usage-guard.service';
 
 @Module({
   imports: [
@@ -10,6 +14,12 @@ import { WhatsappProcessor } from './whatsapp.processor';
     // pero idealmente EventEmitterModule.forRoot() se llama en AppModule.
   ],
   controllers: [WhatsappController],
-  providers: [WhatsappProcessor],
+  providers: [
+    WhatsappProcessor,
+    OpenAiProvider,
+    RestaurantContextService,
+    MetaApiService,
+    UsageGuardService,
+  ],
 })
 export class WhatsappModule {}

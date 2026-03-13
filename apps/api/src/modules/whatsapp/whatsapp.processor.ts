@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ClsService } from 'nestjs-cls';
+import { OpenAiProvider } from './providers/openai.provider';
+import { RestaurantContextService } from './services/restaurant-context.service';
+import { MetaApiService } from './services/meta-api.service';
+import { UsageGuardService } from './services/usage-guard.service';
 
 @Injectable()
 export class WhatsappProcessor {
@@ -10,6 +14,10 @@ export class WhatsappProcessor {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cls: ClsService,
+    private readonly aiProvider: OpenAiProvider, // Aquí inyectamos el proveedor de IA OpenAi
+    private readonly contextService: RestaurantContextService,
+    private readonly metaApiService: MetaApiService,
+    private readonly usageGuard: UsageGuardService,
   ) {}
 
   @OnEvent('whatsapp.message.received', { async: true })
@@ -28,6 +36,9 @@ export class WhatsappProcessor {
         },
         select: {
           tenantId: true,
+          tenant: {
+            select: { slug: true }
+          }
         },
       });
 
@@ -36,7 +47,8 @@ export class WhatsappProcessor {
         return;
       }
 
-      const { tenantId } = storeSetting;
+      const { tenantId, tenant } = storeSetting as any; // Cast as any to avoid PRISMA type errors initially
+      const tenantSlug = tenant?.slug || 'demo';
       this.logger.log(`Tenant resuelto: ${tenantId}`);
 
       // 2. Ejecución Segura (CLS): Ejecutar lógica dentro del contexto del Tenant
@@ -48,14 +60,118 @@ export class WhatsappProcessor {
         
         // Dependiendo del tipo de mensaje (text, interactive, image, etc) se lee el body
         const textBody = message.type === 'text' ? message.text?.body : '[Mensaje no es de texto]';
+        const messageId = message.id; // ID único del mensaje que da Meta
 
         this.logger.log(`[Tenant: ${tenantId}] Nuevo mensaje de ${from}: ${textBody}`);
         
-        // --- AQUÍ VA LA LÓGICA DE NEGOCIO ---
-        // 1. Buscar si existe el cliente (Lead o User)
-        // 2. Comunicarse con IA (OpenAI / Claude)
-        // 3. Crear pedido, enviar respuesta a WhatsApp
+        // --- PERSISTENCIA DE MENSAJES ---
         
+        // 1. Upsert Conversación Activa
+        // Buscar conversación abierta, o crear una si no existe
+        let conversation = await this.prisma.secure.waConversation.findFirst({
+          where: {
+            customerPhone: from,
+            status: 'OPEN',
+          },
+        });
+
+        if (!conversation) {
+          this.logger.log(`[Tenant: ${tenantId}] Creando nueva conversación para el cliente ${from}`);
+          conversation = await this.prisma.secure.waConversation.create({
+            data: {
+              tenantId,
+              customerPhone: from,
+              status: 'OPEN',
+            },
+          });
+        }
+
+        // 2. Guardar el Mensaje
+        // Evitar duplicados (Meta a veces reintenta el mismo mensaje)
+        const existingMessage = await this.prisma.secure.waMessage.findUnique({
+          where: { waMessageId: messageId },
+        });
+
+        if (existingMessage) {
+          this.logger.log(`[Tenant: ${tenantId}] Mensaje duplicado de Meta ignorado (ID: ${messageId})`);
+          return; // Ya fue procesado
+        }
+
+        await this.prisma.secure.waMessage.create({
+          data: {
+            conversationId: conversation.id,
+            waMessageId: messageId,
+            role: 'USER',
+            content: textBody,
+          },
+        });
+
+        // --- AQUÍ VA LA LÓGICA DE IA Y RESPUESTA ---
+
+        // 3. Validar límites de IA mensuales
+        const isAllowed = await this.usageGuard.checkAiLimit(tenantId);
+        
+        if (!isAllowed) {
+          await this.metaApiService.sendTextMessage(
+            tenantId,
+            phone_number_id,
+            from,
+            'Lo sentimos, el asistente virtual no está disponible en este momento por límites de capacidad. Por favor, comunícate más tarde.',
+          );
+          return;
+        }
+
+        // 4. Generar Contexto del Restaurante
+        const systemPrompt = await this.contextService.buildSystemPrompt(tenantId);
+
+        // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
+        const rawHistory = await (this.prisma.secure as any).waMessage.findMany({
+          where: { conversationId: conversation.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        });
+
+        const history = rawHistory.reverse().map((msg: any) => ({
+          role: msg.role === 'USER' ? 'USER' : 'ASSISTANT',
+          content: msg.content,
+        })) as { role: 'USER' | 'ASSISTANT'; content: string }[];
+
+        // 6. Consultar a la IA
+        this.logger.log(`[Tenant: ${tenantId}] Consultando IA para el cliente ${from}...`);
+        
+        let aiResponse = '';
+        try {
+          aiResponse = await this.aiProvider.generateResponse(
+            tenantId,
+            systemPrompt,
+            history,
+            textBody,
+            from, // customerPhone
+            tenantSlug,
+          );
+        } catch (error) {
+          this.logger.error(`[Tenant: ${tenantId}] Falló la IA, usando fallback: ${error.message}`);
+          aiResponse = 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.';
+        }
+
+        // 7. Guardar Mensaje del Asistente
+        await (this.prisma.secure as any).waMessage.create({
+          data: {
+            tenantId,
+            conversationId: conversation.id,
+            waMessageId: `ai-${Date.now()}-${Math.random().toString(36).substring(7)}`, // ID simulado
+            role: 'ASSISTANT',
+            content: aiResponse,
+          },
+        });
+
+        // 8. Enviar Vía WhatsApp Meta API
+        await this.metaApiService.sendTextMessage(
+          tenantId,
+          phone_number_id,
+          from,
+          aiResponse,
+        );
       });
     } catch (error) {
       this.logger.error(`Error procesando webhook de WhatsApp: ${error.message}`, error.stack);

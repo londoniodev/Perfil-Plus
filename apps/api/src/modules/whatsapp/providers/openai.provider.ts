@@ -169,7 +169,7 @@ export class OpenAiProvider implements AiProvider {
                    const itemsParam = foundProducts.map(fp => `${fp.id}:${fp.quantity}`).join(',');
                    // Base64 encode for simple opaqueness
                    const cartData = Buffer.from(itemsParam).toString('base64');
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.tu-dominio.com/checkout?cart=${cartData}`;
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?cart=${cartData}`;
                    
                    toolResponseText = JSON.stringify({
                      success: true,

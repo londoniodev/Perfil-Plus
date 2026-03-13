@@ -91,7 +91,7 @@ Reglas Estratégicas y de Venta:
     let needsProfile = true;
 
     if (customerPhone) {
-      const customer = await this.prisma.secure.waCustomer.findUnique({
+      const customer = await (this.prisma.secure as any).waCustomer.findUnique({
         where: { tenantId_phone: { tenantId, phone: customerPhone } }
       });
       if (customer) {

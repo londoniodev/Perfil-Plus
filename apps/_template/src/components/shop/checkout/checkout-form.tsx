@@ -24,6 +24,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { LocationPicker } from "./location-picker"
 import { formatCurrency } from "@/lib/utils"
+import { useTenant } from "@/app/providers"
 
 // Schema Unificado con refinamiento
 const checkoutSchema = z.object({
@@ -67,6 +68,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>
 
 export function CheckoutForm() {
     const { items, totalPrice, tableId, clearCart, addItem, setCart } = useCart()
+    const { tenantId } = useTenant()
     const toast = useToast()
 
     const router = useRouter()
@@ -188,6 +190,7 @@ export function CheckoutForm() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-tenant-id': tenantId,
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
                 body: JSON.stringify(payload)

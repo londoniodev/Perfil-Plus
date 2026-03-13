@@ -46,8 +46,7 @@ export class PrismaService
               'EmailVerificationToken',
               'RefreshToken',
               'PasswordResetToken',
-              'PlatformUser',
-              'SystemSettings',
+              'SystemSetting',
               'Tenant',
             ];
 

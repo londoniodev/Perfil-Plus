@@ -18,6 +18,8 @@ export class RestaurantContextService {
     });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
     const tenantSlug = storeSettings?.tenant?.slug || 'demo';
+    const deliveryFee = Number(storeSettings?.deliveryFee || 0);
+    const deliveryFeeFormatted = deliveryFee > 0 ? `$${deliveryFee}` : 'Gratis';
 
     // Obtener menú (Categorías y Productos Activos)
     const categories = await this.prisma.secure.category.findMany({
@@ -58,7 +60,7 @@ Reglas Estratégicas y de Venta:
 3. Si pide un producto que NO está en el menú, aclárale amablemente la confusión y sugiérele el producto más similar del menú.
 4. Solo recomienda productos que estén en el menú proporcionado.
 5. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
-6. DOMICILIOS: El costo fijo de envío a domicilio es de $5000. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de $5000.
+6. DOMICILIOS: El costo de envío a domicilio es de ${deliveryFeeFormatted}. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de ${deliveryFeeFormatted}.
 7. Al usar la herramienta de carrito, entrégale el Link de Pago que te devolverá la herramienta y motívalo a completar su pago. IMPORTANTE: Entrega siempre las URLs en texto plano (ej. https://link.com), NUNCA uses formato de enlaces Markdown como [Texto](https://link.com).
 8. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
   }

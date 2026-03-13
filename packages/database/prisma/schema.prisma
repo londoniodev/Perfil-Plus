@@ -433,6 +433,7 @@ model StoreSettings {
   // WhatsApp Configuration
   waPhoneNumberId String?  @unique
   waAccessToken   String?  @db.Text
+  deliveryFee     Decimal? @db.Decimal(10, 2) @default(0)
 
   // Configuraciones adicionales
   storeName     String?

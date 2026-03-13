@@ -3,6 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ClsService } from 'nestjs-cls';
 import { OpenAiProvider } from './providers/openai.provider';
+import { AiResponse } from './providers/ai-provider.interface';
 import { RestaurantContextService } from './services/restaurant-context.service';
 import { MetaApiService } from './services/meta-api.service';
 import { UsageGuardService } from './services/usage-guard.service';
@@ -140,7 +141,7 @@ export class WhatsappProcessor {
         // 6. Consultar a la IA
         this.logger.log(`[Tenant: ${tenantId}] Consultando IA para el cliente ${from}...`);
         
-        let aiResponse = '';
+        let aiResponse: AiResponse = { text: '' };
         try {
           aiResponse = await this.aiProvider.generateResponse(
             tenantId,
@@ -152,7 +153,7 @@ export class WhatsappProcessor {
           );
         } catch (error) {
           this.logger.error(`[Tenant: ${tenantId}] Falló la IA, usando fallback: ${error.message}`);
-          aiResponse = 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.';
+          aiResponse = { text: 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.' };
         }
 
         // 7. Guardar Mensaje del Asistente
@@ -160,19 +161,32 @@ export class WhatsappProcessor {
           data: {
             tenantId,
             conversationId: conversation.id,
-            waMessageId: `ai-${Date.now()}-${Math.random().toString(36).substring(7)}`, // ID simulado
+            waMessageId: `ai-${Date.now()}-${Math.random().toString(36).substring(7)}`,
             role: 'ASSISTANT',
-            content: aiResponse,
+            content: aiResponse.text,
           },
         });
 
         // 8. Enviar Vía WhatsApp Meta API
-        await this.metaApiService.sendTextMessage(
-          tenantId,
-          phone_number_id,
-          from,
-          aiResponse,
-        );
+        if (aiResponse.checkoutUrl) {
+          // Si hay un checkoutUrl, enviar con botón interactivo CTA
+          await this.metaApiService.sendInteractiveCtaMessage(
+            tenantId,
+            phone_number_id,
+            from,
+            aiResponse.text,
+            'Completar Pago 💳',
+            aiResponse.checkoutUrl,
+          );
+        } else {
+          // Enviar como texto plano normal
+          await this.metaApiService.sendTextMessage(
+            tenantId,
+            phone_number_id,
+            from,
+            aiResponse.text,
+          );
+        }
       });
     } catch (error) {
       this.logger.error(`Error procesando webhook de WhatsApp: ${error.message}`, error.stack);

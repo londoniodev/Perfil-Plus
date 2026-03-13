@@ -1,10 +1,15 @@
+export interface AiResponse {
+  text: string;
+  checkoutUrl?: string;
+}
+
 export interface AiProvider {
   generateResponse(
-    tenantId: string, // útil para loguear o tracear consumos
+    tenantId: string,
     systemContext: string,
     history: { role: 'USER' | 'ASSISTANT'; content: string }[],
     userMessage: string,
     customerPhone?: string,
     tenantSlug?: string,
-  ): Promise<string>;
+  ): Promise<AiResponse>;
 }

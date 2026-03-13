@@ -20,6 +20,7 @@ interface CartStore {
     addItem: (data: CartItem) => void
     removeItem: (variantId: string) => void
     setTableId: (id: string | null) => void
+    setCart: (items: CartItem[]) => void // Sobrescribir carrito completo (para IA WhatsApp)
     clearCart: () => void
     totalItems: () => number
     totalPrice: () => number
@@ -58,6 +59,8 @@ export const useCart = create<CartStore>()(
             },
 
             clearCart: () => set({ items: [] }),
+
+            setCart: (items) => set({ items, tableId: null }),
 
             totalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
 

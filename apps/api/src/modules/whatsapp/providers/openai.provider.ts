@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AiProvider } from './ai-provider.interface';
+import { AiProvider, AiResponse } from './ai-provider.interface';
 import { OpenAI } from 'openai';
 import { PrismaService } from '../../../prisma/prisma.service';
 
@@ -21,7 +21,10 @@ export class OpenAiProvider implements AiProvider {
     userMessage: string,
     customerPhone?: string,
     tenantSlug?: string,
-  ): Promise<string> {
+  ): Promise<AiResponse> {
+    // Variable para rastrear si se generó un checkoutUrl durante tool calls
+    let detectedCheckoutUrl: string | undefined;
+
     try {
       const messages: any[] = [
         { role: 'system', content: systemContext },
@@ -75,7 +78,7 @@ export class OpenAiProvider implements AiProvider {
         model: 'gpt-4o-mini',
         messages,
         temperature: 0.7,
-        max_tokens: 400, // Ajustado para tools
+        max_tokens: 400,
         tools,
         tool_choice: 'auto',
       });
@@ -84,21 +87,19 @@ export class OpenAiProvider implements AiProvider {
 
       // Check if OpenAI wanted to call a tool
       if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-        messages.push(responseMessage); // Add assistant's tool call message
+        messages.push(responseMessage);
         
         for (const rawToolCall of responseMessage.tool_calls) {
           const toolCall = rawToolCall as any;
           if (toolCall.function.name === 'getLatestOrderStatus') {
             this.logger.log(`[Tenant: ${tenantId}] OpenAI invocó la herramienta getLatestOrderStatus para ${customerPhone}`);
             
-            // 1. Ejecutar consulta segura a DB
             const order = await (this.prisma.secure as any).order.findFirst({
               where: { customerPhone },
               orderBy: { createdAt: 'desc' },
               select: { status: true, totalAmount: true, updatedAt: true },
             });
 
-            // 2. Construir la respuesta de la herramienta
             let toolResponseText = '';
             if (order) {
               toolResponseText = JSON.stringify({
@@ -109,11 +110,10 @@ export class OpenAiProvider implements AiProvider {
             } else {
               toolResponseText = JSON.stringify({
                 error: 'No active or past orders found for this customer.',
-                actionRequired: `Invitar al cliente a su primer pedido usando amablemente el link del menú: https://${tenantSlug || 'demo'}.tu-dominio.com`
+                actionRequired: `Invitar al cliente a su primer pedido usando amablemente el link del menú: https://${tenantSlug || 'demo'}.alvarolondoño.dev`
               });
             }
 
-            // 3. Añadir resultado a los mensajes
             messages.push({
               tool_call_id: toolCall.id,
               role: 'tool',
@@ -134,7 +134,6 @@ export class OpenAiProvider implements AiProvider {
                 const foundProducts: any[] = [];
                 const missingProducts: string[] = [];
                 
-                // Buscar cada producto por nombre (case-insensitive simple)
                 for (const item of requestedItems) {
                   const product = await (this.prisma.secure as any).product.findFirst({
                     where: { 
@@ -174,16 +173,27 @@ export class OpenAiProvider implements AiProvider {
                      actionRequired: 'Por favor, dile al cliente que esos productos no están disponibles y ofrécele alternativas del menú actual.'
                    });
                 } else {
-                   // Generar URL firmada / serializada temporal
-                   // Formato: JSON Array encoded en Base64
-                   const cartData = Buffer.from(JSON.stringify(foundProducts)).toString('base64');
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?cart=${cartData}`;
+                   // ==========================================
+                   // PERSISTIR CARRITO EN BD (URL CORTA)
+                   // ==========================================
+                   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+
+                   const waCart = await (this.prisma as any).waCart.create({
+                     data: {
+                       tenantId,
+                       cartData: foundProducts,
+                       expiresAt,
+                     },
+                   });
+
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?wa=${waCart.id}`;
+                   detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    toolResponseText = JSON.stringify({
                      success: true,
                      message: 'Cart created successfully.',
-                     checkoutUrl: checkoutUrl,
-                     itemsFound: foundProducts.map(p => `${p.quantity}x ${p.name}`),
+                     checkoutUrl,
+                     itemsFound: foundProducts.map(p => `${p.quantity}x ${p.title}`),
                      itemsNotFound: missingProducts.length > 0 ? missingProducts : undefined
                    });
                 }
@@ -202,17 +212,18 @@ export class OpenAiProvider implements AiProvider {
           }
         }
 
-        // 4. Hacer la segunda llamada a la IA con los datos de las herramientas
+        // Segunda llamada a la IA con los datos de las herramientas
         const secondResponse = await this.openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages,
           temperature: 0.7,
         });
 
-        return secondResponse.choices[0].message.content || 'Lo siento, no pude procesar tu solicitud tras revisar los datos.';
+        const text = secondResponse.choices[0].message.content || 'Lo siento, no pude procesar tu solicitud tras revisar los datos.';
+        return { text, checkoutUrl: detectedCheckoutUrl };
       }
 
-      return responseMessage.content || 'Lo siento, no pude procesar tu solicitud.';
+      return { text: responseMessage.content || 'Lo siento, no pude procesar tu solicitud.' };
     } catch (error) {
       this.logger.error(`Error en OpenAI para tenant ${tenantId}: ${error.message}`, error.stack);
       throw new Error('Fallo al comunicarse con OpenAI');

@@ -66,7 +66,7 @@ const checkoutSchema = z.object({
 type CheckoutFormData = z.infer<typeof checkoutSchema>
 
 export function CheckoutForm() {
-    const { items, totalPrice, tableId, clearCart } = useCart()
+    const { items, totalPrice, tableId, clearCart, addItem, setCart } = useCart()
     const toast = useToast()
 
     const router = useRouter()
@@ -74,29 +74,46 @@ export function CheckoutForm() {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const searchParams = useSearchParams()
-    const cartParam = searchParams.get("cart")
+    const waParam = searchParams.get("wa")
     const [cartLoaded, setCartLoaded] = useState(false)
+    const [isLoadingWaCart, setIsLoadingWaCart] = useState(!!waParam)
 
     useEffect(() => {
-        if (cartParam && !cartLoaded) {
-            try {
-                const decoded = atob(cartParam);
-                if (decoded.startsWith('[')) {
-                    const parsedItems = JSON.parse(decoded);
-                    if (Array.isArray(parsedItems)) {
-                        clearCart();
-                        parsedItems.forEach((item: any) => addItem(item));
-                        setCartLoaded(true);
-                        toast.success("Carrito cargado desde tu asistente virtual.");
-                        router.replace("/checkout"); // Limpiar el parámetro de la URL
+        if (waParam && !cartLoaded) {
+            const fetchWaCart = async () => {
+                try {
+                    // El API Gateway en Dokploy normalmente hace proxy de /api al backend
+                    // Asumimos que la ruta completa es algo como /api/wa-cart/ID
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+                    const res = await fetch(`${apiUrl}/api/wa-cart/${waParam}`)
+                    
+                    if (!res.ok) {
+                        throw new Error(res.status === 404 ? 'enlace-expirado' : 'error-servidor')
                     }
+                    
+                    const data = await res.json()
+                    if (data.items && Array.isArray(data.items)) {
+                        setCart(data.items) // Reset completo del carrito, ignora basura anterior
+                        setCartLoaded(true)
+                        toast.success("Carrito cargado desde tu asistente virtual.")
+                        router.replace("/checkout") // Limpiar el parámetro de la URL
+                    }
+                } catch (e: any) {
+                    console.error("Error cargando carrito de IA:", e)
+                    if (e.message === 'enlace-expirado') {
+                        toast.error("El enlace de pago es inválido o ya expiró (dura 24 horas).")
+                    } else {
+                        toast.error("Hubo un problema cargando tu carrito.")
+                    }
+                } finally {
+                    setIsLoadingWaCart(false)
                 }
-            } catch (e) {
-                console.error("Error cargando carrito de IA:", e);
-                toast.error("El enlace del carrito es inválido o expiró.");
             }
+            fetchWaCart();
+        } else if (!waParam) {
+           setIsLoadingWaCart(false)
         }
-    }, [cartParam, cartLoaded, clearCart, addItem, router, toast])
+    }, [waParam, cartLoaded, setCart, router, toast])
 
     // Variables Derivadas
     const isDigitalOnly = items.length > 0 && items.every(item => item.productType === "DIGITAL")
@@ -201,6 +218,15 @@ export function CheckoutForm() {
         } finally {
             setIsSubmitting(false)
         }
+    }
+
+    if (isLoadingWaCart) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-muted-foreground animate-pulse">Cargando tu carrito desde WhatsApp...</p>
+            </div>
+        )
     }
 
     if (items.length === 0) {

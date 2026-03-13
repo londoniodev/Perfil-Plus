@@ -56,6 +56,7 @@ model Tenant {
   // WhatsApp
   waConversations WaConversation[]
   waMessages      WaMessage[]
+  waCarts         WaCart[]
 }
 
 // ============ USUARIOS Y AUTH ============
@@ -1049,4 +1050,16 @@ model WaMessage {
   @@index([tenantId])
   @@index([conversationId])
   @@index([role])
+}
+
+model WaCart {
+  id        String   @id @default(cuid())
+  tenantId  String
+  cartData  Json     // Array de CartItem compatible con Zustand
+  createdAt DateTime @default(now())
+  expiresAt DateTime // 24h desde creación
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
 }

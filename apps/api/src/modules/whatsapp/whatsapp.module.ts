@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WhatsappController } from './whatsapp.controller';
+import { WaCartController } from './wa-cart.controller';
 import { WhatsappProcessor } from './whatsapp.processor';
 import { OpenAiProvider } from './providers/openai.provider';
 import { RestaurantContextService } from './services/restaurant-context.service';
@@ -13,7 +14,7 @@ import { UsageGuardService } from './services/usage-guard.service';
     // Lo importamos aquí en caso de que este módulo pueda funcionar standalone,
     // pero idealmente EventEmitterModule.forRoot() se llama en AppModule.
   ],
-  controllers: [WhatsappController],
+  controllers: [WhatsappController, WaCartController],
   providers: [
     WhatsappProcessor,
     OpenAiProvider,
@@ -23,3 +24,4 @@ import { UsageGuardService } from './services/usage-guard.service';
   ],
 })
 export class WhatsappModule {}
+

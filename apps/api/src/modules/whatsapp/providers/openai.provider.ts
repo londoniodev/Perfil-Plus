@@ -149,7 +149,7 @@ export class OpenAiProvider implements AiProvider {
                       basePrice: true,
                       productType: true,
                       variants: { select: { id: true }, take: 1 },
-                      images: { select: { url: true }, take: 1 }
+                      images: true
                     }
                   });
                   
@@ -161,7 +161,7 @@ export class OpenAiProvider implements AiProvider {
                       quantity: item.quantity,
                       price: Number(product.basePrice),
                       productType: product.productType,
-                      imageSrc: product.images[0]?.url || ''
+                      imageSrc: product.images[0] || ''
                     });
                   } else {
                     missingProducts.push(item.name);

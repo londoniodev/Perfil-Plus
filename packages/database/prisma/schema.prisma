@@ -55,6 +55,7 @@ model Tenant {
   deliveryDrivers DeliveryDriver[]
   // WhatsApp
   waConversations WaConversation[]
+  waMessages      WaMessage[]
 }
 
 // ============ USUARIOS Y AUTH ============
@@ -1035,14 +1036,17 @@ model WaConversation {
 
 model WaMessage {
   id             String        @id @default(cuid())
+  tenantId       String
   conversationId String
   waMessageId    String        @unique // ID del mensaje proveído por Meta
   role           WaMessageRole
   content        String        @db.Text
   createdAt      DateTime      @default(now())
 
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
   conversation   WaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@index([conversationId])
   @@index([role])
 }

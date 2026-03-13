@@ -41,7 +41,31 @@ export class OpenAiProvider implements AiProvider {
             parameters: {
               type: 'object',
               properties: {},
-              required: [],
+            },
+          },
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'createSuggestedCart',
+            description: 'Crea un carrito de compras con los productos solicitados y genera el link de pago. IMPORTANTE: Usa esta herramienta SIEMPRE que el cliente decida pedir ciertos productos.',
+            parameters: {
+              type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  description: 'Lista de productos que el cliente quiere pedir',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string', description: 'Nombre exacto del producto tal como figura en el menú' },
+                      quantity: { type: 'integer', description: 'Cantidad solicitada de este producto' }
+                    },
+                    required: ['name', 'quantity']
+                  }
+                }
+              },
+              required: ['items'],
             },
           },
         },
@@ -90,6 +114,77 @@ export class OpenAiProvider implements AiProvider {
             }
 
             // 3. Añadir resultado a los mensajes
+            messages.push({
+              tool_call_id: toolCall.id,
+              role: 'tool',
+              name: toolCall.function.name,
+              content: toolResponseText,
+            });
+          } else if (toolCall.function.name === 'createSuggestedCart') {
+            this.logger.log(`[Tenant: ${tenantId}] OpenAI invocó la herramienta createSuggestedCart para ${customerPhone}`);
+            let toolResponseText = '';
+            
+            try {
+              const args = JSON.parse(toolCall.function.arguments);
+              const requestedItems: { name: string, quantity: number }[] = args.items || [];
+              
+              if (requestedItems.length === 0) {
+                toolResponseText = JSON.stringify({ error: 'No items provided to create cart.' });
+              } else {
+                const foundProducts: any[] = [];
+                const missingProducts: string[] = [];
+                
+                // Buscar cada producto por nombre (case-insensitive simple)
+                for (const item of requestedItems) {
+                  const product = await (this.prisma.secure as any).product.findFirst({
+                    where: { 
+                      name: { equals: item.name, mode: 'insensitive' },
+                      productType: 'RESTAURANT',
+                      published: true,
+                      isAvailable: true
+                    },
+                    select: { id: true, name: true, basePrice: true }
+                  });
+                  
+                  if (product) {
+                    foundProducts.push({
+                      id: product.id,
+                      name: product.name,
+                      quantity: item.quantity,
+                      price: product.basePrice
+                    });
+                  } else {
+                    missingProducts.push(item.name);
+                  }
+                }
+                
+                if (foundProducts.length === 0) {
+                   toolResponseText = JSON.stringify({ 
+                     error: 'None of the requested products were found in the active menu.',
+                     actionRequired: 'Por favor, dile al cliente que esos productos no están disponibles y ofrécele alternativas del menú actual.'
+                   });
+                } else {
+                   // Generar URL firmada / serializada temporal
+                   // Formato simple: items=id:qty,id:qty
+                   const itemsParam = foundProducts.map(fp => `${fp.id}:${fp.quantity}`).join(',');
+                   // Base64 encode for simple opaqueness
+                   const cartData = Buffer.from(itemsParam).toString('base64');
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.tu-dominio.com/checkout?cart=${cartData}`;
+                   
+                   toolResponseText = JSON.stringify({
+                     success: true,
+                     message: 'Cart created successfully.',
+                     checkoutUrl: checkoutUrl,
+                     itemsFound: foundProducts.map(p => `${p.quantity}x ${p.name}`),
+                     itemsNotFound: missingProducts.length > 0 ? missingProducts : undefined
+                   });
+                }
+              }
+            } catch (err) {
+              this.logger.error(`Error procesando createSuggestedCart: ${err.message}`);
+              toolResponseText = JSON.stringify({ error: 'Internal error generating cart.' });
+            }
+
             messages.push({
               tool_call_id: toolCall.id,
               role: 'tool',

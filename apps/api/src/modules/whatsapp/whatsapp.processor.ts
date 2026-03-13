@@ -99,6 +99,7 @@ export class WhatsappProcessor {
 
         await this.prisma.secure.waMessage.create({
           data: {
+            tenantId,
             conversationId: conversation.id,
             waMessageId: messageId,
             role: 'USER',

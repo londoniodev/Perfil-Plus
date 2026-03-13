@@ -1,4 +1,4 @@
-"use client"
+| "use client"
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -390,14 +390,14 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                                 <FormItem>
                                                     <FormLabel>Costo de Envío</FormLabel>
                                                     <FormControl>
-                                                        <Input 
-                                                            {...field} 
-                                                            type="number" 
+                                                        <Input
+                                                            {...field}
+                                                            type="number"
                                                             onChange={e => {
                                                                 const val = e.target.value;
                                                                 field.onChange(val === "" ? 0 : parseFloat(val));
                                                             }}
-                                                            placeholder="0" 
+                                                            placeholder="0"
                                                         />
                                                     </FormControl>
                                                     <p className="text-xs text-muted-foreground">Valor fijo para cobros de domicilio vía WhatsApp.</p>

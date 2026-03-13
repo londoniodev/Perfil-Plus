@@ -98,9 +98,25 @@ export function CheckoutForm() {
                     
                     const data = await res.json()
                     if (data.items && Array.isArray(data.items)) {
-                        setCart(data.items) // Reset completo del carrito, ignora basura anterior
+                        setCart(data.items) // Reset completo del carrito
                         setCartLoaded(true)
-                        toast.success("Carrito cargado desde tu asistente virtual.")
+                        
+                        // Hidratar formulario con datos del cliente si existen
+                        if (data.customerData) {
+                            form.reset({
+                                ...form.getValues(),
+                                customerName: data.customerData.name || "",
+                                customerPhone: data.customerData.phone || "",
+                                address: data.customerData.address || "",
+                                lat: data.customerData.lat || undefined,
+                                lng: data.customerData.lng || undefined,
+                                orderType: "DELIVERY" // Por defecto para WA
+                            })
+                            toast.success("¡Bienvenido! Hemos pre-llenado tus datos desde WhatsApp.")
+                        } else {
+                            toast.success("Carrito cargado desde tu asistente virtual.")
+                        }
+                        
                         router.replace("/checkout") // Limpiar el parámetro de la URL
                     }
                 } catch (e: any) {

@@ -32,6 +32,7 @@ export class WaCartController {
 
     return {
       items: cart.cartData,
+      customerData: cart.customerData, // Perfil pre-llenado
       createdAt: cart.createdAt,
       expiresAt: cart.expiresAt,
     };

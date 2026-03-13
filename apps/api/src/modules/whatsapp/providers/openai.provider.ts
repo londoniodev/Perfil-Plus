@@ -39,11 +39,15 @@ export class OpenAiProvider implements AiProvider {
         {
           type: 'function',
           function: {
-            name: 'getLatestOrderStatus',
-            description: 'Obtiene el estado, el total a pagar y la hora de última actualización de la última orden (pedido) que ha hecho el cliente. Usa esta herramienta UNICAMENTE cuando el cliente pregunte por el estado de un pedido o por su cuenta.',
+            name: 'saveCustomerProfile',
+            description: 'Guarda o actualiza el perfil del cliente (nombre, dirección). Úsala cuando el cliente te proporcione sus datos.',
             parameters: {
               type: 'object',
-              properties: {},
+              properties: {
+                name: { type: 'string', description: 'Nombre del cliente' },
+                address: { type: 'string', description: 'Dirección de envío completa' },
+              },
+              required: ['name'],
             },
           },
         },
@@ -91,7 +95,33 @@ export class OpenAiProvider implements AiProvider {
         
         for (const rawToolCall of responseMessage.tool_calls) {
           const toolCall = rawToolCall as any;
-          if (toolCall.function.name === 'getLatestOrderStatus') {
+          
+          if (toolCall.function.name === 'saveCustomerProfile') {
+            this.logger.log(`[Tenant: ${tenantId}] OpenAI invocó la herramienta saveCustomerProfile para ${customerPhone}`);
+            let toolResponseText = '';
+            try {
+              const args = JSON.parse(toolCall.function.arguments);
+              const { name, address } = args;
+              
+              const customer = await (this.prisma.secure as any).waCustomer.upsert({
+                where: { tenantId_phone: { tenantId, phone: customerPhone } },
+                update: { name, address },
+                create: { tenantId, phone: customerPhone, name, address },
+              });
+              
+              toolResponseText = JSON.stringify({ success: true, customerId: customer.id });
+            } catch (err) {
+              this.logger.error(`Error en saveCustomerProfile: ${err.message}`);
+              toolResponseText = JSON.stringify({ error: 'Failed to save customer profile' });
+            }
+            
+            messages.push({
+              tool_call_id: toolCall.id,
+              role: 'tool',
+              name: toolCall.function.name,
+              content: toolResponseText,
+            });
+          } else if (toolCall.function.name === 'getLatestOrderStatus') {
             this.logger.log(`[Tenant: ${tenantId}] OpenAI invocó la herramienta getLatestOrderStatus para ${customerPhone}`);
             
             const order = await (this.prisma.secure as any).order.findFirst({
@@ -178,9 +208,24 @@ export class OpenAiProvider implements AiProvider {
                    // ==========================================
                    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
+                   // Obtener perfil del cliente para hidratar el checkout
+                   const customer = await (this.prisma.secure as any).waCustomer.findUnique({
+                     where: { tenantId_phone: { tenantId, phone: customerPhone } }
+                   });
+
                    const waCart = await (this.prisma as any).waCart.create({
                      data: {
                        tenantId,
+                       customerPhone,
+                       customerData: customer ? {
+                         name: customer.name,
+                         address: customer.address,
+                         phone: customer.phone,
+                         lat: customer.lat,
+                         lng: customer.lng
+                       } : {
+                         phone: customerPhone // Siempre tenemos el teléfono
+                       },
                        cartData: foundProducts,
                        expiresAt,
                      },

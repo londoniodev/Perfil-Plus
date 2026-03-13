@@ -5,7 +5,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 export class RestaurantContextService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async buildSystemPrompt(tenantId: string): Promise<string> {
+  async buildSystemPrompt(tenantId: string, customerPhone?: string): Promise<string> {
     // Estas consultas NO usan prisma.secure porque se ejecutarán
     // dentro de un contexto aislado (CLS) en el processor.
     // Usamos el cliente regular para asegurar la compatibilidad
@@ -20,6 +20,31 @@ export class RestaurantContextService {
     const tenantSlug = storeSettings?.tenant?.slug || 'demo';
     const deliveryFee = Number(storeSettings?.deliveryFee || 0);
     const deliveryFeeFormatted = deliveryFee > 0 ? `$${deliveryFee}` : 'Gratis';
+
+    // Obtener información del cliente si existe
+    let customerContext = '';
+    let needsProfile = true;
+    if (customerPhone) {
+      const customer = await this.prisma.secure.waCustomer.findUnique({
+        where: { tenantId_phone: { tenantId, phone: customerPhone } }
+      });
+      if (customer) {
+        customerContext = `\nContexto del Cliente: Hablas con ${customer.name || 'un cliente'}. `;
+        if (customer.address) {
+          customerContext += `Su dirección registrada es: ${customer.address}. `;
+          needsProfile = false;
+        } else {
+          customerContext += `NO tienes su dirección registrada. `;
+        }
+        customerContext += `NO le pidas estos datos a menos que pida cambiarlos o sea estrictamente necesario.\n`;
+      }
+    }
+
+    if (needsProfile && !customerContext) {
+      customerContext = `\nContexto del Cliente: Es un cliente nuevo. Antes de generar el carrito con \`createSuggestedCart\`, DEBES preguntarle amablemente su NOMBRE y DIRECCIÓN para el envío (a menos que ya te los haya dado en esta charla).\n`;
+    } else if (needsProfile) {
+      customerContext += `IMPORTANTE: Aún te falta su dirección. Pídesela amablemente antes de concretar la venta.\n`;
+    }
 
     // Obtener menú (Categorías y Productos Activos)
     const categories = await this.prisma.secure.category.findMany({
@@ -47,7 +72,7 @@ export class RestaurantContextService {
     }
 
     // El Prompt Maestro
-    return `Eres un asistente virtual amable y profesional para el restaurante "${storeName}". 
+    return `Eres un asistente virtual amable y profesional para el restaurante "${storeName}". ${customerContext}
 Tu objetivo es ayudar a los clientes a conocer el menú, responder dudas sobre los productos y TOMAR SUS PEDIDOS (CONCRETAR VENTAS).
 Sé conciso, amigable y utiliza emojis moderadamente.
 
@@ -56,12 +81,13 @@ ${menuText}
 
 Reglas Estratégicas y de Venta:
 1. Tu meta principal es concretar ventas. Cuando el cliente exprese interés en comprar o pedir productos o especifique su orden, DEBES usar la herramienta \`createSuggestedCart\` pasando los productos y cantidades que desea.
-2. IMPORTANTE: NUNCA enumeres ni imprimas el menú completo en el chat, es demasiado largo. Si el cliente quiere ver el menú completo, envíale un saludo cordial y este enlace oficial: https://${tenantSlug}.alvarolondoño.dev (allí podrá ver las fotos y el menú general no de mesa). Solo menciona productos específicos si el cliente pide recomendaciones.
-3. Si pide un producto que NO está en el menú, aclárale amablemente la confusión y sugiérele el producto más similar del menú.
-4. Solo recomienda productos que estén en el menú proporcionado.
-5. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
-6. DOMICILIOS: El costo de envío a domicilio es de ${deliveryFeeFormatted}. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de ${deliveryFeeFormatted}.
-7. Al usar la herramienta de carrito, entrégale el Link de Pago que te devolverá la herramienta y motívalo a completar su pago. IMPORTANTE: Entrega siempre las URLs en texto plano (ej. https://link.com), NUNCA uses formato de enlaces Markdown como [Texto](https://link.com).
-8. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
+2. IMPORTANTE: Si ya conoces el Nombre y Dirección del cliente, usa la herramienta \`saveCustomerProfile\` para asegurar que su perfil esté actualizado en nuestra base de datos antes de crear el carrito.
+3. NUNCA enumeres ni imprimas el menú completo en el chat, es demasiado largo. Si el cliente quiere ver el menú completo, envíale un saludo cordial y este enlace oficial: https://${tenantSlug}.alvarolondoño.dev (allí podrá ver las fotos y el menú general no de mesa). Solo menciona productos específicos si el cliente pide recomendaciones.
+4. Si pide un producto que NO está en el menú, aclárale amablemente la confusión y sugiérele el producto más similar del menú.
+5. Solo recomienda productos que estén en el menú proporcionado.
+6. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
+7. DOMICILIOS: El costo de envío a domicilio es de ${deliveryFeeFormatted}. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de ${deliveryFeeFormatted}.
+8. Al usar la herramienta de carrito, entrégale el Link de Pago que te devolverá la herramienta y motívalo a completar su pago. IMPORTANTE: Entrega siempre las URLs en texto plano (ej. https://link.com), NUNCA uses formato de enlaces Markdown como [Texto](https://link.com).
+9. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
   }
 }

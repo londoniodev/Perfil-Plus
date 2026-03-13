@@ -124,7 +124,7 @@ export class WhatsappProcessor {
         }
 
         // 4. Generar Contexto del Restaurante
-        const systemPrompt = await this.contextService.buildSystemPrompt(tenantId);
+        const systemPrompt = await this.contextService.buildSystemPrompt(tenantId, from);
 
         // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
         const rawHistory = await (this.prisma.secure as any).waMessage.findMany({

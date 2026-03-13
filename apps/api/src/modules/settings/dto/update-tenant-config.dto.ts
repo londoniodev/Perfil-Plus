@@ -81,8 +81,10 @@ export class UpdateTenantConfigDto {
   @IsOptional()
   currency?: string;
 
-  // --- NUEVAS CONFIGURACIONES SAAS ---
   @IsBoolean()
   @IsOptional()
   orderTrackingEnabled?: boolean;
+
+  @IsOptional()
+  deliveryFee?: number;
 }

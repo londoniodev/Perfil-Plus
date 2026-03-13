@@ -52,6 +52,9 @@ const settingsSchema = z.object({
     // Menu
     menuSlogan: z.string().optional(),
     menuLogo: z.string().optional(),
+
+    // Delivery
+    deliveryFee: z.number().min(0, "El valor debe ser positivo o cero").optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -98,6 +101,7 @@ interface SettingsFormProps {
             facebook?: string | null
             address?: string | null
         }
+        deliveryFee?: number | null
     }
     brandingData?: any
 }
@@ -143,6 +147,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
             orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
             menuSlogan: initialData?.menu?.slogan || "",
             menuLogo: initialData?.menu?.logo || "",
+            deliveryFee: initialData?.deliveryFee || 0,
         },
     })
 
@@ -375,6 +380,32 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                             </FormItem>
                                         )}
                                     />
+
+                                    <div className="pt-6 border-t">
+                                        <h4 className="text-sm font-medium mb-4">Tarifas de Domicilio</h4>
+                                        <FormField
+                                            control={form.control}
+                                            name="deliveryFee"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Costo de Envío</FormLabel>
+                                                    <FormControl>
+                                                        <Input 
+                                                            {...field} 
+                                                            type="number" 
+                                                            onChange={e => {
+                                                                const val = e.target.value;
+                                                                field.onChange(val === "" ? 0 : parseFloat(val));
+                                                            }}
+                                                            placeholder="0" 
+                                                        />
+                                                    </FormControl>
+                                                    <p className="text-xs text-muted-foreground">Valor fijo para cobros de domicilio vía WhatsApp.</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </Card>

@@ -86,7 +86,11 @@ export function CheckoutForm() {
                 try {
                     const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
                     const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
-                    const res = await fetch(`${API_URL}/wa-cart/${waParam}`)
+                    const res = await fetch(`${API_URL}/wa-cart/${waParam}`, {
+                        headers: {
+                            'x-tenant-id': tenantId
+                        }
+                    })
                     
                     if (!res.ok) {
                         throw new Error(res.status === 404 ? 'enlace-expirado' : 'error-servidor')

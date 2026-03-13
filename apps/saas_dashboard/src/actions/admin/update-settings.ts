@@ -49,6 +49,9 @@ const settingsSchema = z.object({
     // Menu
     menuSlogan: z.string().optional(),
     menuLogo: z.string().optional(),
+
+    // Delivery
+    deliveryFee: z.number().optional(),
 })
 
 type UpdateSettingsInput = z.infer<typeof settingsSchema>
@@ -126,7 +129,8 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
                 ...(currentConfig.menu || {}),
                 slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
                 logo: validated.menuLogo !== undefined ? validated.menuLogo : currentConfig.menu?.logo,
-            }
+            },
+            deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
         }
 
         // 5. Enviar el config unificado a NestJS para que procese el guardado en SystemSettings

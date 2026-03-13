@@ -1,6 +1,8 @@
 import { Controller, Get, Param, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Public } from '../../common/decorators/public.decorator';
 
+@Public()
 @Controller('wa-cart')
 export class WaCartController {
   private readonly logger = new Logger(WaCartController.name);

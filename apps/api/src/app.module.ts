@@ -15,6 +15,7 @@ import { join } from 'path';
 // Middleware
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { ClsModule } from 'nestjs-cls';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 // Core modules
 import { PrismaModule } from './prisma';
@@ -40,6 +41,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TablesModule } from './modules/tables/tables.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 
 // Interceptors
 // Interceptors removed
@@ -104,6 +106,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         }
       },
     }),
+    EventEmitterModule.forRoot(),
 
     // Core modules
     PrismaModule,
@@ -121,6 +124,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     DeliveryDriversModule,
     EmailModule,
     RestaurantModule,
+    WhatsappModule,
 
     // Rate Limiting
     ThrottlerModule.forRoot([

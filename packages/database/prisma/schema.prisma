@@ -426,6 +426,10 @@ model StoreSettings {
   mpAccessToken String?  @db.Text
   mpPublicKey   String?  @db.Text
   
+  // WhatsApp Configuration
+  waPhoneNumberId String?  @unique
+  waAccessToken   String?  @db.Text
+
   // Configuraciones adicionales
   storeName     String?
   storeEmail    String?

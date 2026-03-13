@@ -20,7 +20,7 @@ import {
     useToast
 } from "@alvarosky/ui"
 import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { LocationPicker } from "./location-picker"
 import { formatCurrency } from "@/lib/utils"
@@ -72,6 +72,31 @@ export function CheckoutForm() {
     const router = useRouter()
     const { user } = useAuth()
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const searchParams = useSearchParams()
+    const cartParam = searchParams.get("cart")
+    const [cartLoaded, setCartLoaded] = useState(false)
+
+    useEffect(() => {
+        if (cartParam && !cartLoaded) {
+            try {
+                const decoded = atob(cartParam);
+                if (decoded.startsWith('[')) {
+                    const parsedItems = JSON.parse(decoded);
+                    if (Array.isArray(parsedItems)) {
+                        clearCart();
+                        parsedItems.forEach((item: any) => addItem(item));
+                        setCartLoaded(true);
+                        toast.success("Carrito cargado desde tu asistente virtual.");
+                        router.replace("/checkout"); // Limpiar el parámetro de la URL
+                    }
+                }
+            } catch (e) {
+                console.error("Error cargando carrito de IA:", e);
+                toast.error("El enlace del carrito es inválido o expiró.");
+            }
+        }
+    }, [cartParam, cartLoaded, clearCart, addItem, router, toast])
 
     // Variables Derivadas
     const isDigitalOnly = items.length > 0 && items.every(item => item.productType === "DIGITAL")

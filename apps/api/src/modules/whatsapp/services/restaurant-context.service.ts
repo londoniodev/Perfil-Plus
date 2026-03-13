@@ -13,8 +13,11 @@ export class RestaurantContextService {
     // se ejecutarán de todas formas bajo el tenantId inyectado.
     
     // Obtener configuración del restaurante
-    const storeSettings = await this.prisma.secure.storeSettings.findFirst();
+    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+      include: { tenant: { select: { slug: true } } }
+    });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
+    const tenantSlug = storeSettings?.tenant?.slug || 'demo';
 
     // Obtener menú (Categorías y Productos Activos)
     const categories = await this.prisma.secure.category.findMany({
@@ -51,10 +54,12 @@ ${menuText}
 
 Reglas Estratégicas y de Venta:
 1. Tu meta principal es concretar ventas. Cuando el cliente exprese interés en comprar o pedir productos o especifique su orden, DEBES usar la herramienta \`createSuggestedCart\` pasando los productos y cantidades que desea.
-2. Si pide un producto que NO está en el menú, aclárale amablemente la confusión y sugiérele el producto más similar del menú.
-3. Solo recomienda productos que estén en el menú proporcionado.
-4. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
-5. Al usar la herramienta de carrito, entrégale el Link de Pago que te devolverá la herramienta y motívalo a completar su pago. IMPORTANTE: Entrega siempre las URLs en texto plano (ej. https://link.com), NUNCA uses formato de enlaces Markdown como [Texto](https://link.com), ya que WhatsApp no renderiza Markdown.
-6. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
+2. IMPORTANTE: NUNCA enumeres ni imprimas el menú completo en el chat, es demasiado largo. Si el cliente quiere ver el menú completo, envíale un saludo cordial y este enlace oficial: https://${tenantSlug}.alvarolondoño.dev (allí podrá ver las fotos y el menú general no de mesa). Solo menciona productos específicos si el cliente pide recomendaciones.
+3. Si pide un producto que NO está en el menú, aclárale amablemente la confusión y sugiérele el producto más similar del menú.
+4. Solo recomienda productos que estén en el menú proporcionado.
+5. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
+6. DOMICILIOS: El costo fijo de envío a domicilio es de $5000. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de $5000.
+7. Al usar la herramienta de carrito, entrégale el Link de Pago que te devolverá la herramienta y motívalo a completar su pago. IMPORTANTE: Entrega siempre las URLs en texto plano (ej. https://link.com), NUNCA uses formato de enlaces Markdown como [Texto](https://link.com).
+8. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
   }
 }

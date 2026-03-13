@@ -143,15 +143,25 @@ export class OpenAiProvider implements AiProvider {
                       published: true,
                       isAvailable: true
                     },
-                    select: { id: true, name: true, basePrice: true }
+                    select: { 
+                      id: true, 
+                      name: true, 
+                      basePrice: true,
+                      productType: true,
+                      variants: { select: { id: true }, take: 1 },
+                      images: { select: { url: true }, take: 1 }
+                    }
                   });
                   
                   if (product) {
                     foundProducts.push({
-                      id: product.id,
-                      name: product.name,
+                      productId: product.id,
+                      variantId: product.variants[0]?.id || product.id,
+                      title: product.name,
                       quantity: item.quantity,
-                      price: product.basePrice
+                      price: Number(product.basePrice),
+                      productType: product.productType,
+                      imageSrc: product.images[0]?.url || ''
                     });
                   } else {
                     missingProducts.push(item.name);
@@ -165,10 +175,8 @@ export class OpenAiProvider implements AiProvider {
                    });
                 } else {
                    // Generar URL firmada / serializada temporal
-                   // Formato simple: items=id:qty,id:qty
-                   const itemsParam = foundProducts.map(fp => `${fp.id}:${fp.quantity}`).join(',');
-                   // Base64 encode for simple opaqueness
-                   const cartData = Buffer.from(itemsParam).toString('base64');
+                   // Formato: JSON Array encoded en Base64
+                   const cartData = Buffer.from(JSON.stringify(foundProducts)).toString('base64');
                    const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?cart=${cartData}`;
                    
                    toolResponseText = JSON.stringify({

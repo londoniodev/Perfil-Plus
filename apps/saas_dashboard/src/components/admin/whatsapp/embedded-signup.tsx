@@ -73,7 +73,7 @@ export function WhatsAppEmbeddedSignup({ onSuccess }: WhatsAppEmbeddedSignupProp
           }
         } else {
           setIsLoading(false)
-          this.logger.warn("El usuario canceló el login o no autorizó los permisos")
+          console.warn("El usuario canceló el login o no autorizó los permisos")
         }
       },
       {

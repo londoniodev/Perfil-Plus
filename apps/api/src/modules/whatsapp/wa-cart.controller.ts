@@ -2,13 +2,17 @@ import { Controller, Get, Param, NotFoundException, Logger, Inject } from '@nest
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Public } from '../../common/decorators/public.decorator';
+import { ClsService } from 'nestjs-cls';
 
 @Public()
 @Controller('wa-cart')
 export class WaCartController {
   private readonly logger = new Logger(WaCartController.name);
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly cls: ClsService
+  ) {}
 
   /**
    * GET /api/wa-cart/:id
@@ -16,7 +20,14 @@ export class WaCartController {
    */
   @Get(':id')
   async getCart(@Param('id') id: string) {
-    const redisKey = `wa_cart:${id}`;
+    const tenantId = this.cls.get('tenantId');
+    
+    if (!tenantId) {
+      this.logger.error('No tenantId found in CLS for /wa-cart request');
+      throw new NotFoundException('Falta identificación de tienda (Tenant ID).');
+    }
+
+    const redisKey = `wa_cart:${tenantId}:${id}`;
     const cachedData = await this.cacheManager.get<string>(redisKey);
 
     if (!cachedData) {

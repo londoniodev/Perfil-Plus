@@ -316,6 +316,33 @@ export class OrdersService {
             }
           }
 
+          // 9.5 Persistencia de Perfil de WhatsApp (WaCustomer)
+          if (dto.customerPhone && (dto.orderType === 'DELIVERY' || dto.orderType === 'TAKE_AWAY')) {
+            const shipping = dto.shippingData as any;
+            await (tx as any).waCustomer.upsert({
+              where: {
+                tenantId_phone: {
+                  tenantId: this.getTenantId(),
+                  phone: dto.customerPhone,
+                },
+              },
+              update: {
+                name: dto.customerName || undefined,
+                address: shipping?.address || undefined,
+                lat: shipping?.lat ? parseFloat(shipping.lat) : undefined,
+                lng: shipping?.lng ? parseFloat(shipping.lng) : undefined,
+              },
+              create: {
+                tenantId: this.getTenantId(),
+                phone: dto.customerPhone,
+                name: dto.customerName || null,
+                address: shipping?.address || null,
+                lat: shipping?.lat ? parseFloat(shipping.lat) : null,
+                lng: shipping?.lng ? parseFloat(shipping.lng) : null,
+              },
+            });
+          }
+
           this.logger.log(
             `Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`,
           );

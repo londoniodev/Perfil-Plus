@@ -232,9 +232,9 @@ export class OpenAiProvider implements AiProvider {
                    };
 
                    await this.cacheManager.set(
-                     `wa_cart:${cartId}`,
+                     `wa_cart:${tenantId}:${cartId}`,
                      JSON.stringify(cartPayload),
-                     86400000 // 24 horas en milisegundos
+                     86400 // 24 horas en segundos (cache-manager-redis-yet usa segundos)
                    );
 
                    this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);

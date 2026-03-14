@@ -178,7 +178,7 @@ export class WhatsappProcessor {
             phone_number_id,
             from,
             cleanText || 'Aquí tienes tu enlace de pago:',
-            'Completar Pago 💳',
+            'Completar Pago',
             aiResponse.checkoutUrl,
           );
         } else {

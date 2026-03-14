@@ -41,6 +41,8 @@ export function CheckoutForm() {
                     
                     const data = await res.json()
                     if (data.items && Array.isArray(data.items)) {
+                        // Limpiar carrito local antes de hidratar para evitar mezclar sesiones
+                        setCart([])
                         setCart(data.items)
                         setWaData(data)
                         setCartLoaded(true)

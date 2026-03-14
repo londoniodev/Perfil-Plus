@@ -24,12 +24,9 @@ export function WhatsAppEmbeddedSignup({ onSuccess }: WhatsAppEmbeddedSignupProp
   useEffect(() => {
     // Cargar SDK de Facebook
     const loadFbSdk = () => {
-      if (window.FB) {
-        setIsSdkLoaded(true)
-        return
-      }
-
-      window.fbAsyncInit = function() {
+      // Función de inicialización
+      const initSdk = () => {
+        if (!window.FB) return;
         window.FB.init({
           appId: process.env.NEXT_PUBLIC_META_APP_ID || "YOUR_APP_ID",
           cookie: true,
@@ -39,14 +36,23 @@ export function WhatsAppEmbeddedSignup({ onSuccess }: WhatsAppEmbeddedSignupProp
         setIsSdkLoaded(true)
       };
 
-      (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s) as HTMLScriptElement;
-        js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode?.insertBefore(js, fjs);
-      }(document, "script", "facebook-jssdk"));
+      if (window.FB) {
+        initSdk();
+      } else {
+        window.fbAsyncInit = initSdk;
+        
+        // Inyectar script si no existe
+        if (!document.getElementById("facebook-jssdk")) {
+          (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s) as HTMLScriptElement;
+            js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode?.insertBefore(js, fjs);
+          }(document, "script", "facebook-jssdk"));
+        }
+      }
     }
 
     loadFbSdk()

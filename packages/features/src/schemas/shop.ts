@@ -44,7 +44,7 @@ export const quickCommerceSchema = z.object({
     customerName: z.string().min(2, "Nombre requerido"),
     customerPhone: z.string().min(7, "Celular requerido"),
     orderType: z.enum(["DINE_IN", "DELIVERY", "PICKUP"]),
-    paymentMethod: z.enum(["CASH", "MERCADOPAGO"]).default("CASH"),
+    paymentMethod: z.enum(["CASH", "MERCADOPAGO"]),
     notes: z.string().optional(),
     address: z.string().optional(),
     lat: z.number().optional(),

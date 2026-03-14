@@ -6,14 +6,14 @@ import { FiShoppingBag } from "react-icons/fi";
 export function LandingCTABottom() {
     return (
         <>
-            <div className="fixed bottom-0 left-0 right-0 p-5 bg-white/70 backdrop-blur-xl border-t border-white/40 md:hidden z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] transition-all">
-                <Link href="/tienda" className="w-full bg-cs-primary text-white font-bold py-3.5 rounded-2xl shadow-[0_8px_30px_rgb(16,185,129,0.3)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.4)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98]">
-                    Pedir Ahora
-                    <FiShoppingBag className="text-lg" aria-hidden="true" />
+            <div className="fixed bottom-6 left-6 right-6 p-2 md:hidden z-40 transition-all animate-fade-in-up">
+                <Link href="/tienda" className="w-full bg-cs-primary/90 backdrop-blur-xl text-white font-black py-4 px-6 rounded-3xl shadow-[0_20px_40px_rgba(16,185,129,0.3)] hover:shadow-[0_20px_40px_rgba(16,185,129,0.4)] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-4 border border-white/20">
+                    <FiShoppingBag className="text-2xl" aria-hidden="true" />
+                    <span className="text-lg">PEDIR AHORA</span>
                 </Link>
             </div>
             {/* Spacer to prevent content from being hidden behind the sticky CTA */}
-            <div className="h-24 md:hidden" />
+            <div className="h-28 md:hidden" />
         </>
     );
 }

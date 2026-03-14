@@ -10,7 +10,7 @@ import { useTenant } from "@/app/providers";
 export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeature?: boolean, logo?: string }) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
-    const { features, headerLinks } = useTenant();
+    const { features, headerLinks, tenantId } = useTenant();
 
     // Hacemos una copia para no mutar el array original del context
     let navLinks = headerLinks ? [...headerLinks] : [];
@@ -34,6 +34,7 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
 
     const hasDashboard = features.some(f => f.toUpperCase() === "DASHBOARD");
     const isHome = pathname === "/";
+    const isCocinaSiete = tenantId === "cocinasiete";
     const finalLogo = logo || siteConfig.branding.logo;
 
     return (
@@ -44,8 +45,8 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
-            showAuthButtons={hasDashboard}
-            transparentIsDark={isHome}
+            showAuthButtons={hasDashboard && !isCocinaSiete}
+            transparentIsDark={isHome && !isCocinaSiete}
         />
     );
 }

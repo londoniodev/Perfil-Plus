@@ -15,7 +15,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-zinc-900 items-end overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=80"
+                    src="/external/auth-bg.jpg"
                     alt="Plato gourmet saludable"
                     fill
                     style={{ objectFit: 'cover' }}

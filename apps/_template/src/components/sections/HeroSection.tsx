@@ -44,7 +44,7 @@ export function HeroSection() {
                         {/* Image wrapper */}
                         <div className="relative h-full w-full flex items-end justify-center lg:h-[calc(100vh-80px)]">
                             <Image
-                                src="/images/hero/mauro_hero.png"
+                                src="/images/hero/mauro_hero.webp"
                                 alt="Mauro Mera - Psicólogo y Coach"
                                 width={1000}
                                 height={1400}

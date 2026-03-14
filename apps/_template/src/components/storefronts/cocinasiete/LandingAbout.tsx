@@ -7,7 +7,7 @@ export function LandingAbout() {
             <div
                 className="absolute inset-0 opacity-10"
                 style={{
-                    backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')",
+                    backgroundImage: "url('/external/cubes.png')",
                 }}
             />
             {/* Ambient glows */}

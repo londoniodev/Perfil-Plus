@@ -367,6 +367,7 @@ model StoreSettings {
   tenantId        String
   waAccessToken   String?
   waPhoneNumberId String?  @unique
+  wabaId          String?  @unique
   deliveryFee     Decimal? @default(0) @db.Decimal(10, 2)
   tenant          Tenant   @relation(fields: [tenantId], references: [id])
 

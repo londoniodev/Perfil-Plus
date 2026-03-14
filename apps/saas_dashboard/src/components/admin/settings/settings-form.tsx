@@ -11,6 +11,7 @@ import { useToast } from "@alvarosky/ui"
 import { SingleImageDropzone } from "@alvarosky/ui"
 import { API_BASE, TENANT_ID } from "@/lib/config"
 import { BrandingForm } from "@/components/settings/BrandingForm"
+import { WhatsAppEmbeddedSignup } from "@/components/admin/whatsapp/embedded-signup"
 
 const settingsSchema = z.object({
     storeName: z.string().optional().or(z.literal("")),
@@ -101,6 +102,8 @@ interface SettingsFormProps {
             facebook?: string | null
             address?: string | null
         }
+        waPhoneNumberId?: string | null
+        wabaId?: string | null
         deliveryFee?: number | null
     }
     brandingData?: any
@@ -498,22 +501,55 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
 
                     {/* APIs */}
                     <TabsContent value="apis">
-                        <Card className="p-6 space-y-4 max-w-2xl">
-                            <h3 className="text-lg font-semibold">API Internas</h3>
-                            <FormField
-                                control={form.control}
-                                name="apiKeyOpenAI"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>OpenAI API Key</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} type="password" placeholder="sk-..." className="font-mono text-sm" />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
+                        <div className="grid gap-6 max-w-2xl">
+                            <Card className="p-6 space-y-4">
+                                <h3 className="text-lg font-semibold">API Internas</h3>
+                                <FormField
+                                    control={form.control}
+                                    name="apiKeyOpenAI"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>OpenAI API Key</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="password" placeholder="sk-..." className="font-mono text-sm" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </Card>
+
+                            <Card className="p-6 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold">Integración de WhatsApp</h3>
+                                    {initialData?.waPhoneNumberId && (
+                                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Conectado
+                                        </span>
+                                    )}
+                                </div>
+                                
+                                <WhatsAppEmbeddedSignup onSuccess={() => {
+                                    // Recargar para ver los nuevos IDs si es necesario
+                                    window.location.reload()
+                                }} />
+
+                                {initialData?.waPhoneNumberId && (
+                                    <div className="pt-4 border-t space-y-3">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Phone Number ID:</span>
+                                            <span className="font-mono">{initialData.waPhoneNumberId}</span>
+                                        </div>
+                                        {initialData?.wabaId && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">WABA ID:</span>
+                                                <span className="font-mono">{initialData.wabaId}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
-                            />
-                        </Card>
+                            </Card>
+                        </div>
                     </TabsContent>
                 </Tabs>
 

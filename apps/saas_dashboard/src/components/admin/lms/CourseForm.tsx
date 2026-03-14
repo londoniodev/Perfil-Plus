@@ -19,7 +19,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@alvarosky/ui";
-import { CourseSchema, type CourseValues } from "@/schemas/lms";
+import { CourseSchema, type CourseValues } from "@alvarosky/features";
 
 // ============================================================================
 // TYPES

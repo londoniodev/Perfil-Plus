@@ -7,4 +7,5 @@ export * from './lms';
 // Inventory schemas
 export * from './inventory';
 
-
+// Shop and Checkout schemas
+export * from './shop';

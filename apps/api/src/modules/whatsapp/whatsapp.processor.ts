@@ -169,12 +169,15 @@ export class WhatsappProcessor {
 
         // 8. Enviar Vía WhatsApp Meta API
         if (aiResponse.checkoutUrl) {
+          // Limpiar el texto de cualquier URL para evitar redundancia con el botón CTA
+          const cleanText = aiResponse.text.replace(/https?:\/\/[^\s]+/g, '').trim();
+          
           // Si hay un checkoutUrl, enviar con botón interactivo CTA
           await this.metaApiService.sendInteractiveCtaMessage(
             tenantId,
             phone_number_id,
             from,
-            aiResponse.text,
+            cleanText || 'Aquí tienes tu enlace de pago:',
             'Completar Pago 💳',
             aiResponse.checkoutUrl,
           );

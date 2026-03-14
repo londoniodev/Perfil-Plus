@@ -50,16 +50,22 @@ function LocationMarker({ position, setPosition, onLocationChange }: any) {
     )
 }
 
-export default function MapPicker({ onLocationChange }: { onLocationChange: (loc: {lat: number, lng: number}) => void }) {
+export default function MapPicker({ 
+    onLocationChange, 
+    initialLocation 
+}: { 
+    onLocationChange: (loc: {lat: number, lng: number}) => void,
+    initialLocation?: { lat: number, lng: number }
+}) {
     // Cali, Colombia by default to match restaurant context or a standard location
-    const defaultCenter = { lat: 3.4516, lng: -76.5320 }
+    const defaultCenter = initialLocation || { lat: 3.4516, lng: -76.5320 }
     const [position, setPosition] = useState(defaultCenter)
     
     useEffect(() => {
         // Init with default position so form knows it
         onLocationChange(defaultCenter)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [initialLocation])
 
     return (
         <MapContainer center={defaultCenter} zoom={13} scrollWheelZoom={true} style={{ height: "250px", width: "100%", zIndex: 0 }}>

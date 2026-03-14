@@ -8,10 +8,16 @@ const MapPicker = dynamic(() => import('./map-component'), {
     loading: () => <Skeleton className="w-full h-[250px] rounded-lg" />
 })
 
-export function LocationPicker({ onLocationChange }: { onLocationChange: (loc: {lat: number, lng: number}) => void }) {
+export function LocationPicker({ 
+    onLocationChange,
+    initialLocation
+}: { 
+    onLocationChange: (loc: {lat: number, lng: number}) => void,
+    initialLocation?: { lat: number, lng: number }
+}) {
     return (
         <div className="w-full border rounded-lg overflow-hidden relative z-0">
-            <MapPicker onLocationChange={onLocationChange} />
+            <MapPicker onLocationChange={onLocationChange} initialLocation={initialLocation} />
         </div>
     )
 }

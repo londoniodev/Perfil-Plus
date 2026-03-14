@@ -234,13 +234,13 @@ export class OpenAiProvider implements AiProvider {
                    await this.cacheManager.set(
                      `wa_cart:${tenantId}:${cartId}`,
                      JSON.stringify(cartPayload),
-                     86400 // 24 horas en segundos (cache-manager-redis-yet usa segundos)
+                     86400 * 1000 // 24 horas en milisegundos
                    );
 
                    this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);
 
-                   // Usamos punycode para evitar que Meta API rechace la URL por la 'ñ'
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?wa=${cartId}`;
+                    // Usamos punycode para compatibilidad universal con móviles (Android/WhatsApp)
+                    const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-u9a.dev/checkout?wa=${cartId}`;
                    detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    toolResponseText = JSON.stringify({

@@ -17,15 +17,14 @@ export function CheckoutForm() {
     const searchParams = useSearchParams()
     
     const waParam = searchParams.get("wa")
-    const isRestaurant = features?.includes("RESTAURANT")
-    const isQuickCommerce = !!waParam || isRestaurant
-
     const [waData, setWaData] = useState<{ customerData?: any; items?: any[] } | undefined>(undefined)
+    const isRestaurant = features?.includes("RESTAURANT")
+    const isQuickCommerce = !!waParam || isRestaurant || !!waData
     const [isLoadingWaCart, setIsLoadingWaCart] = useState(!!waParam)
     const [cartLoaded, setCartLoaded] = useState(false)
 
     useEffect(() => {
-        if (waParam && !cartLoaded) {
+        if (waParam && !cartLoaded && !waData) {
             const fetchWaCart = async () => {
                 try {
                     const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
@@ -45,7 +44,8 @@ export function CheckoutForm() {
                         setCart(data.items)
                         setWaData(data)
                         setCartLoaded(true)
-                        router.replace("/checkout")
+                        // Limpiar URL sin perder el estado de waData
+                        window.history.replaceState({}, '', window.location.pathname);
                     }
                 } catch (e: any) {
                     console.error("Error cargando carrito de IA:", e)
@@ -55,14 +55,13 @@ export function CheckoutForm() {
                         toast.error("Hubo un problema cargando tu carrito.")
                     }
                     setCartLoaded(true)
-                    router.replace("/checkout")
                 } finally {
                     setIsLoadingWaCart(false)
                 }
             }
             fetchWaCart()
         }
-    }, [waParam, cartLoaded, setCart, router, toast, tenantId])
+    }, [waParam, cartLoaded, waData, setCart, toast, tenantId])
 
     if (isLoadingWaCart) {
         return (

@@ -57,8 +57,10 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     const orderType = form.watch("orderType")
 
     // Hidratación desde WhatsApp
+    const [hasHydrated, setHasHydrated] = useState(false)
+
     useEffect(() => {
-        if (waData?.customerData) {
+        if (waData?.customerData && !hasHydrated) {
             form.reset({
                 ...form.getValues(),
                 customerName: waData.customerData.name || "",
@@ -68,9 +70,10 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 lng: waData.customerData.lng || undefined,
                 orderType: "DELIVERY"
             })
+            setHasHydrated(true)
             toast.success("Datos de entrega cargados desde WhatsApp.")
         }
-    }, [waData, form, toast])
+    }, [waData, form, toast, hasHydrated])
 
     const onSubmit = async (data: QuickCommerceFormData) => {
         setIsSubmitting(true)

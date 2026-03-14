@@ -240,7 +240,7 @@ export class OpenAiProvider implements AiProvider {
                    this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);
 
                    // Usamos punycode para evitar que Meta API rechace la URL por la 'ñ'
-                   const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;
+                   const checkoutUrl = `https://${tenantSlug || 'demo'}.alvarolondoño.dev/checkout?wa=${cartId}`;
                    detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    toolResponseText = JSON.stringify({

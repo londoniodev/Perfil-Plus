@@ -11,7 +11,7 @@ export function HeroSection() {
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop"
+                    src="/external/deborah-hero-bg.jpg"
                     alt="Deborah Moscoso"
                     fill
                     priority

@@ -231,10 +231,18 @@ export class OpenAiProvider implements AiProvider {
                      }
                    };
 
+                   // Guardamos con llave específica de tenant (seguridad)
                    await this.cacheManager.set(
                      `wa_cart:${tenantId}:${cartId}`,
                      JSON.stringify(cartPayload),
-                     86400 * 1000 // 24 horas en milisegundos para cache-manager v5
+                     86400 * 1000 // 24 horas en milisegundos
+                   );
+                   
+                   // Guardamos también con llave global (resiliencia ante mismatch de IDs cortos/largos)
+                   await this.cacheManager.set(
+                     `wa_cart_global:${cartId}`,
+                     JSON.stringify({ ...cartPayload, tenantId }),
+                     86400 * 1000
                    );
 
                    this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);

@@ -58,13 +58,8 @@ export const quickCommerceSchema = z.object({
                 path: ["address"],
             });
         }
-        if (!data.lat || !data.lng) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Marca tu ubicación en el mapa",
-                path: ["lat"],
-            });
-        }
+        // lat/lng son opcionales — si el cliente de WhatsApp no envió GPS,
+        // la dirección de texto es suficiente para procesar el pedido.
     }
 });
 

@@ -23,6 +23,16 @@ export function CheckoutForm() {
     const [isLoadingWaCart, setIsLoadingWaCart] = useState(!!waParam)
     const [cartLoaded, setCartLoaded] = useState(false)
 
+    // ━━━ FIX CARRITO FANTASMA ━━━
+    // Si hay parámetro `wa` en la URL, el localStorage es IRRELEVANTE.
+    // Limpiar el carrito INMEDIATAMENTE (sincrónicamente) antes de cualquier fetch.
+    useEffect(() => {
+        if (waParam) {
+            setCart([]) // Elimina items viejos del localStorage/Zustand al instante
+        }
+    }, [waParam, setCart])
+
+    // Fetch del carrito de WhatsApp desde el backend
     useEffect(() => {
         if (waParam && !cartLoaded && !waData) {
             const fetchWaCart = async () => {
@@ -32,7 +42,8 @@ export function CheckoutForm() {
                     const res = await fetch(`${API_URL}/wa-cart/${waParam}`, {
                         headers: {
                             'x-tenant-id': tenantId
-                        }
+                        },
+                        cache: 'no-store', // CRÍTICO: Evita respuestas cacheadas por Next.js/navegador
                     })
                     
                     if (!res.ok) {
@@ -41,9 +52,7 @@ export function CheckoutForm() {
                     
                     const data = await res.json()
                     if (data.items && Array.isArray(data.items)) {
-                        // Limpiar carrito local antes de hidratar para evitar mezclar sesiones
-                        setCart([])
-                        setCart(data.items)
+                        setCart(data.items) // Sobrescribe con los items FRESCOS del backend
                         setWaData(data)
                         setCartLoaded(true)
                         // Limpiar URL sin perder el estado de waData

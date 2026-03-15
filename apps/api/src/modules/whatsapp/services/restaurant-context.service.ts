@@ -158,6 +158,7 @@ ${menuText}
   private async buildCustomerContext(tenantId: string, customerPhone?: string): Promise<string> {
     let customerContext = '';
     let needsProfile = true;
+    let needsGps = true; // Rastrear si falta ubicación GPS
 
     if (customerPhone) {
       const customer = await (this.prisma.secure as any).waCustomer.findUnique({
@@ -171,6 +172,12 @@ ${menuText}
         } else {
           customerContext += `NO tienes su dirección registrada. `;
         }
+
+        // Verificar si ya tiene coordenadas GPS
+        if (customer.lat && customer.lng) {
+          needsGps = false;
+        }
+
         customerContext += `NO le pidas estos datos a menos que pida cambiarlos o sea estrictamente necesario.\n`;
       }
     }
@@ -179,6 +186,12 @@ ${menuText}
       customerContext = `\nContexto del Cliente: Es un cliente nuevo. Antes de generar el carrito con \`createSuggestedCart\`, DEBES preguntarle amablemente su NOMBRE y DIRECCIÓN para el envío (a menos que ya te los haya dado en esta charla).\n`;
     } else if (needsProfile) {
       customerContext += `IMPORTANTE: Aún te falta su dirección. Pídesela amablemente antes de concretar la venta.\n`;
+    }
+
+    // Instrucción OPCIONAL de GPS: solo si no tenemos coordenadas.
+    // Se inyecta siempre pero la IA solo la usa al entregar el link de pago.
+    if (needsGps) {
+      customerContext += `\nSUGERENCIA GPS (OPCIONAL, NO BLOQUEA LA VENTA): Cuando entregues el link de pago (después de crear el carrito), añade al final de tu mensaje algo como: "📍 Tip: Si quieres que el repartidor te encuentre más fácil, puedes compartir tu ubicación actual por WhatsApp (toca el 📎 o el + y selecciona 'Ubicación'). ¡Es totalmente opcional!" — NUNCA pidas la ubicación ANTES de confirmar el pedido ni la hagas parecer obligatoria.\n`;
     }
 
     return customerContext;

@@ -58,12 +58,38 @@ export class WhatsappProcessor {
 
         const message = payload.messages[0];
         const from = message.from; // Número del cliente
-        
-        // Dependiendo del tipo de mensaje (text, interactive, image, etc) se lee el body
-        const textBody = message.type === 'text' ? message.text?.body : '[Mensaje no es de texto]';
         const messageId = message.id; // ID único del mensaje que da Meta
+        
+        // ━━━ INTERCEPTOR DE UBICACIÓN GPS ━━━
+        // Si el usuario comparte su ubicación vía WhatsApp, guardamos las coordenadas
+        // y le damos a la IA un texto contextual en vez de "[Mensaje no es de texto]".
+        let textBody: string;
 
-        this.logger.log(`[Tenant: ${tenantId}] Nuevo mensaje de ${from}: ${textBody}`);
+        if (message.type === 'location' && message.location) {
+          const { latitude, longitude } = message.location;
+          this.logger.log(`[Tenant: ${tenantId}] Ubicación GPS recibida de ${from}: lat=${latitude}, lng=${longitude}`);
+
+          // Persistir coordenadas en WaCustomer (upsert para manejar cliente nuevo o existente)
+          try {
+            await (this.prisma.secure as any).waCustomer.upsert({
+              where: { tenantId_phone: { tenantId, phone: from } },
+              update: { lat: latitude, lng: longitude },
+              create: { tenantId, phone: from, lat: latitude, lng: longitude },
+            });
+            this.logger.log(`[Tenant: ${tenantId}] Coordenadas GPS guardadas para ${from}`);
+          } catch (gpsErr) {
+            this.logger.error(`[Tenant: ${tenantId}] Error guardando GPS para ${from}: ${gpsErr.message}`);
+          }
+
+          // Mensaje sintético para que la IA entienda qué pasó
+          textBody = '*[Sistema: El cliente acaba de compartir su ubicación GPS exacta mediante WhatsApp. El backend ya la ha guardado exitosamente. Agradécele amablemente de forma breve y continúa con la conversación o despídete si el pedido ya terminó.]*';
+        } else if (message.type === 'text') {
+          textBody = message.text?.body || '';
+        } else {
+          textBody = '[Mensaje no es de texto]';
+        }
+
+        this.logger.log(`[Tenant: ${tenantId}] Nuevo mensaje de ${from}: ${textBody.substring(0, 80)}`);
         
         // --- PERSISTENCIA DE MENSAJES ---
         

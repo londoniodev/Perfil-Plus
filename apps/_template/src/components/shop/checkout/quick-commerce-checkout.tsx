@@ -84,6 +84,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     }, [waData, forceEditMode])
 
     const onSubmit = async (data: QuickCommerceFormData) => {
+        console.log('[Checkout] onSubmit ejecutado con:', data)
         setIsSubmitting(true)
         try {
             const payload = {
@@ -172,7 +173,13 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     // ================================================
     if (isExpressMode) {
         return (
-            <div className="max-w-xl mx-auto space-y-6">
+            <form
+                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                    console.error('[Checkout Express] Validación fallida:', errors)
+                    toast.error('Completa los campos requeridos para continuar.')
+                })}
+                className="max-w-xl mx-auto space-y-6 pb-24"
+            >
                 <header className="text-center space-y-2">
                     <CheckCircle2 className="mx-auto h-10 w-10 text-green-500" aria-hidden="true" />
                     <h1 className="text-2xl font-bold tracking-tight">¡Todo listo!</h1>
@@ -208,6 +215,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm">Datos de Entrega</CardTitle>
                             <Button 
+                                type="button"
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => setForceEditMode(true)}
@@ -255,18 +263,16 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 </div>
 
                 {/* CTA: Confirmación express */}
-                <form onSubmit={form.handleSubmit(onSubmit)} className="pb-24">
-                    <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50 md:relative md:bg-transparent md:border-none md:p-0">
-                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-lg" disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                            ) : (
-                                <>Confirmar Pedido - {formatCurrency(totalPrice())} <ArrowRight className="ml-2 h-5 w-5" /></>
-                            )}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50 md:relative md:bg-transparent md:border-none md:p-0">
+                    <Button type="submit" className="w-full h-14 text-lg font-bold shadow-lg" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        ) : (
+                            <>Confirmar Pedido - {formatCurrency(totalPrice())} <ArrowRight className="ml-2 h-5 w-5" /></>
+                        )}
+                    </Button>
+                </div>
+            </form>
         )
     }
 
@@ -280,7 +286,10 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 <p className="text-muted-foreground text-sm">Estas a un paso de disfrutar tu comida</p>
             </header>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-24">
+            <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                    console.error('[Checkout Form] Validación fallida:', errors)
+                    toast.error('Completa los campos requeridos para continuar.')
+                })} className="space-y-6 pb-24">
                 {/* 1. Resumen de Pedido (Compacto) */}
                 <Card className="border-primary/20 bg-primary/5">
                     <CardHeader className="py-4">

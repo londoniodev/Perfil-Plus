@@ -19,7 +19,7 @@ export class RestaurantContextService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) { }
 
   /**
    * Retorna el catálogo completo de productos activos del tenant,
@@ -27,7 +27,7 @@ export class RestaurantContextService {
    */
   async getProductCatalog(tenantId: string): Promise<CatalogProduct[]> {
     const cacheKey = `tenant:${tenantId}:product_catalog`;
-    
+
     const cached = await this.cacheManager.get<string>(cacheKey);
     if (cached) {
       try {
@@ -73,14 +73,14 @@ export class RestaurantContextService {
 
   async buildSystemPrompt(tenantId: string, customerPhone?: string): Promise<string> {
     const cacheKey = `tenant:${tenantId}:menu_context`;
-    
+
     // Intentar obtener del cache
     let menuContext = await this.cacheManager.get<string>(cacheKey);
 
     if (!menuContext) {
       this.logger.log(`[Tenant: ${tenantId}] Cache miss para menú. Construyendo prompt...`);
       menuContext = await this.generateMenuContext(tenantId);
-      
+
       // Guardar en cache por 30 días (2592000000 ms)
       await this.cacheManager.set(cacheKey, menuContext, 2592000000);
       this.logger.log(`[Tenant: ${tenantId}] Menú cacheado en Redis por 30 días.`);
@@ -116,7 +116,7 @@ export class RestaurantContextService {
     let menuText = `=== MENÚ ===\n`;
     for (const cat of categories as any[]) {
       if (cat.products?.length === 0) continue;
-      
+
       menuText += `\n[CATEGORÍA: ${cat.name}]\n`;
       for (const catProd of cat.products) {
         if (!catProd.product) continue;
@@ -141,8 +141,9 @@ Reglas Estratégicas y de Venta:
 5. Solo recomienda productos que estén en el menú proporcionado.
 6. Si el cliente pregunta un precio, muestra el precio exacto mencionado.
 7. DOMICILIOS: El costo de envío a domicilio es de ${deliveryFeeFormatted}. Al confirmar el pedido o entregar el link de pago con \`createSuggestedCart\`, infórmale clara y explícitamente al cliente el subtotal de sus productos y que se añadirá un costo de domicilio de ${deliveryFeeFormatted}.
-8. Al usar la herramienta de carrito, NO imprimas el link de pago en tu respuesta de texto, ya que el sistema lo enviará automáticamente en un botón interactivo llamado 'Completar Pago 💳'. Simplemente dile al cliente que puede proceder con el pago usando el botón de abajo y motívalo a concretar la compra.
-9. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
+8. Al usar la herramienta de carrito, NO imprimas el link de pago en tu respuesta de texto, ya que el systema lo enviará automáticamente en un botón interactivo llamado 'Completar Pago 💳'. Simplemente dile al cliente que puede proceder con el pago usando el botón de abajo y motívalo a concretar la compra.
+9. Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.
+10. REGLA CRÍTICA DE CHECKOUT (PROHIBIDO SIMULAR ESPERAS): NUNCA digas frases como "Un momento, por favor", "Voy a generar tu carrito", "Dame un segundo" o "Procesando...". Tú eres una IA, no necesitas tiempo para teclear. Si el cliente ya confirmó lo que quiere pedir, DEBES INVOCAR LA HERRAMIENTA `createSuggestedCart` INMEDIATAMENTE en esa misma respuesta. Tu mensaje de texto debe ser la confirmación final acompañando al carrito, nunca una promesa de que lo vas a crear en el futuro.`;
   }
 
   private async buildCustomerContext(tenantId: string, customerPhone?: string): Promise<string> {

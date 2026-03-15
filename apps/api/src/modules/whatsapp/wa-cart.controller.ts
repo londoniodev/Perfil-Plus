@@ -1,8 +1,7 @@
-import { Controller, Get, Param, NotFoundException, Logger, Inject } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Logger, Inject, Headers } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { Public } from '../../common/decorators/public.decorator';
-import { ClsService } from 'nestjs-cls';
 
 @Public()
 @Controller('wa-cart')
@@ -11,55 +10,106 @@ export class WaCartController {
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly cls: ClsService
   ) {}
+
+  /**
+   * GET /api/wa-cart/debug/redis-health
+   * Endpoint de diagnóstico para verificar si Redis está conectado y persistiendo.
+   */
+  @Get('debug/redis-health')
+  async redisHealth() {
+    const testKey = `wa_cart_debug:${Date.now()}`;
+    const testValue = JSON.stringify({ test: true, timestamp: new Date().toISOString() });
+
+    try {
+      // Escribir
+      await this.cacheManager.set(testKey, testValue, 60000); // TTL 60s
+      this.logger.log(`[DEBUG] Key escrita: ${testKey}`);
+
+      // Leer inmediatamente
+      const readBack = await this.cacheManager.get<string>(testKey);
+      
+      // Limpiar
+      await this.cacheManager.del(testKey);
+
+      if (readBack === testValue) {
+        return {
+          status: 'OK',
+          message: 'Redis está conectado y persistiendo datos correctamente.',
+          readBack: JSON.parse(readBack),
+        };
+      } else {
+        return {
+          status: 'WARN',
+          message: 'La escritura fue exitosa pero la lectura devolvió un valor diferente.',
+          expected: testValue,
+          actual: readBack,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`[DEBUG] Error en health check: ${error.message}`);
+      return {
+        status: 'ERROR',
+        message: `Redis no está funcionando: ${error.message}`,
+      };
+    }
+  }
 
   /**
    * GET /api/wa-cart/:id
    * Endpoint público que retorna los datos del carrito temporal de WhatsApp desde Redis.
+   * 
+   * Estrategia de búsqueda (en orden):
+   * 1. Key global `wa_cart_global:{id}` — siempre se guarda sin depender de tenantId
+   * 2. Key específica `wa_cart:{tenantId}:{id}` — fallback si la global no existe
    */
   @Get(':id')
-  async getCart(@Param('id') id: string) {
-    const tenantId = this.cls.get('tenantId');
-    
-    this.logger.log(`[GET_CART] Intentando recuperar carrito: id=${id}, tenantId=${tenantId}`);
+  async getCart(
+    @Param('id') id: string,
+    @Headers('x-tenant-id') tenantId?: string,
+  ) {
+    this.logger.log(`[GET_CART] id=${id}, tenantId=${tenantId || 'NO_HEADER'}`);
 
-    if (!tenantId) {
-      this.logger.error('No tenantId found in CLS for /wa-cart request');
-      throw new NotFoundException('Falta identificación de tienda (Tenant ID).');
+    // ━━━ ESTRATEGIA: Priorizar key GLOBAL (más confiable) ━━━
+    // La key global siempre se guarda sin depender de que el tenantId coincida
+    // entre el backend (que lo saca de la DB) y el frontend (que lo envía por header).
+    const globalKey = `wa_cart_global:${id}`;
+    let cachedData = await this.cacheManager.get<string>(globalKey);
+    let source = 'global';
+
+    if (cachedData) {
+      this.logger.log(`[GET_CART] ✅ Carrito encontrado en key global: ${globalKey}`);
     }
 
-    const redisKey = `wa_cart:${tenantId}:${id}`;
-    let cachedData = await this.cacheManager.get<string>(redisKey);
-
-    // Fallback: Si no se encuentra con el ID específico del tenant, buscamos en la llave global
-    // Esto resuelve problemas de desajuste entre ID y Slug (ej. si la IA guardó con uno y el front pide con otro)
-    if (!cachedData) {
-      this.logger.warn(`Carrito no encontrado con tenantId=${tenantId}. Buscando en fallback global...`);
-      const globalKey = `wa_cart_global:${id}`;
-      cachedData = await this.cacheManager.get<string>(globalKey);
-      
+    // Fallback: intentar con la key específica del tenant
+    if (!cachedData && tenantId) {
+      const tenantKey = `wa_cart:${tenantId}:${id}`;
+      cachedData = await this.cacheManager.get<string>(tenantKey);
+      source = 'tenant';
       if (cachedData) {
-         this.logger.log(`[GET_CART] Carrito recuperado vía fallback global para ID: ${id}`);
-         // Opcional: Podríamos validar que el tenantId guardado coincida, pero dado que el ID 
-         // es un random largo + timestamp, la probabilidad de colisión es nula.
+        this.logger.log(`[GET_CART] ✅ Carrito encontrado en key tenant: ${tenantKey}`);
       }
     }
 
+    // Diagnóstico: si no se encontró en ninguna key
     if (!cachedData) {
-      this.logger.warn(`Carrito NO encontrado en Redis (específico ni global): ${id}`);
+      this.logger.warn(
+        `[GET_CART] ❌ Carrito NO encontrado. ID=${id}, TenantID=${tenantId || 'N/A'}. ` +
+        `Keys consultadas: [${globalKey}]${tenantId ? `, [wa_cart:${tenantId}:${id}]` : ''}`
+      );
       throw new NotFoundException('El enlace de pago es inválido o ya expiró.');
     }
 
     try {
       const cart = JSON.parse(cachedData);
+      this.logger.log(`[GET_CART] Carrito servido (source=${source}, items=${cart.items?.length || 0})`);
       return {
         items: cart.items,
         customerData: cart.customerData,
-        source: 'redis'
+        source,
       };
     } catch (error) {
-      this.logger.error(`Error parseando carrito de Redis (${id}): ${error.message}`);
+      this.logger.error(`[GET_CART] Error parseando carrito (${id}): ${error.message}`);
       throw new NotFoundException('Error al recuperar los datos del carrito.');
     }
   }

@@ -462,4 +462,47 @@ export class ProductsService {
     if (!product) throw new NotFoundException('Producto no encontrado');
     return product;
   }
+
+  // ============ ELIMINAR PRODUCTO ============
+  async remove(id: string, tenantId: string) {
+    const existing = await this.prisma.secure.product.findUnique({
+      where: { id },
+      select: { tenantId: true },
+    });
+
+    if (!existing || existing.tenantId !== tenantId) {
+      throw new NotFoundException('Producto no encontrado en este tenant');
+    }
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Obtener modifier groups y sus modifiers para limpiar OrderItemModifier
+      const modifierGroups = await tx.modifierGroup.findMany({
+        where: { productId: id },
+        select: { id: true, modifiers: { select: { id: true } } },
+      });
+
+      const modifierIds = modifierGroups.flatMap((g) =>
+        g.modifiers.map((m) => m.id),
+      );
+
+      if (modifierIds.length > 0) {
+        await tx.orderItemModifier.deleteMany({
+          where: { modifierId: { in: modifierIds } },
+        });
+      }
+
+      // 2. Eliminar relaciones que no tienen onDelete: Cascade desde Product
+      await tx.categoriesOnProducts.deleteMany({ where: { productId: id } });
+      await tx.modifierGroup.deleteMany({ where: { productId: id } });
+      await tx.recipe.deleteMany({ where: { productId: id } });
+
+      // 3. Eliminar el producto (las relaciones con onDelete: Cascade se eliminan automáticamente)
+      await tx.product.delete({ where: { id } });
+
+      // 4. Invalidar caché del menú
+      await this.invalidateMenuCache(tenantId);
+
+      return { deleted: true };
+    });
+  }
 }

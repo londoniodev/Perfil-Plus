@@ -19,6 +19,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ProductsTable, ProductTableData } from "@alvarosky/ui"
 import { toggleProductAvailability } from "@/actions/admin/toggle-product-availability"
+import { deleteProduct } from "@/actions/admin/delete-product"
 
 interface ProductsTableClientProps {
     data: ProductTableData[]
@@ -35,19 +36,16 @@ export function ProductsTableClient({ data }: ProductsTableClientProps) {
     }
 
     const handleDelete = async (productId: string) => {
-        // TODO: Implement delete with confirmation dialog
         if (!confirm("¿Estás seguro de eliminar este producto?")) return
 
         try {
-            const response = await fetch(`/api/products/${productId}`, {
-                method: "DELETE",
-            })
+            const result = await deleteProduct(productId)
 
-            if (response.ok) {
+            if (result.success) {
                 toast.success("Producto eliminado correctamente")
                 router.refresh()
             } else {
-                toast.error("Error al eliminar el producto")
+                toast.error(result.error || "Error al eliminar el producto")
             }
         } catch (error) {
             toast.error("Error de conexión")

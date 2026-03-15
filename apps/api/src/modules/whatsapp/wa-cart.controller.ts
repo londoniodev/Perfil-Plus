@@ -1,7 +1,6 @@
-import { Controller, Get, Param, NotFoundException, Logger, Inject, Headers } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
+import { Controller, Get, Param, NotFoundException, Logger, Headers } from '@nestjs/common';
 import { Public } from '../../common/decorators/public.decorator';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Public()
 @Controller('wa-cart')
@@ -9,112 +8,65 @@ export class WaCartController {
   private readonly logger = new Logger(WaCartController.name);
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
-   * GET /api/wa-cart/debug/redis-health
-   * Endpoint de diagnóstico para verificar si Redis está conectado y persistiendo.
-   */
-  @Get('debug/redis-health')
-  async redisHealth() {
-    const cacheBackend = (global as any).__CACHE_BACKEND__ || 'UNKNOWN';
-    const testKey = `wa_cart_debug:${Date.now()}`;
-    const testValue = JSON.stringify({ test: true, timestamp: new Date().toISOString() });
-
-    try {
-      // Escribir
-      await this.cacheManager.set(testKey, testValue, 60000); // TTL 60s
-      this.logger.log(`[DEBUG] Key escrita: ${testKey}`);
-
-      // Leer inmediatamente
-      const readBack = await this.cacheManager.get<string>(testKey);
-      
-      // Limpiar
-      await this.cacheManager.del(testKey);
-
-      if (readBack === testValue) {
-        return {
-          status: 'OK',
-          cacheBackend,
-          message: 'Redis está conectado y persistiendo datos correctamente.',
-          readBack: JSON.parse(readBack),
-        };
-      } else {
-        return {
-          status: 'WARN',
-          cacheBackend,
-          message: 'La escritura fue exitosa pero la lectura devolvió un valor diferente.',
-          expected: testValue,
-          actual: readBack,
-        };
-      }
-    } catch (error) {
-      this.logger.error(`[DEBUG] Error en health check: ${error.message}`);
-      return {
-        status: 'ERROR',
-        cacheBackend,
-        message: `Redis no está funcionando: ${error.message}`,
-      };
-    }
-  }
-
-  /**
    * GET /api/wa-cart/:id
-   * Endpoint público que retorna los datos del carrito temporal de WhatsApp desde Redis.
-   * 
-   * Estrategia de búsqueda (en orden):
-   * 1. Key global `wa_cart_global:{id}` — siempre se guarda sin depender de tenantId
-   * 2. Key específica `wa_cart:{tenantId}:{id}` — fallback si la global no existe
+   * Endpoint público que retorna los datos del carrito temporal de WhatsApp desde Postgres.
    */
   @Get(':id')
   async getCart(
     @Param('id') id: string,
     @Headers('x-tenant-id') tenantId?: string,
   ) {
-    this.logger.log(`[GET_CART] id=${id}, tenantId=${tenantId || 'NO_HEADER'}`);
+    this.logger.log(`[GET_CART] Consultando Postgres id=${id}, tenantId=${tenantId || 'NO_HEADER'}`);
 
-    // ━━━ ESTRATEGIA: Priorizar key GLOBAL (más confiable) ━━━
-    // La key global siempre se guarda sin depender de que el tenantId coincida
-    // entre el backend (que lo saca de la DB) y el frontend (que lo envía por header).
-    const globalKey = `wa_cart_global:${id}`;
-    let cachedData = await this.cacheManager.get<string>(globalKey);
-    let source = 'global';
+    let cart;
 
-    if (cachedData) {
-      this.logger.log(`[GET_CART] ✅ Carrito encontrado en key global: ${globalKey}`);
-    }
-
-    // Fallback: intentar con la key específica del tenant
-    if (!cachedData && tenantId) {
-      const tenantKey = `wa_cart:${tenantId}:${id}`;
-      cachedData = await this.cacheManager.get<string>(tenantKey);
-      source = 'tenant';
-      if (cachedData) {
-        this.logger.log(`[GET_CART] ✅ Carrito encontrado en key tenant: ${tenantKey}`);
+    if (tenantId) {
+      // Prioritario: Buscar de forma segura con el tenantId provisto
+      cart = await (this.prisma.secure as any).waCart.findUnique({
+        where: { id: id, tenantId: tenantId },
+      });
+      if (cart) {
+        this.logger.log(`[GET_CART] ✅ Carrito encontrado con tenantId: ${tenantId}`);
       }
     }
 
-    // Diagnóstico: si no se encontró en ninguna key
-    if (!cachedData) {
-      this.logger.warn(
-        `[GET_CART] ❌ Carrito NO encontrado. ID=${id}, TenantID=${tenantId || 'N/A'}. ` +
-        `Keys consultadas: [${globalKey}]${tenantId ? `, [wa_cart:${tenantId}:${id}]` : ''}`
-      );
+    // Fallback: Si no hay tenantId en los headers o no lo encontró, buscar solo por ID
+    // Esto previene que una desincronización de headers rompa el carrito
+    if (!cart) {
+      cart = await (this.prisma.secure as any).waCart.findFirst({
+        where: { id: id },
+      });
+      if (cart) {
+        this.logger.log(`[GET_CART] ✅ Carrito encontrado vía fallback de ID. Tenant asociado: ${cart.tenantId}`);
+      }
+    }
+
+    if (!cart) {
+      this.logger.warn(`[GET_CART] ❌ Carrito NO encontrado en DB. ID=${id}, TenantID=${tenantId || 'N/A'}`);
       throw new NotFoundException('El enlace de pago es inválido o ya expiró.');
     }
 
+    // Comprobar expiración manualmente por seguridad
+    if (new Date() > cart.expiresAt) {
+      this.logger.warn(`[GET_CART] 🚨 Carrito expirado en DB. ID=${id}`);
+      throw new NotFoundException('El enlace de pago ya expiró (duración 24 horas).');
+    }
+
     try {
-      const cart = JSON.parse(cachedData);
-      this.logger.log(`[GET_CART] Carrito servido (source=${source}, items=${cart.items?.length || 0})`);
+      const cartData = typeof cart.cartData === 'string' ? JSON.parse(cart.cartData) : cart.cartData;
+      this.logger.log(`[GET_CART] Carrito servido exitosamente (items=${cartData.items?.length || 0})`);
       return {
-        items: cart.items,
-        customerData: cart.customerData,
-        source,
+        items: cartData.items,
+        customerData: cartData.customerData,
+        source: 'database',
       };
     } catch (error) {
-      this.logger.error(`[GET_CART] Error parseando carrito (${id}): ${error.message}`);
-      throw new NotFoundException('Error al recuperar los datos del carrito.');
+      this.logger.error(`[GET_CART] Error parseando datos del carrito (${id}): ${error.message}`);
+      throw new NotFoundException('Error recuperando los datos de este pedido.');
     }
   }
 }

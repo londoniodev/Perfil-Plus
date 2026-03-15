@@ -17,6 +17,7 @@ import { useCart, useOrder, useMenu, type PublicProduct, type PublicCategory, ty
 import Image from "next/image"
 import dynamic from "next/dynamic"
 import { formatCurrency } from "@/lib/utils"
+import { createMercadoPagoPreference } from "@/actions/mercadopago"
 
 // Fallback food images for products without uploaded photos
 const FOOD_FALLBACK_IMAGES = [
@@ -161,17 +162,17 @@ export default function MenuClient({
 
             if (paymentMethod === "MERCADOPAGO") {
                 try {
-                    const res = await fetch(`/api/checkout/mercadopago`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderId: result.orderId })
-                    })
-                    const data = await res.json()
-                    if (data.init_point) {
-                        window.location.href = data.init_point
+                    const response = await createMercadoPagoPreference(
+                        result.orderId,
+                        slug,
+                        window.location.origin
+                    );
+
+                    if (response.success && response.init_point) {
+                        window.location.href = response.init_point;
                     } else {
-                        console.error("MP Response:", data)
-                        alert(`❌ Error obteniendo link de pago: ${data.error || 'Unknown'}`)
+                        console.error("MP Response:", response);
+                        alert(`❌ Error obteniendo link de pago: ${response.error || 'Unknown'}`);
                     }
                 } catch (e) {
                     console.error("MP Fetch Error:", e)

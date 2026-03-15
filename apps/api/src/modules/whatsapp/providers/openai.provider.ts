@@ -211,10 +211,9 @@ export class OpenAiProvider implements AiProvider {
                    });
                 } else {
                    // ==========================================
-                   // PERSISTIR CARRITO EN REDIS (Caché Efímera)
+                   // PERSISTIR CARRITO EN POSTGRESQL (WaCart)
                    // ==========================================
                    const cartId = `wa-${Date.now().toString(36)}-${Math.random().toString(36).substring(7)}`;
-                   const cacheBackend = (global as any).__CACHE_BACKEND__ || 'UNKNOWN';
 
                    // Obtener perfil del cliente para hidratar el checkout
                    const customer = await (this.prisma.secure as any).waCustomer.findUnique({
@@ -234,51 +233,29 @@ export class OpenAiProvider implements AiProvider {
                      }
                    };
 
-                   const payloadStr = JSON.stringify(cartPayload);
-                   const CART_TTL = 86400000; // 24 horas en ms
-                   const tenantKey = `wa_cart:${tenantId}:${cartId}`;
-                   const globalKey = `wa_cart_global:${cartId}`;
+                   const expiresAt = new Date();
+                   expiresAt.setHours(expiresAt.getHours() + 24); // TTL 24 horas
 
-                   this.logger.log(`[CART_SAVE] === INICIO GUARDADO ===`);
-                   this.logger.log(`[CART_SAVE] Backend: ${cacheBackend}`);
+                   this.logger.log(`[CART_SAVE] === INICIO GUARDADO POSTGRESQL ===`);
                    this.logger.log(`[CART_SAVE] CartID: ${cartId}`);
                    this.logger.log(`[CART_SAVE] TenantID: ${tenantId}`);
-                   this.logger.log(`[CART_SAVE] Key tenant: ${tenantKey}`);
-                   this.logger.log(`[CART_SAVE] Key global: ${globalKey}`);
-                   this.logger.log(`[CART_SAVE] TTL: ${CART_TTL}ms (${CART_TTL / 3600000}h)`);
-                   this.logger.log(`[CART_SAVE] Payload size: ${payloadStr.length} bytes, Items: ${foundProducts.length}`);
-
-                   // Guardar con key tenant
-                   try {
-                     await this.cacheManager.set(tenantKey, payloadStr, CART_TTL);
-                     this.logger.log(`[CART_SAVE] ✅ Key tenant guardada`);
-                   } catch (err) {
-                     this.logger.error(`[CART_SAVE] ❌ FALLO key tenant: ${err.message}`);
-                   }
                    
-                   // Guardar con key global (resiliencia)
                    try {
-                     await this.cacheManager.set(globalKey, JSON.stringify({ ...cartPayload, tenantId }), CART_TTL);
-                     this.logger.log(`[CART_SAVE] ✅ Key global guardada`);
+                     await (this.prisma.secure as any).waCart.create({
+                       data: {
+                         id: cartId,
+                         tenantId,
+                         customerPhone,
+                         cartData: cartPayload,
+                         expiresAt
+                       }
+                     });
+                     this.logger.log(`[CART_SAVE] ✅ Carrito guardado en Postgres exitosamente`);
                    } catch (err) {
-                     this.logger.error(`[CART_SAVE] ❌ FALLO key global: ${err.message}`);
+                     this.logger.error(`[CART_SAVE] ❌ FALLO guardando en Postgres: ${err.message}`);
                    }
 
-                   // VERIFICACIÓN INMEDIATA
-                   try {
-                     const verifyGlobal = await this.cacheManager.get(globalKey);
-                     const verifyTenant = await this.cacheManager.get(tenantKey);
-                     this.logger.log(`[CART_SAVE] 🔍 Verify global: ${verifyGlobal ? '✅ EXISTS' : '❌ MISSING'}`);
-                     this.logger.log(`[CART_SAVE] 🔍 Verify tenant: ${verifyTenant ? '✅ EXISTS' : '❌ MISSING'}`);
-                     
-                     if (!verifyGlobal && !verifyTenant) {
-                       this.logger.error(`[CART_SAVE] ⚠️⚠️⚠️ FALLA CRÍTICA: AMBAS keys están vacías después de guardar. El cache backend (${cacheBackend}) no está persistiendo datos.`);
-                     }
-                   } catch (verifyErr) {
-                     this.logger.error(`[CART_SAVE] Error en verificación: ${verifyErr.message}`);
-                   }
-
-                   this.logger.log(`[CART_SAVE] === FIN GUARDADO ===`);
+                   this.logger.log(`[CART_SAVE] === FIN GUARDADO POSTGRESQL ===`);
 
                     // Usamos el Punycode correcto (khb) para compatibilidad universal con móviles (Android/WhatsApp)
                     const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;

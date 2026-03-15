@@ -44,6 +44,7 @@ model Tenant {
   waConversations    WaConversation[]
   waMessages         WaMessage[]
   waCustomers        WaCustomer[]
+  waCarts            WaCart[]
   warehouses         Warehouse[]
 }
 
@@ -844,6 +845,20 @@ model WaCustomer {
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, phone])
+}
+
+model WaCart {
+  id           String   @id @default(cuid()) // Format: wa-xxxx-yyyy
+  tenantId     String
+  customerPhone String?
+  cartData     Json     // { items: [...], customerData: {...} }
+  expiresAt    DateTime // Custom TTL, e.g., 24h
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, id])
+  @@index([expiresAt])
 }
 
 enum Role {

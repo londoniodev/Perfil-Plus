@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { redisStore } from 'cache-manager-redis-yet';
 import * as Joi from 'joi';
@@ -107,6 +108,7 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
       },
     }),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
 
     // Core modules
     PrismaModule,

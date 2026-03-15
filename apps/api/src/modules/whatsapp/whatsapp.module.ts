@@ -9,6 +9,7 @@ import { MetaApiService } from './services/meta-api.service';
 import { UsageGuardService } from './services/usage-guard.service';
 import { WhatsappOnboardingService } from './services/whatsapp-onboarding.service';
 import { WhatsappOnboardingController } from './whatsapp-onboarding.controller';
+import { WaCartCronService } from './services/wa-cart.cron';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { WhatsappOnboardingController } from './whatsapp-onboarding.controller';
     MetaApiService,
     UsageGuardService,
     WhatsappOnboardingService,
+    WaCartCronService,
   ],
   exports: [MetaApiService],
 })

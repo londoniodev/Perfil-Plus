@@ -87,4 +87,20 @@ export class UpdateTenantConfigDto {
 
   @IsOptional()
   deliveryFee?: number;
+
+  @IsString()
+  @IsOptional()
+  waPhoneNumberId?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  enableBlog?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  enableStore?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  enableLMS?: boolean;
 }

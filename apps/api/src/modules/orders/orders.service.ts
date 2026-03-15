@@ -48,6 +48,10 @@ export class OrdersService {
 
   // ============ CREAR ORDEN (con cálculo server-side) ============
   async createOrder(userId: string | undefined, dto: CreateOrderDto) {
+    const tenantId = this.getTenantId();
+    this.logger.log(`[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`);
+    this.logger.debug(`[CREATE_ORDER] Body: ${JSON.stringify(dto)}`);
+    
     let lastError: any;
     const MAX_RETRIES = 3;
 
@@ -389,6 +393,11 @@ export class OrdersService {
         });
       } catch (error) {
         lastError = error;
+        this.logger.error(`[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`, error.stack);
+        // Esperar un poco antes de reintentar si es un error de concurrencia
+        if (i < MAX_RETRIES - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
+        }
         // Retry only on unique constraint violation (P2002) for orderNumber
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -400,6 +409,7 @@ export class OrdersService {
         throw error;
       }
     }
+    this.logger.error(`[CREATE_ORDER] Todos los intentos fallaron. Error final: ${lastError.message}`);
     throw lastError;
   }
 

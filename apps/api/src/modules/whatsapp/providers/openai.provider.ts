@@ -232,18 +232,20 @@ export class OpenAiProvider implements AiProvider {
                    };
 
                    // Guardamos con llave específica de tenant (seguridad)
-                   await this.cacheManager.set(
-                     `wa_cart:${tenantId}:${cartId}`,
-                     JSON.stringify(cartPayload),
-                     86400 * 1000 // 24 horas en milisegundos
-                   );
+                   // Nota: Usamos undefined para el TTL para heredar el default del store (1 hora)
+                   // Esto ayuda a descartar si el valor manual (86400000) causaba rechazos en Redis/Keyv
+                   await this.cacheManager.set(`wa_cart:${tenantId}:${cartId}`, JSON.stringify(cartPayload), undefined as any);
                    
-                   // Guardamos también con llave global (resiliencia ante mismatch de IDs cortos/largos)
-                   await this.cacheManager.set(
-                     `wa_cart_global:${cartId}`,
-                     JSON.stringify({ ...cartPayload, tenantId }),
-                     86400 * 1000
-                   );
+                   // Guardamos también con llave global (resiliencia)
+                   await this.cacheManager.set(`wa_cart_global:${cartId}`, JSON.stringify({ ...cartPayload, tenantId }), undefined as any);
+
+                   // VERIFICACIÓN INMEDIATA (Debug)
+                   const verify = await this.cacheManager.get(`wa_cart_global:${cartId}`);
+                   if (verify) {
+                     this.logger.log(`[VERIFY] Carrito confirmado en Redis (ID: ${cartId})`);
+                   } else {
+                     this.logger.error(`[VERIFY] ¡FALLA CRÍTICA! Carrito NO se guardó en Redis (ID: ${cartId})`);
+                   }
 
                    this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);
 

@@ -18,6 +18,7 @@ export class WaCartController {
    */
   @Get('debug/redis-health')
   async redisHealth() {
+    const cacheBackend = (global as any).__CACHE_BACKEND__ || 'UNKNOWN';
     const testKey = `wa_cart_debug:${Date.now()}`;
     const testValue = JSON.stringify({ test: true, timestamp: new Date().toISOString() });
 
@@ -35,12 +36,14 @@ export class WaCartController {
       if (readBack === testValue) {
         return {
           status: 'OK',
+          cacheBackend,
           message: 'Redis está conectado y persistiendo datos correctamente.',
           readBack: JSON.parse(readBack),
         };
       } else {
         return {
           status: 'WARN',
+          cacheBackend,
           message: 'La escritura fue exitosa pero la lectura devolvió un valor diferente.',
           expected: testValue,
           actual: readBack,
@@ -50,6 +53,7 @@ export class WaCartController {
       this.logger.error(`[DEBUG] Error en health check: ${error.message}`);
       return {
         status: 'ERROR',
+        cacheBackend,
         message: `Redis no está funcionando: ${error.message}`,
       };
     }

@@ -214,6 +214,7 @@ export class OpenAiProvider implements AiProvider {
                    // PERSISTIR CARRITO EN REDIS (Caché Efímera)
                    // ==========================================
                    const cartId = `wa-${Date.now().toString(36)}-${Math.random().toString(36).substring(7)}`;
+                   const cacheBackend = (global as any).__CACHE_BACKEND__ || 'UNKNOWN';
 
                    // Obtener perfil del cliente para hidratar el checkout
                    const customer = await (this.prisma.secure as any).waCustomer.findUnique({
@@ -233,25 +234,51 @@ export class OpenAiProvider implements AiProvider {
                      }
                    };
 
-                   // Guardamos con llave específica de tenant (seguridad)
-                   // Nota: Usamos undefined para el TTL para heredar el default del store (1 hora)
-                   // Esto ayuda a descartar si el valor manual (86400000) causaba rechazos en Redis/Keyv
-                   // TTL = 24 horas (86400000 ms)
-                   const CART_TTL = 86400000;
-                   await this.cacheManager.set(`wa_cart:${tenantId}:${cartId}`, JSON.stringify(cartPayload), CART_TTL);
-                   
-                   // Guardamos también con llave global (resiliencia)
-                   await this.cacheManager.set(`wa_cart_global:${cartId}`, JSON.stringify({ ...cartPayload, tenantId }), CART_TTL);
+                   const payloadStr = JSON.stringify(cartPayload);
+                   const CART_TTL = 86400000; // 24 horas en ms
+                   const tenantKey = `wa_cart:${tenantId}:${cartId}`;
+                   const globalKey = `wa_cart_global:${cartId}`;
 
-                   // VERIFICACIÓN INMEDIATA (Debug)
-                   const verify = await this.cacheManager.get(`wa_cart_global:${cartId}`);
-                   if (verify) {
-                     this.logger.log(`[VERIFY] Carrito confirmado en Redis (ID: ${cartId})`);
-                   } else {
-                     this.logger.error(`[VERIFY] ¡FALLA CRÍTICA! Carrito NO se guardó en Redis (ID: ${cartId})`);
+                   this.logger.log(`[CART_SAVE] === INICIO GUARDADO ===`);
+                   this.logger.log(`[CART_SAVE] Backend: ${cacheBackend}`);
+                   this.logger.log(`[CART_SAVE] CartID: ${cartId}`);
+                   this.logger.log(`[CART_SAVE] TenantID: ${tenantId}`);
+                   this.logger.log(`[CART_SAVE] Key tenant: ${tenantKey}`);
+                   this.logger.log(`[CART_SAVE] Key global: ${globalKey}`);
+                   this.logger.log(`[CART_SAVE] TTL: ${CART_TTL}ms (${CART_TTL / 3600000}h)`);
+                   this.logger.log(`[CART_SAVE] Payload size: ${payloadStr.length} bytes, Items: ${foundProducts.length}`);
+
+                   // Guardar con key tenant
+                   try {
+                     await this.cacheManager.set(tenantKey, payloadStr, CART_TTL);
+                     this.logger.log(`[CART_SAVE] ✅ Key tenant guardada`);
+                   } catch (err) {
+                     this.logger.error(`[CART_SAVE] ❌ FALLO key tenant: ${err.message}`);
+                   }
+                   
+                   // Guardar con key global (resiliencia)
+                   try {
+                     await this.cacheManager.set(globalKey, JSON.stringify({ ...cartPayload, tenantId }), CART_TTL);
+                     this.logger.log(`[CART_SAVE] ✅ Key global guardada`);
+                   } catch (err) {
+                     this.logger.error(`[CART_SAVE] ❌ FALLO key global: ${err.message}`);
                    }
 
-                   this.logger.log(`[Tenant: ${tenantId}] Carrito guardado en Redis (ID: ${cartId})`);
+                   // VERIFICACIÓN INMEDIATA
+                   try {
+                     const verifyGlobal = await this.cacheManager.get(globalKey);
+                     const verifyTenant = await this.cacheManager.get(tenantKey);
+                     this.logger.log(`[CART_SAVE] 🔍 Verify global: ${verifyGlobal ? '✅ EXISTS' : '❌ MISSING'}`);
+                     this.logger.log(`[CART_SAVE] 🔍 Verify tenant: ${verifyTenant ? '✅ EXISTS' : '❌ MISSING'}`);
+                     
+                     if (!verifyGlobal && !verifyTenant) {
+                       this.logger.error(`[CART_SAVE] ⚠️⚠️⚠️ FALLA CRÍTICA: AMBAS keys están vacías después de guardar. El cache backend (${cacheBackend}) no está persistiendo datos.`);
+                     }
+                   } catch (verifyErr) {
+                     this.logger.error(`[CART_SAVE] Error en verificación: ${verifyErr.message}`);
+                   }
+
+                   this.logger.log(`[CART_SAVE] === FIN GUARDADO ===`);
 
                     // Usamos el Punycode correcto (khb) para compatibilidad universal con móviles (Android/WhatsApp)
                     const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;

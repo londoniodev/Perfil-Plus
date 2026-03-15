@@ -3,6 +3,15 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../../prisma/prisma.service';
 
+export interface CatalogProduct {
+  id: string;
+  name: string;
+  basePrice: number;
+  description: string | null;
+  variantId: string;
+  images: string[];
+}
+
 @Injectable()
 export class RestaurantContextService {
   private readonly logger = new Logger(RestaurantContextService.name);
@@ -11,6 +20,56 @@ export class RestaurantContextService {
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  /**
+   * Retorna el catálogo completo de productos activos del tenant,
+   * cacheado en Redis. Usado por OpenAiProvider para búsqueda fuzzy con fuse.js.
+   */
+  async getProductCatalog(tenantId: string): Promise<CatalogProduct[]> {
+    const cacheKey = `tenant:${tenantId}:product_catalog`;
+    
+    const cached = await this.cacheManager.get<string>(cacheKey);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        this.logger.warn(`[Tenant: ${tenantId}] Catálogo corrupto en cache, regenerando...`);
+      }
+    }
+
+    this.logger.log(`[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`);
+
+    const products = await (this.prisma.secure as any).product.findMany({
+      where: {
+        productType: 'RESTAURANT',
+        published: true,
+        isAvailable: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        basePrice: true,
+        description: true,
+        images: true,
+        variants: { select: { id: true }, take: 1 },
+      },
+    });
+
+    const catalog: CatalogProduct[] = products.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      basePrice: Number(p.basePrice),
+      description: p.description || null,
+      variantId: p.variants[0]?.id || p.id,
+      images: p.images || [],
+    }));
+
+    // Cache por 30 días (mismo TTL que el system prompt)
+    await this.cacheManager.set(cacheKey, JSON.stringify(catalog), 2592000000);
+    this.logger.log(`[Tenant: ${tenantId}] Catálogo de ${catalog.length} productos cacheado.`);
+
+    return catalog;
+  }
 
   async buildSystemPrompt(tenantId: string, customerPhone?: string): Promise<string> {
     const cacheKey = `tenant:${tenantId}:menu_context`;

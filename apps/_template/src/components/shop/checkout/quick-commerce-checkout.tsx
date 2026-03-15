@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCart } from "@/store/use-cart"
@@ -18,7 +18,7 @@ import {
     Separator,
     useToast
 } from "@alvarosky/ui"
-import { ArrowRight, Loader2, MapPin, Truck, ShoppingBag, UtensilsCrossed, Smartphone } from "lucide-react"
+import { ArrowRight, Loader2, MapPin, Truck, ShoppingBag, UtensilsCrossed, Smartphone, CheckCircle2, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { LocationPicker } from "./location-picker"
 import { formatCurrency } from "@/lib/utils"
@@ -39,6 +39,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     const toast = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [forceEditMode, setForceEditMode] = useState(false)
 
     const form = useForm<QuickCommerceFormData>({
         resolver: zodResolver(quickCommerceSchema),
@@ -74,6 +75,13 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             toast.success("Datos de entrega cargados desde WhatsApp.")
         }
     }, [waData, form, toast, hasHydrated])
+
+    // Zero-Click: detectar si tenemos datos completos para modo express
+    const isExpressMode = useMemo(() => {
+        if (forceEditMode || !waData?.customerData) return false
+        const cd = waData.customerData
+        return !!(cd.name && cd.phone && cd.address)
+    }, [waData, forceEditMode])
 
     const onSubmit = async (data: QuickCommerceFormData) => {
         setIsSubmitting(true)
@@ -152,13 +160,119 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     if (cartItems.length === 0) {
         return (
             <div className="text-center py-12">
-                <Smartphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <Smartphone className="mx-auto h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
                 <p className="text-muted-foreground mb-4">No hay productos seleccionados.</p>
                 <Button onClick={() => router.push("/menu")}>Volver al Menú</Button>
             </div>
         )
     }
 
+    // ================================================
+    // MODO EXPRESS: Confirmación de 1 click
+    // ================================================
+    if (isExpressMode) {
+        return (
+            <div className="max-w-xl mx-auto space-y-6">
+                <header className="text-center space-y-2">
+                    <CheckCircle2 className="mx-auto h-10 w-10 text-green-500" aria-hidden="true" />
+                    <h1 className="text-2xl font-bold tracking-tight">¡Todo listo!</h1>
+                    <p className="text-muted-foreground text-sm">Revisa tu pedido y confirma con un toque</p>
+                </header>
+
+                {/* Resumen de productos */}
+                <Card className="border-primary/20 bg-primary/5">
+                    <CardHeader className="py-4">
+                        <CardTitle className="text-sm flex justify-between">
+                            <span>Resumen del Pedido</span>
+                            <span>{formatCurrency(totalPrice())}</span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-0 pb-4">
+                        <div className="space-y-2">
+                            {cartItems.map(item => (
+                                <div key={item.variantId} className="flex justify-between text-xs text-muted-foreground">
+                                    <span>
+                                        {item.quantity}x {item.title}
+                                        {item.notes && <span className="italic ml-1">({item.notes})</span>}
+                                    </span>
+                                    <span>{formatCurrency(item.price * item.quantity)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Datos del cliente (solo lectura) */}
+                <Card>
+                    <CardHeader className="py-3">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm">Datos de Entrega</CardTitle>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setForceEditMode(true)}
+                                className="text-xs text-muted-foreground h-auto p-1"
+                                aria-label="Editar datos de entrega"
+                            >
+                                <Pencil className="h-3 w-3 mr-1" aria-hidden="true" />
+                                Editar
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="py-0 pb-4 space-y-1">
+                        <p className="text-sm font-medium">{waData!.customerData.name}</p>
+                        <p className="text-xs text-muted-foreground">{waData!.customerData.phone}</p>
+                        <p className="text-xs text-muted-foreground flex items-start">
+                            <MapPin className="h-3 w-3 mr-1 mt-0.5 shrink-0" aria-hidden="true" />
+                            {waData!.customerData.address}
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Método de pago */}
+                <div className="space-y-3">
+                    <Label className="text-base">Método de Pago</Label>
+                    <RadioGroup
+                        value={form.watch("paymentMethod")}
+                        onValueChange={(val) => form.setValue("paymentMethod", val as any)}
+                        className="grid grid-cols-1 gap-2"
+                    >
+                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                            <RadioGroupItem value="CASH" />
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Efectivo / Contraentrega</p>
+                                <p className="text-xs text-muted-foreground">Pagas al recibir tu pedido</p>
+                            </div>
+                        </Label>
+                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                            <RadioGroupItem value="MERCADOPAGO" />
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Mercado Pago</p>
+                                <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
+                            </div>
+                        </Label>
+                    </RadioGroup>
+                </div>
+
+                {/* CTA: Confirmación express */}
+                <form onSubmit={form.handleSubmit(onSubmit)} className="pb-24">
+                    <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t z-50 md:relative md:bg-transparent md:border-none md:p-0">
+                        <Button type="submit" className="w-full h-14 text-lg font-bold shadow-lg" disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            ) : (
+                                <>Confirmar Pedido - {formatCurrency(totalPrice())} <ArrowRight className="ml-2 h-5 w-5" /></>
+                            )}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        )
+    }
+
+    // ================================================
+    // MODO FORMULARIO COMPLETO (normal o datos incompletos)
+    // ================================================
     return (
         <div className="max-w-xl mx-auto space-y-6">
             <header className="text-center space-y-2">
@@ -201,7 +315,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                                 className={`flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all ${orderType === 'DELIVERY' ? 'border-primary bg-primary/5' : 'border-muted opacity-60'}`}
                             >
                                 <RadioGroupItem value="DELIVERY" id="q-delivery" className="sr-only" />
-                                <Truck className="mb-2 h-6 w-6 text-primary" />
+                                <Truck className="mb-2 h-6 w-6 text-primary" aria-hidden="true" />
                                 <span className="font-semibold">Domicilio</span>
                             </Label>
                             <Label 
@@ -209,7 +323,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                                 className={`flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all ${orderType === 'PICKUP' ? 'border-primary bg-primary/5' : 'border-muted opacity-60'}`}
                             >
                                 <RadioGroupItem value="PICKUP" id="q-pickup" className="sr-only" />
-                                <ShoppingBag className="mb-2 h-6 w-6 text-primary" />
+                                <ShoppingBag className="mb-2 h-6 w-6 text-primary" aria-hidden="true" />
                                 <span className="font-semibold">Recoger</span>
                             </Label>
                         </RadioGroup>
@@ -220,7 +334,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base flex items-center">
-                            <Smartphone className="mr-2 h-4 w-4" /> Datos de Contacto
+                            <Smartphone className="mr-2 h-4 w-4" aria-hidden="true" /> Datos de Contacto
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -242,7 +356,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center">
-                                <MapPin className="mr-2 h-4 w-4" /> Lugar de Entrega
+                                <MapPin className="mr-2 h-4 w-4" aria-hidden="true" /> Lugar de Entrega
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -307,3 +421,4 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
         </div>
     )
 }
+

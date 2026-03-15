@@ -16,6 +16,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { OrdersGateway } from './orders.gateway';
 import { validateOrderTransition } from './domain/order-state-machine';
 import { InventoryService } from '../inventory/inventory.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { Inject, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
@@ -31,6 +32,7 @@ export class OrdersService {
     private storage: StorageService,
     private ordersGateway: OrdersGateway,
     private inventoryService: InventoryService,
+    private eventEmitter: EventEmitter2,
   ) { }
 
   private getTenantId(): string {
@@ -357,6 +359,18 @@ export class OrdersService {
             orderId: order.id,
             data: order,
           });
+
+          // Notificar al cliente vía WhatsApp si tiene teléfono
+          if (dto.customerPhone) {
+            this.eventEmitter.emit('order.created', {
+              tenantId: this.getTenantId(),
+              customerPhone: dto.customerPhone,
+              orderNumber,
+              totalAmount: totalAmount.toNumber(),
+              orderType: dto.orderType || 'DINE_IN',
+              paymentMethod: dto.paymentMethod || 'CASH',
+            });
+          }
 
           // --- DEDUCCIÓN DE INVENTARIO (ATÓMICA dentro del mismo tx) ---
           const productItems = orderItemsData

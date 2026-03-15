@@ -4,6 +4,8 @@ import type { Cache } from 'cache-manager';
 import { AiProvider, AiResponse } from './ai-provider.interface';
 import { OpenAI } from 'openai';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { RestaurantContextService, CatalogProduct } from '../services/restaurant-context.service';
+import Fuse from 'fuse.js';
 
 @Injectable()
 export class OpenAiProvider implements AiProvider {
@@ -13,6 +15,7 @@ export class OpenAiProvider implements AiProvider {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly contextService: RestaurantContextService,
   ) {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -70,8 +73,9 @@ export class OpenAiProvider implements AiProvider {
                   items: {
                     type: 'object',
                     properties: {
-                      name: { type: 'string', description: 'Nombre exacto del producto tal como figura en el menú' },
-                      quantity: { type: 'integer', description: 'Cantidad solicitada de este producto' }
+                      name: { type: 'string', description: 'Nombre del producto tal como figura en el menú (no necesita ser exacto)' },
+                      quantity: { type: 'integer', description: 'Cantidad solicitada de este producto' },
+                      notes: { type: 'string', description: 'Instrucciones especiales o modificadores para este item. Ej: "sin cebolla", "extra queso", "bien cocida"' }
                     },
                     required: ['name', 'quantity']
                   }
@@ -161,7 +165,7 @@ export class OpenAiProvider implements AiProvider {
             
             try {
               const args = JSON.parse(toolCall.function.arguments);
-              const requestedItems: { name: string, quantity: number }[] = args.items || [];
+              const requestedItems: { name: string, quantity: number, notes?: string }[] = args.items || [];
               
               if (requestedItems.length === 0) {
                 toolResponseText = JSON.stringify({ error: 'No items provided to create cart.' });
@@ -169,35 +173,33 @@ export class OpenAiProvider implements AiProvider {
                 const foundProducts: any[] = [];
                 const missingProducts: string[] = [];
                 
+                // Búsqueda Fuzzy con Fuse.js contra catálogo cacheado
+                const catalog = await this.contextService.getProductCatalog(tenantId);
+                const fuse = new Fuse(catalog, {
+                  keys: ['name'],
+                  threshold: 0.4,
+                  includeScore: true,
+                  ignoreLocation: true,
+                });
+
                 for (const item of requestedItems) {
-                  const product = await (this.prisma.secure as any).product.findFirst({
-                    where: { 
-                      name: { equals: item.name, mode: 'insensitive' },
-                      productType: 'RESTAURANT',
-                      published: true,
-                      isAvailable: true
-                    },
-                    select: { 
-                      id: true, 
-                      name: true, 
-                      basePrice: true,
-                      productType: true,
-                      variants: { select: { id: true }, take: 1 },
-                      images: true
-                    }
-                  });
+                  const results = fuse.search(item.name);
                   
-                  if (product) {
+                  if (results.length > 0 && results[0].score !== undefined && results[0].score <= 0.4) {
+                    const match = results[0].item;
+                    this.logger.log(`[Fuzzy] "${item.name}" → "${match.name}" (score: ${results[0].score?.toFixed(3)})`);
                     foundProducts.push({
-                      productId: product.id,
-                      variantId: product.variants[0]?.id || product.id,
-                      title: product.name,
+                      productId: match.id,
+                      variantId: match.variantId,
+                      title: match.name,
                       quantity: item.quantity,
-                      price: Number(product.basePrice),
-                      productType: product.productType,
-                      imageSrc: product.images[0] || ''
+                      price: match.basePrice,
+                      productType: 'RESTAURANT',
+                      imageSrc: match.images[0] || '',
+                      notes: item.notes || undefined,
                     });
                   } else {
+                    this.logger.warn(`[Fuzzy] No match for "${item.name}" (best score: ${results[0]?.score?.toFixed(3) || 'N/A'})`);
                     missingProducts.push(item.name);
                   }
                 }
@@ -234,10 +236,12 @@ export class OpenAiProvider implements AiProvider {
                    // Guardamos con llave específica de tenant (seguridad)
                    // Nota: Usamos undefined para el TTL para heredar el default del store (1 hora)
                    // Esto ayuda a descartar si el valor manual (86400000) causaba rechazos en Redis/Keyv
-                   await this.cacheManager.set(`wa_cart:${tenantId}:${cartId}`, JSON.stringify(cartPayload), undefined as any);
+                   // TTL = 24 horas (86400000 ms)
+                   const CART_TTL = 86400000;
+                   await this.cacheManager.set(`wa_cart:${tenantId}:${cartId}`, JSON.stringify(cartPayload), CART_TTL);
                    
                    // Guardamos también con llave global (resiliencia)
-                   await this.cacheManager.set(`wa_cart_global:${cartId}`, JSON.stringify({ ...cartPayload, tenantId }), undefined as any);
+                   await this.cacheManager.set(`wa_cart_global:${cartId}`, JSON.stringify({ ...cartPayload, tenantId }), CART_TTL);
 
                    // VERIFICACIÓN INMEDIATA (Debug)
                    const verify = await this.cacheManager.get(`wa_cart_global:${cartId}`);

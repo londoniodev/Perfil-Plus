@@ -25,6 +25,7 @@ import { WhatsappOnboardingController } from './whatsapp-onboarding.controller';
     UsageGuardService,
     WhatsappOnboardingService,
   ],
+  exports: [MetaApiService],
 })
 export class WhatsappModule {}
 

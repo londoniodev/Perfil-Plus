@@ -32,9 +32,12 @@ export class CategoriesService {
   ) {}
 
   private async invalidateMenuCache(tenantId: string) {
-    const key = `tenant:${tenantId}:menu_context`;
-    await this.cacheManager.del(key);
-    this.logger.log(`[Tenant: ${tenantId}] Caché de menú de WhatsApp invalidado.`);
+    const keys = [
+      `tenant:${tenantId}:menu_context`,
+      `tenant:${tenantId}:product_catalog`,
+    ];
+    await Promise.all(keys.map((k) => this.cacheManager.del(k)));
+    this.logger.log(`[Tenant: ${tenantId}] Caché de menú y catálogo de WhatsApp invalidado.`);
   }
 
   async findAll(tenantId: string) {

@@ -333,13 +333,20 @@ export class PaymentsService {
       throw new BadRequestException('El carrito está vacío');
     }
 
-    // Batch fetch: single query replaces N findUnique calls
+    // Batch fetch variants
     const variantIds = dto.items.map((i) => i.variantId);
     const variants = await this.prisma.secure.productVariant.findMany({
       where: { id: { in: variantIds } },
       include: { product: true },
     });
     const variantMap = new Map(variants.map((v) => [v.id, v]));
+
+    // Batch fetch modifiers
+    const modifierIds = dto.items.flatMap((i) => i.modifiers?.map((m) => m.modifierId) || []);
+    const modifiers = modifierIds.length > 0
+      ? await this.prisma.secure.modifier.findMany({ where: { id: { in: modifierIds } } })
+      : [];
+    const modifierMap = new Map(modifiers.map((m) => [m.id, m]));
 
     for (const item of dto.items) {
       const variant = variantMap.get(item.variantId);
@@ -353,15 +360,34 @@ export class PaymentsService {
           `Producto no disponible: ${variant.product.name}`,
         );
 
-      const price = Number(variant.price);
-      totalAmount += price * item.quantity;
+      let unitPrice = Number(variant.price);
+      let description = variant.name !== 'Standard' ? variant.name : '';
+
+      // Add modifier prices
+      if (item.modifiers && item.modifiers.length > 0) {
+        const modDescriptions: string[] = [];
+        for (const modItem of item.modifiers) {
+          const mod = modifierMap.get(modItem.modifierId);
+          if (mod) {
+            unitPrice += Number(mod.priceAdjustment) * modItem.quantity;
+            modDescriptions.push(`${mod.name} (x${modItem.quantity})`);
+          }
+        }
+        if (modDescriptions.length > 0) {
+          description = description 
+            ? `${description} - ${modDescriptions.join(', ')}`
+            : modDescriptions.join(', ');
+        }
+      }
+
+      totalAmount += unitPrice * item.quantity;
 
       preferenceItems.push({
         id: variant.id,
         title: variant.product.name,
-        description: variant.name !== 'Standard' ? variant.name : undefined,
+        description: description || undefined,
         quantity: item.quantity,
-        unit_price: price,
+        unit_price: unitPrice,
         currency_id: currency,
         picture_url:
           variant.product.images?.[0] || variant.product.digitalFileUrl,
@@ -582,6 +608,13 @@ export class PaymentsService {
             const orderItemsData: any[] = [];
             const digitalItemsDispatch: any[] = [];
 
+            // Batch fetch all modifiers involved
+            const allModifierIds = items.flatMap((i: any) => i.modifiers?.map((m: any) => m.modifierId) || []);
+            const allModifiers = allModifierIds.length > 0
+              ? await tx.modifier.findMany({ where: { id: { in: allModifierIds } } })
+              : [];
+            const modifierMap = new Map(allModifiers.map((m) => [m.id, m]));
+
             for (const item of items) {
               const variant = await tx.productVariant.findUnique({
                 where: { id: item.variantId },
@@ -590,16 +623,36 @@ export class PaymentsService {
 
               if (!variant) continue;
 
-              const price = Number(variant.price);
-              totalAmount += price * item.quantity;
+              let itemPrice = Number(variant.price);
+              const itemModifiersData: any[] = [];
+
+              if (item.modifiers && item.modifiers.length > 0) {
+                for (const modItem of item.modifiers) {
+                  const mod = modifierMap.get(modItem.modifierId);
+                  if (mod) {
+                    itemPrice += Number(mod.priceAdjustment) * modItem.quantity;
+                    itemModifiersData.push({
+                      modifierId: mod.id,
+                      modifierName: mod.name,
+                      priceAdjustment: mod.priceAdjustment,
+                      quantity: modItem.quantity,
+                    });
+                  }
+                }
+              }
+
+              totalAmount += itemPrice * item.quantity;
 
               orderItemsData.push({
                 variantId: variant.id,
                 quantity: item.quantity,
-                price: price,
+                price: itemPrice,
                 productName: variant.product.name,
                 variantName: variant.name !== 'Standard' ? variant.name : null,
                 isPaid: true,
+                modifiers: {
+                  create: itemModifiersData,
+                },
               });
 
               if (variant.product.productType === 'DIGITAL') {

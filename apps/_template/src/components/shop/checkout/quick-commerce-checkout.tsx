@@ -116,7 +116,11 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 body: JSON.stringify(payload)
             })
 
-            if (!response.ok) throw new Error("Error al procesar el pedido")
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const message = errorData.message || "Error al procesar el pedido";
+                throw new Error(Array.isArray(message) ? message.join(", ") : message);
+            }
 
             const result = await response.json()
 
@@ -128,11 +132,9 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             // Si es pedido en efectivo (Directo)
             toast.success("¡Pedido realizado con éxito!")
             router.push(`/order-success/${result.id || result.orderNumber}`)
-
         } catch (error: any) {
             console.error("Error al procesar el pedido:", error)
-            const errorMsg = error.response?.data?.message || error.message || "Error desconocido al procesar el pedido";
-            toast.error(errorMsg)
+            toast.error(error.message || "Error desconocido al procesar el pedido")
         } finally {
             setIsSubmitting(false)
         }

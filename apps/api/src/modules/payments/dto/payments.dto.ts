@@ -3,8 +3,6 @@ import {
   IsOptional,
   IsEmail,
   IsNumber,
-  IsIn,
-  IsUrl,
   IsArray,
   ValidateNested,
 } from 'class-validator';
@@ -23,12 +21,30 @@ export class CreateSubscriptionDto {
 
 // ==================== CHECKOUT DTOs ====================
 
+export class CheckoutItemModifierDto {
+  @IsString()
+  modifierId: string;
+
+  @IsNumber()
+  quantity: number = 1;
+}
+
 export class CheckoutItemDto {
   @IsString()
   variantId: string;
 
   @IsNumber()
   quantity: number;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CheckoutItemModifierDto)
+  @IsOptional()
+  modifiers?: CheckoutItemModifierDto[];
 }
 
 export class CheckoutCustomerDto {
@@ -86,4 +102,12 @@ export class CreateCheckoutDto {
   @IsOptional()
   @IsString()
   existingOrderId?: string;
+
+  @IsOptional()
+  @IsString()
+  orderType?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
 }

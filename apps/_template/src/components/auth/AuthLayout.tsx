@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FloatingBackButton } from "./FloatingBackButton";
+import { useTenant } from "@/app/providers";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -9,14 +10,36 @@ interface AuthLayoutProps {
     subtitle?: string;
 }
 
+const tenantAssets: Record<string, { bgImage: string; quote: React.ReactNode; imageAlt: string }> = {
+    deborahmoscoso: {
+        bgImage: "/external/deborah-auth-bg.jpg",
+        quote: (
+            <>
+                "Elegir salud es el mayor acto de <span className="text-fuchsia-500 font-bold">amor propio</span>."
+            </>
+        ),
+        imageAlt: "Deborah Moscoso Fitness"
+    },
+    default: {
+        bgImage: "/external/auth-bg.jpg",
+        quote: <>"La buena comida es el fundamento de la felicidad."</>,
+        imageAlt: "Plato gourmet saludable"
+    }
+};
+
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+    const { tenantId } = useTenant();
+    
+    // Si no está definido el tenant, usa el default
+    const assets = tenantAssets[tenantId] || tenantAssets.default;
+
     return (
         <div className="grid lg:grid-cols-2 min-h-screen w-full bg-zinc-950 text-zinc-50">
             {/* Left Side - Image (Hidden on Mobile) */}
             <div className="hidden lg:flex relative bg-zinc-900 items-end overflow-hidden">
                 <Image
-                    src="/external/auth-bg.jpg"
-                    alt="Plato gourmet saludable"
+                    src={assets.bgImage}
+                    alt={assets.imageAlt}
                     fill
                     style={{ objectFit: 'cover' }}
                     priority
@@ -25,7 +48,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
                 />
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-12">
                     <div className="text-white text-2xl md:text-3xl font-light font-sans max-w-[90%] leading-relaxed tracking-wide">
-                        "La buena comida es el fundamento de la felicidad."
+                        {assets.quote}
                     </div>
                 </div>
             </div>

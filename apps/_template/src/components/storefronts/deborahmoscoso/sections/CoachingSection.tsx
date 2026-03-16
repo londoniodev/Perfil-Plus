@@ -31,7 +31,7 @@ export function CoachingSection() {
                     >
                         <div className="relative aspect-[3/4] rounded-[3rem] overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(217,70,239,0.1)]">
                             <img
-                                src="https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=1974&auto=format&fit=crop"
+                                src="/external/deborah-coaching.jpg"
                                 alt="Deborah Moscoso Elite Coach"
                                 className="w-full h-full object-cover"
                             />

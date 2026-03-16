@@ -32,6 +32,7 @@ export class OpenAiProvider implements AiProvider {
   ): Promise<AiResponse> {
     // Variable para rastrear si se generó un checkoutUrl durante tool calls
     let detectedCheckoutUrl: string | undefined;
+    let deterministicReceipt: string | undefined;
 
     try {
       const messages: any[] = [
@@ -259,7 +260,30 @@ export class OpenAiProvider implements AiProvider {
 
                     // Usamos el Punycode correcto (khb) para compatibilidad universal con móviles (Android/WhatsApp)
                     const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;
-                   detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
+                    detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
+                   
+                   // Generar recibo determinista consultando la DB (deliveryFee)
+                   const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+                     where: { tenantId }
+                   });
+                   const deliveryFee = Number(storeSettings?.deliveryFee || 0);
+                   
+                   let subtotal = 0;
+                   let receiptText = `\n\n🧾 *Resumen de tu pedido:*\n`;
+                   
+                   for (const item of foundProducts) {
+                     const lineTotal = item.price * item.quantity;
+                     subtotal += lineTotal;
+                     receiptText += `- ${item.quantity}x ${item.title} ($${lineTotal.toLocaleString('es-CO')})\n`;
+                   }
+                   
+                   const total = subtotal + deliveryFee;
+                   receiptText += `\n*Subtotal:* $${subtotal.toLocaleString('es-CO')}\n`;
+                   receiptText += `*Domicilio:* $${deliveryFee.toLocaleString('es-CO')}\n`;
+                   // Asteriscos envolviendo para hacer un markdown bold para WhatsApp de total final
+                   receiptText += `\n*Total a pagar:* *$${total.toLocaleString('es-CO')}*`;
+                   
+                   deterministicReceipt = receiptText;
                    
                    toolResponseText = JSON.stringify({
                      success: true,
@@ -292,7 +316,14 @@ export class OpenAiProvider implements AiProvider {
         });
 
         const text = secondResponse.choices[0].message.content || 'Lo siento, no pude procesar tu solicitud tras revisar los datos.';
-        return { text, checkoutUrl: detectedCheckoutUrl };
+        
+        // Adjuntar el recibo determinista si se creó un carrito en esta interacción
+        let finalText = text;
+        if (deterministicReceipt) {
+          finalText += deterministicReceipt;
+        }
+
+        return { text: finalText, checkoutUrl: detectedCheckoutUrl };
       }
 
       return { text: responseMessage.content || 'Lo siento, no pude procesar tu solicitud.' };

@@ -19,7 +19,7 @@ export function Header({ hasDashboardFeature = true, logo }: { hasDashboardFeatu
     if (navLinks.length === 0) {
         navLinks = [{ label: "Inicio", href: "/" }];
         if (features.some(f => f.toUpperCase() === "ECOMMERCE" || f.toUpperCase() === "ECOMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
-        if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/cursos" });
+        if (features.includes("LMS")) navLinks.push({ label: "Cursos", href: "/formacion" });
         if (features.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
         if (features.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
     } else {

@@ -9,6 +9,7 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   Query,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from './storage.service';

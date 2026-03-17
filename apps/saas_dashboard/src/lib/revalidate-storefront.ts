@@ -15,7 +15,9 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         }
 
         // Construir URL del storefront (Next.js público)
-        const protocol = host.includes("127.0.0.1") || host.includes("localhost") ? "http" : "https";
+        // Si el host tiene puerto o es local, suele ser HTTP internamente en Docker
+        const hasPort = host.includes(":");
+        const protocol = host.includes("127.0.0.1") || host.includes("localhost") || hasPort ? "http" : "https";
         const url = `${protocol}://${host}/api/revalidate`;
 
         // Configurar payload

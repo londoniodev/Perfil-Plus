@@ -4,6 +4,7 @@ import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { revalidateStorefront } from "@/lib/revalidate-storefront"
 
 import { productSchema, ProductFormValues as UpdateProductInput } from "@alvarosky/features"
 
@@ -57,6 +58,9 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
 
         revalidatePath("/tienda/productos")
         revalidatePath("/restaurante/menu")
+
+        // Disparar revalidación bajo demanda en la tienda pública
+        await revalidateStorefront()
 
         return { success: true, productId: product.id }
 

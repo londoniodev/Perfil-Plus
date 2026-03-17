@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { IconBack } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
@@ -83,6 +84,10 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
             }
 
             toast.success("Curso creado correctamente");
+            
+            // Revalidar caché de la tienda pública bajo demanda para Cursos
+            await revalidateStorefront({ path: "/formacion" });
+
             router.push(`/academia/cursos/temas/${themeId}`);
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error desconocido");

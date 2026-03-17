@@ -5,6 +5,7 @@ import { serverFetch } from "@/lib/api-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { revalidateStorefront } from "@/lib/revalidate-storefront"
 
 import { productSchema, ProductFormValues as CreateProductInput } from "@alvarosky/features"
 
@@ -76,6 +77,9 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         // 6. Revalidar rutas
         revalidatePath("/tienda/productos")
         revalidatePath("/tienda")
+
+        // Disparar revalidación bajo demanda en la tienda pública
+        await revalidateStorefront()
 
         return {
             success: true,

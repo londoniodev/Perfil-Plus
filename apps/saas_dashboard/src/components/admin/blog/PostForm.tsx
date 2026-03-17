@@ -29,6 +29,7 @@ import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
 
 import { Category, Tag } from "@/types/blog";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 
 interface PostFormProps {
     mode: "create" | "edit";
@@ -143,6 +144,10 @@ export default function PostForm({ mode, postId }: PostFormProps) {
             }
 
             toast.success(mode === "create" ? "Post creado correctamente" : "Post actualizado correctamente");
+            
+            // Revalidar caché de la tienda pública bajo demanda para Blog
+            await revalidateStorefront({ tag: `tenant-blog-${TENANT_ID}` });
+
             router.push("/blog/publicaciones");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error desconocido");

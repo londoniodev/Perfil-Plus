@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ImageUploader } from "@alvarosky/ui";
 import { API_BASE, TENANT_ID } from "@/lib/config";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { LessonItem } from "@alvarosky/ui";
 import { IconBack, IconPlus } from "@alvarosky/ui";
 import { useToast } from "@alvarosky/ui";
@@ -133,6 +134,9 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                 throw new Error(data.message || "Error al guardar");
             }
 
+            // Revalidar caché de la tienda pública bajo demanda para Cursos
+            await revalidateStorefront({ path: "/formacion" });
+
             router.push(`/academia/cursos/temas/${ids!.id}`);
             toast.success("Curso actualizado correctamente");
         } catch (err) {
@@ -162,6 +166,9 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
                 };
             });
             toast.success("Lección eliminada correctamente");
+            
+            // Revalidar caché de la tienda pública bajo demanda para Cursos
+            await revalidateStorefront({ path: "/formacion" });
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error al eliminar");
         }

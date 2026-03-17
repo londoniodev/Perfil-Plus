@@ -3,6 +3,7 @@
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { revalidatePath } from "next/cache"
+import { revalidateStorefront } from "@/lib/revalidate-storefront"
 
 export async function deleteProduct(productId: string) {
     try {
@@ -18,6 +19,9 @@ export async function deleteProduct(productId: string) {
 
         revalidatePath("/tienda/productos")
         revalidatePath("/restaurante/menu")
+
+        // Disparar revalidación bajo demanda en la tienda pública
+        await revalidateStorefront()
 
         return { success: true }
     } catch (error: any) {

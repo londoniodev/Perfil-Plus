@@ -14,7 +14,7 @@ const ContentSecurityPolicy = `
   img-src 'self' data: blob: https: http: http://localhost:3001 https://${s3Domain};
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co https://www.facebook.com https://web.facebook.com https://connect.facebook.net;
-  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000 https://fonts.googleapis.com https://fonts.gstatic.com https://${s3Domain} https://graph.facebook.com https://www.facebook.com;
+  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000 https://fonts.googleapis.com https://fonts.gstatic.com https://${s3Domain} https://graph.facebook.com https://www.facebook.com https://cdn.jsdelivr.net;
   media-src 'self' https://${s3Domain} http://localhost:3001 blob:;
   object-src 'none';
   base-uri 'self';

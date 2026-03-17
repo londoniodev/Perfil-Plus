@@ -28,9 +28,13 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       return true; // Bypass Throttler
     }
 
-    // Si la petición es SSE (Server-Sent Events) conectándose a /events o /sse, BYPASS completo
+    // Si la petición es SSE o branding, BYPASS completo
     const urlToMatch = request.originalUrl || request.url || request.path || '';
-    if (urlToMatch.includes('/events') || urlToMatch.includes('/sse')) {
+    if (
+      urlToMatch.includes('/events') ||
+      urlToMatch.includes('/sse') ||
+      urlToMatch.includes('/tenant/branding')
+    ) {
       return true;
     }
 

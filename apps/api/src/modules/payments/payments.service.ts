@@ -6,9 +6,11 @@ import {
   Scope,
   InternalServerErrorException,
   Inject,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { ClsService } from 'nestjs-cls';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { StorageService } from '../storage/storage.service';
@@ -17,7 +19,7 @@ import * as crypto from 'crypto';
 import type { Request } from 'express';
 import { CreateCheckoutDto } from './dto';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
   private mp: MercadoPagoConfig | null = null;
@@ -25,7 +27,7 @@ export class PaymentsService {
   private paymentClient: Payment | null = null;
 
   constructor(
-    @Inject(REQUEST) private readonly request: Request,
+    private cls: ClsService,
     private prisma: PrismaService,
     private config: ConfigService,
     private emailService: EmailService,
@@ -35,12 +37,7 @@ export class PaymentsService {
   }
 
   private getTenantId(): string {
-    return (
-      (this.request as any).tenantId ||
-      (this.request.headers['x-tenant-id'] as string) ||
-      (this.request.query['tenantId'] as string) ||
-      'default'
-    );
+    return this.cls.get('tenantId') || 'default';
   }
 
   private async getMercadoPagoConfig() {
@@ -127,10 +124,10 @@ export class PaymentsService {
     }
 
     if (!secret) {
-      this.logger.warn(
-        'MP_WEBHOOK_SECRET not configured (DB or Env). Skipping signature verification.',
+      this.logger.error(
+        'MP_WEBHOOK_SECRET not configured (DB or Env). Rejecting webhook for security.',
       );
-      return true;
+      return false;
     }
 
     if (!xSignature || !xRequestId || !dataId) {
@@ -216,7 +213,7 @@ export class PaymentsService {
         pending: `${frontendUrl}/suscripcion/pendiente`,
       },
       auto_return: 'approved' as const,
-      notification_url: `${this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook?tenantId=${this.getTenantId()}`,
+      notification_url: `${this.config.get('API_PUBLIC_URL') || this.config.get('API_URL') || 'http://localhost:3001'}/api/payments/webhook?tenantId=${this.getTenantId()}`,
       external_reference: userId,
       metadata: {
         userId,
@@ -414,7 +411,7 @@ export class PaymentsService {
       this.config.get<string>('API_PUBLIC_URL') ||
       this.config.get<string>('API_URL') ||
       'http://localhost:3001';
-    const notificationUrl = `${apiUrl}/api/payments/webhook`;
+    const notificationUrl = `${apiUrl}/api/payments/webhook?tenantId=${tenantId}`;
 
     const fullName = (dto.customer?.name || 'Cliente').trim();
     const nameParts = fullName.split(/\s+/);
@@ -492,17 +489,14 @@ export class PaymentsService {
 
     const tenantId = this.getTenantId();
 
-    if (tenantId === 'default' && !this.request.query['tenantId']) {
+    if (tenantId === 'default') {
       this.logger.error(
         `Webhook rejected: Unable to determine tenant for data.id=${dataId}`,
       );
       return { status: 'error', reason: 'tenant not identified in webhook' };
     }
 
-    const resolvedTenantId =
-      tenantId !== 'default'
-        ? tenantId
-        : (this.request.query['tenantId'] as string);
+    const resolvedTenantId = tenantId;
 
     try {
       // 1. Recuperar Credenciales

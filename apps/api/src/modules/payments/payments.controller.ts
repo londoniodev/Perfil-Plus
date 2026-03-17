@@ -10,15 +10,20 @@ import {
   HttpStatus,
   RawBodyRequest,
   Req,
+  Query,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentsService } from './payments.service';
 import { CreateSubscriptionDto, CreateCheckoutDto } from './dto';
 import { Public, CurrentUser, Roles } from '../../common/decorators';
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   // ==================== SUBSCRIPTIONS ====================
 
@@ -65,27 +70,39 @@ export class PaymentsController {
     @Body() body: any,
     @Headers('x-signature') xSignature: string,
     @Headers('x-request-id') xRequestId: string,
+    @Query('tenantId') tenantId: string,
   ) {
-    // Validación de firma (Seguridad)
+    // 1. Validación de firma (Seguridad) - FAIL CLOSE
+    const dataId = body?.data?.id || body?.id;
+    
+    if (!tenantId) {
+      return { status: 'error', reason: 'tenantId missing from query' };
+    }
+
     const isValid = await this.paymentsService.verifyWebhookSignature(
       xSignature,
       xRequestId,
-      body?.data?.id || body?.id,
+      dataId,
     );
 
     if (!isValid) {
+      // Retornamos 200 para que MP no reintente, pero registramos el error
       return { status: 'error', reason: 'invalid signature' };
     }
 
-    // Mercado Pago envía el tipo de notificación y el ID
+    // 2. Emitir evento para procesamiento asíncrono (Fast Acknowledgement)
     const type = body.type || body.topic;
-    const dataId = body.data?.id || body.id;
-
-    if (!type || !dataId) {
-      return { status: 'ignored', reason: 'missing type or data.id' };
+    
+    if (type === 'payment') {
+      this.eventEmitter.emit('payment.received', {
+        tenantId,
+        dataId: dataId.toString(),
+        body
+      });
     }
 
-    return this.paymentsService.handleWebhook(type, dataId.toString());
+    // 3. Retorno rápido 200 OK
+    return { status: 'received', message: 'Payment processing triggered' };
   }
 
   // ==================== ADMIN ====================

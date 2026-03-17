@@ -46,7 +46,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
     const [loading, setLoading] = useState(mode === "edit");
 
     const form = useForm<PostFormValues>({
-        resolver: zodResolver(postSchema),
+        resolver: zodResolver(postSchema) as any,
         defaultValues: {
             title: "",
             excerpt: "",

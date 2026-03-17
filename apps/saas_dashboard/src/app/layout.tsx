@@ -38,10 +38,20 @@ import type { FeatureKey } from "@/config/sidebar.config";
 import { ThemeProvider } from "./providers";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-    title: "Panel de Administración",
-    description: "Plataforma de gestión SaaS, restaurante, tienda y academia.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const { name, logo } = await getTenantData();
+    const tenantName = name || "Panel de Administración";
+    const logoUrl = logo || "/favicon.ico"; // Fallback static
+
+    return {
+        title: `${tenantName} | Panel de Administración`,
+        description: "Plataforma de gestión SaaS, restaurante, tienda y academia.",
+        icons: {
+            icon: logoUrl,
+            apple: logoUrl,
+        }
+    };
+}
 
 export default async function DashboardLayout({
     children,

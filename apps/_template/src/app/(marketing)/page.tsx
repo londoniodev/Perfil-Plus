@@ -2,11 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTenantId } from "@/lib/config-server";
 import { TenantMarketingData } from "@/types/marketing";
-
-import MauroLanding from "@/components/storefronts/mauromera/Landing";
-import DeborahLanding from "@/components/storefronts/deborahmoscoso/Landing";
-import DefaultLanding from "@/components/marketing/DefaultLanding";
-import CocinasieteLanding from "@/components/storefronts/cocinasiete/Landing";
+import { resolveLanding } from "@/lib/storefront-resolver";
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
@@ -48,20 +44,12 @@ export default async function MarketingHubPage() {
     heroSubtitle: "Configurando entorno de inquilino...",
   };
 
-  switch (safeData.tenantSlug) {
-    case "mauromera":
-      return <MauroLanding data={safeData} />;
-    case "soydeborasoysaludable":
-    case "cm7mman6x000208jsf3h9h2k1":
-      return (
-        <div className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0">
-          <DeborahLanding data={safeData} />
-        </div>
-      );
-    case "cocinasiete":
-      return <CocinasieteLanding data={safeData} />;
-    default:
-      return <DefaultLanding data={safeData} />;
-  }
+  const LandingComponent = resolveLanding(safeData.tenantSlug);
+
+  return (
+    <div className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0">
+        <LandingComponent data={safeData} />
+    </div>
+  );
 }
 

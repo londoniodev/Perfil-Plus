@@ -3,7 +3,30 @@
 import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 
-export function NavigationWrapper({ children, footer, hasDashboardFeature = true, logo }: { children: React.ReactNode, footer: React.ReactNode, hasDashboardFeature?: boolean, logo?: string }) {
+interface NavLink {
+    label: string;
+    href: string;
+}
+
+interface NavigationWrapperProps {
+    children: React.ReactNode;
+    footer: React.ReactNode;
+    showAuthButtons?: boolean;
+    logo?: string;
+    logoSuffix?: React.ReactNode;
+    links?: NavLink[];
+    isCocinaSiete?: boolean;
+}
+
+export function NavigationWrapper({ 
+    children, 
+    footer, 
+    showAuthButtons = true, 
+    logo,
+    logoSuffix,
+    links,
+    isCocinaSiete
+}: NavigationWrapperProps) {
     const pathname = usePathname();
 
     // Rutas que usan el Layout del Dashboard (Sidebar/BottomNav) y NO deben tener Header/Footer
@@ -28,7 +51,13 @@ export function NavigationWrapper({ children, footer, hasDashboardFeature = true
 
     return (
         <>
-            <Header hasDashboardFeature={hasDashboardFeature} logo={logo} />
+            <Header 
+                showAuthButtons={showAuthButtons} 
+                logo={logo} 
+                logoSuffix={logoSuffix} 
+                links={links}
+                isCocinaSiete={isCocinaSiete}
+            />
             <main>{children}</main>
             {footer}
         </>

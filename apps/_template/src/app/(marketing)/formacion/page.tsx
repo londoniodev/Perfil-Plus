@@ -1,8 +1,7 @@
 import { headers } from "next/headers";
-import { Fill } from "@alvarosky/ui";
-import MauroFormacion from "@/components/storefronts/mauromera/formacion/FormacionContent";
-import { prisma } from "@alvarosky/database";
 import { getTenantId } from "@/lib/config-server";
+import { prisma } from "@alvarosky/database";
+import { resolveFormacion } from "@/lib/storefront-resolver";
 
 export const metadata = {
     title: "Programas de Formación",
@@ -68,15 +67,7 @@ export default async function FormacionPage() {
         console.error("Error fetching themes for public catalog:", error);
     }
 
-    switch (tenantSlug) {
-        case "mauromera":
-            return <MauroFormacion themes={themes} />;
-        default:
-            return (
-                <Fill>
-                    <h1 className="text-2xl font-bold mb-4">Formación</h1>
-                    <p className="text-muted-foreground">Próximamente programas de formación.</p>
-                </Fill>
-            );
-    }
+    const FormacionComponent = resolveFormacion(tenantSlug);
+
+    return <FormacionComponent themes={themes} />;
 }

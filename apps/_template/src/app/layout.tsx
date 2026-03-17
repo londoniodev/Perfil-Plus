@@ -195,10 +195,11 @@ export default async function RootLayout({
 }>) {
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
+  
   // Color fallback
   const primaryColor = design?.primary || "zinc";
   const logoUrl = design?.logo || '/images/branding/icon.png';
-  const headerLinks = design?.headerLinks || null;
+  const headerLinksFromDb = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;
   const contactPhone = design?.contactPhone || null;
   const contactEmail = design?.contactEmail || null;
@@ -207,25 +208,49 @@ export default async function RootLayout({
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
-  const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId; // Fallback to tenantId if no slug
-  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, slug=${tenantSlugRaw}, x-tenant-features raw="${tenantFeaturesRaw}"`);
+  const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId; 
+  
+  console.log(`[LAYOUT DEBUG] tenantId=${tenantId}, slug=${tenantSlugRaw}`);
 
-  let hasDashboardFeature = true; // Default fallback publico
   let featureArray: string[] = [];
-
   if (tenantFeaturesRaw) {
     try {
       featureArray = JSON.parse(tenantFeaturesRaw);
-      // Mostrar navegación completa si el tenant tiene cualquier módulo activo
-      hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
-      console.log(`[LAYOUT DEBUG] Parsed features: ${JSON.stringify(featureArray)}, hasDashboardFeature=${hasDashboardFeature}`);
     } catch (e) {
       console.warn("Failed to parse tenant features block");
     }
-  } else {
-    console.log(`[LAYOUT DEBUG] No x-tenant-features header found, defaulting hasDashboardFeature=true`);
   }
 
+  // --- LÓGICA DE NAVEGACIÓN (Server Side) ---
+  let navLinks = headerLinksFromDb ? [...headerLinksFromDb] : [];
+  
+  if (navLinks.length === 0) {
+      navLinks = [{ label: "Inicio", href: "/" }];
+      const upperFeatures = featureArray.map(f => f.toUpperCase());
+      if (upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
+      if (upperFeatures.includes("LMS")) navLinks.push({ label: "Cursos", href: "/formacion" });
+      if (upperFeatures.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
+      if (upperFeatures.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
+  } else {
+      const upperFeatures = featureArray.map(f => f.toUpperCase());
+      const hasTiendaLink = navLinks.some(link => link.href === "/tienda");
+      if ((upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) && !hasTiendaLink) {
+          navLinks.push({ label: "Tienda", href: "/tienda" });
+      }
+  }
+
+  // --- LÓGICA DE BRANDING (Server Side) ---
+  let logoSuffix: React.ReactNode = null;
+  if (tenantSlugRaw === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") {
+      logoSuffix = (
+          <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
+              Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
+          </span>
+      );
+  }
+
+  const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
+  const isCocinaSiete = tenantSlugRaw === "cocinasiete" || tenantId === "cocinasiete";
   const isMauroMera = tenantSlugRaw === "mauromera";
 
   return (
@@ -234,7 +259,7 @@ export default async function RootLayout({
         <TenantProvider
           tenantId={tenantId}
           features={featureArray}
-          headerLinks={headerLinks}
+          headerLinks={headerLinksFromDb}
           footerLinks={footerLinks}
           contactPhone={contactPhone}
           contactEmail={contactEmail}
@@ -250,7 +275,24 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                <NavigationWrapper footer={<Footer logo={logoUrl} footerLinks={footerLinks} businessName={businessName || undefined} businessEmail={contactEmail || undefined} businessPhone={contactPhone || undefined} tagline={tenantTagline || undefined} features={featureArray} />} hasDashboardFeature={hasDashboardFeature} logo={logoUrl}>
+                <NavigationWrapper 
+                  logo={logoUrl} 
+                  logoSuffix={logoSuffix}
+                  links={navLinks}
+                  showAuthButtons={hasDashboardFeature}
+                  isCocinaSiete={isCocinaSiete}
+                  footer={
+                    <Footer 
+                      logo={logoUrl} 
+                      footerLinks={footerLinks} 
+                      businessName={businessName || undefined} 
+                      businessEmail={contactEmail || undefined} 
+                      businessPhone={contactPhone || undefined} 
+                      tagline={tenantTagline || undefined} 
+                      features={featureArray} 
+                    />
+                  }
+                >
                   {children}
                 </NavigationWrapper>
                 <PwaInstallPrompt />

@@ -34,6 +34,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
             specs: validated.specs,
             published: validated.published,
             modifierGroups: validated.modifierGroups,
+            categories: validated.categories,
             variants: validated.variants?.map(({ id, ...v }: any) => v)
         }
 

@@ -180,7 +180,7 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    const { sku, stock, modifierGroups, ...productData } = data;
+    const { sku, stock, modifierGroups, categories, ...productData } = data;
 
     return await this.prisma.$transaction(async (tx) => {
       // Actualizar producto base
@@ -199,6 +199,22 @@ export class ProductsService {
           previewUrl: productData.previewUrl,
         },
       });
+
+      // Sync Categories: borrar existentes y recrear (replace strategy)
+      if (categories !== undefined) {
+        await tx.categoriesOnProducts.deleteMany({
+          where: { productId: id },
+        });
+
+        if (categories && categories.length > 0) {
+          await tx.categoriesOnProducts.createMany({
+            data: categories.map((catId) => ({
+              productId: id,
+              categoryId: catId,
+            })),
+          });
+        }
+      }
 
       // Sync modifier groups: borrar existentes y recrear (replace strategy)
       if (modifierGroups !== undefined) {

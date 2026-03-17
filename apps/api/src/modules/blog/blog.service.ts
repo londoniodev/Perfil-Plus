@@ -40,7 +40,7 @@ export class BlogService {
 
     // Conectar categoría si existe
     if (dto.categoryId) {
-      await this.prisma.secure.categoriesOnPosts.create({
+      await this.prisma.categoriesOnPosts.create({
         data: {
           postId: post.id,
           categoryId: dto.categoryId,
@@ -50,7 +50,7 @@ export class BlogService {
 
     // Conectar tags si existen
     if (dto.tagIds?.length) {
-      await this.prisma.secure.tagsOnPosts.createMany({
+      await this.prisma.tagsOnPosts.createMany({
         data: dto.tagIds.map((tagId) => ({
           postId: post.id,
           tagId,
@@ -100,11 +100,11 @@ export class BlogService {
 
     // Actualizar categoría si se proporciona
     if (dto.categoryId !== undefined) {
-      await this.prisma.secure.categoriesOnPosts.deleteMany({
+      await this.prisma.categoriesOnPosts.deleteMany({
         where: { postId: id },
       });
       if (dto.categoryId) {
-        await this.prisma.secure.categoriesOnPosts.create({
+        await this.prisma.categoriesOnPosts.create({
           data: { postId: id, categoryId: dto.categoryId },
         });
       }
@@ -112,11 +112,11 @@ export class BlogService {
 
     // Actualizar tags si se proporcionan
     if (dto.tagIds !== undefined) {
-      await this.prisma.secure.tagsOnPosts.deleteMany({
+      await this.prisma.tagsOnPosts.deleteMany({
         where: { postId: id },
       });
       if (dto.tagIds.length) {
-        await this.prisma.secure.tagsOnPosts.createMany({
+        await this.prisma.tagsOnPosts.createMany({
           data: dto.tagIds.map((tagId) => ({ postId: id, tagId })),
         });
       }
@@ -299,7 +299,7 @@ export class BlogService {
       throw new NotFoundException('Post no encontrado');
     }
 
-    return this.prisma.secure.postAttachment.create({
+    return this.prisma.postAttachment.create({
       data: {
         postId,
         name: dto.name,
@@ -312,7 +312,7 @@ export class BlogService {
   }
 
   async removeAttachment(attachmentId: string) {
-    const attachment = await this.prisma.secure.postAttachment.findUnique({
+    const attachment = await this.prisma.postAttachment.findUnique({
       where: { id: attachmentId },
     });
 
@@ -320,7 +320,7 @@ export class BlogService {
       throw new NotFoundException('Adjunto no encontrado');
     }
 
-    await this.prisma.secure.postAttachment.delete({
+    await this.prisma.postAttachment.delete({
       where: { id: attachmentId },
     });
     return {
@@ -330,7 +330,7 @@ export class BlogService {
   }
 
   async findAttachmentsByPostId(postId: string) {
-    return this.prisma.secure.postAttachment.findMany({
+    return this.prisma.postAttachment.findMany({
       where: { postId },
       orderBy: { createdAt: 'asc' },
     });

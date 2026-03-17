@@ -251,7 +251,7 @@ export default async function RootLayout({
 
   const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
   const isCocinaSiete = tenantSlugRaw === "cocinasiete" || tenantId === "cocinasiete";
-  const isMauroMera = tenantSlugRaw === "mauromera";
+  const isDarkThemeTenant = tenantSlugRaw === "mauromera" || tenantSlugRaw === "soydeborasoysaludable";
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -268,9 +268,9 @@ export default async function RootLayout({
         >
           <ThemeProvider
             attribute="class"
-            defaultTheme={isMauroMera ? "dark" : "light"}
-            enableSystem={!isMauroMera}
-            forcedTheme={isMauroMera ? "dark" : undefined}
+            defaultTheme={isDarkThemeTenant ? "dark" : "light"}
+            enableSystem={!isDarkThemeTenant}
+            forcedTheme={isDarkThemeTenant ? "dark" : undefined}
           >
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />

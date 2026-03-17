@@ -156,7 +156,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
             if (!res.ok) throw new Error("Error al crear evaluación");
             const newEval = await res.json();
             setEvaluation(newEval);
-            router.push(`/cursos/temas/${themeId}/evaluacion/${newEval.id}`);
+            router.push(`/academia/cursos/temas/${themeId}/evaluacion/${newEval.id}`);
             toast.success("Evaluación creada");
         } catch (err) {
             toast.error("Error al crear la evaluación");
@@ -253,7 +253,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Cursos del Tema</CardTitle>
                     <Button asChild size="sm" className="gap-2">
-                        <Link href={`/cursos/temas/${themeId}/cursos/nuevo`}>
+                        <Link href={`/academia/cursos/temas/${themeId}/cursos/nuevo`}>
                             <IconPlus size={16} />
                             Agregar Curso
                         </Link>
@@ -271,7 +271,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                                 <CourseCard
                                     key={course.id}
                                     course={course}
-                                    onEdit={(id) => router.push(`/cursos/temas/${themeId}/cursos/${id}`)}
+                                    onEdit={(id) => router.push(`/academia/cursos/temas/${themeId}/cursos/${id}`)}
                                     onDelete={handleDeleteCourse}
                                 />
                             ))}
@@ -295,7 +295,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
                                 </p>
                             </div>
                             <Button asChild>
-                                <Link href={`/cursos/temas/${themeId}/evaluacion/${evaluation.id}`}>
+                                <Link href={`/academia/cursos/temas/${themeId}/evaluacion/${evaluation.id}`}>
                                     Gestionar Preguntas
                                 </Link>
                             </Button>

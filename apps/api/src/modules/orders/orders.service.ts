@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { ProductType, OrderStatus, Prisma, Role } from '@prisma/client';
+import { ProductType, OrderStatus, Prisma, Role } from '@alvarosky/database';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';

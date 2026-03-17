@@ -16,7 +16,7 @@ import { UsersService } from './users.service';
 import { PaymentsService } from '../payments/payments.service';
 import { UpdateUserDto } from './dto';
 import { CurrentUser, CurrentTenant, Roles } from '../../common/decorators';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 
 @Controller('users')
 export class UsersController {

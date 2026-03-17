@@ -13,7 +13,7 @@ import { CreateEmployeeDto, UpdateEmployeeDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 import { CurrentTenant } from '../../common/decorators';
 
 @Controller('admin/employees')

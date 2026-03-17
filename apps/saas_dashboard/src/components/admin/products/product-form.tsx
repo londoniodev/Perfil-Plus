@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus, Trash2, Loader2, Save, ArrowLeft, AlertCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-// Importamos Action y Config (igual que antes)
 import { createProduct } from "@/actions/admin/create-product"
 import { updateProduct } from "@/actions/admin/update-product"
 import { API_BASE, TENANT_ID } from "@/lib/config"
@@ -21,23 +20,8 @@ import {
     SingleImageDropzone, YouTubeEmbedInput, PrivateDocumentDropzone
 } from "@alvarosky/ui"
 
-// Local Components & Schema
-import { productSchema } from "@/schemas/product.schema"
-import * as z from "zod"
-
-export const extendedProductSchema = productSchema.extend({
-    downloadUrl: z.string().optional(),
-    videoUrl: z.string().optional(), // Added for YouTube Video URL integration
-    courseId: z.string().optional(), // Vinculación con Cursos (LMS)
-    pages: z.number().optional(),
-    format: z.string().optional(),
-    weight: z.string().optional(),
-    dimensions: z.string().optional(),
-    variants: z.array(z.any()).optional(),
-    attachments: z.array(z.object({ name: z.string(), url: z.string() })).optional(),
-})
-
-export type ProductFormValues = z.infer<typeof extendedProductSchema>
+// Shared Schema
+import { productSchema, ProductFormValues } from "@alvarosky/features"
 
 import { ModifierGroupsBuilder } from "./modifier-groups-builder"
 import { CategorySelector } from "./category-selector"
@@ -52,17 +36,16 @@ const EMPTY_COURSES: { id: string; title: string }[] = []
 export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFormProps) {
     const router = useRouter()
     const toast = useToast()
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const [hasModifiers, setHasModifiers] = useState(!!(initialData?.modifierGroups && initialData?.modifierGroups.length > 0))
     const [authToken, setAuthToken] = useState<string | undefined>(undefined)
 
     // Setup Auth Token safe payload for Edge uploads directly to NestJS
-    useState(() => {
+    useEffect(() => {
         if (typeof window !== "undefined") {
             const token = localStorage.getItem("token");
             if (token) setAuthToken(token);
         }
-    })
+    }, [])
 
     // Valores por defecto
     const defaultValues: Partial<ProductFormValues> = {
@@ -91,9 +74,9 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
     }
 
     const form = useForm<ProductFormValues>({
-        resolver: zodResolver(extendedProductSchema) as any,
+        resolver: zodResolver(productSchema) as any,
         defaultValues,
-    })
+    }) as any
 
     const { fields, append, remove } = useFieldArray({
         control: form.control,
@@ -107,9 +90,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
 
     const productType = form.watch("productType")
 
-    const handleSubmit = async (data: ProductFormValues) => {
-        setIsSubmitting(true)
-
+    const onSubmit = async (data: ProductFormValues) => {
         try {
             // Construir specs
             const specs: Record<string, any> = {}
@@ -128,45 +109,21 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                 if (data.dimensions) specs.dimensions = data.dimensions;
             }
 
-            const productData = {
-                id: initialData?.id, // Important for updates
-                name: data.name,
-                description: data.description,
-                productType: data.productType,
-                basePrice: data.basePrice,
-                images: data.images,
+            const productData: ProductFormValues = {
+                ...data,
+                id: initialData?.id,
                 specs,
-                published: data.published,
-                digitalFileUrl: data.downloadUrl || undefined, // Send separately for Prisma
-                previewUrl: data.videoUrl || undefined, // Send mapped to DB models
-                // Si es físico enviamos variantes, si no undefined (backend lo maneja)
-                variants: data.productType === "PHYSICAL" ? data.variants?.map(v => ({
-                    id: v.id,
-                    name: v.name,
-                    sku: v.sku,
-                    price: v.price ?? undefined,
-                    stock: v.stock,
-                    isDefault: v.isDefault
-                })) : undefined,
-                // Si habilitamos modificadores, los enviamos. Si no, enviamos array vacío o undefined
-                modifierGroups: hasModifiers ? data.modifierGroups : [],
-                categories: data.categories
             }
 
-            // Llamada al Server Action (Create or Update)
             let result;
             if (initialData?.id) {
-                // @ts-ignore
                 result = await updateProduct(productData)
             } else {
-                // @ts-ignore
-                result = await createProduct(productData, API_BASE, TENANT_ID)
+                result = await createProduct(productData)
             }
 
             if (result.success) {
                 toast.success(initialData ? "Producto actualizado correctamente" : "Producto creado exitosamente", "Éxito")
-
-                // Redirect based on type
                 if (data.productType === "RESTAURANT") {
                     router.push("/restaurante/menu")
                 } else {
@@ -179,27 +136,24 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
         } catch (error) {
             console.error("Error:", error)
             toast.error("Ocurrió un error al guardar los datos.", "Error Inesperado")
-        } finally {
-            setIsSubmitting(false)
         }
     }
 
     const handleAddImage = (url: string | null) => {
         if (!url) return
         const currentImages = form.getValues("images")
-        form.setValue("images", [...currentImages, url])
+        form.setValue("images", [...currentImages, url], { shouldValidate: true })
     }
 
     const handleRemoveImage = (index: number) => {
         const currentImages = form.getValues("images")
-        form.setValue("images", currentImages.filter((_, i) => i !== index))
+        form.setValue("images", currentImages.filter((_: string, i: number) => i !== index), { shouldValidate: true })
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 w-full max-w-[1000px] mx-auto pb-20">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-[1000px] mx-auto pb-20">
 
-                {/* 1. Información Básica */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Información del Producto</CardTitle>
@@ -209,7 +163,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                         <FormField
                             control={form.control}
                             name="name"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Nombre del Producto *</FormLabel>
                                     <FormControl>
@@ -224,7 +178,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             <FormField
                                 control={form.control}
                                 name="basePrice"
-                                render={({ field }: { field: any }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Precio *</FormLabel>
                                         <FormControl>
@@ -246,11 +200,10 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                 )}
                             />
 
-                            {/* Categorías */}
                             <FormField
                                 control={form.control}
                                 name="categories"
-                                render={({ field }: { field: any }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Categorías</FormLabel>
                                         <FormControl>
@@ -268,7 +221,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                         <FormField
                             control={form.control}
                             name="description"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Descripción *</FormLabel>
                                     <FormControl>
@@ -283,7 +236,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             <FormField
                                 control={form.control}
                                 name="productType"
-                                render={({ field }: { field: any }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tipo de Producto *</FormLabel>
                                         <Select
@@ -308,11 +261,10 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             />
                         )}
 
-                        {/* Images */}
                         <div className="space-y-2">
-                            <FormLabel>Imágenes</FormLabel>
+                            <FormLabel>Imágenes *</FormLabel>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                {form.watch("images").map((url, index) => (
+                                {form.watch("images").map((url: string, index: number) => (
                                     <div key={url} className="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
                                         <Image src={url} alt={`Imagen ${index + 1}`} fill sizes="200px" className="object-cover transition-transform group-hover:scale-105" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -350,7 +302,6 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     </CardContent>
                 </Card>
 
-                {/* 2. Metadata Digital (Solo Cursos y Software) */}
                 {productType === "DIGITAL" && (
                     <Card>
                         <CardHeader>
@@ -361,7 +312,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             <FormField
                                 control={form.control}
                                 name="videoUrl"
-                                render={({ field }: { field: any }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
                                             <YouTubeEmbedInput
@@ -378,7 +329,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             <FormField
                                 control={form.control}
                                 name="downloadUrl"
-                                render={({ field }: { field: any }) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Archivo Digital Protegido (Ebook, ZIP, etc.)</FormLabel>
                                         <FormControl>
@@ -398,7 +349,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                 <FormField
                                     control={form.control}
                                     name="courseId"
-                                    render={({ field }: { field: any }) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Vincular a un Curso (LMS)</FormLabel>
                                             <Select
@@ -431,7 +382,6 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     </Card>
                 )}
 
-                {/* 3. Modificadores (Restaurante o Físico con opciones) */}
                 {(productType === "PHYSICAL" || productType === "RESTAURANT") && (
                     <Card className="border-primary/20 bg-primary/5">
                         <CardHeader className="pb-3">
@@ -454,7 +404,6 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     </Card>
                 )}
 
-                {/* Documentos Adjuntos Dinámicos */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
@@ -528,11 +477,6 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     </CardContent>
                 </Card>
 
-                {/* 4. Variantes (Solo si no tiene modifiers simples, o mixto - por ahora mantenemos simple) */}
-                {/* 
-                    NOTA: En modelo restaurante simple, las variantes suelen usarse poco si se usan modificadores 
-                    O se usan para "Tamaños" básicos. Mantenemos el bloque pero le bajamos prominencia si hay modifiers. 
-                */}
                 {productType === "PHYSICAL" && !hasModifiers && (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -557,7 +501,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                         <FormField
                                             control={form.control}
                                             name={`variants.${index}.name`}
-                                            render={({ field }: { field: any }) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-xs">Nombre</FormLabel>
                                                     <FormControl>
@@ -571,7 +515,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                         <FormField
                                             control={form.control}
                                             name={`variants.${index}.stock`}
-                                            render={({ field }: { field: any }) => (
+                                            render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-xs">Stock</FormLabel>
                                                     <FormControl>
@@ -605,12 +549,11 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     </Card>
                 )}
 
-                {/* 5. Estado y Botones */}
                 <div className="pb-4">
                     <FormField
                         control={form.control}
                         name="published"
-                        render={({ field }: { field: any }) => (
+                        render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card shadow-sm">
                                 <div className="space-y-0.5">
                                     <FormLabel className="text-base font-medium">Publicado</FormLabel>
@@ -632,11 +575,11 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <Button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={form.formState.isSubmitting}
                         className="w-full sm:flex-1"
                         size="lg"
                     >
-                        {isSubmitting ? (
+                        {form.formState.isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Guardando...
@@ -656,7 +599,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             const type = form.getValues("productType")
                             router.push(type === "RESTAURANT" ? "/restaurante/menu" : "/tienda/productos")
                         }}
-                        disabled={isSubmitting}
+                        disabled={form.formState.isSubmitting}
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Cancelar

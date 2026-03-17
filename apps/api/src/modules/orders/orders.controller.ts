@@ -17,7 +17,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Role, OrderStatus } from '@prisma/client';
+import { Role, OrderStatus } from '@alvarosky/database';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)

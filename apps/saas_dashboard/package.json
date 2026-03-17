@@ -54,7 +54,7 @@
     "pg": "^8.13.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-hook-form": "^7.54.1",
+    "react-hook-form": "^7.71.0",
     "react-icons": "^5.5.0",
     "react-qr-code": "^2.0.18",
     "recharts": "^2.15.4",
@@ -62,7 +62,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
-    "zod": "^4.2.0",
+    "zod": "^4.3.5",
     "zustand": "^5.0.10"
   },
   "devDependencies": {

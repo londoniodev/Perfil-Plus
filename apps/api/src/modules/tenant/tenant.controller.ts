@@ -15,7 +15,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { SkipThrottle } from '@nestjs/throttler';

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { OrderStatus, Role } from '@prisma/client';
+import { OrderStatus, Role } from '@alvarosky/database';
 import {
   validateOrderTransition,
   ORDER_TRANSITIONS,

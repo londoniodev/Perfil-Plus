@@ -5,7 +5,7 @@ import { Plus, Trash2, GripVertical } from "lucide-react"
 
 import { Button, Input, Accordion, AccordionContent, AccordionItem, AccordionTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, FormControl, FormField, FormItem, FormLabel, FormMessage, Badge } from "@alvarosky/ui"
 
-import { ProductFormValues } from "@/schemas/ecommerce"
+import { ProductFormValues } from "@alvarosky/features"
 
 export function ModifierGroupsBuilder() {
     const { control } = useFormContext<ProductFormValues>()

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -17,6 +18,8 @@ import {
 
 @Injectable()
 export class LmsService {
+  private readonly logger = new Logger(LmsService.name);
+
   constructor(private prisma: PrismaService) { }
 
   // ==================== THEMES ====================
@@ -537,7 +540,9 @@ export class LmsService {
           if (typeof specsStr === 'string') {
             specsStr = JSON.parse(specsStr);
           }
-        } catch (e) { }
+        } catch (e) {
+          this.logger.warn(`Failed to parse specs as JSON for LmsService order items: ${e.message}`);
+        }
 
         if (specsStr && specsStr.courseId) {
           courseIds.add(specsStr.courseId);

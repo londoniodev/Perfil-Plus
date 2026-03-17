@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { OrderStatus } from "@prisma/client"
+import { OrderStatus } from "@alvarosky/database"
 import { updateOrderStatus } from "@/actions/admin/orders"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Badge } from "@alvarosky/ui"
 import { toast } from "sonner"

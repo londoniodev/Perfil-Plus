@@ -10,7 +10,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { ProductType } from '@prisma/client';
+import { ProductType } from '@alvarosky/database';
 import { StorageService } from '../storage/storage.service';
 
 @Injectable()

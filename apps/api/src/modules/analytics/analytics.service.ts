@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from '@alvarosky/database';
 
 // Date Helpers (No dependencies)
 function startOfDay(d: Date): Date {

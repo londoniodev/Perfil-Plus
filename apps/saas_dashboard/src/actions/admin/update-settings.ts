@@ -5,56 +5,7 @@ import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-
-// Schema de validación
-const settingsSchema = z.object({
-    // Info
-    storeName: z.string().optional(),
-    storeEmail: z.string().email().optional().or(z.literal("")),
-
-    // Finance
-    currency: z.string().optional(),
-    mpPublicKey: z.string().optional(),
-    mpAccessToken: z.string().optional(),
-    mpWebhookSecret: z.string().optional(),
-    mpClientId: z.string().optional(),
-    mpClientSecret: z.string().optional(),
-
-    // Appearance
-    theme: z.string().optional(),
-    primaryColor: z.string().optional(),
-
-    // Email (SMTP)
-    smtpHost: z.string().optional(),
-    smtpPort: z.number().optional(),
-    smtpSecure: z.boolean().optional(),
-    smtpUser: z.string().optional(),
-    smtpPass: z.string().optional(),
-
-    // APIs
-    apiKeyOpenAI: z.string().optional(),
-
-    // Features
-    enableBlog: z.boolean().optional(),
-    enableStore: z.boolean().optional(),
-    enableLMS: z.boolean().optional(),
-    orderTrackingEnabled: z.boolean().optional(),
-
-    // Social & Contact
-    whatsapp: z.string().optional(),
-    instagram: z.string().optional(),
-    facebook: z.string().optional(),
-    address: z.string().optional(),
-
-    // Menu
-    menuSlogan: z.string().optional(),
-    menuLogo: z.string().optional(),
-
-    // Delivery
-    deliveryFee: z.number().optional(),
-})
-
-type UpdateSettingsInput = z.infer<typeof settingsSchema>
+import { settingsSchema, SettingsFormValues } from "@alvarosky/features"
 
 interface UpdateSettingsResult {
     success: boolean
@@ -64,7 +15,7 @@ interface UpdateSettingsResult {
 /**
  * Server Action: Actualizar configuración de la tienda delegándolo a NestJS
  */
-export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateSettingsResult> {
+export async function updateSettings(data: SettingsFormValues): Promise<UpdateSettingsResult> {
     try {
         // 1. Verificar autenticación y permisos
         const user = await getSessionUser()

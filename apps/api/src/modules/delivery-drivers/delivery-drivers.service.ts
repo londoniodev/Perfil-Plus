@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateDriverDto, UpdateDriverDto } from './dto';
-import { Role, DriverStatus } from '@prisma/client';
+import { Role, DriverStatus } from '@alvarosky/database';
 
 @Injectable()
 export class DeliveryDriversService {

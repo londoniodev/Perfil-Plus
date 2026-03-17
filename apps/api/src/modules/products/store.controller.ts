@@ -8,7 +8,7 @@ import {
 import { ProductsService } from './products.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
-import { ProductType } from '@prisma/client';
+import { ProductType } from '@alvarosky/database';
 
 @Controller('store/products')
 export class StoreController {

@@ -6,7 +6,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Role, DriverStatus } from '@prisma/client';
+import { Role, DriverStatus } from '@alvarosky/database';
 
 // ============================================================
 //  TAREA 2: Tests del Servicio de Delivery Drivers

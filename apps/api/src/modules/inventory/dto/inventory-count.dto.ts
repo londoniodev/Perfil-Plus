@@ -8,7 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AdjustmentType } from '@prisma/client';
+import { AdjustmentType } from '@alvarosky/database';
 
 export class CreateInventoryCountDto {
   @IsString()

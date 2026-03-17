@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { MovementType, AdjustmentType, CountStatus } from '@prisma/client';
+import { MovementType, AdjustmentType, CountStatus } from '@alvarosky/database';
 import {
   CreateInventoryCountDto,
   CompleteInventoryCountDto,

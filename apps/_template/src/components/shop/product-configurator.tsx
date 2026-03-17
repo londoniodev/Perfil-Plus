@@ -1,7 +1,7 @@
 "use client"
 
 import { ProductConfigurator as SharedProductConfigurator, AddToCartItem } from "@alvarosky/ui"
-import { Product, ProductVariant } from "@prisma/client"
+import { Product, ProductVariant } from "@alvarosky/database"
 import { useCart } from "@/store/use-cart"
 
 interface ProductConfiguratorProps {

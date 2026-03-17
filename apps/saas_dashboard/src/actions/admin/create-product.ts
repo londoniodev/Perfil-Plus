@@ -6,9 +6,7 @@ import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-import { productSchema, variantSchema, modifierSchema, modifierGroupSchema } from "@/schemas/product.schema"
-
-type CreateProductInput = z.infer<typeof productSchema>
+import { productSchema, ProductFormValues as CreateProductInput } from "@alvarosky/features"
 
 interface CreateProductResult {
     success: boolean

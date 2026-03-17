@@ -13,7 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from './storage.service';
 import { Roles } from '../../common/decorators';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 
 @Controller('storage')
 @Roles(Role.ADMIN)

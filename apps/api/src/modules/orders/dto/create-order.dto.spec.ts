@@ -6,7 +6,7 @@ import {
   CreateOrderItemDto,
   OrderItemModifierDto,
 } from './create-order.dto';
-import { OrderType, OrderStatus } from '@prisma/client';
+import { OrderType, OrderStatus } from '@alvarosky/database';
 
 // ============ HELPERS ============
 

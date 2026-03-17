@@ -6,7 +6,7 @@ import {
   IsBoolean,
   Min,
 } from 'class-validator';
-import { InventoryUnit } from '@prisma/client';
+import { InventoryUnit } from '@alvarosky/database';
 
 export class CreateInventoryItemDto {
   @IsString()

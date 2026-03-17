@@ -1,65 +1,72 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { postSchema, PostFormValues } from "@alvarosky/features";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { BlogEditor } from "@alvarosky/ui";
-import { ImageUploader } from "@alvarosky/ui";
+import { 
+    BlogEditor, 
+    ImageUploader, 
+    IconBack, 
+    useToast, 
+    Input, 
+    Textarea, 
+    Button, 
+    AdminPageWrapper, 
+    Switch,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+    FormDescription
+} from "@alvarosky/ui";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
-import { ToggleButton, PremiumIcon, PublishIcon } from "@alvarosky/ui"; // Legacy toggle, might need refactor or replace with Switch
-import { IconBack } from "@alvarosky/ui";
-import { useToast } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
-import { Textarea } from "@alvarosky/ui"; // Need to ensure Textarea exists, or use native with class
-import { Button, AdminPageWrapper } from "@alvarosky/ui";
-import { Card, CardContent } from "@alvarosky/ui"; // Use shadcn Card if available or div
-import { Label } from "@alvarosky/ui";
-import { Switch } from "@alvarosky/ui"; // Recommended replacement for ToggleButton
 
-// ============================================================================
-// TIPOS
-// ============================================================================
-
-import { Category, Tag, PostFormData } from "@/types/blog";
+import { Category, Tag } from "@/types/blog";
 
 interface PostFormProps {
     mode: "create" | "edit";
     postId?: string;
 }
 
-// ============================================================================
-// COMPONENTE PRINCIPAL
-// ============================================================================
-
 export default function PostForm({ mode, postId }: PostFormProps) {
     const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
 
-    // Estado del formulario
-    const [title, setTitle] = useState("");
-    const [excerpt, setExcerpt] = useState("");
-    const [content, setContent] = useState("");
-    const [coverImage, setCoverImage] = useState<string | null>(null);
-    const [isPremium, setIsPremium] = useState(false);
-    const [published, setPublished] = useState(false);
-    const [categoryId, setCategoryId] = useState("");
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [metaTitle, setMetaTitle] = useState("");
-    const [metaDescription, setMetaDescription] = useState("");
-
-    // Estado de datos
+    // Estado de datos auxiliares (no del formulario)
     const [categories, setCategories] = useState<Category[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(mode === "edit");
-    const [saving, setSaving] = useState(false);
 
-    // Redirigir si no es admin (Server-side like redirect)
-    if (!authLoading && !isAdmin) {
-        redirect("/perfil");
-    }
+    const form = useForm<PostFormValues>({
+        resolver: zodResolver(postSchema),
+        defaultValues: {
+            title: "",
+            excerpt: "",
+            content: "",
+            coverImage: null,
+            isPremium: false,
+            published: false,
+            categoryId: "",
+            tagIds: [],
+            metaTitle: "",
+            metaDescription: "",
+        },
+    });
+
+    // Redirigir si no es admin
+    useEffect(() => {
+        if (!authLoading && !isAdmin) {
+            router.push("/perfil");
+        }
+    }, [authLoading, isAdmin, router]);
 
     // Cargar datos iniciales
     useEffect(() => {
@@ -87,16 +94,19 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 if (postRes) {
                     if (!postRes.ok) throw new Error("Post no encontrado");
                     const post = await postRes.json();
-                    setTitle(post.title);
-                    setExcerpt(post.excerpt);
-                    setContent(post.content);
-                    setCoverImage(post.coverImage);
-                    setIsPremium(post.isPremium);
-                    setPublished(post.published);
-                    setCategoryId(post.categories[0]?.id || "");
-                    setSelectedTags(post.tags.map((t: Tag) => t.id));
-                    setMetaTitle(post.metaTitle || "");
-                    setMetaDescription(post.metaDescription || "");
+                    
+                    form.reset({
+                        title: post.title,
+                        excerpt: post.excerpt,
+                        content: post.content,
+                        coverImage: post.coverImage,
+                        isPremium: post.isPremium,
+                        published: post.published,
+                        categoryId: post.categories[0]?.id || "",
+                        tagIds: post.tags.map((t: Tag) => t.id),
+                        metaTitle: post.metaTitle || "",
+                        metaDescription: post.metaDescription || "",
+                    });
                 }
             } catch (err) {
                 if ((err as Error).name !== 'AbortError') {
@@ -112,23 +122,9 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         if (isAdmin) fetchData();
 
         return () => controller.abort();
-    }, [isAdmin, mode, postId]);
+    }, [isAdmin, mode, postId, form, toast]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!title.trim() || !excerpt.trim() || !content.trim()) {
-            toast.error("Título, extracto y contenido son obligatorios");
-            return;
-        }
-
-        if (mode === "create" && content.length < 100) {
-            toast.error("El contenido debe tener al menos 100 caracteres");
-            return;
-        }
-
-        setSaving(true);
-
+    const onSubmit = async (values: PostFormValues) => {
         try {
             const url = mode === "create"
                 ? `${API_BASE}/admin/blog/posts`
@@ -138,18 +134,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 method: mode === "create" ? "POST" : "PATCH",
                 headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
                 credentials: "include",
-                body: JSON.stringify({
-                    title,
-                    excerpt,
-                    content,
-                    coverImage,
-                    isPremium,
-                    published,
-                    categoryId: categoryId || undefined,
-                    tagIds: selectedTags.length > 0 ? selectedTags : undefined,
-                    metaTitle: metaTitle || undefined,
-                    metaDescription: metaDescription || undefined,
-                }),
+                body: JSON.stringify(values),
             });
 
             if (!res.ok) {
@@ -161,8 +146,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
             router.push("/blog/publicaciones");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Error desconocido");
-        } finally {
-            setSaving(false);
         }
     };
 
@@ -180,126 +163,226 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 </Button>
             }
         >
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="title">Título *</Label>
-                        <Input
-                            id="title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Título del artículo"
-                            required
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <div className="grid gap-6">
+                        <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Título *</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Título del artículo" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="excerpt">Extracto *</Label>
-                        <textarea
-                            id="excerpt"
-                            value={excerpt}
-                            onChange={(e) => setExcerpt(e.target.value)}
-                            placeholder="Breve descripción..."
-                            rows={3}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            required
+                        <FormField
+                            control={form.control}
+                            name="excerpt"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Extracto *</FormLabel>
+                                    <FormControl>
+                                        <Textarea 
+                                            placeholder="Breve descripción..." 
+                                            className="min-h-[80px]" 
+                                            {...field} 
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
 
-                    <ImageUploader
-                        apiBase={API_BASE}
-                        tenantId={TENANT_ID}
-                        value={coverImage}
-                        onChange={setCoverImage}
-                        label="Imagen de portada"
-                        folder="blog-covers"
-                    />
-
-                    <div className="space-y-2">
-                        <Label>Contenido *</Label>
-                        <BlogEditor
-                            value={content}
-                            onChange={setContent}
-                            placeholder="Escribe el contenido del artículo..."
+                        <FormField
+                            control={form.control}
+                            name="coverImage"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Imagen de portada</FormLabel>
+                                    <FormControl>
+                                        <ImageUploader
+                                            apiBase={API_BASE}
+                                            tenantId={TENANT_ID}
+                                            value={field.value || null}
+                                            onChange={field.onChange}
+                                            label="Imagen de portada"
+                                            folder="blog-covers"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
 
-                    {/* Settings Panel */}
-                    <div className="grid gap-6 md:grid-cols-2 p-6 border rounded-lg bg-card">
-                        <div className="space-y-4">
-                            <Label>Categoría</Label>
-                            <CategorySelector
-                                categories={categories}
-                                selectedId={categoryId}
-                                onChange={setCategoryId}
-                                onCategoryCreated={(cat) => setCategories(prev => [...prev, cat])}
+                        <FormField
+                            control={form.control}
+                            name="content"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Contenido *</FormLabel>
+                                    <FormControl>
+                                        <BlogEditor
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            placeholder="Escribe el contenido del artículo..."
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="grid gap-6 md:grid-cols-2 p-6 border rounded-lg bg-card">
+                            <FormField
+                                control={form.control}
+                                name="categoryId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Categoría</FormLabel>
+                                        <FormControl>
+                                            <CategorySelector
+                                                categories={categories}
+                                                selectedId={field.value}
+                                                onChange={field.onChange}
+                                                onCategoryCreated={(cat) => setCategories(prev => [...prev, cat])}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                        </div>
 
-                        <div className="flex flex-col gap-4 justify-center">
-                            <div className="flex items-center justify-between p-4 border rounded-md">
-                                <div className="space-y-0.5">
-                                    <Label className="text-base">Premium</Label>
-                                    <p className="text-xs text-muted-foreground">Contenido exclusivo para suscriptores</p>
-                                </div>
-                                <Switch checked={isPremium} onCheckedChange={setIsPremium} />
-                            </div>
-                            <div className="flex items-center justify-between p-4 border rounded-md">
-                                <div className="space-y-0.5">
-                                    <Label className="text-base">Publicado</Label>
-                                    <p className="text-xs text-muted-foreground">Visible para los usuarios</p>
-                                </div>
-                                <Switch checked={published} onCheckedChange={setPublished} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <TagSelector
-                        tags={tags}
-                        selectedIds={selectedTags}
-                        onChange={setSelectedTags}
-                    />
-
-                    {/* SEO */}
-                    <div className="p-6 border rounded-lg bg-card space-y-4">
-                        <h3 className="font-semibold">SEO</h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Meta Título</Label>
-                                <Input
-                                    value={metaTitle}
-                                    onChange={(e) => setMetaTitle(e.target.value)}
-                                    placeholder={title}
-                                    maxLength={70}
+                            <div className="flex flex-col gap-4 justify-center">
+                                <FormField
+                                    control={form.control}
+                                    name="isPremium"
+                                    render={({ field }) => (
+                                        <FormItem className="flex items-center justify-between p-4 border rounded-md space-y-0">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-base font-medium">Premium</FormLabel>
+                                                <FormDescription>Contenido exclusivo para suscriptores</FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch 
+                                                    checked={field.value} 
+                                                    onCheckedChange={field.onChange} 
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
                                 />
-                                <p className="text-xs text-muted-foreground text-right">{metaTitle.length}/70</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Meta Descripción</Label>
-                                <textarea
-                                    value={metaDescription}
-                                    onChange={(e) => setMetaDescription(e.target.value)}
-                                    placeholder={excerpt}
-                                    maxLength={160}
-                                    rows={2}
-                                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+
+                                <FormField
+                                    control={form.control}
+                                    name="published"
+                                    render={({ field }) => (
+                                        <FormItem className="flex items-center justify-between p-4 border rounded-md space-y-0">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-base font-medium">Publicado</FormLabel>
+                                                <FormDescription>Visible para los usuarios</FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch 
+                                                    checked={field.value} 
+                                                    onCheckedChange={field.onChange} 
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
                                 />
-                                <p className="text-xs text-muted-foreground text-right">{metaDescription.length}/160</p>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-                        <Button type="button" variant="outline" onClick={() => router.push("/blog/publicaciones")} className="w-full sm:w-auto">
-                            Cancelar
-                        </Button>
-                        <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-                            {saving ? "Guardando..." : "Guardar Cambios"}
-                        </Button>
+                        <FormField
+                            control={form.control}
+                            name="tagIds"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Etiquetas</FormLabel>
+                                    <FormControl>
+                                        <TagSelector
+                                            tags={tags}
+                                            selectedIds={field.value || []}
+                                            onChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="p-6 border rounded-lg bg-card space-y-4">
+                            <h3 className="font-semibold text-lg">SEO</h3>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="metaTitle"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Meta Título</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder={form.getValues("title") || "Meta título"}
+                                                    maxLength={70}
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription className="text-right">
+                                                {(field.value?.length || 0)}/70
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="metaDescription"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Meta Descripción</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder={form.getValues("excerpt") || "Meta descripción"}
+                                                    maxLength={160}
+                                                    className="resize-none"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription className="text-right">
+                                                {(field.value?.length || 0)}/160
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => router.push("/blog/publicaciones")} 
+                                className="w-full sm:w-auto"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                disabled={form.formState.isSubmitting} 
+                                className="w-full sm:w-auto"
+                            >
+                                {form.formState.isSubmitting ? "Guardando..." : "Guardar Cambios"}
+                            </Button>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            </Form>
         </AdminPageWrapper>
     );
 }
-

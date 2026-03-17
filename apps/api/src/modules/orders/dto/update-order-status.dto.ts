@@ -1,5 +1,5 @@
 import { IsEnum } from 'class-validator';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from '@alvarosky/database';
 
 export class UpdateOrderStatusDto {
   @IsEnum(OrderStatus)

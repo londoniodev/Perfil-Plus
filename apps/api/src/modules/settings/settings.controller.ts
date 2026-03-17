@@ -4,7 +4,7 @@ import { CurrentTenant } from '../../common/decorators/current-tenant.decorator'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 import { UpdateTenantConfigDto } from './dto/update-tenant-config.dto';
 
 @Controller('settings/tenant-config')

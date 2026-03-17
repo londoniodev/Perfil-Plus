@@ -10,7 +10,7 @@ import {
   ArrayMinSize,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderType, OrderStatus } from '@prisma/client';
+import { OrderType, OrderStatus } from '@alvarosky/database';
 
 export class OrderItemModifierDto {
   @IsString()

@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProductType } from '@prisma/client';
+import { ProductType } from '@alvarosky/database';
 import { CreateModifierGroupDto } from './create-modifier-group.dto';
 
 export class CreateProductVariantDto {

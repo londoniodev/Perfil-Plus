@@ -9,3 +9,15 @@ export * from './inventory';
 
 // Shop and Checkout schemas
 export * from './shop';
+
+// Blog schemas
+export * from './blog';
+
+// Product schemas
+export * from './product';
+
+// Settings schemas
+export * from './settings';
+
+// Branding schemas
+export * from './branding';

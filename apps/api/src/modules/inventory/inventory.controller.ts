@@ -18,7 +18,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentTenant } from '../../common/decorators';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 import {
   CreateInventoryItemDto,
   UpdateInventoryItemDto,

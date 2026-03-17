@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch, Label } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch } from "@alvarosky/ui"
+import { settingsSchema, SettingsFormValues } from "@alvarosky/features"
 import { Loader2, MapPin } from "lucide-react"
 import { updateSettings } from "@/actions/admin/update-settings"
 import { useToast } from "@alvarosky/ui"
@@ -12,53 +12,6 @@ import { SingleImageDropzone } from "@alvarosky/ui"
 import { API_BASE, TENANT_ID } from "@/lib/config"
 import { BrandingForm } from "@/components/settings/BrandingForm"
 import { WhatsAppEmbeddedSignup } from "@/components/admin/whatsapp/embedded-signup"
-
-const settingsSchema = z.object({
-    storeName: z.string().optional().or(z.literal("")),
-    storeEmail: z.string().email("Email inválido").optional().or(z.literal("")),
-
-    // Finance
-    currency: z.string().optional(),
-    mpPublicKey: z.string().optional(),
-    mpAccessToken: z.string().optional(),
-    mpWebhookSecret: z.string().optional(),
-    mpClientId: z.string().optional(),
-    mpClientSecret: z.string().optional(),
-
-    // Appearance
-    theme: z.string().optional(),
-    primaryColor: z.string().optional(),
-
-    // Email (SMTP)
-    smtpHost: z.string().optional(),
-    smtpPort: z.number().optional(),
-    smtpSecure: z.boolean().optional(),
-    smtpUser: z.string().optional(),
-    smtpPass: z.string().optional(),
-
-    // APIs
-    apiKeyOpenAI: z.string().optional(),
-
-    enableBlog: z.boolean().optional(),
-    enableStore: z.boolean().optional(),
-    enableLMS: z.boolean().optional(),
-    orderTrackingEnabled: z.boolean().optional(),
-
-    // Contact
-    whatsapp: z.string().optional(),
-    instagram: z.string().optional(),
-    facebook: z.string().optional(),
-    address: z.string().optional(),
-
-    // Menu
-    menuSlogan: z.string().optional(),
-    menuLogo: z.string().optional(),
-
-    // Delivery
-    deliveryFee: z.number().min(0, "El valor debe ser positivo o cero").optional(),
-})
-
-type SettingsFormValues = z.infer<typeof settingsSchema>
 
 interface SettingsFormProps {
     initialData?: {
@@ -111,7 +64,6 @@ interface SettingsFormProps {
 
 export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const [authToken, setAuthToken] = useState("");
 
     // Read auth token on client side
@@ -122,7 +74,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     }, []);
 
     const form = useForm<SettingsFormValues>({
-        resolver: zodResolver(settingsSchema),
+        resolver: zodResolver(settingsSchema) as any,
         defaultValues: {
             storeName: initialData?.storeName || "",
             storeEmail: initialData?.storeEmail || "",
@@ -154,9 +106,42 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
         },
     })
 
-    const onSubmit = async (data: SettingsFormValues) => {
-        setIsSubmitting(true)
+    // Hidratar formulario cuando cambian los datos iniciales
+    useEffect(() => {
+        if (initialData) {
+            form.reset({
+                storeName: initialData?.storeName || "",
+                storeEmail: initialData?.storeEmail || "",
+                currency: initialData?.currency || "COP",
+                mpPublicKey: initialData?.MERCADOPAGO_CONFIG?.publicKey || "",
+                mpAccessToken: initialData?.MERCADOPAGO_CONFIG?.accessToken || "",
+                mpWebhookSecret: initialData?.MERCADOPAGO_CONFIG?.webhookSecret || "",
+                mpClientId: initialData?.MERCADOPAGO_CONFIG?.clientId || "",
+                mpClientSecret: initialData?.MERCADOPAGO_CONFIG?.clientSecret || "",
+                theme: initialData?.theme || "",
+                primaryColor: initialData?.primary_color || "#6366f1",
+                smtpHost: initialData?.smtp?.host || "",
+                smtpPort: initialData?.smtp?.port || 587,
+                smtpSecure: initialData?.smtp?.secure ?? false,
+                smtpUser: initialData?.smtp?.auth?.user || "",
+                smtpPass: initialData?.smtp?.auth?.pass || "",
+                apiKeyOpenAI: initialData?.api_key_openai || "",
+                enableBlog: initialData?.enableBlog ?? true,
+                enableStore: initialData?.enableStore ?? true,
+                enableLMS: initialData?.enableLMS ?? false,
+                whatsapp: initialData?.contact?.whatsapp || initialData?.whatsapp || "",
+                instagram: initialData?.contact?.instagram || initialData?.instagram || "",
+                facebook: initialData?.contact?.facebook || initialData?.facebook || "",
+                address: initialData?.contact?.address || initialData?.address || "",
+                orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
+                menuSlogan: initialData?.menu?.slogan || "",
+                menuLogo: initialData?.menu?.logo || "",
+                deliveryFee: initialData?.deliveryFee || 0,
+            })
+        }
+    }, [initialData, form])
 
+    const onSubmit = async (data: SettingsFormValues) => {
         try {
             const result = await updateSettings(data)
 
@@ -168,15 +153,13 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
         } catch (error) {
             console.error("Error:", error)
             toast.error("Error al procesar el formulario")
-        } finally {
-            setIsSubmitting(false)
         }
     }
 
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                onSubmit={form.handleSubmit(onSubmit, (errors: any) => {
                     console.error("Form Validation Errors:", errors);
                     toast.error("Error de validación en el formulario");
                 })}
@@ -557,10 +540,10 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                 <div className="flex gap-4 pt-4">
                     <Button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={form.formState.isSubmitting}
                         className="w-full sm:w-auto min-w-[200px] h-12 text-lg font-semibold"
                     >
-                        {isSubmitting ? (
+                        {form.formState.isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Guardando...

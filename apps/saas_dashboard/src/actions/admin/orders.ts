@@ -1,6 +1,6 @@
 "use server"
 
-import { OrderStatus } from "@prisma/client"
+import { OrderStatus } from "@alvarosky/database"
 import { revalidatePath } from "next/cache"
 import { serverFetch } from "@/lib/api-server"
 

@@ -1,5 +1,5 @@
 import { IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 
 export class UpdateEmployeeDto {
   @IsOptional()

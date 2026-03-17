@@ -1,25 +1,24 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "sonner";
+import { brandingSchema, BrandingFormValues } from "@alvarosky/features";
 import {
     Button,
     Card, CardContent, CardDescription, CardHeader, CardTitle,
     Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,
     Input,
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-    Slider,
-    Switch,
     Label,
     Separator,
     cn,
-    themes // Imported from shared UI
+    themes,
+    SingleImageDropzone
 } from "@alvarosky/ui";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { updateTenantBranding } from "@/actions/branding-actions";
+import { API_BASE, TENANT_ID } from "@/lib/config";
+import { toast } from "sonner";
 
 // --- Helpers ---
 function hexToHSL(hex: string): string {
@@ -91,22 +90,39 @@ function hslToHex(hsl: string): string {
     return "#" + toHex(r) + toHex(g) + toHex(b);
 }
 
-const brandingSchema = z.object({
-    primary: z.string(),
-    radius: z.number().min(0).max(2),
-    density: z.enum(["default", "compact", "spacious"]),
-    mode: z.enum(["light", "dark", "system"]).default("system"),
-});
-
-type BrandingFormValues = z.infer<typeof brandingSchema>;
+// Helper utility to get a rough hex color for the preview buttons
+function getThemeColor(name: string) {
+    const colors: Record<string, string> = {
+        zinc: "#18181b",
+        slate: "#0f172a",
+        stone: "#1c1917",
+        gray: "#111827",
+        neutral: "#171717",
+        red: "#dc2626",
+        rose: "#e11d48",
+        orange: "#ea580c",
+        green: "#16a34a",
+        blue: "#2563eb",
+        yellow: "#ca8a04",
+        violet: "#7c3aed",
+    };
+    return colors[name] || "#000";
+}
 
 interface BrandingFormProps {
     defaultValues?: Partial<BrandingFormValues>;
 }
 
 export function BrandingForm({ defaultValues }: BrandingFormProps) {
-    const [isSaving, setIsSaving] = useState(false);
     const colorInputRef = useRef<HTMLInputElement>(null);
+    const [authToken, setAuthToken] = useState("");
+
+    // Read auth token on client side
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setAuthToken(localStorage.getItem("token") || "");
+        }
+    }, []);
 
     const form = useForm<BrandingFormValues>({
         resolver: zodResolver(brandingSchema) as any,
@@ -115,20 +131,45 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
             radius: 0.5,
             density: "default",
             mode: "system",
+            logoUrl: "",
+            faviconUrl: "",
+            secondaryColor: "",
+            fontFamily: "",
             ...(defaultValues as any),
         },
     });
 
+    // Hidratar formulario cuando cambian los valores iniciales
+    useEffect(() => {
+        if (defaultValues) {
+            form.reset({
+                primary: "zinc",
+                radius: 0.5,
+                density: "default",
+                mode: "system",
+                logoUrl: "",
+                faviconUrl: "",
+                secondaryColor: "",
+                fontFamily: "",
+                ...(defaultValues as any),
+            })
+        }
+    }, [defaultValues, form])
 
-    const watchedRadius = form.watch("radius");
     const watchedPrimary = form.watch("primary");
-
 
     // Logic for Custom Hex
     const isCustomPrimary = watchedPrimary && !themes[watchedPrimary as keyof typeof themes];
     const [customHex, setCustomHex] = useState<string>(
         isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
     );
+
+    // Sync customHex when watchedPrimary changes (if custom)
+    useEffect(() => {
+        if (isCustomPrimary && watchedPrimary.includes(" ")) {
+            setCustomHex(hslToHex(watchedPrimary));
+        }
+    }, [watchedPrimary, isCustomPrimary]);
 
     const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const hex = e.target.value;
@@ -140,22 +181,19 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
     };
 
     async function onSubmit(data: BrandingFormValues) {
-        setIsSaving(true);
         try {
             await updateTenantBranding(data);
             toast.success("Diseño actualizado correctamente");
         } catch (error) {
             console.error(error);
             toast.error("Error al actualizar el diseño");
-        } finally {
-            setIsSaving(false);
         }
     }
 
     return (
         <div className="w-full">
             <Form {...form}>
-                <div className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <Card>
                         <CardHeader>
                             <CardTitle>Apariencia del Tenant</CardTitle>
@@ -225,6 +263,7 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                                     placeholder="#000000"
                                                     className="font-mono w-32 uppercase"
                                                     maxLength={7}
+                                                    aria-label="Color personalizado Hex"
                                                 />
                                                 {isCustomPrimary && (
                                                     <div className="text-xs text-muted-foreground animate-in fade-in">
@@ -240,35 +279,68 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
                                 )}
                             />
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t">
+                                <FormField
+                                    control={form.control}
+                                    name="logoUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Logo de la Plataforma</FormLabel>
+                                            <FormControl>
+                                                <SingleImageDropzone
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    endpoint={`${API_BASE}/storage/upload/image`}
+                                                    token={authToken}
+                                                    tenantId={TENANT_ID}
+                                                    folder="branding"
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Se mostrará en el header y correos.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
+                                <FormField
+                                    control={form.control}
+                                    name="faviconUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Favicon (Icono Navegador)</FormLabel>
+                                            <FormControl>
+                                                <SingleImageDropzone
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    endpoint={`${API_BASE}/storage/upload/image`}
+                                                    token={authToken}
+                                                    tenantId={TENANT_ID}
+                                                    folder="branding"
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Imagen cuadrada pequeña (.ico, .png).</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                            <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isSaving} className="w-full sm:w-auto">
-                                {isSaving ? "Guardando..." : "Guardar Diseño"}
+                            <Separator />
+
+                            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto h-11 px-8 font-semibold">
+                                {form.formState.isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    "Guardar Diseño"
+                                )}
                             </Button>
                         </CardContent>
                     </Card>
-                </div>
+                </form>
             </Form>
         </div>
     );
-}
-
-// Helper utility to get a rough hex color for the preview buttons
-// (This wouldn't be exact since we normally use CSS vars, but helps the UI)
-function getThemeColor(name: string) {
-    const colors: Record<string, string> = {
-        zinc: "#18181b",
-        slate: "#0f172a",
-        stone: "#1c1917",
-        gray: "#111827",
-        neutral: "#171717",
-        red: "#dc2626",
-        rose: "#e11d48",
-        orange: "#ea580c",
-        green: "#16a34a",
-        blue: "#2563eb",
-        yellow: "#ca8a04",
-        violet: "#7c3aed",
-    };
-    return colors[name] || "#000";
 }

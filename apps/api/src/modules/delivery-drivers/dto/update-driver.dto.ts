@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsInt, Min } from 'class-validator';
-import { DriverStatus } from '@prisma/client';
+import { DriverStatus } from '@alvarosky/database';
 
 export class UpdateDriverDto {
   @IsString()

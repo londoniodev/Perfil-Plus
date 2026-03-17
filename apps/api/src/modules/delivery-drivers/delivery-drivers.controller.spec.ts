@@ -6,7 +6,7 @@ import {
 import { DeliveryDriversService } from './delivery-drivers.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { DriverStatus } from '@prisma/client';
+import { DriverStatus } from '@alvarosky/database';
 
 // ============================================================
 //  TAREA 3: Tests de Controladores REST (Admin + Driver)

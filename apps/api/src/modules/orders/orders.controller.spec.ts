@@ -5,7 +5,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { OrderStatus, OrderType, Role } from '@prisma/client';
+import { OrderStatus, OrderType, Role } from '@alvarosky/database';
 
 // ============ MOCK DATA ============
 

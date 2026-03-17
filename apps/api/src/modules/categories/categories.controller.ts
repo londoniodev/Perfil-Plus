@@ -13,11 +13,11 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
-import { CategoryType } from '@prisma/client';
+import { CategoryType } from '@alvarosky/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@alvarosky/database';
 
 @Controller('categories')
 export class CategoriesController {

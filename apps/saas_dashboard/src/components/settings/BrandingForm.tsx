@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { brandingSchema, BrandingFormValues } from "@alvarosky/features";
@@ -113,9 +113,15 @@ interface BrandingFormProps {
     defaultValues?: Partial<BrandingFormValues>;
 }
 
-export function BrandingForm({ defaultValues }: BrandingFormProps) {
+export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues }, ref) => {
     const colorInputRef = useRef<HTMLInputElement>(null);
     const [authToken, setAuthToken] = useState("");
+
+    useImperativeHandle(ref, () => ({
+        submit: () => {
+            return form.handleSubmit(onSubmit)();
+        }
+    }));
 
     // Read auth token on client side
     useEffect(() => {
@@ -327,20 +333,11 @@ export function BrandingForm({ defaultValues }: BrandingFormProps) {
 
                             <Separator />
 
-                            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full sm:w-auto h-11 px-8 font-semibold">
-                                {form.formState.isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Guardando...
-                                    </>
-                                ) : (
-                                    "Guardar Diseño"
-                                )}
-                            </Button>
+
                         </CardContent>
                     </Card>
                 </form>
             </Form>
         </div>
     );
-}
+});

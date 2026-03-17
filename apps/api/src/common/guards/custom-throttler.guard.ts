@@ -33,7 +33,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     if (
       urlToMatch.includes('/events') ||
       urlToMatch.includes('/sse') ||
-      urlToMatch.includes('/tenant/branding')
+      urlToMatch.includes('branding')
     ) {
       return true;
     }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch } from "@alvarosky/ui"
@@ -65,6 +65,7 @@ interface SettingsFormProps {
 export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const toast = useToast()
     const [authToken, setAuthToken] = useState("");
+    const brandingFormRef = useRef<any>(null);
 
     // Read auth token on client side
     useEffect(() => {
@@ -144,6 +145,10 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const onSubmit = async (data: SettingsFormValues) => {
         try {
             const result = await updateSettings(data)
+
+            if (brandingFormRef.current) {
+                await brandingFormRef.current.submit();
+            }
 
             if (result.success) {
                 toast.success("Configuración actualizada exitosamente")
@@ -316,8 +321,8 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                                 </div>
                             </Card>
 
-                            {/* Colores y Diseño (Manejados por BrandingForm, no es submit del gran <form>) */}
-                            <BrandingForm defaultValues={brandingData} />
+                            {/* Colores y Diseño (Manejados por BrandingForm) */}
+                            <BrandingForm ref={brandingFormRef} defaultValues={brandingData} />
                         </div>
                     </TabsContent>
 

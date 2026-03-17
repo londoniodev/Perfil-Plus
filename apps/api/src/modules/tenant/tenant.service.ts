@@ -89,6 +89,25 @@ export class TenantService {
    * Ahora también incluye el logo desde SystemSettings.
    */
   async getTenantBranding(tenantId: string) {
+    if (tenantId === 'default' || tenantId === 'default_tenant') {
+      this.logger.log(`[BRANDING DEBUG] Ignorando búsqueda en BD para tenant '${tenantId}' (Next.js ISR Fallback)`);
+      return {
+        id: 'default',
+        name: 'SaaS Platform',
+        features: ['dashboard'],
+        design: {
+          colors: { primary: '#09090b', secondary: '#ffffff' },
+          radius: 0.5,
+        },
+        logo: null,
+        headerLinks: null,
+        footerLinks: null,
+        contactEmail: null,
+        contactPhone: null,
+        tagline: 'Plataforma Profesional'
+      };
+    }
+
     this.logger.log(
       `[BRANDING DEBUG] getTenantBranding called with tenantId: "${tenantId}"`,
     );

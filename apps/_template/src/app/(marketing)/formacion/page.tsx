@@ -63,8 +63,9 @@ export default async function FormacionPage() {
                 firstCourseId: firstCourse?.id
             };
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching themes for public catalog:", error);
+        return <div className="pt-40 text-center text-red-500 font-bold">Error del Servidor: {error.message}</div>
     }
 
     const FormacionComponent = resolveFormacion(tenantSlug);

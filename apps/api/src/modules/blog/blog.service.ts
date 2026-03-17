@@ -346,12 +346,14 @@ export class BlogService {
         tenantId,
         name: dto.name,
         slug,
+        type: 'BLOG',
       },
     });
   }
 
   async findAllCategories() {
     return this.prisma.secure.category.findMany({
+      where: { type: 'BLOG' },
       orderBy: { name: 'asc' },
       include: {
         _count: { select: { posts: true } },
@@ -360,8 +362,8 @@ export class BlogService {
   }
 
   async deleteCategory(id: string) {
-    const category = await this.prisma.secure.category.findUnique({
-      where: { id },
+    const category = await this.prisma.secure.category.findFirst({
+      where: { id, type: 'BLOG' },
     });
     if (!category) {
       throw new NotFoundException('Categoría no encontrada');

@@ -10,6 +10,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryType } from '@alvarosky/database';
 
 function slugify(text: string) {
   return text
@@ -40,9 +41,9 @@ export class CategoriesService {
     this.logger.log(`[Tenant: ${tenantId}] Caché de menú y catálogo de WhatsApp invalidado.`);
   }
 
-  async findAll(tenantId: string) {
+  async findAll(tenantId: string, type: CategoryType = 'PRODUCT') {
     return this.prisma.secure.category.findMany({
-      where: { tenantId },
+      where: { tenantId, type },
       orderBy: { name: 'asc' },
     });
   }
@@ -59,19 +60,26 @@ export class CategoriesService {
     return category;
   }
 
-  async create(tenantId: string, createDto: CreateCategoryDto) {
+  async create(
+    tenantId: string,
+    createDto: CreateCategoryDto,
+    type: CategoryType = 'PRODUCT',
+  ) {
     const slug = slugify(createDto.name);
 
-    // Verificar unicidad de nombre / slug por tenant
+    // Verificar unicidad de nombre / slug por tenant Y tipo
     const existing = await this.prisma.secure.category.findFirst({
       where: {
         tenantId,
+        type,
         OR: [{ name: createDto.name }, { slug }],
       },
     });
 
     if (existing) {
-      throw new BadRequestException('Ya existe una categoría con este nombre.');
+      throw new BadRequestException(
+        `Ya existe una categoría de tipo ${type} con este nombre.`,
+      );
     }
 
     const category = await this.prisma.secure.category.create({
@@ -79,6 +87,7 @@ export class CategoriesService {
         tenantId,
         name: createDto.name,
         slug,
+        type,
       },
     });
 
@@ -86,10 +95,15 @@ export class CategoriesService {
     return category;
   }
 
-  async update(tenantId: string, id: string, updateDto: UpdateCategoryDto) {
+  async update(
+    tenantId: string,
+    id: string,
+    updateDto: UpdateCategoryDto,
+    type: CategoryType = 'PRODUCT',
+  ) {
     // Verificar que exista y pertenezca al tenant (Prevencion IDOR)
     const existing = await this.prisma.secure.category.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId, type },
     });
 
     if (!existing) {
@@ -103,7 +117,7 @@ export class CategoriesService {
       slug = slugify(updateDto.name);
 
       const slugConflict = await this.prisma.secure.category.findFirst({
-        where: { tenantId, slug, NOT: { id } },
+        where: { tenantId, slug, type, NOT: { id } },
       });
       if (slugConflict)
         throw new BadRequestException('El nombre genera un slug ya en uso.');
@@ -121,10 +135,10 @@ export class CategoriesService {
     return category;
   }
 
-  async remove(tenantId: string, id: string) {
+  async remove(tenantId: string, id: string, type: CategoryType = 'PRODUCT') {
     // Prevenir IDOR
     const existing = await this.prisma.secure.category.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId, type },
     });
 
     if (!existing) {

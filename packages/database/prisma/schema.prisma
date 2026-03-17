@@ -151,17 +151,23 @@ model Post {
   @@index([published, isPremium])
 }
 
+enum CategoryType {
+  PRODUCT
+  BLOG
+}
+
 model Category {
   id       String                 @id @default(cuid())
   name     String
   slug     String
+  type     CategoryType           @default(PRODUCT)
   tenantId String
   posts    CategoriesOnPosts[]
   products CategoriesOnProducts[]
   tenant   Tenant                 @relation(fields: [tenantId], references: [id])
 
-  @@unique([tenantId, name])
-  @@unique([tenantId, slug])
+  @@unique([tenantId, type, name])
+  @@unique([tenantId, type, slug])
   @@index([tenantId])
 }
 

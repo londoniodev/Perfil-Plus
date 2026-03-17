@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
+import { CategoryType } from '@prisma/client';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -22,8 +24,11 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  findAll(@CurrentTenant() tenantId: string) {
-    return this.categoriesService.findAll(tenantId);
+  findAll(
+    @CurrentTenant() tenantId: string,
+    @Query('type') type?: CategoryType,
+  ) {
+    return this.categoriesService.findAll(tenantId, type);
   }
 
   @Post()
@@ -32,8 +37,9 @@ export class CategoriesController {
   create(
     @CurrentTenant() tenantId: string,
     @Body() createDto: CreateCategoryDto,
+    @Query('type') type?: CategoryType,
   ) {
-    return this.categoriesService.create(tenantId, createDto);
+    return this.categoriesService.create(tenantId, createDto, type);
   }
 
   @Patch(':id')

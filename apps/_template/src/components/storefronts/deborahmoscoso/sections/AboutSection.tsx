@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { IconArrowRight } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
-import ProfileCarousel from "../layout/ProfileCarousel";
+import ProfileCarousel from "./ProfileCarousel";
 
 export function AboutSection() {
     return (

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { IconArrowRight } from "@alvarosky/ui";
 import { Button } from "@alvarosky/ui";
-import ProfileCarousel from "../layout/ProfileCarousel";
+import ProfileCarousel from "./ProfileCarousel";
 import { siteConfig } from "@/config/site";
 import { useTenant } from "@/app/providers";
 

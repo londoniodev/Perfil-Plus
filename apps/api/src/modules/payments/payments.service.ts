@@ -228,7 +228,7 @@ export class PaymentsService {
       const response = await this.preference.create({ body: preferenceData });
 
       // Crear o actualizar registro de suscripción como pendiente
-      await this.prisma.secure.subscription.upsert({
+      await this.prisma.subscription.upsert({
         where: { userId },
         create: {
           userId,
@@ -251,7 +251,7 @@ export class PaymentsService {
   }
 
   async cancelSubscription(userId: string) {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
@@ -264,7 +264,7 @@ export class PaymentsService {
     }
 
     // Actualizar estado a CANCELLED
-    await this.prisma.secure.subscription.update({
+    await this.prisma.subscription.update({
       where: { userId },
       data: { status: 'CANCELLED' },
     });
@@ -273,7 +273,7 @@ export class PaymentsService {
   }
 
   async getSubscriptionStatus(userId: string) {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
@@ -812,7 +812,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
 
-    await this.prisma.secure.subscription.upsert({
+    await this.prisma.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -936,7 +936,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + days);
 
-    await this.prisma.secure.subscription.upsert({
+    await this.prisma.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -962,7 +962,7 @@ export class PaymentsService {
   // ==================== USER SUBSCRIPTION CHECK ====================
 
   async hasActiveSubscription(userId: string): Promise<boolean> {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
     return subscription?.status === 'ACTIVE';
@@ -973,12 +973,12 @@ export class PaymentsService {
   async getPaymentStats() {
     const [activeSubscriptions, totalEbookPurchases, pendingSubscriptions] =
       await Promise.all([
-        this.prisma.secure.subscription.count({ where: { status: 'ACTIVE' } }),
-        this.prisma.secure.purchase.count({ where: { status: 'approved' } }),
-        this.prisma.secure.subscription.count({ where: { status: 'PENDING' } }),
+        this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+        this.prisma.purchase.count({ where: { status: 'approved' } }),
+        this.prisma.subscription.count({ where: { status: 'PENDING' } }),
       ]);
 
-    const recentSubscriptions = await this.prisma.secure.subscription.findMany({
+    const recentSubscriptions = await this.prisma.subscription.findMany({
       where: { status: 'ACTIVE' },
       take: 10,
       orderBy: { startDate: 'desc' },

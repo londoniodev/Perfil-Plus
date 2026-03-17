@@ -148,7 +148,7 @@ export class CategoriesService {
     }
 
     // Comprobar Productos Asociados en la tabla Pivot CategoriesOnProducts
-    const productCount = await this.prisma.secure.categoriesOnProducts.count({
+    const productCount = await this.prisma.categoriesOnProducts.count({
       where: { categoryId: id },
     });
 

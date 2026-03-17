@@ -966,7 +966,7 @@ export class OrdersService {
     isPrepared: boolean,
   ) {
     // 1. Verificar que el item pertenece a la orden
-    const item = await this.prisma.secure.orderItem.findFirst({
+    const item = await this.prisma.orderItem.findFirst({
       where: { id: itemId, orderId },
     });
 
@@ -975,7 +975,7 @@ export class OrdersService {
     }
 
     // 2. Actualizar estado
-    const updatedItem = await this.prisma.secure.orderItem.update({
+    const updatedItem = await this.prisma.orderItem.update({
       where: { id: itemId },
       data: { isPrepared },
     });

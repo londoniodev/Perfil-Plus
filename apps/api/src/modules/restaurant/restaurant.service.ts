@@ -204,7 +204,7 @@ export class RestaurantService {
   async toggleLike(slug: string, productId: string, userPhone: string) {
     // slug is used for public API identification but we don't need tenantId here
     // since productLike is scoped by productId which already belongs to a tenant
-    const existingLike = await this.prisma.secure.productLike.findUnique({
+    const existingLike = await this.prisma.productLike.findUnique({
       where: {
         productId_userPhone: {
           productId,
@@ -214,12 +214,12 @@ export class RestaurantService {
     });
 
     if (existingLike) {
-      await this.prisma.secure.productLike.delete({
+      await this.prisma.productLike.delete({
         where: { id: existingLike.id },
       });
       return { liked: false };
     } else {
-      await this.prisma.secure.productLike.create({
+      await this.prisma.productLike.create({
         data: {
           productId,
           userPhone,
@@ -236,7 +236,7 @@ export class RestaurantService {
     content: string,
     userName?: string,
   ) {
-    const comment = await this.prisma.secure.productComment.create({
+    const comment = await this.prisma.productComment.create({
       data: {
         productId,
         userPhone,
@@ -255,7 +255,7 @@ export class RestaurantService {
   }
 
   async checkLikeStatus(slug: string, productId: string, userPhone: string) {
-    const count = await this.prisma.secure.productLike.count({
+    const count = await this.prisma.productLike.count({
       where: {
         productId,
         userPhone,

@@ -296,7 +296,7 @@ export class ProductsService {
   // ============ DESCARGAS DIGITALES ============
   async getProductDownloadUrl(productId: string, userId: string) {
     // 1. Verify Active Subscription (Priority Access)
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
@@ -320,7 +320,7 @@ export class ProductsService {
       // Check deprecated Purchase table as fallback (for migration compatibility)
       const hasLegacyPurchase =
         !hasPurchased &&
-        (await this.prisma.secure.purchase.findFirst({
+        (await this.prisma.purchase.findFirst({
           where: {
             userId,
             status: 'approved',

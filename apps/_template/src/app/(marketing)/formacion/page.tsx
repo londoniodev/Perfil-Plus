@@ -36,16 +36,17 @@ export default async function FormacionPage() {
         // Mapeamos los temas al formato amigable para la vista
         themes = rawThemes.map((theme: any) => {
             const firstCourse = theme.courses?.[0];
+            const teaserVideo = firstCourse?.lessons?.[0]?.videoUrl || null;
             
             return {
                 id: theme.id,
                 title: theme.title,
                 description: theme.description,
                 imageUrl: theme.coverImage,
-                // Como _count solo devuelve total de clases y no el trailer, dejamos teaserVideo null
-                teaserVideo: null, 
+                teaserVideo, 
                 price: firstCourse?.isFree ? 0 : null, // Mapeo básico si no hay consulta de productos directa
-                firstCourseId: firstCourse?.id
+                firstCourseId: firstCourse?.id,
+                courses: theme.courses || [] // Para renderizar el árbol jerárgico
             };
         });
     } catch (error: any) {

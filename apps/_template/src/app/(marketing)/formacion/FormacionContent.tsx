@@ -43,6 +43,7 @@ export default function FormacionContent({ themes = [] }: { themes?: any[] }) {
         icon: <IconTarget />,
         level: "Programa Completo",
         duration: "Acceso de por vida",
+        courses: theme.courses || [], // Forzado para jerarquía
         curriculum: [
             "Contenido exclusivo del programa",
             "Casos prácticos guiados",
@@ -196,16 +197,29 @@ export default function FormacionContent({ themes = [] }: { themes?: any[] }) {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="bg-muted/30 rounded-xl p-5 border border-border/50">
-                                        <h4 className="font-semibold text-sm uppercase tracking-wider text-foreground mb-4">¿Qué incluye?</h4>
-                                        <ul className="space-y-3">
-                                            {selectedTheme.curriculum.map((item: string, i: number) => (
-                                                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                                                    <IconCheck className="h-4 w-4 text-green-500 mt-0.5" />
-                                                    {item}
-                                                </li>
+                                    <div className="bg-muted/30 rounded-xl p-5 border border-border/50 max-h-[300px] overflow-y-auto">
+                                        <h4 className="font-semibold text-sm uppercase tracking-wider text-foreground mb-4">Módulos del Programa</h4>
+                                        <div className="space-y-4">
+                                            {selectedTheme.courses?.map((course: any, cIdx: number) => (
+                                                <div key={course.id || cIdx} className="border-b border-border/30 pb-3 last:border-0 last:pb-0">
+                                                    <h5 className="font-bold text-sm text-foreground flex items-center gap-1">
+                                                        <span className="text-primary">Módulo {cIdx + 1}:</span> {course.title}
+                                                    </h5>
+                                                    <ul className="pl-4 mt-2 space-y-1.5 border-l-2 border-primary/20 ml-2">
+                                                        {course.lessons?.map((lesson: any) => (
+                                                            <li key={lesson.id} className="text-xs text-muted-foreground flex items-center gap-2 hover:text-foreground transition-colors">
+                                                                <IconPlay className="h-3 w-3 text-primary/70" />
+                                                                <span>{lesson.title}</span>
+                                                                {lesson.duration && <span className="text-muted-foreground/60 text-[10px] ml-auto">({lesson.duration} min)</span>}
+                                                            </li>
+                                                        ))}
+                                                        {(!course.lessons || course.lessons.length === 0) && (
+                                                            <li className="text-xs text-muted-foreground/60 italic">Próximamente contenido</li>
+                                                        )}
+                                                    </ul>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 </div>
 

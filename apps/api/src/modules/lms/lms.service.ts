@@ -67,7 +67,21 @@ export class LmsService {
             courses: {
               where: { published: true },
               orderBy: { order: 'asc' as const },
-              include: { _count: { select: { lessons: true } } },
+              include: { 
+                _count: { select: { lessons: true } },
+                lessons: {
+                  where: { published: true },
+                  orderBy: { order: 'asc' },
+                  select: {
+                    id: true,
+                    title: true,
+                    duration: true,
+                    slug: true,
+                    order: true,
+                    videoUrl: true // Exponer videoUrl para que cargue el trailer (se sugiere validar si es gratis a futuro)
+                  }
+                }
+              },
             },
           }
           : {}),

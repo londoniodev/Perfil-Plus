@@ -22,7 +22,20 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
         }
 
         const validated = productSchema.parse(data)
-        const { id, ...payload } = validated
+        const id = (data as any).id; // El id viene en el data
+
+        // DTO de NestJS requiere estructura limpia
+        const payload = {
+            name: validated.name,
+            description: validated.description,
+            productType: validated.productType,
+            basePrice: validated.basePrice,
+            images: validated.images,
+            specs: validated.specs,
+            published: validated.published,
+            modifierGroups: validated.modifierGroups,
+            variants: validated.variants?.map(({ id, ...v }: any) => v)
+        }
 
         // El DTO de NestJS requiere slug
         const slug = validated.name

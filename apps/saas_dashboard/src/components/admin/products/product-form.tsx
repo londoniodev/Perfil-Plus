@@ -65,9 +65,10 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
         attachments: initialData?.specs?.attachments || [],
         variants: initialData?.variants?.map((v: any) => ({
             ...v,
-            price: v.price ? Number(v.price) : null
+            price: v.price ? Number(v.price) : null,
+            attributes: v.attributes || undefined
         })) || [
-                { name: "Standard", sku: "", price: null, stock: 0, isDefault: true }
+                { name: "Standard", sku: "", price: null, stock: 0, isDefault: true, attributes: undefined }
             ],
         modifierGroups: initialData?.modifierGroups || [],
         categories: initialData?.categories?.map((c: any) => c.category.id) || []

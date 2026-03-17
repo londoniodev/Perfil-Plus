@@ -10,6 +10,7 @@ interface UploadOptions {
     token?: string;
     tenantId?: string;
     folder?: string;
+    fileIntent?: string; // Nuevo: Flag para enrutamiento de bucket
 }
 
 export function useFileUpload() {
@@ -97,6 +98,10 @@ export function useFileUpload() {
 
                     const formData = new FormData();
                     formData.append("file", fileToUpload);
+                    
+                    if (options.fileIntent) {
+                        formData.append("fileIntent", options.fileIntent);
+                    }
 
                     xhr.send(formData);
                 });

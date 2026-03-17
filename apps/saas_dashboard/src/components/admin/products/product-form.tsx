@@ -335,7 +335,8 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                         <FormLabel>Archivo Digital Protegido (Ebook, ZIP, etc.)</FormLabel>
                                         <FormControl>
                                             <PrivateDocumentDropzone
-                                                endpoint={`${API_BASE}/storage/upload/ebook`}
+                                                endpoint={`${API_BASE}/storage/upload/attachment`}
+                                                fileIntent="PRIVATE_ASSET"
                                                 token={authToken}
                                                 value={field.value}
                                                 onChange={field.onChange}
@@ -448,7 +449,8 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                                 <FormLabel className="text-xs">Archivo PDF</FormLabel>
                                                 <FormControl>
                                                     <PrivateDocumentDropzone
-                                                        endpoint={`${API_BASE}/storage/upload/ebook`}
+                                                        endpoint={`${API_BASE}/storage/upload/attachment`}
+                                                        fileIntent="PUBLIC_ATTACHMENT"
                                                         token={authToken}
                                                         value={field.value}
                                                         onChange={field.onChange}

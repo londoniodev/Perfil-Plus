@@ -105,6 +105,27 @@ export class StorageController {
     return this.storageService.uploadFile(file, 'ebooks', true);
   }
 
+  @Post('upload/attachment')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttachment(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
+          new FileTypeValidator({ fileType: /(pdf|epub|docx|zip|rar)$/i }), // Más flexible para adjuntos
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body('fileIntent') fileIntent?: string, // <-- NUEVO
+  ) {
+    // Lógica de Enrutamiento Dinámica
+    const isPrivate = fileIntent === 'PRIVATE_ASSET';
+    const folder = isPrivate ? 'ebooks' : 'attachments';
+    
+    return this.storageService.uploadFile(file, folder, isPrivate);
+  }
+
   @Delete(':key')
   async deleteFile(@Param('key') key: string) {
     await this.storageService.deleteFile(key);

@@ -9,6 +9,7 @@ export interface PrivateDocumentDropzoneProps {
     token?: string;
     folder?: string;
     maxSizeMB?: number;
+    fileIntent?: string; // Nuevo: Flag para enrutamiento
     accept?: string;
     value?: string;
     onChange?: (url: string) => void;
@@ -30,6 +31,7 @@ export function PrivateDocumentDropzone({
     token,
     folder = "documents",
     maxSizeMB = 100, // By default 100MB for digital products
+    fileIntent, // Nuevo
     accept = ".pdf,.zip,.rar,.epub,.doc,.docx",
     value,
     onChange,
@@ -66,6 +68,7 @@ export function PrivateDocumentDropzone({
                 maxSizeMB,
                 token,
                 folder,
+                fileIntent, // Pasar flag
             });
 
             if (uploadedUrl) {
@@ -77,7 +80,7 @@ export function PrivateDocumentDropzone({
                 if (onUploadError && error) onUploadError(error);
             }
         },
-        [uploadFile, endpoint, maxSizeMB, token, folder, value, onChange, onUploadSuccess, onUploadError, error]
+        [uploadFile, endpoint, maxSizeMB, token, folder, fileIntent, value, onChange, onUploadSuccess, onUploadError, error]
     );
 
     const onDragEnter = (e: React.DragEvent<HTMLDivElement>) => {

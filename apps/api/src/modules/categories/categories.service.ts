@@ -16,9 +16,9 @@ function slugify(text: string) {
   return text
     .toString()
     .toLowerCase()
-    .replace(/\\s+/g, '-') // Replace spaces with -
-    .replace(/[^\\w\\-]+/g, '') // Remove all non-word chars
-    .replace(/\\-\\-+/g, '-') // Replace multiple - with single -
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, ''); // Trim - from end of text
 }
@@ -66,15 +66,23 @@ export class CategoriesService {
     type: CategoryType = 'PRODUCT',
   ) {
     const slug = slugify(createDto.name);
+    const ORConditions: any[] = [{ name: createDto.name }];
+    
+    if (slug) {
+      ORConditions.push({ slug });
+    }
 
     // Verificar unicidad de nombre / slug por tenant Y tipo
     const existing = await this.prisma.secure.category.findFirst({
       where: {
         tenantId,
         type,
-        OR: [{ name: createDto.name }, { slug }],
+        OR: ORConditions,
       },
     });
+
+    console.log('[DEBUG_CATEGORY] Payload:', { name: createDto.name, slug, tenantId, type });
+    console.log('[DEBUG_CATEGORY] Match found:', existing);
 
     if (existing) {
       throw new BadRequestException(

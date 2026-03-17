@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { getTenantId } from "@/lib/config-server";
-import { prisma } from "@alvarosky/database";
 import { resolveFormacion } from "@/lib/storefront-resolver";
 
 export const metadata = {
@@ -15,51 +14,37 @@ export default async function FormacionPage() {
 
     let themes: any[] = [];
     try {
-        // Obtenemos los temas reales para el tenant actual con el trailer del primer curso
-        const rawThemes = await prisma.theme.findMany({
-            where: { tenantId, published: true },
-            orderBy: { order: 'asc' },
-            include: {
-                courses: {
-                    where: { published: true },
-                    orderBy: { order: 'asc' },
-                    take: 1,
-                    include: {
-                        lessons: {
-                            where: { published: true },
-                            orderBy: { order: 'asc' },
-                            take: 1,
-                            select: { videoUrl: true }
-                        }
-                    }
-                }
+        const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:3001/api').replace(/\/+$/, "");
+        const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+        const finalEndpoint = `${API_URL}/lms/themes?include=courses`;
+
+        const response = await fetch(finalEndpoint, {
+            cache: 'no-store', // O 'force-cache' si quieres ISR
+            headers: {
+                'Content-Type': 'application/json',
+                'x-tenant-id': tenantId,
+                'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
             }
         });
 
-        // Obtenemos los productos para mapear precios (buscando en specs.courseId)
-        const products = await prisma.product.findMany({
-            where: { tenantId, published: true, productType: "DIGITAL" },
-            select: { basePrice: true, specs: true }
-        });
+        if (!response.ok) {
+            throw new Error(`Error API: ${response.status} ${response.statusText}`);
+        }
 
-        // Mapeamos los temas con el trailer y el precio del primer curso
-        themes = rawThemes.map(theme => {
+        const rawThemes = await response.json();
+
+        // Mapeamos los temas al formato amigable para la vista
+        themes = rawThemes.map((theme: any) => {
             const firstCourse = theme.courses?.[0];
-            const teaserVideo = firstCourse?.lessons?.[0]?.videoUrl || null;
             
-            // Buscar precio en productos vinculados al primer curso
-            const product = products.find(p => {
-                const specs = typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs;
-                return specs?.courseId === firstCourse?.id;
-            });
-
             return {
                 id: theme.id,
                 title: theme.title,
                 description: theme.description,
                 imageUrl: theme.coverImage,
-                price: product ? Number(product.basePrice) : (firstCourse?.isFree ? 0 : null),
-                teaserVideo,
+                // Como _count solo devuelve total de clases y no el trailer, dejamos teaserVideo null
+                teaserVideo: null, 
+                price: firstCourse?.isFree ? 0 : null, // Mapeo básico si no hay consulta de productos directa
                 firstCourseId: firstCourse?.id
             };
         });

@@ -31,7 +31,7 @@ export function useFileUpload() {
                     const compressionOptions = {
                         maxSizeMB: options.maxSizeMB || 2,
                         maxWidthOrHeight: options.maxWidthOrHeight || 1920,
-                        useWebWorker: true,
+                        useWebWorker: false,
                         initialQuality: 0.85,
                     };
 

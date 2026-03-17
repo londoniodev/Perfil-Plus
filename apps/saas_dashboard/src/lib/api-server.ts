@@ -31,9 +31,13 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
     }
 
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
         const fetchOptions: RequestInit = {
             ...options,
             headers,
+            signal: controller.signal,
         };
 
         // Las Server Actions suelen requerir no cachear las mutaciones
@@ -42,6 +46,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         }
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             let errorMessage = `API Error: ${response.status} ${response.statusText}`;

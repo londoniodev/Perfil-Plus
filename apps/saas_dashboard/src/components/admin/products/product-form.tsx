@@ -152,7 +152,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-[1000px] mx-auto pb-20">
+            <form onSubmit={form.handleSubmit(onSubmit, (errors: any) => console.error("Validation Errors:", errors))} className="space-y-6 w-full max-w-[1000px] mx-auto pb-20">
 
                 <Card>
                     <CardHeader>

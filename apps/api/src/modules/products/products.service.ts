@@ -361,7 +361,7 @@ export class ProductsService {
 
   // ============ QUERIES ============
   async getLiveStatus(tenantId: string) {
-    const products = await this.prisma.secure.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
         tenantId,
         published: true,
@@ -392,8 +392,9 @@ export class ProductsService {
     return statusMap;
   }
 
-  async findAllAdmin() {
-    return await this.prisma.secure.product.findMany({
+  async findAllAdmin(tenantId: string) {
+    return await this.prisma.product.findMany({
+      where: { tenantId },
       orderBy: { createdAt: 'desc' },
       include: {
         variants: true,
@@ -414,8 +415,9 @@ export class ProductsService {
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
 
-    const result = await this.prisma.secure.product.findMany({
+    const result = await this.prisma.product.findMany({
       where: {
+        tenantId,
         published: true,
         ...(type ? { productType: type } : {}),
       },
@@ -436,7 +438,7 @@ export class ProductsService {
   }
 
   async findOnePublished(slug: string, tenantId: string) {
-    const product = await this.prisma.secure.product.findFirst({
+    const product = await this.prisma.product.findFirst({
       where: { tenantId, slug },
       include: {
         variants: true,
@@ -451,9 +453,9 @@ export class ProductsService {
     return product;
   }
 
-  async findOne(id: string) {
-    const product = await this.prisma.secure.product.findUnique({
-      where: { id },
+  async findOne(id: string, tenantId?: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, ...(tenantId ? { tenantId } : {}) },
       include: {
         variants: true,
         ...this.modifierGroupsInclude,

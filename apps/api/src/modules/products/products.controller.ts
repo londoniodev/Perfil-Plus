@@ -50,13 +50,16 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAllAdmin();
+  findAll(@CurrentTenant() tenantId: string) {
+    return this.productsService.findAllAdmin(tenantId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  findOne(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.productsService.findOne(id, tenantId);
   }
 
   @Delete(':id')

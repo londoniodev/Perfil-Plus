@@ -175,7 +175,7 @@ export class LmsService {
 
     // Si hay usuario, obtener su progreso
     if (userId) {
-      const progress = await this.prisma.secure.userProgress.findMany({
+      const progress = await this.prisma.userProgress.findMany({
         where: {
           userId,
           lesson: { courseId: course.id },
@@ -219,14 +219,14 @@ export class LmsService {
 
   async createLesson(dto: CreateLessonDto, tenantId: string) {
     const slug = this.generateSlug(dto.title);
-    return this.prisma.secure.lesson.create({
+    return this.prisma.lesson.create({
       data: { ...dto, slug },
       include: { course: { select: { id: true, title: true } } },
     });
   }
 
   async updateLesson(id: string, dto: UpdateLessonDto) {
-    const lesson = await this.prisma.secure.lesson.findUnique({
+    const lesson = await this.prisma.lesson.findUnique({
       where: { id },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
@@ -234,7 +234,7 @@ export class LmsService {
     const data: any = { ...dto };
     if (dto.title) data.slug = this.generateSlug(dto.title);
 
-    return this.prisma.secure.lesson.update({
+    return this.prisma.lesson.update({
       where: { id },
       data,
       include: { course: { select: { id: true, title: true } } },
@@ -242,12 +242,12 @@ export class LmsService {
   }
 
   async deleteLesson(id: string) {
-    const lesson = await this.prisma.secure.lesson.findUnique({
+    const lesson = await this.prisma.lesson.findUnique({
       where: { id },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
 
-    await this.prisma.secure.lesson.delete({ where: { id } });
+    await this.prisma.lesson.delete({ where: { id } });
     return { message: 'Lección eliminada correctamente' };
   }
 
@@ -259,7 +259,7 @@ export class LmsService {
   ) {
     // En lugar de buscar el curso primero, buscamos la lección directamente con el curso incluido
     // Esto optimiza la consulta y evita problemas si el lessonSlug es único
-    const lesson = await this.prisma.secure.lesson.findFirst({
+    const lesson = await this.prisma.lesson.findFirst({
       where: {
         slug: lessonSlug,
         course: { slug: courseSlug },
@@ -314,7 +314,7 @@ export class LmsService {
 
     // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
     const [prev, next] = await Promise.all([
-      this.prisma.secure.lesson.findFirst({
+      this.prisma.lesson.findFirst({
         where: {
           courseId: lesson.course.id,
           order: { lt: lesson.order },
@@ -323,7 +323,7 @@ export class LmsService {
         orderBy: { order: 'desc' },
         select: { slug: true, title: true },
       }),
-      this.prisma.secure.lesson.findFirst({
+      this.prisma.lesson.findFirst({
         where: {
           courseId: lesson.course.id,
           order: { gt: lesson.order },
@@ -337,7 +337,7 @@ export class LmsService {
     // Obtener progreso del usuario si existe
     let userProgress: { completed: boolean; watchedTime: number } | null = null;
     if (userId) {
-      const progress = await this.prisma.secure.userProgress.findUnique({
+      const progress = await this.prisma.userProgress.findUnique({
         where: { userId_lessonId: { userId, lessonId: lesson.id } },
       });
       if (progress) {
@@ -358,7 +358,7 @@ export class LmsService {
   // ============ ATTACHMENTS ============
 
   async addLessonAttachment(lessonId: string, dto: CreateLessonAttachmentDto) {
-    const lesson = await this.prisma.secure.lesson.findUnique({
+    const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
     });
 
@@ -366,7 +366,7 @@ export class LmsService {
       throw new NotFoundException('Lección no encontrada');
     }
 
-    return this.prisma.secure.lessonAttachment.create({
+    return this.prisma.lessonAttachment.create({
       data: {
         lessonId,
         ...dto,
@@ -376,7 +376,7 @@ export class LmsService {
 
   async removeLessonAttachment(attachmentId: string) {
     // Verificar si existe
-    const attachment = await this.prisma.secure.lessonAttachment.findUnique({
+    const attachment = await this.prisma.lessonAttachment.findUnique({
       where: { id: attachmentId },
     });
 
@@ -384,13 +384,13 @@ export class LmsService {
       throw new NotFoundException('Adjunto no encontrado');
     }
 
-    return this.prisma.secure.lessonAttachment.delete({
+    return this.prisma.lessonAttachment.delete({
       where: { id: attachmentId },
     });
   }
 
   async findLessonById(id: string) {
-    const lesson = await this.prisma.secure.lesson.findUnique({
+    const lesson = await this.prisma.lesson.findUnique({
       where: { id },
       include: {
         attachments: true,
@@ -408,7 +408,7 @@ export class LmsService {
     lessonId: string,
     dto: UpdateProgressDto,
   ) {
-    const lesson = await this.prisma.secure.lesson.findUnique({
+    const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
@@ -422,7 +422,7 @@ export class LmsService {
       data.completedAt = new Date();
     }
 
-    return this.prisma.secure.userProgress.upsert({
+    return this.prisma.userProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       create: {
         userId,
@@ -435,7 +435,7 @@ export class LmsService {
   }
 
   async getUserProgress(userId: string) {
-    const progress = await this.prisma.secure.userProgress.findMany({
+    const progress = await this.prisma.userProgress.findMany({
       where: { userId },
       include: {
         lesson: {
@@ -467,7 +467,7 @@ export class LmsService {
 
     // Batch: obtener conteos de lecciones por curso en una sola query
     const courseIds = [...new Set(progress.map((p) => p.lesson.course.id))];
-    const lessonCounts = await this.prisma.secure.lesson.groupBy({
+    const lessonCounts = await this.prisma.lesson.groupBy({
       by: ['courseId'],
       where: { courseId: { in: courseIds }, published: true },
       _count: { id: true },

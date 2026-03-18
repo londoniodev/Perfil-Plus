@@ -7,18 +7,14 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
     try {
         const { tag, path } = options;
         const headersList = await headers();
-        const host = headersList.get("host");
+        const publicHost = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+        const tenantIdFromHeader = headersList.get("x-tenant-id") || TENANT_ID;
 
-        if (!host) {
-            console.warn("⚠️ Cannot resolve host header for storefront revalidation.");
-            return;
-        }
-
-        // Construir URL del storefront (Next.js público)
-        // Si el host tiene puerto o es local, suele ser HTTP internamente en Docker
-        const hasPort = host.includes(":");
-        const protocol = host.includes("127.0.0.1") || host.includes("localhost") || hasPort ? "http" : "https";
-        const url = `${protocol}://${host}/api/revalidate`;
+        // Construir URL del storefront usando el host público
+        // Si el host tiene puerto o es local, suele ser desarrollo (HTTP). En produccion es HTTPS.
+        const hasPort = publicHost.includes(":") && !publicHost.includes(":443");
+        const protocol = publicHost.includes("127.0.0.1") || publicHost.includes("localhost") || hasPort ? "http" : "https";
+        const url = `${protocol}://${publicHost}/api/revalidate`;
 
         // Configurar payload
         const payload: { tag?: string, path?: string } = {};
@@ -26,7 +22,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         if (path) payload.path = path;
 
         if (!tag && !path) {
-            payload.tag = `tenant-${TENANT_ID}-store`; // Default
+            payload.tag = `tenant-${tenantIdFromHeader}-store`; // Default
         }
 
         console.log(`[Revalidate] Fetching: ${url} with payload:`, payload);
@@ -36,6 +32,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
             headers: {
                 "Content-Type": "application/json",
                 "x-revalidate-secret": process.env.INTERNAL_API_KEY || "default_dev_secret_key",
+                "x-tenant-id": tenantIdFromHeader // Propagar el tenant id para evitar que la tienda cargue datos erróneos
             },
             body: JSON.stringify(payload),
         });

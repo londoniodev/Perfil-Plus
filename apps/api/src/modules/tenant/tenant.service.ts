@@ -121,14 +121,22 @@ export class TenantService {
         const menuSetting = await this.prisma.secure.systemSetting.findFirst({
           where: { tenantId: tenantById.id, key: 'menu' },
         });
+        const whatsappSetting = await this.prisma.secure.systemSetting.findFirst({
+          where: { tenantId: tenantById.id, key: 'whatsapp' },
+        });
+        const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
+          where: { tenantId: tenantById.id, key: 'smtp' },
+        });
         
         const menuData = (menuSetting?.value as any) || {};
         const logo = menuData.logo || null;
         const headerLinks = menuData.headerLinks || null;
         const footerLinks = menuData.footerLinks || null;
-        const contactEmail = menuData.contactEmail || tenantById.ownerEmail || null;
-        const contactPhone = menuData.contactPhone || null;
         const tagline = menuData.tagline || tenantById.notes || 'Plataforma Profesional';
+        
+        const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
+        const smtpData = (smtpSetting?.value as any) || {};
+        const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantById.ownerEmail || null;
         
         return { ...tenantById, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
       }
@@ -152,14 +160,22 @@ export class TenantService {
       const menuSetting = await this.prisma.secure.systemSetting.findFirst({
         where: { tenantId: tenantBySlug.id, key: 'menu' },
       });
+      const whatsappSetting = await this.prisma.secure.systemSetting.findFirst({
+        where: { tenantId: tenantBySlug.id, key: 'whatsapp' },
+      });
+      const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
+        where: { tenantId: tenantBySlug.id, key: 'smtp' },
+      });
       
       const menuData = (menuSetting?.value as any) || {};
       const logo = menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
-      const contactEmail = menuData.contactEmail || tenantBySlug.ownerEmail || null;
-      const contactPhone = menuData.contactPhone || null;
       const tagline = menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
+      
+      const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
+      const smtpData = (smtpSetting?.value as any) || {};
+      const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantBySlug.ownerEmail || null;
       
       return { ...tenantBySlug, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
     }

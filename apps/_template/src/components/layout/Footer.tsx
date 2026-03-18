@@ -44,15 +44,14 @@ export function Footer({
                 links={finalFooterLinks as any}
                 companyName={businessName}
                 className="border-none py-8 pb-4"
+                contactInfo={
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs text-muted-foreground/60 font-medium whitespace-nowrap">
+                        <span>Email: <a href={`mailto:${businessEmail}`} className="hover:text-foreground hover:underline transition-all">{businessEmail}</a></span>
+                        <span className="hidden sm:inline text-border">•</span>
+                        <span>Teléfono: {businessPhone}</span>
+                    </div>
+                }
             />
-            {/* Meta Legal & Contact Info Band unificada */}
-            <div className="container mx-auto px-4 text-center flex flex-col items-center justify-center gap-2 mt-4">
-                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-xs text-muted-foreground/60 font-medium">
-                    <span>Email: <a href={`mailto:${businessEmail}`} className="hover:text-foreground hover:underline transition-all">{businessEmail}</a></span>
-                    <span className="hidden sm:inline text-border">•</span>
-                    <span>Teléfono: {businessPhone}</span>
-                </div>
-            </div>
         </div>
     );
 }

@@ -171,9 +171,9 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [
         {
           url: logoUrl,
-          width: 800,
-          height: 800,
-          alt: "Logo",
+          width: 1200,
+          height: 630,
+          alt: `${siteName} Logo`,
         },
       ],
     }

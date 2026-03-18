@@ -17,6 +17,7 @@ export interface SiteFooterProps {
     developerName?: string;
     developerUrl?: string;
     className?: string;
+    contactInfo?: React.ReactNode;
 }
 
 export function SiteFooter({
@@ -28,6 +29,7 @@ export function SiteFooter({
     developerName = "Alvaro Londoño",
     developerUrl = "https://portafolio.alvarolondoño.dev",
     className,
+    contactInfo,
 }: SiteFooterProps) {
     const currentYear = new Date().getFullYear();
 
@@ -72,11 +74,18 @@ export function SiteFooter({
                 </div>
 
                 {/* Copyright & Credits - Adapted for Mobile */}
-                <div className="flex flex-col lg:flex-row items-center justify-between pt-8 lg:pt-0 lg:border-t-0 border-t border-border/50">
-                    <span className="hidden lg:block text-xs text-muted-foreground">
+                <div className="flex flex-col lg:flex-row items-center justify-between pt-8 lg:pt-0 lg:border-t-0 border-t border-border/50 gap-4">
+                    <span className="hidden lg:block text-xs text-muted-foreground whitespace-nowrap">
                         © {currentYear} {companyName}. Todos los derechos reservados.
                     </span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+
+                    {contactInfo && (
+                        <div className="flex items-center">
+                            {contactInfo}
+                        </div>
+                    )}
+
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                         Desarrollado por{" "}
                         <a
                             href={developerUrl}

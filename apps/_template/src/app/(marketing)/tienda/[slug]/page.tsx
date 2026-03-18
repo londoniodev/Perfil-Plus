@@ -3,8 +3,52 @@ import { serverFetch } from "@/lib/api-server"
 import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
 
+import { Metadata } from "next"
+
 interface ProductPageProps {
     params: Promise<{ slug: string }> // En Next.js 15+, params es una Promise
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const product = await serverFetch<any>(`/store/products/${slug}`).catch(() => null);
+
+    if (!product) {
+        return {
+            title: "Producto no encontrado",
+        };
+    }
+
+    const title = product.name;
+    const description = product.description || `Compra ${product.name} en nuestra tienda.`;
+    
+    // Obtenemos imagen (coverImage o la primera del array si existe)
+    const productCover = product.coverImage || product.images?.[0] || null;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            type: 'website',
+            title,
+            description,
+            // Si el producto no tiene imagen, Next.js hereda automáticamente la del layout (logo)
+            images: productCover ? [
+                {
+                    url: productCover,
+                    width: 1200,
+                    height: 630,
+                    alt: product.name,
+                }
+            ] : [],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: productCover ? [productCover] : [],
+        }
+    };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {

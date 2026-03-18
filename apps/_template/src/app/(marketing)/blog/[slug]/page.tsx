@@ -11,13 +11,18 @@ interface PostPageProps {
   params: Promise<{ slug: string }>;
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+// SITE_URL eliminado staticamente. Se calcula dinamicamente en cada funcion.
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
   try {
     const headersList = await headers()
     const tenantId = headersList.get("x-tenant-id") || "template"
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
+    const protocol = isLocal ? "http" : "https";
+    const dynamicSiteUrl = `${protocol}://${host}`;
+
     const post = await getPostBySlug(tenantId, slug);
     const title = post.metaTitle || post.title;
     const description = post.metaDescription || post.excerpt;
@@ -30,7 +35,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
         type: 'article',
         title,
         description,
-        url: `${SITE_URL}/blog/${slug}`,
+        url: `${dynamicSiteUrl}/blog/${slug}`,
         images: post.coverImage ? [{
           url: post.coverImage,
           width: 1200,
@@ -48,7 +53,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
         images: post.coverImage ? [post.coverImage] : [],
       },
       alternates: {
-        canonical: `${SITE_URL}/blog/${slug}`,
+        canonical: `${dynamicSiteUrl}/blog/${slug}`,
       },
     };
   } catch {
@@ -66,9 +71,15 @@ export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
 
   let post;
+  let dynamicSiteUrl = "http://localhost:3000";
   try {
     const headersList = await headers()
     const tenantId = headersList.get("x-tenant-id") || "template"
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
+    const protocol = isLocal ? "http" : "https";
+    dynamicSiteUrl = `${protocol}://${host}`;
+
     post = await getPostBySlug(tenantId, slug);
   } catch {
     notFound();
@@ -84,18 +95,18 @@ export default async function PostPage({ params }: PostPageProps) {
     "author": {
       "@type": "Person",
       "name": post.authorName,
-      "url": SITE_URL
+      "url": dynamicSiteUrl
     },
     "publisher": {
       "@type": "Organization",
       "name": post.authorName,
-      "url": SITE_URL
+      "url": dynamicSiteUrl
     },
     "datePublished": post.publishedAt || post.createdAt,
     "dateModified": post.updatedAt || post.createdAt,
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `${SITE_URL}/blog/${slug}`
+      "@id": `${dynamicSiteUrl}/blog/${slug}`
     },
     "wordCount": post.content?.split(/\s+/).length || 0,
     "articleSection": post.categories?.[0]?.name || "General",
@@ -103,7 +114,7 @@ export default async function PostPage({ params }: PostPageProps) {
   };
 
   const { html, toc } = processContent(post.content || "");
-  const postUrl = `${SITE_URL}/blog/${slug}`;
+  const postUrl = `${dynamicSiteUrl}/blog/${slug}`;
 
   return (
     <>

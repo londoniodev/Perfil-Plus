@@ -154,8 +154,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteName = design?.name || siteConfig.name;
   const tagline = design?.tagline || siteConfig.description;
 
+  const headersList = await headers();
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
+  const protocol = isLocal ? "http" : "https";
+  const currentUrl = `${protocol}://${host}`;
+
   return {
     ...baseMetadata,
+    metadataBase: new URL(currentUrl),
+    alternates: {
+      canonical: currentUrl,
+    },
     title: {
       default: `${siteName} | ${tagline}`,
       template: `%s | ${siteName}`,

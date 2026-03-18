@@ -5,6 +5,7 @@ import { Button } from "../../button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../../sheet"
 import { PriceDisplay } from "../../price-display"
 import { AdaptiveImage } from "../../adaptive-image"
+import { useState } from "react"
 
 // ============================================
 // Types
@@ -46,8 +47,10 @@ export function CartSheet({
     onCheckout,
     isCheckoutProcessing = false
 }: CartSheetProps) {
+    const [open, setOpen] = useState(false)
+
     return (
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-zinc-700/50 bg-zinc-900/50 hover:bg-zinc-800 hover:text-white transition-all duration-300">
                     <ShoppingCart className="h-5 w-5" />
@@ -118,9 +121,16 @@ export function CartSheet({
                             </div>
                         </div>
                         <Button
-                            className="w-full bg-white text-black hover:bg-zinc-200 transaction-all duration-300 font-medium tracking-wide h-12 rounded-lg"
+                            className="w-full bg-primary text-primary-foreground hover:opacity-90 transaction-all duration-300 font-medium tracking-wide h-12 rounded-lg"
                             size="lg"
-                            onClick={onCheckout}
+                            onClick={async () => {
+                                try {
+                                    await onCheckout()
+                                    setOpen(false)
+                                } catch (e) {
+                                    console.error("Checkout failed", e)
+                                }
+                            }}
                             disabled={isCheckoutProcessing}
                         >
                             {isCheckoutProcessing ? (

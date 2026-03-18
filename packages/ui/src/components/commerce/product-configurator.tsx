@@ -7,7 +7,7 @@ import { AdaptiveImage } from "../../adaptive-image"
 import { Button } from "../../button"
 import { Badge } from "../../badge"
 import { useToast } from "../../toast"
-import { Check, ShoppingCart, Download, FileText } from "lucide-react"
+import { Check, ShoppingCart, Download, FileText, Share2 } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 // ============================================
@@ -61,6 +61,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
         product.variants.find(v => v.isDefault) || product.variants[0]
     )
     const [mounted, setMounted] = React.useState(false)
+    const [isExpanded, setIsExpanded] = React.useState(false)
 
     React.useEffect(() => {
         setMounted(true)
@@ -98,11 +99,14 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
-                <div className="-mx-4 sm:mx-0 relative overflow-hidden md:rounded-xl border border-zinc-900 bg-muted">
+                <div 
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-xl bg-muted cursor-pointer"
+                >
                     <AdaptiveImage
                         src={product.images[0] || "/placeholder.jpg"}
                         alt={product.name}
-                        aspectRatio={isDigital ? "portrait" : "square"}
+                        aspectRatio={isDigital ? "portrait" : "9/10"}
                         priority
                         className="transition-all"
                     />
@@ -110,9 +114,12 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                         <Badge className="absolute top-4 left-4 bg-blue-600">Digital</Badge>
                     )}
                     
-                    {/* Overlay de Título para Móvil */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent md:hidden flex flex-col justify-end min-h-[140px]">
-                        <h1 className="text-2xl font-bold tracking-tight text-white leading-tight">
+                    {/* Overlay de Título para Móvil (Se oculta al expandir) */}
+                    <div className={cn(
+                        "absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent md:hidden flex flex-col justify-end min-h-[140px] transition-opacity duration-300",
+                        isExpanded ? "opacity-0" : "opacity-100"
+                    )}>
+                        <h1 className="text-xl font-medium tracking-wide text-white leading-tight">
                             {product.name}
                         </h1>
                     </div>
@@ -130,6 +137,30 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl hidden md:block">
                         {product.name}
                     </h1>
+
+                    {/* Botón de Compartir */}
+                    <div className="mt-4 flex">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-xs flex items-center gap-2 border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full"
+                            onClick={() => {
+                                if (navigator.share) {
+                                    navigator.share({
+                                        title: product.name,
+                                        url: window.location.href
+                                    }).catch(() => {})
+                                } else {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    toast.success("Enlace copiado al portapapeles");
+                                }
+                            }}
+                        >
+                            <Share2 className="h-3.5 w-3.5" />
+                            Compartir
+                        </Button>
+                    </div>
+
                     <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
                         {product.description}
                     </p>

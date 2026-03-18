@@ -10,6 +10,7 @@ const aspectRatios = {
     square: "aspect-square",    // 1:1
     video: "aspect-video",      // 16:9
     portrait: "aspect-[2/3]",   // 2:3 (Portadas Libros)
+    "9/10": "aspect-[9/10]",     // 9:10 (Tall products para corte 5% lateral)
     wide: "aspect-[21/9]",      // 21:9 (Cinemático/Headers)
     ultraWide: "aspect-[32/9]", // 32:9 (Banners delgados)
 }

@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="min-h-screen bg-zinc-950 flex flex-col pt-24">
             <div className="container py-8 md:py-12 relative z-10">
                 {/* Breadcrumbs simplificados */}
-                <div className="mb-8">
+                <div className="hidden md:block mb-8">
                     <PageHeader
                         title="Tienda"
                         description={`/ ${product.name}`}

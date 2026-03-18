@@ -60,6 +60,11 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
     const [selectedVariant, setSelectedVariant] = React.useState<ProductVariantData>(
         product.variants.find(v => v.isDefault) || product.variants[0]
     )
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const isDigital = product.productType === "DIGITAL"
     const hasVariants = product.variants.length > 1
@@ -87,8 +92,13 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
     return (
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             {/* COLUMNA IZQUIERDA: Galería */}
-            <div className="space-y-4">
-                <div className="relative overflow-hidden rounded-xl border bg-muted">
+            <div 
+                className={cn(
+                    "space-y-4 transition-all duration-700 ease-out transform",
+                    mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                )}
+            >
+                <div className="-mx-4 sm:mx-0 relative overflow-hidden md:rounded-xl border border-zinc-900 bg-muted">
                     <AdaptiveImage
                         src={product.images[0] || "/placeholder.jpg"}
                         alt={product.name}
@@ -99,13 +109,25 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     {isDigital && (
                         <Badge className="absolute top-4 left-4 bg-blue-600">Digital</Badge>
                     )}
+                    
+                    {/* Overlay de Título para Móvil */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent md:hidden flex flex-col justify-end min-h-[140px]">
+                        <h1 className="text-2xl font-bold tracking-tight text-white leading-tight">
+                            {product.name}
+                        </h1>
+                    </div>
                 </div>
             </div>
 
             {/* COLUMNA DERECHA: Info y Acciones */}
-            <div className="flex flex-col gap-6">
+            <div 
+                className={cn(
+                    "flex flex-col gap-6 transition-all duration-700 delay-200 ease-out transform",
+                    mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                )}
+            >
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl hidden md:block">
                         {product.name}
                     </h1>
                     <p className="mt-4 text-muted-foreground text-lg leading-relaxed">

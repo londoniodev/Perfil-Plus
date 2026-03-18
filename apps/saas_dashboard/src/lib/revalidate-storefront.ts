@@ -13,7 +13,8 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         // Construir URL del storefront usando el host público
         // Si el host tiene puerto o es local, suele ser desarrollo (HTTP). En produccion es HTTPS.
         const hasPort = publicHost.includes(":") && !publicHost.includes(":443");
-        const protocol = publicHost.includes("127.0.0.1") || publicHost.includes("localhost") || hasPort ? "http" : "https";
+        const isInternalDocker = publicHost.includes("web-projects") || publicHost.includes("api-") || publicHost.includes("dashboard-");
+        const protocol = publicHost.includes("127.0.0.1") || publicHost.includes("localhost") || hasPort || isInternalDocker ? "http" : "https";
         const url = `${protocol}://${publicHost}/api/revalidate`;
 
         // Configurar payload

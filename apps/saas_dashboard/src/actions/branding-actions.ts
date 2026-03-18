@@ -2,6 +2,7 @@
 
 import { serverFetch } from "@/lib/api-server";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 
 export async function updateTenantBranding(data: any) {
     try {
@@ -13,6 +14,9 @@ export async function updateTenantBranding(data: any) {
             method: 'PATCH',
             body: JSON.stringify({ design: data })
         });
+
+        // Revalidar el storefront para aplicar el cambio en el Layout
+        await revalidateStorefront({ tag: "tenant-branding" });
 
         revalidatePath("/", "layout"); // Revalidate everything to apply new theme everywhere
         // @ts-ignore - Bypass Next.js 16 type restrictiveness

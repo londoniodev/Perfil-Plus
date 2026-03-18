@@ -70,7 +70,9 @@ async function getTenantDesign(tenantId: string) {
       ...design,
       logo: data?.logo || null,
       headerLinks: data?.headerLinks || null,
-      footerLinks: data?.footerLinks || null
+      footerLinks: data?.footerLinks || null,
+      contactEmail: data?.contactEmail || null,
+      contactPhone: data?.contactPhone || null,
     };
   } catch (e) {
     console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);

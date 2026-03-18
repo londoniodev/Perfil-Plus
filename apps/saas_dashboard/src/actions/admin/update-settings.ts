@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { revalidateStorefront } from "@/lib/revalidate-storefront"
 import { settingsSchema, SettingsFormValues } from "@alvarosky/features"
 
 interface UpdateSettingsResult {
@@ -89,6 +90,9 @@ export async function updateSettings(data: SettingsFormValues): Promise<UpdateSe
             method: 'PATCH',
             body: JSON.stringify(newConfig)
         })
+
+        // 5.b Revalidar el storefront para aplicar el cambio en el Layout
+        await revalidateStorefront({ tag: "tenant-branding" });
 
         // 6. Revalidar rutas
         revalidatePath("/admin/settings")

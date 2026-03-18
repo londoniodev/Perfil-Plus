@@ -182,12 +182,18 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: siteName,
       images: [
         {
-          url: logoUrl,
+          url: `/api/og?tenantId=${tenantId}`,
           width: 1200,
           height: 630,
-          alt: `${siteName} Logo`,
+          alt: `${siteName} - ${tagline}`,
         },
       ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${siteName} | ${tagline}`,
+      description: tagline,
+      images: [`/api/og?tenantId=${tenantId}`],
     }
   };
 }

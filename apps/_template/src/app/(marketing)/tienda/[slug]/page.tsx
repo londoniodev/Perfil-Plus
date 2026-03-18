@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             type: 'website',
             title,
             description,
+            url: `/tienda/${slug}`,
             // Si el producto no tiene imagen, Next.js hereda automáticamente la del layout (logo)
             images: productCover ? [
                 {
@@ -41,6 +42,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
                     alt: product.name,
                 }
             ] : [],
+        },
+        alternates: {
+            canonical: `/tienda/${slug}`,
         },
         twitter: {
             card: 'summary_large_image',

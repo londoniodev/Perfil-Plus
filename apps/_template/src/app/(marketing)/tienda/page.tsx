@@ -4,7 +4,13 @@ import { API_BASE } from "@/lib/config"
 
 export const metadata = {
     title: "Tienda Oficial - Nuestros Productos",
-    description: "Explora y adquiere nuestros productos físicos y descargas digitales."
+    description: "Explora y adquiere nuestros productos físicos y descargas digitales.",
+    alternates: {
+        canonical: "/tienda",
+    },
+    openGraph: {
+        url: "/tienda",
+    }
 }
 
 export default async function TiendaPage() {

@@ -3,8 +3,25 @@ import { notFound } from "next/navigation";
 import { getTenantId } from "@/lib/config-server";
 import { TenantMarketingData } from "@/types/marketing";
 import { resolveLanding } from "@/lib/storefront-resolver";
+import { Metadata } from "next";
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  // El Edge Middleware ya nos regaló el ID en el túnel the proxy
+  const tenantId = headersList.get("x-tenant-id") || await getTenantId();
+
+  if (tenantId === "alvarolondono" || tenantId === "xn--alvarolondoo-khb.dev") {
+    return {
+      other: {
+        "facebook-domain-verification": "wa9miawih97u6xsx1yhc1ub3w9dy0a",
+      },
+    };
+  }
+
+  return {};
+}
 
 async function getMarketingData(tenantId: string): Promise<TenantMarketingData | null> {
   try {

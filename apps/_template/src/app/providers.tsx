@@ -20,6 +20,8 @@ export type TenantContextType = {
     contactEmail?: string | null;
     businessName?: string | null;
     tagline?: string | null;
+    authBgUrl?: string | null;
+    authQuote?: string | null;
 };
 
 const TenantContext = createContext<TenantContextType>({ 
@@ -41,6 +43,8 @@ export function TenantProvider({
     contactEmail = null,
     businessName = null,
     tagline = null,
+    authBgUrl = null,
+    authQuote = null,
 }: { 
     children: React.ReactNode, 
     tenantId: string,
@@ -51,9 +55,11 @@ export function TenantProvider({
     contactEmail?: string | null,
     businessName?: string | null,
     tagline?: string | null,
+    authBgUrl?: string | null,
+    authQuote?: string | null,
 }) {
     return (
-        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline }}>
+        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline, authBgUrl, authQuote }}>
             {children}
         </TenantContext.Provider>
     );
@@ -103,6 +109,8 @@ export function AppProviders({
             contactEmail={contactEmail}
             businessName={businessName}
             tagline={tagline}
+            authBgUrl={design?.brandSettings?.authBgUrl || null}
+            authQuote={design?.brandSettings?.authQuote || null}
         >
             <ThemeProvider
                 attribute="class"

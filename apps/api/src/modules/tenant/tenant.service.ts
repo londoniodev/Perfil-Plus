@@ -370,6 +370,8 @@ export class TenantService {
     const logoUrl = design.logoUrl || null;
     const faviconUrl = design.faviconUrl || null;
     const tagline = design.tagline || null;
+    const authBgUrl = design.authBgUrl || null;
+    const authQuote = design.authQuote || null;
 
     const updatedSettings = await this.prisma.brandSettings.upsert({
       where: { tenantId },
@@ -383,6 +385,8 @@ export class TenantService {
         logoUrl,
         faviconUrl,
         tagline,
+        authBgUrl,
+        authQuote,
       },
       update: {
         primaryColor,
@@ -393,6 +397,8 @@ export class TenantService {
         logoUrl,
         faviconUrl,
         tagline,
+        authBgUrl,
+        authQuote,
       },
     });
 

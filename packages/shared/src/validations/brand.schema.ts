@@ -56,6 +56,9 @@ export const BrandSettingsSchema = z.object({
             message: "Tipo de layout inválido",
         })
         .default("CLASSIC"),
+
+    authBgUrl: z.string().optional().nullable(),
+    authQuote: z.string().optional().nullable(),
 });
 
 export type BrandSettingsFormValues = z.infer<typeof BrandSettingsSchema>;

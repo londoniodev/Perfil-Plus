@@ -973,6 +973,8 @@ model BrandSettings {
   logoUrl        String?
   faviconUrl     String?
   tagline        String?
+  authBgUrl      String?
+  authQuote      String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)

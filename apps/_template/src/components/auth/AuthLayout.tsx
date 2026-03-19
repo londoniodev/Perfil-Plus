@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FloatingBackButton } from "./FloatingBackButton";
+import { useTenant } from "@/app/providers";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -19,7 +20,13 @@ const DEFAULT_AUTH_ASSETS = {
 };
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
-    const assets = DEFAULT_AUTH_ASSETS;
+    const { authBgUrl, authQuote } = useTenant();
+    
+    const assets = {
+        bgImage: authBgUrl || DEFAULT_AUTH_ASSETS.bgImage,
+        quote: authQuote ? <>{authQuote}</> : DEFAULT_AUTH_ASSETS.quote,
+        imageAlt: "Fondo de autenticación"
+    };
 
     return (
         <div className="grid lg:grid-cols-2 min-h-screen w-full bg-zinc-950 text-zinc-50">

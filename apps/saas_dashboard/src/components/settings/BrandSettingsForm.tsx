@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -33,8 +33,10 @@ import {
     Separator,
     Slider,
     cn,
+    SingleImageDropzone
 } from "@alvarosky/ui";
-import { Check, Loader2, Palette, Type, Layout, Circle } from "lucide-react";
+import { Check, Loader2, Palette, Type, Layout, Circle, Image as ImageIcon } from "lucide-react";
+import { API_BASE, TENANT_ID } from "@/lib/config";
 import { updateBrandSettings } from "@/actions/brand-settings-actions";
 import { toast } from "sonner";
 
@@ -52,6 +54,14 @@ export function BrandSettingsForm({ defaultValues }: BrandSettingsFormProps) {
     const primaryColorRef = useRef<HTMLInputElement>(null);
     const secondaryColorRef = useRef<HTMLInputElement>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [authToken, setAuthToken] = useState("");
+
+    // Read auth token on client side for image uploads
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setAuthToken(localStorage.getItem("token") || "");
+        }
+    }, []);
 
     const form = useForm<BrandSettingsFormValues>({
         resolver: zodResolver(BrandSettingsSchema) as any,
@@ -295,6 +305,65 @@ export function BrandSettingsForm({ defaultValues }: BrandSettingsFormProps) {
                                     </FormItem>
                                 )}
                             />
+                        </CardContent>
+                    </Card>
+
+                    {/* ─── Páginas de Autenticación ─── */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <ImageIcon className="h-5 w-5 text-primary" aria-hidden="true" />
+                                Login y Registro
+                            </CardTitle>
+                            <CardDescription>
+                                Personaliza la experiencia de inicio de sesión de tus usuarios.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Auth Bg Url */}
+                                <FormField
+                                    control={form.control}
+                                    name="authBgUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Imagen de Fondo o Producto</FormLabel>
+                                            <FormControl>
+                                                <SingleImageDropzone
+                                                    value={field.value || ""}
+                                                    onChange={field.onChange}
+                                                    endpoint={`${API_BASE}/storage/upload/image`}
+                                                    token={authToken}
+                                                    tenantId={TENANT_ID}
+                                                    folder="branding"
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Recomendado: 1080x1920px (Proporción 9:16).</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* Auth Quote */}
+                                <FormField
+                                    control={form.control}
+                                    name="authQuote"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Frase de Bienvenida</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    value={field.value || ""}
+                                                    placeholder='"Bienvenido a tu plataforma."'
+                                                />
+                                            </FormControl>
+                                            <FormDescription>Aparecerá junto a la imagen en componentes amplios.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </CardContent>
                     </Card>
 

@@ -16,6 +16,24 @@ import { StorageService } from '../storage/storage.service';
 
 import * as bcrypt from 'bcryptjs';
 
+// Interface para parchar el tipado de Prisma si no se ha regenerado correctamente
+interface BrandSettingsWithAssets {
+  id: string;
+  tenantId: string;
+  primaryColor: string;
+  secondaryColor: string;
+  borderRadius: number;
+  fontFamily: string;
+  layoutType: string;
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  tagline?: string | null;
+  authBgUrl?: string | null;
+  authQuote?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 @Injectable()
 export class TenantService {
   private readonly logger = new Logger(TenantService.name);
@@ -183,10 +201,11 @@ export class TenantService {
         });
         
         const menuData = (menuSetting?.value as any) || {};
-        const logo = tenantById.brandSettings?.logoUrl || menuData.logo || null;
+        const bs = (tenantById.brandSettings as unknown as BrandSettingsWithAssets) || {};
+        const logo = bs.logoUrl || menuData.logo || null;
         const headerLinks = menuData.headerLinks || null;
         const footerLinks = menuData.footerLinks || null;
-        const tagline = tenantById.brandSettings?.tagline || menuData.tagline || tenantById.notes || 'Plataforma Profesional';
+        const tagline = bs.tagline || menuData.tagline || tenantById.notes || 'Plataforma Profesional';
         
         const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
         const smtpData = (smtpSetting?.value as any) || {};
@@ -198,7 +217,6 @@ export class TenantService {
       this.logger.warn(
         `[BRANDING DEBUG] findFirst by ID failed for "${tenantId}": ${error?.message || error}`,
       );
-      // Postgres throw 22P03 si el tenantId ('template') no coincide con el map de la columna (UUID/INT).
     }
 
     this.logger.log(
@@ -222,10 +240,11 @@ export class TenantService {
       });
       
       const menuData = (menuSetting?.value as any) || {};
-      const logo = tenantBySlug.brandSettings?.logoUrl || menuData.logo || null;
+      const bs = (tenantBySlug.brandSettings as unknown as BrandSettingsWithAssets) || {};
+      const logo = bs.logoUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
-      const tagline = tenantBySlug.brandSettings?.tagline || menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
+      const tagline = bs.tagline || menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
       
       const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
       const smtpData = (smtpSetting?.value as any) || {};
@@ -240,9 +259,6 @@ export class TenantService {
     throw new NotFoundException(`Tenant con ID/Slug ${tenantId} no encontrado`);
   }
 
-  /**
-   * Obtiene los datos de Marketing del tenant para la Landing Page pública
-   */
   async getTenantMarketing(tenantId: string) {
     try {
       const tenantById = await this.prisma.secure.tenant.findUnique({
@@ -280,10 +296,6 @@ export class TenantService {
     );
   }
 
-  /**
-   * Resuelve el TenantId dado un Hostname/Domain mediante caché centralizada (Redis)
-   * Protegido por Token Interno para evitar escaneo de la infraestructura.
-   */
   async identifyTenant(domain: string, internalToken: string) {
     if (!domain) {
       throw new BadRequestException('Dominio requerido');
@@ -310,7 +322,6 @@ export class TenantService {
       return cachedResolution;
     }
 
-    // Buscar primero por coincidencia exacta relajando status ('ACTIVE' u otros)
     let tenant: any = null;
     try {
       tenant = await this.prisma.secure.tenant.findFirst({
@@ -321,7 +332,6 @@ export class TenantService {
       // Ignorar
     }
 
-    // Si no lo encuentra, buscar con 'contains' (ej. Si la BD lo tiene guardado como mauromera.com o MauroMera)
     if (!tenant) {
       try {
         tenant = await this.prisma.secure.tenant.findFirst({
@@ -354,14 +364,9 @@ export class TenantService {
     return resolvedTenant;
   }
 
-  /**
-   * Actualiza el diseño estructurado del Tenant usando el motor BrandSettings.
-   * Mapea los datos del DTO antiguo (design JSON) al modelo relacional nuevo.
-   */
   async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
     const design = updateDto.design || {};
     
-    // Mapeamos los datos que vienen del frontend antiguo (`primary`, `radius`) al nuevo modelo
     const primaryColor = design.primary || design.primaryColor || '#09090b';
     const secondaryColor = design.secondaryColor || '#f4f4f5';
     const borderRadius = design.radius !== undefined ? design.radius : (design.borderRadius || 0.5);
@@ -406,7 +411,6 @@ export class TenantService {
       `Branding (BrandSettings) actualizado de forma segura para Tenant ID: ${tenantId}`,
     );
 
-    // Disparador On-Demand de la caché The Next.js
     this.triggerFrontendRevalidation([
       `tenant-branding-${tenantId}`,
       `tenant-marketing-${tenantId}`,
@@ -417,9 +421,6 @@ export class TenantService {
     return updatedSettings;
   }
 
-  /**
-   * Webhook hacia el App Router de Next.js para forzar la revalidación On-Demand del caché (ISR)
-   */
   private async triggerFrontendRevalidation(tags: string[]) {
     try {
       for (const tag of tags) {
@@ -450,19 +451,15 @@ export class TenantService {
     }
   }
 
-  /**
-   * Actualiza o crea las BrandSettings del tenant (Motor de Marca Blanca).
-   * Usa upsert para garantizar que siempre se cree si no existe.
-   */
   async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
     const updated = await this.prisma.brandSettings.upsert({
       where: { tenantId },
       create: {
         tenantId,
-        ...dto,
+        ...(dto as any),
       },
       update: {
-        ...dto,
+        ...(dto as any),
       },
     });
 
@@ -470,25 +467,17 @@ export class TenantService {
       `BrandSettings actualizado para Tenant ID: ${tenantId}`,
     );
 
-    // 1. Revalidar caché del Dashboard (saas_dashboard)
     this.triggerFrontendRevalidation([
       `tenant-branding-${tenantId}`,
       `tenant-branding`,
     ]);
 
-    // 2. Revalidar caché del Storefront (apps/_template) — Cross-App
     this.triggerStorefrontRevalidation(tenantId);
 
     return updated;
   }
 
-  /**
-   * Webhook Cross-App: Invalida la caché ISR del Storefront (apps/_template)
-   * para que los cambios en BrandSettings se reflejen instantáneamente.
-   * Fire-and-forget: No bloquea la respuesta al cliente.
-   */
   private triggerStorefrontRevalidation(tenantId: string) {
-    // Variable estándar solicitada por el Arquitecto
     const storefrontUrl = process.env.STOREFRONT_URL;
     const revalidationSecret = process.env.REVALIDATION_SECRET;
 
@@ -512,7 +501,6 @@ export class TenantService {
       'tenant-branding',
     ];
 
-    // Fire-and-forget — no bloquea la respuesta
     Promise.all(
       tags.map((tag) =>
         fetch(`${storefrontUrl}/api/revalidate`, {
@@ -543,10 +531,6 @@ export class TenantService {
     );
   }
 
-  /**
-   * Lista todos los tenants registrados en la plataforma.
-   * Sólo para SuperAdmin.
-   */
   async findAll() {
     return this.prisma.tenant.findMany({
       orderBy: {

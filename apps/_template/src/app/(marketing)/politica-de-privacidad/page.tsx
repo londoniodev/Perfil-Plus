@@ -1,90 +1,105 @@
+import React from "react";
+import { headers } from "next/headers";
+import { getTenantId } from "@/lib/config-server";
 import { Metadata } from "next";
 
-export const metadata: Metadata = {
-    title: "Política de Privacidad",
-    description: "Política de privacidad de Mauro Mera. Información sobre cómo recopilamos, usamos y protegemos tus datos personales.",
-    robots: {
-        index: true,
-        follow: false,
-    },
-    alternates: {
-        canonical: "/politica-de-privacidad",
-    },
-};
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Políticas de Privacidad",
+        description: "Conoce cómo recopilamos, usamos y protegemos tus datos personales.",
+        alternates: {
+            canonical: "/politica-de-privacidad",
+        }
+    };
+}
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+    const headersList = await headers();
+    const tenantId = await getTenantId();
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "este sitio web";
+
+    // Datos por defecto
+    let tenantName = "nuestra plataforma";
+    let contactEmail = `soporte@${host.replace("www.", "")}`;
+
+    try {
+        const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:3001/api').replace(/\/+$/, "");
+        const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+        
+        const response = await fetch(`${API_URL}/tenant/branding`, {
+            headers: { 
+                'x-tenant-id': tenantId,
+                'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key'
+            },
+            next: { revalidate: 3600 }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            tenantName = data?.name || tenantName;
+            if (data?.ownerEmail) contactEmail = data.ownerEmail;
+        }
+    } catch (e) {
+        console.warn("Error fetching branding for Privacy Page:", e);
+    }
+
+    const today = new Date().toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+
     return (
-        <main style={{ padding: "8rem 0" }}>
-            <div className="container">
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                    <h1 className="heading-h1 mb-12 text-left">
-                        Política de Privacidad
-                    </h1>
+        <div className="min-h-screen bg-background text-foreground p-6 sm:p-12 max-w-3xl mx-auto space-y-8">
+            <header className="border-b pb-4">
+                <h1 className="text-3xl font-bold">Políticas de Privacidad</h1>
+                <p className="text-muted-foreground text-sm mt-1">Última actualización: {today}</p>
+            </header>
 
-                    <div className="prose" style={{ color: "var(--foreground-muted)", lineHeight: "1.8" }}>
-                        <p style={{ marginBottom: "2rem" }}>
-                            Nos tomamos muy en serio la privacidad de tus datos. Esta política describe cómo recopilamos, usamos y protegemos tu información personal cuando interactúas con nuestro sitio web y servicios, productos y herramientas de gestión provistos.
-                        </p>
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold">1. Introducción</h2>
+                <p>
+                    En <strong>{tenantName}</strong>, valoramos tu privacidad y nos comprometemos s proteger tus datos personales. Esta política describe cómo recopilamos, utilizamos y compartimos tu información al visitar nuestro sitio <strong>{host}</strong>.
+                </p>
+            </section>
 
-                        <h2 className="heading-h2 mt-12 mb-6 text-foreground">
-                            1. Información que recopilamos
-                        </h2>
-                        <p style={{ marginBottom: "1rem" }}>
-                            Podemos recopilar la siguiente información cuando utilizas nuestros servicios, completas formularios de contacto o interactúas con nuestras herramientas:
-                        </p>
-                        <ul style={{ listStyleType: "disc", paddingLeft: "1.5rem", marginBottom: "2rem" }}>
-                            <li style={{ marginBottom: "0.5rem" }}>Información de identificación personal: Nombre, dirección de correo electrónico, número de teléfono.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Información profesional: Cargo, empresa, intereses profesionales.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Datos de uso: Información sobre cómo navegas en nuestro sitio web.</li>
-                        </ul>
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold">2. Información que Recopilamos</h2>
+                <p>
+                    Podemos recopilar información que nos proporcionas directamente o de forma automática:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>Datos de contacto</strong>: Nombre, correo electrónico i teléfono (ej: al registrarte o contactarnos).</li>
+                    <li><strong>Datos de Navegación</strong>: Dirección IP, tipo de navegador, páginas visitadas i cookies para mejorar tu experiencia.</li>
+                </ul>
+            </section>
 
-                        <h2 style={{ color: "var(--foreground)", fontSize: "1.5rem", fontWeight: "600", marginTop: "3rem", marginBottom: "1.5rem" }}>
-                            2. Cómo utilizamos tu información
-                        </h2>
-                        <p style={{ marginBottom: "1rem" }}>
-                            Utilizamos la información recopilada para los siguientes propósitos:
-                        </p>
-                        <ul style={{ listStyleType: "disc", paddingLeft: "1.5rem", marginBottom: "2rem" }}>
-                            <li style={{ marginBottom: "0.5rem" }}>Proveer y gestionar nuestros servicios de consultoría y psicología.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Responder a tus consultas y agendar citas o diagnósticos.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Mejorar nuestros servicios y la experiencia del usuario en nuestra plataforma.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Enviar comunicaciones relevantes sobre actualizaciones, nuevos servicios o contenido educativo (siempre con tu consentimiento).</li>
-                        </ul>
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold">3. Uso de la Información</h2>
+                <p>
+                    Utilizamos tus datos para los siguientes fines:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                    <li>Prestar y mantener nuestros servicios/productos.</li>
+                    <li>Notificarte sobre cambios en la plataforma o responder s tus dudas.</li>
+                    <li>Garantizar la seguridad y prevenir fraudes en el sistema.</li>
+                </ul>
+            </section>
 
-                        <h2 style={{ color: "var(--foreground)", fontSize: "1.5rem", fontWeight: "600", marginTop: "3rem", marginBottom: "1.5rem" }}>
-                            3. Protección de datos y seguridad
-                        </h2>
-                        <p style={{ marginBottom: "2rem" }}>
-                            Implementamos medidas de seguridad técnicas y organizativas adecuadas para proteger tus datos personales contra el acceso no autorizado, la alteración, divulgación o destrucción. Tus datos se almacenan en servidores seguros y solo son accesibles por personal autorizado.
-                        </p>
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold">4. Tus Derechos (ARCO)</h2>
+                <p>
+                    Tienes derecho s acceder, rectificar, cancelar u oponerte al tratamiento de tus datos personales en cualquier momento.
+                </p>
+            </section>
 
-                        <h2 style={{ color: "var(--foreground)", fontSize: "1.5rem", fontWeight: "600", marginTop: "3rem", marginBottom: "1.5rem" }}>
-                            4. Tus derechos
-                        </h2>
-                        <p style={{ marginBottom: "1rem" }}>
-                            Tienes derecho a:
-                        </p>
-                        <ul style={{ listStyleType: "disc", paddingLeft: "1.5rem", marginBottom: "2rem" }}>
-                            <li style={{ marginBottom: "0.5rem" }}>Acceder a los datos personales que tenemos sobre ti.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Solicitar la corrección de cualquier dato inexacto.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Solicitar la eliminación de tus datos personales.</li>
-                            <li style={{ marginBottom: "0.5rem" }}>Oponerte o restringir el procesamiento de tus datos.</li>
-                        </ul>
-
-                        <h2 style={{ color: "var(--foreground)", fontSize: "1.5rem", fontWeight: "600", marginTop: "3rem", marginBottom: "1.5rem" }}>
-                            5. Contacto
-                        </h2>
-                        <p style={{ marginBottom: "2rem" }}>
-                            Si tienes alguna pregunta sobre nuestra Política de Privacidad o deseas ejercer tus derechos, por favor contáctanos a través de nuestros canales oficiales o envíanos un mensaje mediante el formulario de contacto en este sitio web.
-                        </p>
-
-                        <p style={{ fontSize: "0.9rem", marginTop: "4rem", paddingTop: "2rem", borderTop: "1px solid var(--border)" }}>
-                            Última actualización: Enero 2026
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </main>
+            <section className="space-y-4">
+                <h2 className="text-xl font-semibold">5. Contacto</h2>
+                <p>
+                    Para ejercer tus derechos o resolver dudas sobre estas políticas, puedes contactarnos enviando un correo s: <a href={`mailto:${contactEmail}`} className="text-primary hover:underline font-medium">{contactEmail}</a>.
+                </p>
+            </section>
+        </div>
     );
 }
 

@@ -2,19 +2,26 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
-import { useRouter } from "next/navigation"
+import { useRouter, notFound } from "next/navigation" // 👈 Añadido notFound
+import { useTenant } from "@/app/providers" // 👈 Añadido useTenant
 import { Button, PageHeader, Card, CardHeader, CardTitle, CardContent, CardFooter, Badge } from "@alvarosky/ui"
 import { BookOpen, PlayCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 export default function MisCursosPage() {
     const { user, loading: authLoading } = useAuth()
+    const { tenantId, features } = useTenant() // 👈 Consumir contexto
     const router = useRouter()
 
     const [courses, setCourses] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
+    // 1. Verificar si el Tenant tiene la característica de LMS / Academia
+    const hasLms = features.map(f => f.toUpperCase()).includes("LMS")
+
     useEffect(() => {
+        if (!hasLms) return; // Evitar fetch si dará 404
+
         if (!authLoading && !user) {
             router.push('/login?redirect=/mis-cursos')
             return
@@ -23,17 +30,18 @@ export default function MisCursosPage() {
         if (user) {
             fetchPurchasedCourses()
         }
-    }, [user, authLoading, router])
+    }, [user, authLoading, router, hasLms])
 
     const fetchPurchasedCourses = async () => {
         try {
             const token = localStorage.getItem('token')
-            const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
-            const apiUrl = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
+            const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "")
+            const apiUrl = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`
 
             const res = await fetch(`${apiUrl}/lms/my-purchased-courses`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'x-tenant-id': tenantId // 👈 Inyectar tenantId para prisma.secure
                 }
             })
 
@@ -46,6 +54,10 @@ export default function MisCursosPage() {
         } finally {
             setLoading(false)
         }
+    }
+
+    if (!hasLms) {
+        return notFound() // 👈 Dar 404 si el tenant no tiene academia
     }
 
     if (authLoading || loading) {

@@ -100,7 +100,7 @@ function LoginForm() {
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
 
-        // CRITICAL: Set cookie for Middleware (on mauromera.com)
+        // CRITICAL: Set cookie for Middleware
         setCookie("accessToken", data.accessToken, 7);
 
         window.dispatchEvent(new Event("user-login"));

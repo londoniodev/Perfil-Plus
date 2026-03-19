@@ -2,15 +2,23 @@ import { notFound } from "next/navigation"
 import { serverFetch } from "@/lib/api-server"
 import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
-
+import { headers } from "next/headers"
 import { Metadata } from "next"
 
 interface ProductPageProps {
-    params: Promise<{ slug: string }> // En Next.js 15+, params es una Promise
+    params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
     const { slug } = await params;
+    const headersList = await headers();
+    const features = headersList.get("x-tenant-features")?.split(",") || [];
+
+    // Protección de ruta por Feature
+    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+        return { title: "No encontrado" };
+    }
+
     const product = await serverFetch<any>(`/store/products/${slug}`).catch(() => null);
 
     if (!product) {
@@ -21,8 +29,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
     const title = product.name;
     const description = product.description || `Compra ${product.name} en nuestra tienda.`;
-    
-    // Obtenemos imagen (coverImage o la primera del array si existe)
     const productCover = product.coverImage || product.images?.[0] || null;
 
     return {
@@ -33,19 +39,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             title,
             description,
             url: `/tienda/${slug}`,
-            // Si el producto no tiene imagen, Next.js hereda automáticamente la del layout (logo)
-            images: productCover ? [
-                {
-                    url: productCover,
-                    width: 1200,
-                    height: 630,
-                    alt: product.name,
-                }
-            ] : [],
+            images: productCover ? [{ url: productCover, width: 1200, height: 630, alt: product.name }] : [],
         },
-        alternates: {
-            canonical: `/tienda/${slug}`,
-        },
+        alternates: { canonical: `/tienda/${slug}` },
         twitter: {
             card: 'summary_large_image',
             title,
@@ -56,10 +52,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-    // Await params (requerido en Next.js 15+)
     const { slug } = await params
+    const headersList = await headers();
+    const features = headersList.get("x-tenant-features")?.split(",") || [];
 
-    // Fetch seguro con Variantes usando Headless REST API (NestJS)
+    // Protección de ruta por Feature
+    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+        return notFound();
+    }
+
     const product = await serverFetch<any>(`/store/products/${slug}`).catch(() => null);
 
     if (!product) {

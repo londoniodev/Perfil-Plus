@@ -107,8 +107,9 @@ export default function RegisterPage() {
         <AuthLayout>
             <Card className="w-full border-none shadow-none bg-transparent p-0 text-zinc-100">
                 <CardHeader className="text-center px-0 pt-0">
-                    <CardTitle className="heading-h2 mb-2"></CardTitle>
+                    <CardTitle className="heading-h2 mb-2">Crear Cuenta</CardTitle>
                     <CardDescription className="text-slate-500">
+                        Regístrate para acceder s todos los beneficios.
                     </CardDescription>
                 </CardHeader>
 

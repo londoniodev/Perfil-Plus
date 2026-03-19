@@ -26,7 +26,8 @@ export function Footer({
     if (!finalFooterLinks || finalFooterLinks.length === 0) {
         finalFooterLinks = [
             { label: "Inicio", href: "/" },
-            { label: "Términos", href: "/terminos" }
+            { label: "Términos", href: "/terminos-y-condiciones" },
+            { label: "Privacidad", href: "/politica-de-privacidad" }
         ];
         if (features.includes("ECOMMERCE")) finalFooterLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });

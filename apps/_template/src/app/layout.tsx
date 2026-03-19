@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "@alvarosky/ui/globals.css";
-import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
-import { Footer } from "@/components/layout/Footer";
 import { GlobalSchemas } from "@/components/seo/JsonLd";
 import { ToastProvider, getFontVariables } from "@alvarosky/ui";
 import dynamic from "next/dynamic";
@@ -114,40 +112,8 @@ export default async function RootLayout({
     }
   }
 
-  // --- LÓGICA DE NAVEGACIÓN (Server Side) ---
-  let navLinks = headerLinksFromDb ? [...headerLinksFromDb] : [];
-  
-  if (navLinks.length === 0) {
-      navLinks = [{ label: "Inicio", href: "/" }];
-      const upperFeatures = featureArray.map(f => f.toUpperCase());
-      if (upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
-      if (upperFeatures.includes("LMS")) navLinks.push({ label: "Cursos", href: "/formacion" });
-      if (upperFeatures.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
-      if (upperFeatures.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
-  } else {
-      const upperFeatures = featureArray.map(f => f.toUpperCase());
-      const hasTiendaLink = navLinks.some(link => link.href === "/tienda");
-      if ((upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) && !hasTiendaLink) {
-          navLinks.push({ label: "Tienda", href: "/tienda" });
-      }
-  }
 
-  // --- LÓGICA DE BRANDING (Server Side) ---
-  let logoSuffix: React.ReactNode = null;
-  if (tenantSlugRaw === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") {
-      logoSuffix = (
-          <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
-              Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
-          </span>
-      );
-  }
-
-  const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
-  const isCocinaSiete = tenantSlugRaw === "cocinasiete" || tenantId === "cocinasiete";
   const isDarkThemeTenant = tenantSlugRaw === "mauromera" || tenantSlugRaw === "soydeborasoysaludable";
-
-  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "";
-  const isMasterTenant = host.includes("xn--alvarolondoo-khb") || tenantSlugRaw === "alvarolondono" || tenantId === "alvarolondono";
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -167,26 +133,7 @@ export default async function RootLayout({
         >
           <GlobalSchemas />
           <ToastProvider>
-            <NavigationWrapper 
-              logo={logoUrl} 
-              logoSuffix={logoSuffix}
-              links={navLinks}
-              showAuthButtons={hasDashboardFeature}
-              isCocinaSiete={isCocinaSiete}
-              footer={
-                <Footer 
-                  logo={logoUrl} 
-                  footerLinks={footerLinks} 
-                  businessName={businessName || undefined} 
-                  businessEmail={contactEmail || undefined} 
-                  businessPhone={contactPhone || undefined} 
-                  tagline={tenantTagline || undefined} 
-                  features={featureArray} 
-                />
-              }
-            >
-              {children}
-            </NavigationWrapper>
+            {children}
             <PwaInstallPrompt />
             <TableDetector />
           </ToastProvider>

@@ -1,7 +1,23 @@
 import { headers } from "next/headers";
-import { Fill } from "@alvarosky/ui";
-import { ServicesSelector as MauroServices } from "@/components/storefronts/mauromera/servicios/ServicesSelector";
-import { ServicesSelector as DeborahServices } from "@/components/storefronts/deborahmoscoso/servicios/ServicesSelector";
+import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
+
+// Carga dinámica para optimizar el bundle multi-tenant
+const MauroServices = dynamic(
+  () => import("@/components/storefronts/mauromera/servicios/ServicesSelector").then(mod => mod.ServicesSelector),
+  {
+    loading: () => <div className="min-h-screen flex items-center justify-center text-zinc-400">Cargando...</div>,
+    ssr: true
+  }
+);
+
+const DeborahServices = dynamic(
+  () => import("@/components/storefronts/deborahmoscoso/servicios/ServicesSelector").then(mod => mod.ServicesSelector),
+  {
+    loading: () => <div className="min-h-screen flex items-center justify-center text-zinc-400">Cargando...</div>,
+    ssr: true
+  }
+);
 
 export default async function ServiciosPage() {
     const headersList = await headers();
@@ -12,10 +28,6 @@ export default async function ServiciosPage() {
     if (tenantSlug === "mauromera") return <MauroServices />;
     if (tenantSlug === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") return <DeborahServices />;
 
-    return (
-        <Fill>
-            <h1 className="text-2xl font-bold mb-4">Servicios</h1>
-            <p className="text-muted-foreground">Próximamente detalle de servicios.</p>
-        </Fill>
-    );
+    // Para otros tenants sin servicios estáticos cableados, damos un 404
+    return notFound();
 }

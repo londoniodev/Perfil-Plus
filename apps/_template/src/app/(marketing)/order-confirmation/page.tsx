@@ -1,14 +1,23 @@
 "use client"
 
 import { Suspense } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams, useRouter, notFound } from "next/navigation"
 import { Button } from "@alvarosky/ui"
 import { CheckCircle2 } from "lucide-react"
+import { useTenant } from "@/app/providers"
 
 function OrderConfirmationContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
+    const { features } = useTenant()
     const orderId = searchParams.get("orderId")
+
+    const isRestaurant = features.map(f => f.toUpperCase()).includes("RESTAURANT")
+    const isEcommerce = features.map(f => f.toUpperCase()).includes("ECOMMERCE") || features.map(f => f.toUpperCase()).includes("STORE")
+
+    if (!isRestaurant && !isEcommerce) {
+        return notFound()
+    }
 
     return (
         <div className="container py-24 flex flex-col items-center text-center">
@@ -16,21 +25,23 @@ function OrderConfirmationContent() {
                 <CheckCircle2 className="h-12 w-12" />
             </div>
 
-            <h1 className="text-3xl font-bold mb-2">¡Pedido Recibido!</h1>
+            <h1 className="text-3xl font-bold mb-2">¡{isRestaurant ? "Pedido" : "Compra"} Confirmad{isRestaurant ? "o" : "a"}!</h1>
             <p className="text-muted-foreground mb-8 text-lg max-w-md">
-                Tu orden {orderId ? `#${orderId.slice(-6).toUpperCase()}` : ""} ha sido enviada exitosamente a cocina.
+                Tu {isRestaurant ? "orden" : "compra"} {orderId ? `#${orderId.slice(-6).toUpperCase()}` : ""} ha sido procesada con éxito.
             </p>
 
             <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                    Si estás en una mesa, tu pedido llegará pronto.
-                    <br />
-                    Si es para llevar o domicilio, te notificaremos cuando esté listo.
+                <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {isRestaurant ? (
+                        "Si estás en una mesa, tu pedido llegará pronto.\nSi es para llevar o domicilio, te notificaremos cuando esté listo."
+                    ) : (
+                        "Te enviaremos un correo con los detalles de tu pedido i seguimiento pronto."
+                    )}
                 </p>
 
                 <div className="flex gap-4 justify-center mt-6">
-                    <Button onClick={() => router.push("/menu")} size="lg">
-                        Volver al Menú
+                    <Button onClick={() => router.push(isRestaurant ? "/menu" : "/tienda")} size="lg">
+                        {isRestaurant ? "Volver al Menú" : "Volver a la Tienda"}
                     </Button>
                 </div>
             </div>

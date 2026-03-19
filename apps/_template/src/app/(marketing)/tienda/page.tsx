@@ -1,22 +1,24 @@
 import { headers } from "next/headers"
+import { notFound } from "next/navigation"
 import { StoreClient } from "@/components/store/StoreClient"
 import { API_BASE } from "@/lib/config"
 
 export const metadata = {
     title: "Tienda Oficial - Nuestros Productos",
     description: "Explora y adquiere nuestros productos físicos y descargas digitales.",
-    alternates: {
-        canonical: "/tienda",
-    },
-    openGraph: {
-        url: "/tienda",
-    }
+    alternates: { canonical: "/tienda" },
+    openGraph: { url: "/tienda" }
 }
 
 export default async function TiendaPage() {
     const headersList = await headers()
-    // Resolving x-tenant-id passed down from Edge Middleware
+    const features = headersList.get("x-tenant-features")?.split(",") || [];
     const tenantId = headersList.get("x-tenant-id") || "template"
+
+    // Protección de ruta por Feature
+    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+        return notFound();
+    }
 
     // Pre-fetch catálogo pesado con ISR de 5 minutos
     let initialData = []

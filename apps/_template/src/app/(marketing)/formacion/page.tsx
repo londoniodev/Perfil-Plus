@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { getTenantId } from "@/lib/config-server";
 import { resolveFormacion } from "@/lib/storefront-resolver";
+import { notFound } from "next/navigation";
 
 export const metadata = {
     title: "Programas de Formación",
@@ -11,6 +12,16 @@ export default async function FormacionPage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";
     const tenantId = await getTenantId();
+
+    // 1. Verificar si el Tenant tiene la característica de LMS / Academia
+    const featuresHeader = headersList.get("x-tenant-features") || "[]";
+    let features: string[] = [];
+    try { features = JSON.parse(featuresHeader); } catch { }
+    const hasLms = features.map(f => f.toUpperCase()).includes("LMS");
+
+    if (!hasLms) {
+        return notFound(); // 404 para tenants sin academia activa
+    }
 
     let themes: any[] = [];
     try {

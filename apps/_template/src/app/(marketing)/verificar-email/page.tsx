@@ -14,6 +14,7 @@ import {
     CardHeader,
     CardTitle,
     CardFooter,
+    Label,
 } from "@alvarosky/ui";
 
 type VerificationStatus = "loading" | "success" | "error" | "expired" | "no-token";
@@ -214,18 +215,21 @@ function ResendVerificationForm() {
     }
 
     return (
-        <form onSubmit={handleResend}>
-            <p className="text-sm text-muted-foreground mb-4">
-                Ingresa tu email para recibir un nuevo enlace:
-            </p>
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tucorreo@ejemplo.com"
-                required
-                className="w-full p-3 border border-border rounded-lg mb-4 bg-background text-foreground focus:ring-2 focus:ring-primary/50 outline-none"
-            />
+        <form onSubmit={handleResend} className="space-y-4">
+            <div className="space-y-2 text-left">
+                <Label htmlFor="email-resend">
+                    Ingresa tu email para recibir un nuevo enlace:
+                </Label>
+                <input
+                    id="email-resend"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="tucorreo@ejemplo.com"
+                    required
+                    className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary/50 outline-none"
+                />
+            </div>
 
             <Button
                 type="submit"

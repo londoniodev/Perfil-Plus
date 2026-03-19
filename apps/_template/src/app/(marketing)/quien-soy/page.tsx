@@ -1,31 +1,36 @@
 import { headers } from "next/headers";
-import { Fill } from "@alvarosky/ui";
-import { AboutContent as DeborahAbout } from "@/components/storefronts/deborahmoscoso/quien-soy/AboutContent";
+import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
 
 export const metadata = {
     title: "Quién Soy",
     description: "Conoce mi historia, mi filosofía y cómo conecto la nutrición consciente con el entrenamiento para Transformarte."
 };
 
+// Carga dinámica para optimizar el bundle multi-tenant
+const DeborahAbout = dynamic(
+  () => import("@/components/storefronts/deborahmoscoso/quien-soy/AboutContent").then(mod => mod.AboutContent),
+  {
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <p className="text-zinc-400">Cargando...</p>
+      </div>
+    ),
+    ssr: true
+  }
+);
+
 export default async function QuienSoyPage() {
     const headersList = await headers();
     const tenantSlug = headersList.get("x-tenant-slug") || "";
     const tenantId = headersList.get("x-tenant-id") || "";
 
-    if (tenantSlug === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") {
+    const isDeborah = tenantSlug === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1";
+
+    if (isDeborah) {
         return <DeborahAbout />;
     }
 
-    return (
-        <section className="relative pb-20 pt-16 md:pb-32 md:pt-24 min-h-[80vh] flex flex-col items-center justify-center">
-            <div className="container max-w-4xl px-4 text-center">
-                <h1 className="text-4xl md:text-5xl font-bold mb-8 text-primary">Próximamente</h1>
-                <div className="prose prose-zinc prose-invert max-w-none mx-auto text-left md:text-center">
-                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
-                        La página de "Quién Soy" está en construcción para este perfil.
-                    </p>
-                </div>
-            </div>
-        </section>
-    );
+    // Para otros tenants sin 'Quién Soy' estático, damos un 404
+    return notFound();
 }

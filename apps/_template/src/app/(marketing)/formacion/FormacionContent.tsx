@@ -38,7 +38,7 @@ export default function FormacionContent({ themes = [] }: { themes?: any[] }) {
         title: theme.title,
         description: theme.description,
         price: theme.price,
-        image: theme.imageUrl || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
+        image: theme.imageUrl || "/images/fallback-course.jpg",
         teaserVideo: theme.teaserVideo,
         icon: <IconTarget />,
         level: "Programa Completo",

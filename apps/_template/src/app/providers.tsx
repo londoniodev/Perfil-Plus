@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { createContext, useContext } from "react";
+import { BrandProvider } from "@alvarosky/ui";
 
 export type PublicNavItem = {
     label: string;
@@ -66,7 +67,6 @@ export function ThemeProvider({
 }
 
 // NUEVO COMPONENTE DE REFACTORIZACIÓN
-import { BrandProvider } from "@alvarosky/ui";
 
 export function AppProviders({
     children,

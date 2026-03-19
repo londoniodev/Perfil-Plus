@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { API_BASE } from '@/lib/config';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+import { getTenantId } from '@/lib/config-server';
+import { headers } from 'next/headers';
 
 interface Post {
     slug: string;
@@ -9,8 +9,10 @@ interface Post {
     createdAt: string;
 }
 
-interface Ebook {
+interface Product {
     slug: string;
+    updatedAt?: string;
+    createdAt: string;
 }
 
 interface Theme {
@@ -18,9 +20,10 @@ interface Theme {
     courses?: { slug: string }[];
 }
 
-async function getPosts(): Promise<Post[]> {
+async function getPosts(tenantId: string): Promise<Post[]> {
     try {
         const res = await fetch(`${API_BASE}/posts?limit=100`, {
+            headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
@@ -31,21 +34,24 @@ async function getPosts(): Promise<Post[]> {
     }
 }
 
-async function getEbooks(): Promise<Ebook[]> {
+async function getProducts(tenantId: string): Promise<Product[]> {
     try {
-        const res = await fetch(`${API_BASE}/ebooks`, {
+        const res = await fetch(`${API_BASE}/store/products?allVariants=true`, {
+            headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
-        return res.json();
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.data || []);
     } catch {
         return [];
     }
 }
 
-async function getThemes(): Promise<Theme[]> {
+async function getThemes(tenantId: string): Promise<Theme[]> {
     try {
         const res = await fetch(`${API_BASE}/themes`, {
+            headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
         });
         if (!res.ok) return [];
@@ -56,92 +62,129 @@ async function getThemes(): Promise<Theme[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    // Páginas estáticas
+    const tenantId = await getTenantId();
+    const headersList = await headers();
+    
+    // 1. Calcular el dominio actual (dinámico por Tenant)
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
+    const protocol = isLocal ? "http" : "https";
+    const urlBase = `${protocol}://${host}`;
+
+    // 2. Leer Features
+    const featuresHeader = headersList.get("x-tenant-features") || "[]";
+    let features: string[] = [];
+    try { features = JSON.parse(featuresHeader); } catch { }
+    const upperFeatures = features.map(f => f.toUpperCase());
+
+    // 3. Páginas estáticas base (siempre cargan)
     const staticPages: MetadataRoute.Sitemap = [
         {
-            url: SITE_URL,
+            url: urlBase,
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 1,
         },
         {
-            url: `${SITE_URL}/servicios`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.9,
-        },
-        {
-            url: `${SITE_URL}/blog`,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 0.9,
-        },
-        {
-            url: `${SITE_URL}/ebooks`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-        },
-        {
-            url: `${SITE_URL}/formacion`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-        },
-        {
-            url: `${SITE_URL}/portafolio`,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.7,
-        },
-        {
-            url: `${SITE_URL}/politica-de-privacidad`,
+            url: `${urlBase}/politica-de-privacidad`,
             lastModified: new Date(),
             changeFrequency: 'yearly',
             priority: 0.3,
         },
     ];
 
-    // Posts del blog
-    const posts = await getPosts();
-    const postPages: MetadataRoute.Sitemap = posts.map((post) => ({
-        url: `${SITE_URL}/blog/${post.slug}`,
-        lastModified: new Date(post.updatedAt || post.createdAt),
-        changeFrequency: 'weekly' as const,
-        priority: 0.7,
-    }));
+    // 4. Cargar páginas según Features
+    let postPages: MetadataRoute.Sitemap = [];
+    let productPages: MetadataRoute.Sitemap = [];
+    let coursePages: MetadataRoute.Sitemap = [];
 
-    // Ebooks
-    const ebooks = await getEbooks();
-    const ebookPages: MetadataRoute.Sitemap = ebooks.map((ebook) => ({
-        url: `${SITE_URL}/ebooks/${ebook.slug}`,
-        lastModified: new Date(),
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-    }));
-
-    // Temas y cursos
-    const themes = await getThemes();
-    const coursePages: MetadataRoute.Sitemap = [];
-
-    themes.forEach((theme) => {
-        coursePages.push({
-            url: `${SITE_URL}/cursos/${theme.slug}`,
+    // --- BLOG ---
+    const hasBlog = upperFeatures.includes("BLOG");
+    if (hasBlog) {
+        staticPages.push({
+            url: `${urlBase}/blog`,
             lastModified: new Date(),
-            changeFrequency: 'weekly' as const,
-            priority: 0.6,
+            changeFrequency: 'daily',
+            priority: 0.9,
         });
 
-        theme.courses?.forEach((course) => {
+        const posts = await getPosts(tenantId);
+        postPages = posts.map((post) => ({
+            url: `${urlBase}/blog/${post.slug}`,
+            lastModified: new Date(post.updatedAt || post.createdAt),
+            changeFrequency: 'weekly' as const,
+            priority: 0.7,
+        }));
+    }
+
+    // --- ECOMMERCE / STORE ---
+    const hasEcommerce = upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("STORE") || upperFeatures.includes("RESTAURANT");
+    if (hasEcommerce) {
+        staticPages.push({
+            url: `${urlBase}/tienda`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.9,
+        });
+
+        const products = await getProducts(tenantId);
+        productPages = products.map((product) => ({
+            url: `${urlBase}/tienda/${product.slug}`,
+            lastModified: new Date(product.updatedAt || product.createdAt),
+            changeFrequency: 'weekly' as const,
+            priority: 0.8,
+        }));
+    }
+
+    // --- FORMACIÓN / CURSOS ---
+    const hasLms = upperFeatures.includes("LMS");
+    if (hasLms) {
+        staticPages.push({
+            url: `${urlBase}/formacion`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        });
+
+        const themes = await getThemes(tenantId);
+        themes.forEach((theme) => {
             coursePages.push({
-                url: `${SITE_URL}/cursos/${theme.slug}/${course.slug}`,
+                url: `${urlBase}/cursos/${theme.slug}`,
                 lastModified: new Date(),
                 changeFrequency: 'weekly' as const,
-                priority: 0.5,
+                priority: 0.6,
+            });
+
+            theme.courses?.forEach((course) => {
+                coursePages.push({
+                    url: `${urlBase}/cursos/${theme.slug}/${course.slug}`,
+                    lastModified: new Date(),
+                    changeFrequency: 'weekly' as const,
+                    priority: 0.5,
+                });
             });
         });
-    });
+    }
 
-    return [...staticPages, ...postPages, ...ebookPages, ...coursePages];
+    // --- SERVICIOS / PORTAFOLIO ---
+    const isMasterTenant = host.includes("xn--alvarolondoo-khb") || tenantId === "alvarolondono";
+    if (isMasterTenant || upperFeatures.includes("PORTFOLIO")) {
+        staticPages.push(
+            {
+                url: `${urlBase}/servicios`,
+                lastModified: new Date(),
+                changeFrequency: 'monthly',
+                priority: 0.9,
+            },
+            {
+                url: `${urlBase}/portafolio`,
+                lastModified: new Date(),
+                changeFrequency: 'monthly',
+                priority: 0.7,
+            }
+        );
+    }
+
+    return [...staticPages, ...postPages, ...productPages, ...coursePages];
 }
 

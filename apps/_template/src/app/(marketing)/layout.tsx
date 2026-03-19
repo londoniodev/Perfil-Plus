@@ -18,8 +18,8 @@ export default async function MarketingLayout({
     const contactPhone = design?.contactPhone || null;
     const contactEmail = design?.contactEmail || null;
     const businessName = design?.name || null;
-    const tenantTagline = design?.tagline || null;
-    const logoUrl = design?.logo || '/images/branding/icon.png';
+    const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
+    const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
 
     const headersList = await headers();
     const tenantFeaturesRaw = headersList.get('x-tenant-feature-list') || headersList.get('x-tenant-features');
@@ -48,6 +48,13 @@ export default async function MarketingLayout({
     } else {
         const upperFeatures = featureArray.map(f => f.toUpperCase());
         const hasTiendaLink = navLinks.some(link => link.href === "/tienda");
+        
+        // 1. Filtrar el enlace "/menu" si NO tiene el feature RESTAURANT (Seguridad/Aislamiento)
+        if (!upperFeatures.includes("RESTAURANT")) {
+            navLinks = navLinks.filter(link => link.href !== "/menu" && !link.href.startsWith("/menu/"));
+        }
+
+        // 2. Auto-inyectar el enlace de Tienda si tiene ECOMMERCE y omitió ponerlo
         if ((upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) && !hasTiendaLink) {
             navLinks.push({ label: "Tienda", href: "/tienda" });
         }

@@ -183,10 +183,10 @@ export class TenantService {
         });
         
         const menuData = (menuSetting?.value as any) || {};
-        const logo = menuData.logo || null;
+        const logo = tenantById.brandSettings?.logoUrl || menuData.logo || null;
         const headerLinks = menuData.headerLinks || null;
         const footerLinks = menuData.footerLinks || null;
-        const tagline = menuData.tagline || tenantById.notes || 'Plataforma Profesional';
+        const tagline = tenantById.brandSettings?.tagline || menuData.tagline || tenantById.notes || 'Plataforma Profesional';
         
         const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
         const smtpData = (smtpSetting?.value as any) || {};
@@ -222,10 +222,10 @@ export class TenantService {
       });
       
       const menuData = (menuSetting?.value as any) || {};
-      const logo = menuData.logo || null;
+      const logo = tenantBySlug.brandSettings?.logoUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
-      const tagline = menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
+      const tagline = tenantBySlug.brandSettings?.tagline || menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
       
       const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
       const smtpData = (smtpSetting?.value as any) || {};
@@ -369,6 +369,7 @@ export class TenantService {
     const layoutType = design.layoutType || 'CLASSIC';
     const logoUrl = design.logoUrl || null;
     const faviconUrl = design.faviconUrl || null;
+    const tagline = design.tagline || null;
 
     const updatedSettings = await this.prisma.brandSettings.upsert({
       where: { tenantId },
@@ -381,6 +382,7 @@ export class TenantService {
         layoutType,
         logoUrl,
         faviconUrl,
+        tagline,
       },
       update: {
         primaryColor,
@@ -390,6 +392,7 @@ export class TenantService {
         layoutType,
         logoUrl,
         faviconUrl,
+        tagline,
       },
     });
 

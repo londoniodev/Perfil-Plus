@@ -41,9 +41,9 @@ function getGoogleFontUrl(fontFamily: string): string | null {
 export async function generateMetadata(): Promise<Metadata> {
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
-  const logoUrl = design?.logo || '/images/branding/icon.png';
+  const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
   const siteName = design?.name || siteConfig.name;
-  const tagline = design?.tagline || siteConfig.description;
+  const tagline = design?.brandSettings?.tagline || design?.tagline || siteConfig.description;
 
   const headersList = await headers();
   const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
@@ -109,13 +109,13 @@ export default async function RootLayout({
   
   // Color fallback
   const primaryColor = design?.primary || "zinc";
-  const logoUrl = design?.logo || '/images/branding/icon.png';
+  const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
   const headerLinksFromDb = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;
   const contactPhone = design?.contactPhone || null;
   const contactEmail = design?.contactEmail || null;
   const businessName = design?.name || null;
-  const tenantTagline = design?.tagline || null;
+  const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');

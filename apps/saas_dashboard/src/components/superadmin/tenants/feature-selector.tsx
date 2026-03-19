@@ -2,8 +2,14 @@
 
 import { Control, Controller } from "react-hook-form";
 import { Checkbox, Label, Card } from "@alvarosky/ui";
-import { AVAILABLE_FEATURES } from "@alvarosky/types";
 import { Box } from "lucide-react";
+
+const AVAILABLE_FEATURES = [
+    { value: "shop", label: "Tienda (E-commerce)" },
+    { value: "blog", label: "Blog / Noticias" },
+    { value: "lms", label: "Academia (LMS)" },
+    { value: "restaurant", label: "Restaurante" },
+];
 
 interface FeatureSelectorProps {
     control: Control<any>;

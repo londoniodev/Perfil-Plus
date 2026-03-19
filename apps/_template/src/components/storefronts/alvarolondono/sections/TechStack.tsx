@@ -77,7 +77,7 @@ const TechStack = () => {
                     alt={tech.name}
                     className="w-12 h-12 object-contain"
                     onError={(e) => {
-                      e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Ctext y="32" font-size="32"%3E⚙️%3C/text%3E%3C/svg%3E';
+                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="48" height="48"%3E%3Ctext y="32" font-size="32"%3E⚙️%3C/text%3E%3C/svg%3E';
                     }}
                   />
                 </div>

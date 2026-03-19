@@ -51,7 +51,7 @@ const Clients = () => {
                                     alt={client.name}
                                     className="h-20 w-auto object-contain filter brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity"
                                     onError={(e) => {
-                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="80"%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="24" fill="%23999"%3E' + client.name + '%3C/text%3E%3C/svg%3E';
+                                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="80"%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="24" fill="%23999"%3E' + client.name + '%3C/text%3E%3C/svg%3E';
                                     }}
                                 />
                             </div>

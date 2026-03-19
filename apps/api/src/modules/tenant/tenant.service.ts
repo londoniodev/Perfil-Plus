@@ -168,8 +168,7 @@ export class TenantService {
     try {
       const tenantById = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
-        select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
-        include: { brandSettings: true },
+        select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true, brandSettings: true },
       });
       if (tenantById) {
         this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
@@ -207,8 +206,7 @@ export class TenantService {
     );
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
-      select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
-      include: { brandSettings: true },
+      select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true, brandSettings: true },
     });
 
     if (tenantBySlug) {

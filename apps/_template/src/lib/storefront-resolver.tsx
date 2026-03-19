@@ -27,14 +27,12 @@ const FORMACION_REGISTRY: Record<string, any> = {
  * Resuelve el componente de Landing para un inquilino específico.
  */
 export function resolveLanding(slug: string) {
-    const Component = LANDING_REGISTRY[slug];
-    return Component || DefaultLanding;
+    return LANDING_REGISTRY[slug];
 }
 
 /**
  * Resuelve el componente de Formación para un inquilino específico.
  */
 export function resolveFormacion(slug: string) {
-    const Component = FORMACION_REGISTRY[slug];
-    return Component || DefaultFormacion;
+    return FORMACION_REGISTRY[slug];
 }

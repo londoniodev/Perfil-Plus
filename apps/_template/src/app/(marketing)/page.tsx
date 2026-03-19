@@ -43,6 +43,8 @@ async function getMarketingData(tenantId: string): Promise<TenantMarketingData |
   }
 }
 
+import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront";
+
 export default async function MarketingHubPage() {
   const headersList = await headers();
   // El Edge Middleware ya nos regaló el ID en el túnel the proxy
@@ -62,6 +64,12 @@ export default async function MarketingHubPage() {
   };
 
   const LandingComponent = resolveLanding(safeData.tenantSlug);
+
+  if (!LandingComponent) {
+    return (
+      <DefaultStorefront data={safeData} />
+    );
+  }
 
   return (
     <div className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0">

@@ -51,6 +51,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = isLocal ? "http" : "https";
   const currentUrl = `${protocol}://${host}`;
 
+  const faviconUrl = design?.brandSettings?.faviconUrl || '/favicon.ico';
+
   return {
     ...baseMetadata,
     metadataBase: new URL(currentUrl),
@@ -63,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: tagline,
     icons: {
-      icon: logoUrl,
+      icon: faviconUrl,
       apple: logoUrl,
     },
     openGraph: {
@@ -130,8 +132,6 @@ export default async function RootLayout({
     }
   }
 
-  const isDarkThemeTenant = tenantSlugRaw === "mauromera" || tenantSlugRaw === "soydeborasoysaludable";
-
   // ── Motor de Marca Blanca: Inyección de CSS Custom Properties ──
   const brand = design?.brandSettings;
   const brandStyles: React.CSSProperties = brand
@@ -170,7 +170,6 @@ export default async function RootLayout({
           businessName={businessName}
           tagline={tenantTagline}
           design={design}
-          isDarkThemeTenant={isDarkThemeTenant}
           primaryColor={primaryColor}
         >
           <GlobalSchemas />

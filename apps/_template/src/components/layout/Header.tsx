@@ -13,18 +13,14 @@ interface NavLink {
 
 interface HeaderProps {
     logo?: string;
-    logoSuffix?: React.ReactNode;
     links?: NavLink[];
     showAuthButtons?: boolean;
-    isCocinaSiete?: boolean;
 }
 
 export function Header({ 
     logo, 
-    logoSuffix, 
     links = [], 
     showAuthButtons = true,
-    isCocinaSiete = false
 }: HeaderProps) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
@@ -36,13 +32,12 @@ export function Header({
         <SiteHeader
             logo={finalLogo}
             logoAlt={siteConfig.branding.logoAlt}
-            logoSuffix={logoSuffix}
             links={links}
             isAuthenticated={isAuthenticated}
             pathname={pathname}
             cartComponent={<CartSheet />}
-            showAuthButtons={showAuthButtons && !isCocinaSiete}
-            transparentIsDark={isHome && !isCocinaSiete}
+            showAuthButtons={showAuthButtons}
+            transparentIsDark={isHome}
         />
     );
 }

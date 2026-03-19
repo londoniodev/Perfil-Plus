@@ -970,6 +970,8 @@ model BrandSettings {
   borderRadius   Float      @default(0.5)
   fontFamily     String     @default("Inter, sans-serif")
   layoutType     LayoutType @default(CLASSIC)
+  logoUrl        String?
+  faviconUrl     String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)

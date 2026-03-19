@@ -13,9 +13,7 @@ interface NavigationWrapperProps {
     footer: React.ReactNode;
     showAuthButtons?: boolean;
     logo?: string;
-    logoSuffix?: React.ReactNode;
     links?: NavLink[];
-    isCocinaSiete?: boolean;
 }
 
 export function NavigationWrapper({ 
@@ -23,9 +21,7 @@ export function NavigationWrapper({
     footer, 
     showAuthButtons = true, 
     logo,
-    logoSuffix,
     links,
-    isCocinaSiete
 }: NavigationWrapperProps) {
     const pathname = usePathname();
 
@@ -54,9 +50,7 @@ export function NavigationWrapper({
             <Header 
                 showAuthButtons={showAuthButtons} 
                 logo={logo} 
-                logoSuffix={logoSuffix} 
                 links={links}
-                isCocinaSiete={isCocinaSiete}
             />
             <main>{children}</main>
             {footer}

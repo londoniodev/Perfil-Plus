@@ -79,7 +79,6 @@ export function AppProviders({
     businessName = null,
     tagline = null,
     design,
-    isDarkThemeTenant,
     primaryColor,
 }: {
     children: React.ReactNode;
@@ -92,7 +91,6 @@ export function AppProviders({
     businessName?: string | null;
     tagline?: string | null;
     design: any;
-    isDarkThemeTenant: boolean;
     primaryColor: string;
 }) {
     return (
@@ -108,9 +106,8 @@ export function AppProviders({
         >
             <ThemeProvider
                 attribute="class"
-                defaultTheme={isDarkThemeTenant ? "dark" : "light"}
-                enableSystem={!isDarkThemeTenant}
-                forcedTheme={isDarkThemeTenant ? "dark" : undefined}
+                defaultTheme="light"
+                enableSystem
             >
                 <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
                     {children}

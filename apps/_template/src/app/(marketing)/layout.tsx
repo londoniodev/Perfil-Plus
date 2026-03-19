@@ -53,26 +53,13 @@ export default async function MarketingLayout({
         }
     }
 
-    // --- LÓGICA DE BRANDING ---
-    let logoSuffix: React.ReactNode = null;
-    if (tenantSlugRaw === "soydeborasoysaludable" || tenantId === "cm7mman6x000208jsf3h9h2k1") {
-        logoSuffix = (
-            <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none hidden sm:block">
-                Soy <span className="text-fuchsia-500">Deborah</span> Soy Saludable
-            </span>
-        );
-    }
-
     const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
-    const isCocinaSiete = tenantSlugRaw === "cocinasiete" || tenantId === "cocinasiete";
 
     return (
         <NavigationWrapper
             logo={logoUrl}
-            logoSuffix={logoSuffix}
             links={navLinks}
             showAuthButtons={hasDashboardFeature}
-            isCocinaSiete={isCocinaSiete}
             footer={
                 <Footer
                     logo={logoUrl}

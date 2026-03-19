@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { FloatingBackButton } from "./FloatingBackButton";
-import { useTenant } from "@/app/providers";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -10,28 +9,17 @@ interface AuthLayoutProps {
     subtitle?: string;
 }
 
-const tenantAssets: Record<string, { bgImage: string; quote: React.ReactNode; imageAlt: string }> = {
-    deborahmoscoso: {
-        bgImage: "/external/deborah-auth-bg.jpg",
-        quote: (
-            <>
-                "Elegir salud es el mayor acto de <span className="text-fuchsia-500 font-bold">amor propio</span>."
-            </>
-        ),
-        imageAlt: "Deborah Moscoso Fitness"
-    },
-    default: {
-        bgImage: "/external/auth-bg.jpg",
-        quote: <>"La buena comida es el fundamento de la felicidad."</>,
-        imageAlt: "Plato gourmet saludable"
-    }
+// ── Fallback Neutro Universal ──
+// Todos los tenants ven la misma experiencia genérica.
+// En el futuro, se puede extender con `brandSettings.authBgImage` y `brandSettings.authQuote`.
+const DEFAULT_AUTH_ASSETS = {
+    bgImage: "/external/auth-bg.jpg",
+    quote: <>"Bienvenido a tu plataforma."</>,
+    imageAlt: "Fondo de autenticación"
 };
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
-    const { tenantId } = useTenant();
-    
-    // Si no está definido el tenant, usa el default
-    const assets = tenantAssets[tenantId] || tenantAssets.default;
+    const assets = DEFAULT_AUTH_ASSETS;
 
     return (
         <div className="grid lg:grid-cols-2 min-h-screen w-full bg-zinc-950 text-zinc-50">

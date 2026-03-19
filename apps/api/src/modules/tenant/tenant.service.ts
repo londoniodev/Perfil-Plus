@@ -357,22 +357,46 @@ export class TenantService {
   }
 
   /**
-   * Actualiza EXCLUSIVAMENTE el campo de diseño del tenant.
-   * Previene "Mass Assignment Vulnerability" aislando los inputs del body.
+   * Actualiza el diseño estructurado del Tenant usando el motor BrandSettings.
+   * Mapea los datos del DTO antiguo (design JSON) al modelo relacional nuevo.
    */
   async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
-    const updatedTenant = await this.prisma.secure.tenant.update({
-      where: { id: tenantId },
-      data: {
-        design: updateDto.design !== undefined ? updateDto.design : undefined,
+    const design = updateDto.design || {};
+    
+    // Mapeamos los datos que vienen del frontend antiguo (`primary`, `radius`) al nuevo modelo
+    const primaryColor = design.primary || design.primaryColor || '#09090b';
+    const secondaryColor = design.secondaryColor || '#f4f4f5';
+    const borderRadius = design.radius !== undefined ? design.radius : (design.borderRadius || 0.5);
+    const fontFamily = design.fontFamily || 'Inter, sans-serif';
+    const layoutType = design.layoutType || 'CLASSIC';
+    const logoUrl = design.logoUrl || null;
+    const faviconUrl = design.faviconUrl || null;
+
+    const updatedSettings = await this.prisma.brandSettings.upsert({
+      where: { tenantId },
+      create: {
+        tenantId,
+        primaryColor,
+        secondaryColor,
+        borderRadius,
+        fontFamily,
+        layoutType,
+        logoUrl,
+        faviconUrl,
       },
-      select: {
-        design: true,
+      update: {
+        primaryColor,
+        secondaryColor,
+        borderRadius,
+        fontFamily,
+        layoutType,
+        logoUrl,
+        faviconUrl,
       },
     });
 
     this.logger.log(
-      `Branding actualizado de forma segura para Tenant ID: ${tenantId}`,
+      `Branding (BrandSettings) actualizado de forma segura para Tenant ID: ${tenantId}`,
     );
 
     // Disparador On-Demand de la caché The Next.js
@@ -383,7 +407,7 @@ export class TenantService {
       `tenant-marketing`,
     ]);
 
-    return updatedTenant;
+    return updatedSettings;
   }
 
   /**

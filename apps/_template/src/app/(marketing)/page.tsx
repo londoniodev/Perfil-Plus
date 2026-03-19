@@ -9,10 +9,10 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
-  // El Edge Middleware ya nos regaló el ID en el túnel the proxy
-  const tenantId = headersList.get("x-tenant-id") || await getTenantId();
+  // x-tenant-slug suele ser el slug legible del inquilino
+  const tenantSlug = headersList.get("x-tenant-slug") || headersList.get("x-tenant-id") || await getTenantId();
 
-  if (tenantId === "alvarolondono" || tenantId === "xn--alvarolondoo-khb.dev") {
+  if (tenantSlug === "alvarolondono" || tenantSlug === "xn--alvarolondoo-khb.dev") {
     return {
       other: {
         "facebook-domain-verification": "wa9miawih97u6xsx1yhc1ub3w9dy0a",

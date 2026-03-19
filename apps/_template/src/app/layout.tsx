@@ -271,6 +271,9 @@ export default async function RootLayout({
   const isCocinaSiete = tenantSlugRaw === "cocinasiete" || tenantId === "cocinasiete";
   const isDarkThemeTenant = tenantSlugRaw === "mauromera" || tenantSlugRaw === "soydeborasoysaludable";
 
+  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "";
+  const isMasterTenant = host.includes("xn--alvarolondoo-khb") || tenantSlugRaw === "alvarolondono" || tenantId === "alvarolondono";
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
@@ -293,7 +296,7 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                {tenantSlugRaw === "alvarolondono" || tenantSlugRaw === "xn--alvarolondoo-khb.dev" || tenantId === "alvarolondono" ? (
+                {isMasterTenant ? (
                   children
                 ) : (
                   <NavigationWrapper 

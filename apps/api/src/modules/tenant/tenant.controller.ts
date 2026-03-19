@@ -37,9 +37,16 @@ export class TenantController {
   // Endpoint SaaS the aprovisionamiento automático the Tenants
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPERADMIN as any) // Sólo administradores globales (SuperAdmin) del SaaS pueden crear inquilinos.
+  @Roles('SUPERADMIN' as any) // Sólo administradores globales (SuperAdmin) del SaaS pueden crear inquilinos.
   async createTenant(@Body() createDto: CreateTenantDto) {
     return this.tenantService.create(createDto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async findAll() {
+    return this.tenantService.findAll();
   }
 
   // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.

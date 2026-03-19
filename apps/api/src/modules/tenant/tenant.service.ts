@@ -403,4 +403,16 @@ export class TenantService {
       );
     }
   }
+
+  /**
+   * Lista todos los tenants registrados en la plataforma.
+   * Sólo para SuperAdmin.
+   */
+  async findAll() {
+    return this.prisma.tenant.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

@@ -86,6 +86,16 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
+    // Restringir rutas del menú de restaurante exclusivamente a tenants con RESTAURANT habilitado
+    if (url.pathname === '/menu' || url.pathname.startsWith('/menu/')) {
+        const hasRestaurantFeature = tenantFeatures.some(f => f.toUpperCase() === 'RESTAURANT' || f.toUpperCase() === 'RESTAURANTE');
+        if (!hasRestaurantFeature && !isBaseDomain) {
+            console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a /menu sin el feature RESTAURANT. Redirigiendo a 404.`);
+            url.pathname = '/404-tenant';
+            return NextResponse.rewrite(url);
+        }
+    }
+
     const requestHeaders = new Headers(request.headers);
     // Inyectar TENANT ID, SLUG y FEATURES dinámico
     requestHeaders.set('x-tenant-id', tenantId);

@@ -1,18 +1,22 @@
 import { use } from "react"
 import MenuClient from "@/components/menu/MenuClient"
+import { getTenantDesign } from "@/lib/tenant-server"
 
 // ─────────────────────────────────────────────
 // Main Menu Page (Instagram Style)
 // ─────────────────────────────────────────────
-export default function MenuPage({
+export default async function MenuPage({
     params,
     searchParams
 }: {
     params: Promise<{ slug: string }>,
     searchParams: Promise<{ table?: string }>
 }) {
-    const { slug } = use(params)
-    const { table } = use(searchParams)
+    const { slug } = await params
+    const { table } = await searchParams
 
-    return <MenuClient slug={slug} table={table} />
+    const design = await getTenantDesign(slug)
+    const layoutType = design?.brandSettings?.layoutType || 'INSTAGRAM'
+
+    return <MenuClient slug={slug} table={table} layoutType={layoutType} />
 }

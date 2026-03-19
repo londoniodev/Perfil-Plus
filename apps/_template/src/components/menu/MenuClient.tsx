@@ -55,10 +55,12 @@ const OrderTrackingModal = dynamic(() => import("./OrderTrackingModal").then(mod
 // ─────────────────────────────────────────────
 export default function MenuClient({
     slug,
-    table
+    table,
+    layoutType = 'INSTAGRAM'
 }: {
     slug: string,
-    table?: string
+    table?: string,
+    layoutType?: 'CLASSIC' | 'INSTAGRAM' | 'MINIMAL'
 }) {
     const { categories, products, restaurant, isLoading, isError } = useMenu(slug)
 

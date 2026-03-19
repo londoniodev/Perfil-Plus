@@ -274,6 +274,16 @@ export default async function RootLayout({
   const host = headersList.get("x-forwarded-host") || headersList.get("host") || "";
   const isMasterTenant = host.includes("xn--alvarolondoo-khb") || tenantSlugRaw === "alvarolondono" || tenantId === "alvarolondono";
 
+  if (isMasterTenant) {
+    navLinks = [
+      { label: "Experiencia", href: "#experience" },
+      { label: "Clientes", href: "#clients" },
+      { label: "Tecnologías", href: "#tech-stack" },
+      { label: "Servicios", href: "#services" },
+      { label: "Contacto", href: "#contact" },
+    ];
+  }
+
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${getFontVariables()} font-sans antialiased`}>
@@ -296,30 +306,26 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                {isMasterTenant ? (
-                  children
-                ) : (
-                  <NavigationWrapper 
-                    logo={logoUrl} 
-                    logoSuffix={logoSuffix}
-                    links={navLinks}
-                    showAuthButtons={hasDashboardFeature}
-                    isCocinaSiete={isCocinaSiete}
-                    footer={
-                      <Footer 
-                        logo={logoUrl} 
-                        footerLinks={footerLinks} 
-                        businessName={businessName || undefined} 
-                        businessEmail={contactEmail || undefined} 
-                        businessPhone={contactPhone || undefined} 
-                        tagline={tenantTagline || undefined} 
-                        features={featureArray} 
-                      />
-                    }
-                  >
-                    {children}
-                  </NavigationWrapper>
-                )}
+                <NavigationWrapper 
+                  logo={logoUrl} 
+                  logoSuffix={logoSuffix}
+                  links={navLinks}
+                  showAuthButtons={hasDashboardFeature}
+                  isCocinaSiete={isCocinaSiete}
+                  footer={
+                    <Footer 
+                      logo={logoUrl} 
+                      footerLinks={footerLinks} 
+                      businessName={businessName || undefined} 
+                      businessEmail={contactEmail || undefined} 
+                      businessPhone={contactPhone || undefined} 
+                      tagline={tenantTagline || undefined} 
+                      features={featureArray} 
+                    />
+                  }
+                >
+                  {children}
+                </NavigationWrapper>
                 <PwaInstallPrompt />
                 <TableDetector />
               </ToastProvider>

@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
-import Navbar from './Navbar';
-import Footer from './Footer';
 import CustomCursor from './CustomCursor';
 import ScrollProgress from './ScrollProgress';
+import Navbar from './Navbar'; // No lo usamos abajo, pero por si acaso limpia imports después
+import Footer from './Footer'; // No lo usamos abajo
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -32,11 +32,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <div className="absolute bottom-[0%] right-[0%] w-[70vw] h-[70vw] rounded-full bg-cyan-600/15 blur-[300px] animate-pulse-slower mix-blend-screen"></div>
             </div>
 
-            <Navbar />
             <main className="relative z-10">
                 {children}
             </main>
-            <Footer />
         </div>
     );
 };

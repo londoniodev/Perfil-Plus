@@ -316,6 +316,7 @@ export class TenantService {
             OR: [
               { slug: { contains: domain, mode: 'insensitive' } },
               { name: { contains: domain, mode: 'insensitive' } },
+              { domain: { contains: domain, mode: 'insensitive' } },
             ],
           },
           select: { id: true, name: true, status: true, features: true },

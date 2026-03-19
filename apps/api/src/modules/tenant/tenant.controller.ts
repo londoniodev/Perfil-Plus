@@ -17,6 +17,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@alvarosky/database';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
+import { UpdateBrandSettingsDto } from './dto/update-brand-settings.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -79,5 +80,16 @@ export class TenantController {
     @Body() updateDto: UpdateBrandingDto,
   ) {
     return this.tenantService.updateTenantBranding(tenantId, updateDto);
+  }
+
+  // Endpoint para actualizar BrandSettings (Motor de Marca Blanca)
+  @Patch('brand-settings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async updateBrandSettings(
+    @CurrentTenant() tenantId: string,
+    @Body() dto: UpdateBrandSettingsDto,
+  ) {
+    return this.tenantService.updateBrandSettings(tenantId, dto);
   }
 }

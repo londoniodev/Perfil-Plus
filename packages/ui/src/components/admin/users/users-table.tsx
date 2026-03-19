@@ -151,7 +151,7 @@ function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription
             {/* Verificado */}
             <TableCell>
                 {user.emailVerified ? (
-                    <Badge variant="default" className="bg-green-500/20 text-green-500">✓ Sí</Badge>
+                    <Badge variant="default" className="bg-success/20 text-success">✓ Sí</Badge>
                 ) : (
                     <Badge variant="outline">No</Badge>
                 )}
@@ -179,7 +179,7 @@ function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription
                             disabled={isLoading}
                             size="sm"
                             variant="outline"
-                            className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
+                            className="text-success border-success/50 hover:bg-success hover:text-success-foreground"
                         >
                             {isLoading ? "..." : "Suscribir"}
                         </Button>
@@ -189,7 +189,7 @@ function UserRow({ user, isLoading, onRoleChange, onDelete, onManageSubscription
                             disabled={isLoading}
                             size="sm"
                             variant="outline"
-                            className="text-amber-600 border-amber-600 hover:bg-amber-600 hover:text-white"
+                            className="text-warning border-warning/50 hover:bg-warning hover:text-warning-foreground"
                         >
                             {isLoading ? "..." : "Cancelar"}
                         </Button>
@@ -230,8 +230,8 @@ function RoleSelector({ role, disabled, onChange }: RoleSelectorProps) {
             className={`
                 px-2 py-1 rounded text-xs font-medium border transition-colors
                 ${isAdmin
-                    ? "bg-purple-500/20 text-purple-500 border-purple-500/30"
-                    : "bg-blue-500/20 text-blue-500 border-blue-500/30"
+                    ? "bg-primary/20 text-primary border-primary/30"
+                    : "bg-info/20 text-info border-info/30"
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
             `}

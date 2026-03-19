@@ -111,8 +111,8 @@ export function LeadForm({
                 className
             )}>
                 <div className="flex flex-col items-center gap-4 w-full">
-                    <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <Check className="w-8 h-8 text-green-500" />
+                    <div className="w-16 h-16 rounded-full bg-success/20 flex items-center justify-center">
+                        <Check className="w-8 h-8 text-success" />
                     </div>
                     <h3 className="text-xl font-bold text-foreground">¡Gracias!</h3>
                     <p className="text-muted-foreground text-sm">Hemos recibido tu información. Te contactaremos pronto.</p>

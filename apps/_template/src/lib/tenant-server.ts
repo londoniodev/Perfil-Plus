@@ -23,7 +23,7 @@ export async function getTenantDesign(tenantId: string) {
         'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
       },
       next: {
-        tags: ['tenant-branding', `tenant-branding-${tenantId}`, `tenant-${tenantId}-branding`],
+        tags: ['tenant-branding', `tenant-branding-${tenantId}`, `tenant-brand-${tenantId}`, `tenant-${tenantId}-branding`],
       }
     });
 
@@ -49,6 +49,7 @@ export async function getTenantDesign(tenantId: string) {
       footerLinks: data?.footerLinks || null,
       contactEmail: data?.contactEmail || null,
       contactPhone: data?.contactPhone || null,
+      brandSettings: data?.brandSettings || null,
     };
   } catch (e) {
     console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);

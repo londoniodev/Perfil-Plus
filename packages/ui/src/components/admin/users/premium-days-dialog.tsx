@@ -114,7 +114,7 @@ export function PremiumDaysDialog({
                         type="button"
                         onClick={handleConfirm}
                         disabled={loading || days < 1}
-                        className="bg-emerald-600 hover:bg-emerald-700"
+                        className="bg-success hover:bg-success/90 text-success-foreground"
                     >
                         {loading ? "Asignando..." : `Asignar ${days} días`}
                     </Button>

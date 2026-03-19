@@ -114,8 +114,8 @@ function UserCard({ user, isLoading, onRoleChange, onDelete, onManageSubscriptio
                         <span className={cn(
                             "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
                             user.emailVerified
-                                ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                : "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
+                                ? "bg-success/10 text-success border-success/20"
+                                : "bg-destructive/10 text-destructive border-destructive/20"
                         )}>
                             {user.emailVerified ? "✓ Sí" : "No"}
                         </span>
@@ -140,7 +140,7 @@ function UserCard({ user, isLoading, onRoleChange, onDelete, onManageSubscriptio
                         className={cn(
                             "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
                             "bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full",
-                            "bg-green-600 hover:bg-green-700 text-white"
+                            "bg-success text-success-foreground hover:bg-success/90"
                         )}
                     >
                         {isLoading ? "Procesando..." : "Asignar Suscripción Premium"}
@@ -152,7 +152,7 @@ function UserCard({ user, isLoading, onRoleChange, onDelete, onManageSubscriptio
                         className={cn(
                             "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
                             "border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full",
-                            "text-amber-600 border-amber-200 hover:bg-amber-50 dark:border-amber-900 dark:hover:bg-amber-950"
+                            "text-warning border-warning/30 hover:bg-warning/10"
                         )}
                     >
                         {isLoading ? "Procesando..." : "Cancelar Suscripción"}
@@ -186,8 +186,8 @@ function RoleSelector({ role, disabled, onChange }: { role: "USER" | "ADMIN", di
             className={cn(
                 "h-7 rounded px-2 text-xs font-semibold uppercase tracking-wide border bg-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50",
                 isAdmin
-                    ? "border-purple-200 text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800"
-                    : "border-blue-200 text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
+                    ? "border-primary/30 text-primary bg-primary/5"
+                    : "border-info/30 text-info bg-info/5"
             )}
         >
             <option value="USER">User</option>

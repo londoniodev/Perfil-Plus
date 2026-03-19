@@ -9,6 +9,7 @@ import { getTenantDesign } from "@/lib/tenant-server";
 import { baseMetadata } from "@/config/metadata";
 import { siteConfig } from "@/config/site";
 import { headers } from "next/headers";
+import { hexToHsl, getContrastForegroundHsl } from "@alvarosky/shared";
 
 const PwaInstallPrompt = dynamic(
   () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt)
@@ -18,7 +19,24 @@ const TableDetector = dynamic(
   () => import("@/components/shop/table-detector").then((mod) => mod.TableDetector)
 );
 
-// getTenantDesign y baseMetadata extraídos s/lib y /config
+// ── Fuentes dinámicas de Google Fonts ──────────────────────
+const DEFAULT_FONT = "Inter";
+
+function getGoogleFontUrl(fontFamily: string): string | null {
+  // Extraer solo el nombre primario (antes de la coma)
+  const fontName = fontFamily.split(",")[0].trim().replace(/["']/g, "");
+  // Si es la fuente por defecto del sistema, no inyectamos link externo
+  if (
+    fontName.toLowerCase() === DEFAULT_FONT.toLowerCase() ||
+    fontName.toLowerCase() === "system-ui" ||
+    fontName.toLowerCase() === "sans-serif"
+  ) {
+    return null;
+  }
+  // Formatear para Google Fonts (ej: "Playfair Display" → "Playfair+Display")
+  const formatted = fontName.replace(/\s+/g, "+");
+  return `https://fonts.googleapis.com/css2?family=${formatted}:wght@300;400;500;600;700;800;900&display=swap`;
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenantId = await getTenantId();
@@ -112,12 +130,36 @@ export default async function RootLayout({
     }
   }
 
-
   const isDarkThemeTenant = tenantSlugRaw === "mauromera" || tenantSlugRaw === "soydeborasoysaludable";
+
+  // ── Motor de Marca Blanca: Inyección de CSS Custom Properties ──
+  const brand = design?.brandSettings;
+  const brandStyles: React.CSSProperties = brand
+    ? {
+        '--primary': hexToHsl(brand.primaryColor),
+        '--primary-foreground': getContrastForegroundHsl(brand.primaryColor),
+        '--secondary': hexToHsl(brand.secondaryColor),
+        '--secondary-foreground': getContrastForegroundHsl(brand.secondaryColor),
+        '--radius': `${brand.borderRadius}rem`,
+        '--font-sans': `"${brand.fontFamily.split(',')[0].trim()}", sans-serif`,
+      } as React.CSSProperties
+    : {};
+
+  // ── Google Fonts dinámicas ──
+  const googleFontUrl = brand ? getGoogleFontUrl(brand.fontFamily) : null;
 
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${getFontVariables()} font-sans antialiased`}>
+      <head>
+        {googleFontUrl && (
+          <>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link rel="stylesheet" href={googleFontUrl} />
+          </>
+        )}
+      </head>
+      <body className={`${getFontVariables()} font-sans antialiased`} style={brandStyles}>
         <AppProviders
           tenantId={tenantId}
           features={featureArray}
@@ -142,5 +184,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-

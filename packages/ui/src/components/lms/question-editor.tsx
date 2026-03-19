@@ -197,11 +197,11 @@ export function QuestionEditor({
                             {options.map((option, index) => (
                                 <div
                                     key={option.id}
-                                    className={`flex items-center gap-3 p-3 bg-background border rounded-lg transition-all ${correctId === option.id ? "bg-green-500/10 border-green-500" : "border-border"}`}
+                                    className={`flex items-center gap-3 p-3 bg-background border rounded-lg transition-all ${correctId === option.id ? "bg-success/10 border-success" : "border-border"}`}
                                 >
                                     <div
                                         onClick={() => setCorrectId(option.id)}
-                                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer flex-shrink-0 transition-colors ${correctId === option.id ? "border-green-500 bg-green-500" : "border-muted-foreground bg-transparent"}`}
+                                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer flex-shrink-0 transition-colors ${correctId === option.id ? "border-success bg-success" : "border-muted-foreground bg-transparent"}`}
                                     >
                                         {correctId === option.id && (
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4">

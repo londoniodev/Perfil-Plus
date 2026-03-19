@@ -36,7 +36,7 @@ export interface CartSheetProps {
 }
 
 // ============================================
-// CartSheet Component
+// CartSheet Component (White-Label Compatible)
 // ============================================
 
 export function CartSheet({
@@ -52,25 +52,25 @@ export function CartSheet({
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-zinc-700/50 bg-zinc-900/50 hover:bg-zinc-800 hover:text-white transition-all duration-300">
+                <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-border/50 bg-card/50 hover:bg-accent hover:text-accent-foreground transition-all duration-300">
                     <ShoppingCart className="h-5 w-5" />
                     {items.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-sm">
+                        <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-sm">
                             {totalItems}
                         </span>
                     )}
                 </Button>
             </SheetTrigger>
-            <SheetContent className="flex flex-col w-full sm:max-w-md border-l border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
-                <SheetHeader className="border-b border-zinc-800 pb-4">
-                    <SheetTitle className="text-xl font-light tracking-wide text-white">Tu Carrito ({totalItems})</SheetTitle>
+            <SheetContent className="flex flex-col w-full sm:max-w-md border-l border-border bg-background/95 backdrop-blur-xl">
+                <SheetHeader className="border-b border-border pb-4">
+                    <SheetTitle className="text-xl font-light tracking-wide text-foreground">Tu Carrito ({totalItems})</SheetTitle>
                 </SheetHeader>
 
                 {/* Lista de Items */}
                 <div className="flex-1 overflow-y-auto py-6 space-y-6">
                     {items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-4">
-                            <div className="p-6 rounded-full bg-zinc-900/50 border border-zinc-800/50">
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-4">
+                            <div className="p-6 rounded-full bg-muted/50 border border-border/50">
                                 <ShoppingCart className="h-8 w-8 opacity-40" />
                             </div>
                             <p className="font-light tracking-wide">Tu carrito está vacío.</p>
@@ -78,27 +78,27 @@ export function CartSheet({
                     ) : (
                         items.map((item) => (
                             <div key={item.variantId} className="flex gap-4 group">
-                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
+                                <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-muted">
                                     <AdaptiveImage src={item.imageSrc} aspectRatio="square" alt={item.title} className="opacity-90 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 <div className="flex flex-col flex-1 justify-between py-1">
                                     <div className="grid gap-1.5">
-                                        <h3 className="font-medium text-sm text-zinc-100 line-clamp-2 leading-snug">{item.title}</h3>
+                                        <h3 className="font-medium text-sm text-foreground line-clamp-2 leading-snug">{item.title}</h3>
                                         {item.subtitle && (
-                                            <p className="text-xs text-zinc-400 font-light">{item.subtitle}</p>
+                                            <p className="text-xs text-muted-foreground font-light">{item.subtitle}</p>
                                         )}
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <div className="text-zinc-100 font-medium">
+                                        <div className="text-foreground font-medium">
                                             <PriceDisplay price={item.price} size="sm" />
                                         </div>
-                                        <div className="flex items-center gap-3 bg-zinc-900/50 rounded-full pl-3 pr-1 py-1 border border-zinc-800/50">
-                                            <span className="text-xs text-zinc-400 font-medium">Qty: {item.quantity}</span>
+                                        <div className="flex items-center gap-3 bg-muted/50 rounded-full pl-3 pr-1 py-1 border border-border/50">
+                                            <span className="text-xs text-muted-foreground font-medium">Qty: {item.quantity}</span>
                                             <Button
                                                 aria-label="Eliminar artículo"
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-6 w-6 text-zinc-400 hover:text-red-400 hover:bg-red-950/30 rounded-full transition-colors"
+                                                className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
                                                 onClick={() => onRemoveItem(item.variantId)}
                                             >
                                                 <Trash2 className="h-3 w-3" />
@@ -113,15 +113,15 @@ export function CartSheet({
 
                 {/* Footer: Total y Checkout */}
                 {items.length > 0 && (
-                    <div className="pt-6 border-t border-zinc-800 space-y-4 bg-zinc-950/50 backdrop-blur-sm -mx-6 px-6 pb-6 mt-auto">
+                    <div className="pt-6 border-t border-border space-y-4 bg-background/50 backdrop-blur-sm -mx-6 px-6 pb-6 mt-auto">
                         <div className="flex items-center justify-between">
-                            <span className="text-zinc-400 text-sm font-light uppercase tracking-wider">Total Estimado</span>
-                            <div className="text-lg font-medium text-white">
+                            <span className="text-muted-foreground text-sm font-light uppercase tracking-wider">Total Estimado</span>
+                            <div className="text-lg font-medium text-foreground">
                                 <PriceDisplay price={totalPrice} size="default" />
                             </div>
                         </div>
                         <Button
-                            className="w-full bg-primary text-primary-foreground hover:opacity-90 transaction-all duration-300 font-medium tracking-wide h-12 rounded-lg"
+                            className="w-full bg-primary text-primary-foreground hover:opacity-90 transition-all duration-300 font-medium tracking-wide h-12 rounded-[var(--radius)]"
                             size="lg"
                             onClick={async () => {
                                 try {

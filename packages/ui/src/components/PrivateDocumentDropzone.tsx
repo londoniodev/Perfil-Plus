@@ -181,8 +181,8 @@ export function PrivateDocumentDropzone({
                         </div>
                         <div className="flex-1 min-w-0 pr-8">
                             <div className="flex items-center gap-2 mb-1">
-                                <Lock className="h-3.5 w-3.5 text-green-600" aria-label="Archivo protegido" />
-                                <span className="text-xs font-bold uppercase tracking-wider text-green-600">
+                                <Lock className="h-3.5 w-3.5 text-success" aria-label="Archivo protegido" />
+                                <span className="text-xs font-bold uppercase tracking-wider text-success">
                                     Protegido
                                 </span>
                             </div>
@@ -215,7 +215,7 @@ export function PrivateDocumentDropzone({
                     <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
                         <div className="p-3 bg-muted border border-border/50 rounded-2xl mb-4 relative shadow-sm">
                             <FileIcon className="h-8 w-8 text-muted-foreground/80" />
-                            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-background shadow-sm">
+                            <div className="absolute -bottom-1 -right-1 bg-success rounded-full p-1 border-2 border-background shadow-sm">
                                 <Lock className="h-3 w-3 text-white" />
                             </div>
                         </div>

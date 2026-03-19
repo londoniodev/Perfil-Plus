@@ -64,6 +64,9 @@ importers:
       '@alvarosky/restaurant-sdk':
         specifier: workspace:*
         version: link:../../packages/restaurant-sdk
+      '@alvarosky/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@alvarosky/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config-tailwind
@@ -417,6 +420,9 @@ importers:
       '@alvarosky/restaurant-sdk':
         specifier: workspace:*
         version: link:../../packages/restaurant-sdk
+      '@alvarosky/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@alvarosky/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config-tailwind
@@ -13924,7 +13930,7 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 

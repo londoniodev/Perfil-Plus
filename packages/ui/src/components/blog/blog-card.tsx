@@ -77,7 +77,7 @@ export function BlogCard({ post, onDelete, viewUrl }: BlogCardProps) {
                         </>
                     )}
                     <span>•</span>
-                    <Badge variant={post.published ? "default" : "secondary"} className={`font-normal ml-1 ${post.published ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "text-gray-500"}`}>
+                    <Badge variant={post.published ? "default" : "secondary"} className={`font-normal ml-1 ${post.published ? "bg-success/10 text-success hover:bg-success/20" : "text-muted-foreground"}`}>
                         {post.published ? "Publicado" : "Borrador"}
                     </Badge>
                 </div>

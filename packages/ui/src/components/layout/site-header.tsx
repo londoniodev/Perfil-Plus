@@ -74,9 +74,9 @@ export function SiteHeader({
                                 <span className="sr-only">Menú</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-zinc-200 bg-zinc-50">
-                            <SheetHeader className="p-4 border-b border-zinc-200 flex items-center justify-between">
-                                <SheetTitle className="text-left text-zinc-900">Menú</SheetTitle>
+                        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 border-r border-border bg-card">
+                            <SheetHeader className="p-4 border-b border-border flex items-center justify-between">
+                                <SheetTitle className="text-left text-card-foreground">Menú</SheetTitle>
                             </SheetHeader>
                             <div className="py-2">
                                 <MobileNavLinks
@@ -209,8 +209,8 @@ interface MobileNavLinksProps {
 
 function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, profileUrl, showAuthButtons = true }: MobileNavLinksProps) {
     const linkClass = (path: string) => cn(
-        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-zinc-200 hover:bg-primary/5 transition-colors",
-        currentPath === path ? "text-primary bg-primary/10 font-bold" : "text-zinc-900"
+        "flex items-center justify-between w-full p-4 text-lg font-medium border-b border-border hover:bg-primary/5 transition-colors",
+        currentPath === path ? "text-primary bg-primary/10 font-bold" : "text-card-foreground"
     );
 
     return (

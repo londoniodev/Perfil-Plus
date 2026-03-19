@@ -10,6 +10,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
+import { UpdateBrandSettingsDto } from './dto/update-brand-settings.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { StorageService } from '../storage/storage.service';
 
@@ -35,7 +36,7 @@ export class TenantService {
    * y aprovisiona el usuario administrador inicial.
    */
   async create(createDto: CreateTenantDto) {
-    const { adminPassword, ownerEmail, slug, domain, name } = createDto;
+    const { adminPassword, ownerEmail, slug, domain, name, primaryColor, secondaryColor, borderRadius, fontFamily, layoutType } = createDto;
     const defaultFeatures = [
       'RESTAURANT',
       'POS',
@@ -99,6 +100,18 @@ export class TenantService {
         },
       });
 
+      // 5. Crear BrandSettings (Motor de Marca Blanca)
+      await tx.brandSettings.create({
+        data: {
+          tenantId: tenant.id,
+          ...(primaryColor && { primaryColor }),
+          ...(secondaryColor && { secondaryColor }),
+          ...(borderRadius !== undefined && { borderRadius }),
+          ...(fontFamily && { fontFamily }),
+          ...(layoutType && { layoutType: layoutType as any }),
+        },
+      });
+
       return tenant;
     });
 
@@ -156,6 +169,7 @@ export class TenantService {
       const tenantById = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
         select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
+        include: { brandSettings: true },
       });
       if (tenantById) {
         this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
@@ -179,7 +193,7 @@ export class TenantService {
         const smtpData = (smtpSetting?.value as any) || {};
         const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantById.ownerEmail || null;
         
-        return { ...tenantById, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
+        return { ...tenantById, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline, brandSettings: tenantById.brandSettings || null };
       }
     } catch (error) {
       this.logger.warn(
@@ -194,6 +208,7 @@ export class TenantService {
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
       select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true },
+      include: { brandSettings: true },
     });
 
     if (tenantBySlug) {
@@ -218,7 +233,7 @@ export class TenantService {
       const smtpData = (smtpSetting?.value as any) || {};
       const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantBySlug.ownerEmail || null;
       
-      return { ...tenantBySlug, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline };
+      return { ...tenantBySlug, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline, brandSettings: tenantBySlug.brandSettings || null };
     }
 
     this.logger.error(
@@ -402,6 +417,90 @@ export class TenantService {
         error.message,
       );
     }
+  }
+
+  /**
+   * Actualiza o crea las BrandSettings del tenant (Motor de Marca Blanca).
+   * Usa upsert para garantizar que siempre se cree si no existe.
+   */
+  async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
+    const updated = await this.prisma.brandSettings.upsert({
+      where: { tenantId },
+      create: {
+        tenantId,
+        ...dto,
+      },
+      update: {
+        ...dto,
+      },
+    });
+
+    this.logger.log(
+      `BrandSettings actualizado para Tenant ID: ${tenantId}`,
+    );
+
+    // 1. Revalidar caché del Dashboard (saas_dashboard)
+    this.triggerFrontendRevalidation([
+      `tenant-branding-${tenantId}`,
+      `tenant-branding`,
+    ]);
+
+    // 2. Revalidar caché del Storefront (apps/_template) — Cross-App
+    this.triggerStorefrontRevalidation(tenantId);
+
+    return updated;
+  }
+
+  /**
+   * Webhook Cross-App: Invalida la caché ISR del Storefront (apps/_template)
+   * para que los cambios en BrandSettings se reflejen instantáneamente.
+   * Fire-and-forget: No bloquea la respuesta al cliente.
+   */
+  private triggerStorefrontRevalidation(tenantId: string) {
+    const storefrontUrl =
+      process.env.STOREFRONT_URL || process.env.INTERNAL_FRONTEND_URL || 'http://127.0.0.1:3000';
+    const revalidationSecret = process.env.REVALIDATION_SECRET;
+
+    if (!revalidationSecret) {
+      this.logger.warn('[Cross-App Revalidation] REVALIDATION_SECRET no configurado. Revalidación cruzada abortada.');
+      return;
+    }
+
+    const tags = [
+      `tenant-brand-${tenantId}`,
+      `tenant-branding-${tenantId}`,
+      'tenant-branding',
+    ];
+
+    // Fire-and-forget — no bloquea la respuesta
+    Promise.all(
+      tags.map((tag) =>
+        fetch(`${storefrontUrl}/api/revalidate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-revalidate-secret': revalidationSecret,
+          },
+          body: JSON.stringify({ tag }),
+        })
+          .then((res) => {
+            if (res.ok) {
+              this.logger.log(
+                `[Cross-App Revalidation] Storefront invalidado: [${tag}]`,
+              );
+            } else {
+              this.logger.warn(
+                `[Cross-App Revalidation] Storefront respondió ${res.status} para tag [${tag}]`,
+              );
+            }
+          })
+          .catch((err) => {
+            this.logger.error(
+              `[Cross-App Revalidation] Error conectando con Storefront (${storefrontUrl}): ${err.message}`,
+            );
+          }),
+      ),
+    );
   }
 
   /**

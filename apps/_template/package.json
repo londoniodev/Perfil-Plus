@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@alvarosky/database": "workspace:*",
+        "@alvarosky/shared": "workspace:*",
         "@alvarosky/eslint-config": "workspace:*",
         "@alvarosky/features": "workspace:*",
         "@alvarosky/restaurant-sdk": "workspace:*",

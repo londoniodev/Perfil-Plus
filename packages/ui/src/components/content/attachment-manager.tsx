@@ -54,12 +54,12 @@ function formatFileSize(bytes: number): string {
 function getFileIcon(fileType: string): React.ReactNode {
     const baseClass = "w-10 h-10 flex items-center justify-center rounded-lg";
     if (fileType.includes('pdf')) {
-        return <div className={`${baseClass} bg-red-100 text-red-600`}><FileText size={20} /></div>;
+        return <div className={`${baseClass} bg-destructive/10 text-destructive`}><FileText size={20} /></div>;
     }
     if (fileType.includes('image')) {
-        return <div className={`${baseClass} bg-blue-100 text-blue-600`}><Image size={20} /></div>;
+        return <div className={`${baseClass} bg-info/10 text-info`}><Image size={20} /></div>;
     }
-    return <div className={`${baseClass} bg-gray-100 text-gray-600`}><File size={20} /></div>;
+    return <div className={`${baseClass} bg-muted text-muted-foreground`}><File size={20} /></div>;
 }
 
 // ============================================
@@ -219,7 +219,7 @@ export function AttachmentManager({
             />
 
             {isPremium && (
-                <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-4 py-3 rounded-lg mb-4 text-sm flex items-center gap-2">
+                <div className="bg-warning/10 text-warning border border-warning/20 px-4 py-3 rounded-lg mb-4 text-sm flex items-center gap-2">
                     <Lock className="h-4 w-4" />
                     Los archivos se guardarán en bucket privado (solo para suscriptores)
                 </div>

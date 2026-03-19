@@ -42,7 +42,7 @@ export function LessonItem({ lesson, onEdit, onDelete }: LessonItemProps) {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "Sin duración"}</span>
                     <span>•</span>
-                    <Badge variant={lesson.published ? "outline" : "secondary"} className={`font-normal ${lesson.published ? "text-green-600 border-green-200" : "text-gray-500"}`}>
+                    <Badge variant={lesson.published ? "outline" : "secondary"} className={`font-normal ${lesson.published ? "text-success border-success/30" : "text-muted-foreground"}`}>
                         {lesson.published ? "Publicado" : "Borrador"}
                     </Badge>
                 </div>

@@ -47,6 +47,7 @@ model Tenant {
   waCustomers        WaCustomer[]
   waCarts            WaCart[]
   warehouses         Warehouse[]
+  brandSettings      BrandSettings?
 }
 
 model User {
@@ -953,4 +954,23 @@ enum WaConversationStatus {
 enum WaMessageRole {
   USER
   ASSISTANT
+}
+
+enum LayoutType {
+  CLASSIC
+  INSTAGRAM
+  MINIMAL
+}
+
+model BrandSettings {
+  id             String     @id @default(cuid())
+  tenantId       String     @unique
+  primaryColor   String     @default("#09090b")
+  secondaryColor String     @default("#f4f4f5")
+  borderRadius   Float      @default(0.5)
+  fontFamily     String     @default("Inter, sans-serif")
+  layoutType     LayoutType @default(CLASSIC)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }

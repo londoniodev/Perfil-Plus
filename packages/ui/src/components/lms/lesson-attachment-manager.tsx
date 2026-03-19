@@ -39,10 +39,10 @@ function formatFileSize(bytes: number): string {
 
 function getFileIcon(fileType: string): React.ReactNode {
     if (fileType.includes('pdf')) {
-        return <div className="text-red-500"><IconDocument size={24} /></div>;
+        return <div className="text-destructive"><IconDocument size={24} /></div>;
     }
     if (fileType.includes('image')) {
-        return <div className="text-blue-500"><IconImage size={24} /></div>;
+        return <div className="text-info"><IconImage size={24} /></div>;
     }
     return <div className="text-muted-foreground"><IconFile size={24} /></div>;
 }

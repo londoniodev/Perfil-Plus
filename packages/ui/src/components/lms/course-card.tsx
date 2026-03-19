@@ -44,10 +44,10 @@ export function CourseCard({ course, onEdit, onDelete }: CourseCardProps) {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span>{course._count?.lessons || 0} lecciones</span>
                     <span>•</span>
-                    <Badge variant={course.isFree ? "secondary" : "default"} className={`font-normal ${course.isFree ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-purple-500/10 text-purple-600 hover:bg-purple-500/20"}`}>
+                    <Badge variant={course.isFree ? "secondary" : "default"} className={`font-normal ${course.isFree ? "bg-success/10 text-success hover:bg-success/20" : "bg-primary/10 text-primary hover:bg-primary/20"}`}>
                         {course.isFree ? "Gratis" : "Premium"}
                     </Badge>
-                    <Badge variant={course.published ? "outline" : "secondary"} className={`font-normal ${course.published ? "text-green-600 border-green-200" : "text-gray-500"}`}>
+                    <Badge variant={course.published ? "outline" : "secondary"} className={`font-normal ${course.published ? "text-success border-success/30" : "text-muted-foreground"}`}>
                         {course.published ? "Publicado" : "Borrador"}
                     </Badge>
                 </div>

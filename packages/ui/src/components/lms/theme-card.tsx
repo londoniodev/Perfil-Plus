@@ -45,7 +45,7 @@ export function ThemeCard({ theme, onEdit, onDelete }: ThemeCardProps) {
                 )}
                 <Badge
                     variant={theme.published ? "default" : "secondary"}
-                    className={`absolute top-3 right-3 ${theme.published ? "bg-green-500 hover:bg-green-600" : "bg-gray-500 hover:bg-gray-600"}`}
+                    className={`absolute top-3 right-3 ${theme.published ? "bg-success hover:bg-success/90 text-success-foreground" : "bg-muted hover:bg-muted/80 text-muted-foreground"}`}
                 >
                     {theme.published ? "Publicado" : "Borrador"}
                 </Badge>

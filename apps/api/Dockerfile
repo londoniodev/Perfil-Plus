@@ -64,6 +64,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 # Copiamos el paquete compilado DIRECTAMENTE a donde Node.js lo busca,
 # sobreescribiendo el symlink roto.
 COPY --from=builder --chown=nestjs:nodejs /app/packages/database ./node_modules/@alvarosky/database
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./package.json
 
 USER nestjs
 

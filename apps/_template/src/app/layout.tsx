@@ -293,26 +293,30 @@ export default async function RootLayout({
             <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
               <GlobalSchemas />
               <ToastProvider>
-                <NavigationWrapper 
-                  logo={logoUrl} 
-                  logoSuffix={logoSuffix}
-                  links={navLinks}
-                  showAuthButtons={hasDashboardFeature}
-                  isCocinaSiete={isCocinaSiete}
-                  footer={
-                    <Footer 
-                      logo={logoUrl} 
-                      footerLinks={footerLinks} 
-                      businessName={businessName || undefined} 
-                      businessEmail={contactEmail || undefined} 
-                      businessPhone={contactPhone || undefined} 
-                      tagline={tenantTagline || undefined} 
-                      features={featureArray} 
-                    />
-                  }
-                >
-                  {children}
-                </NavigationWrapper>
+                {tenantSlugRaw === "alvarolondono" || tenantSlugRaw === "xn--alvarolondoo-khb.dev" || tenantId === "alvarolondono" ? (
+                  children
+                ) : (
+                  <NavigationWrapper 
+                    logo={logoUrl} 
+                    logoSuffix={logoSuffix}
+                    links={navLinks}
+                    showAuthButtons={hasDashboardFeature}
+                    isCocinaSiete={isCocinaSiete}
+                    footer={
+                      <Footer 
+                        logo={logoUrl} 
+                        footerLinks={footerLinks} 
+                        businessName={businessName || undefined} 
+                        businessEmail={contactEmail || undefined} 
+                        businessPhone={contactPhone || undefined} 
+                        tagline={tenantTagline || undefined} 
+                        features={featureArray} 
+                      />
+                    }
+                  >
+                    {children}
+                  </NavigationWrapper>
+                )}
                 <PwaInstallPrompt />
                 <TableDetector />
               </ToastProvider>

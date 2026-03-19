@@ -1,8 +1,21 @@
 import { getTenantId } from './config-server';
 import { cookies } from 'next/headers';
 
-// Fallback a localhost si no está definida en el entorno
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+// Lógica de base URL estricta para SSR (Dokploy)
+function getApiBaseUrl() {
+    const internalUrl = process.env.INTERNAL_API_URL;
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    // Validación Fail-fast: En el servidor (SSR), INTERNAL_API_URL debe existir en producción
+    if (!internalUrl && process.env.NODE_ENV === 'production') {
+        throw new Error("INTERNAL_API_URL is not defined for SSR fetch. Ensure it is set in Dokploy environment variables.");
+    }
+
+    const base = (internalUrl || publicUrl || 'http://localhost:3001/api').replace(/\/+$/, "");
+    return base.endsWith('/api') ? base : `${base}/api`;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Universal Server API Client

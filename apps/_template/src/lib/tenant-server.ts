@@ -9,7 +9,15 @@ export async function getTenantDesign(tenantId: string) {
     // 2. serverFetch llama s cookies() que marca el fetch como dinámico,
     //    impidiendo el cache ISR y causando errores en páginas estáticas
     // Use INTERNAL_API_URL inside Docker for SSR to avoid external routing hops and HTTPS 404s
-    const _apiUrl = (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://api:3001/api').replace(/\/+$/, "");
+    const internalUrl = process.env.INTERNAL_API_URL;
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    // Fail-fast: En servidores Docker (Dokploy), INTERNAL_API_URL es obligatorio
+    if (!internalUrl && process.env.NODE_ENV === 'production') {
+      throw new Error("INTERNAL_API_URL is not defined for SSR fetch. Ensure it is set in Dokploy environment variables.");
+    }
+
+    const _apiUrl = (internalUrl || publicUrl || 'http://localhost:3001/api').replace(/\/+$/, "");
     const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
     const finalEndpoint = `${API_URL}/tenant/branding`;
 

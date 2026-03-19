@@ -26,10 +26,17 @@ export async function middleware(request: NextRequest) {
     let tenantFeatures: string[] = [];
 
     if (!isBaseDomain) {
+        // Validación Fail-fast: INTERNAL_API_URL es obligatorio en producción
+        if (!process.env.INTERNAL_API_URL && process.env.NODE_ENV === 'production') {
+            console.error("[DOKPLOY ERROR] INTERNAL_API_URL is not defined. Edge Proxy cannot identify tenant.");
+            url.pathname = '/500-internal-error'; // Opcional: ruta de error crítico
+            return NextResponse.rewrite(url);
+        }
+
+        const fetchUrl = `${INTERNAL_API_URL}/tenant/identify?domain=${tenantSlugToQuery}`;
         try {
             // Petición al backend en Docker (misma red) para resolver host
-            // Sending the stripped slug to the backend
-            const res = await fetch(`${INTERNAL_API_URL}/tenant/identify?domain=${tenantSlugToQuery}`, {
+            const res = await fetch(fetchUrl, {
                 headers: {
                     'x-internal-token': INTERNAL_API_KEY
                 }
@@ -41,15 +48,15 @@ export async function middleware(request: NextRequest) {
                 tenantFeatures = tenantData.features || [];
                 console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, features: ${JSON.stringify(tenantFeatures)}`);
             } else if (res.status === 404) {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${tenantSlugToQuery}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${tenantSlugToQuery} at ${fetchUrl}`);
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
             } else {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned weird status ${res.status} ${res.statusText} for domain ${tenantSlugToQuery}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${tenantSlugToQuery} at ${fetchUrl}`);
             }
-        } catch (error) {
-            console.error(`Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}`);
+        } catch (error: any) {
+            console.error(`[DOKPLOY ERROR] Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}. URL: ${fetchUrl}. Error: ${error?.message || error}`);
         }
     }
 

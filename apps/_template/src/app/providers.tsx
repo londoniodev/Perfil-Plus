@@ -65,3 +65,58 @@ export function ThemeProvider({
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
 
+// NUEVO COMPONENTE DE REFACTORIZACIÓN
+import { BrandProvider } from "@alvarosky/ui";
+
+export function AppProviders({
+    children,
+    tenantId,
+    features = [],
+    headerLinks = null,
+    footerLinks = null,
+    contactPhone = null,
+    contactEmail = null,
+    businessName = null,
+    tagline = null,
+    design,
+    isDarkThemeTenant,
+    primaryColor,
+}: {
+    children: React.ReactNode;
+    tenantId: string;
+    features?: string[];
+    headerLinks?: PublicNavItem[] | null;
+    footerLinks?: PublicNavItem[] | null;
+    contactPhone?: string | null;
+    contactEmail?: string | null;
+    businessName?: string | null;
+    tagline?: string | null;
+    design: any;
+    isDarkThemeTenant: boolean;
+    primaryColor: string;
+}) {
+    return (
+        <TenantProvider
+            tenantId={tenantId}
+            features={features}
+            headerLinks={headerLinks}
+            footerLinks={footerLinks}
+            contactPhone={contactPhone}
+            contactEmail={contactEmail}
+            businessName={businessName}
+            tagline={tagline}
+        >
+            <ThemeProvider
+                attribute="class"
+                defaultTheme={isDarkThemeTenant ? "dark" : "light"}
+                enableSystem={!isDarkThemeTenant}
+                forcedTheme={isDarkThemeTenant ? "dark" : undefined}
+            >
+                <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
+                    {children}
+                </BrandProvider>
+            </ThemeProvider>
+        </TenantProvider>
+    );
+}
+

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateTag, revalidatePath } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 /**
  * Webhook de Revalidación On-Demand (Cross-App)
  * 
  * Acepta peticiones POST desde la API (NestJS) para invalidar la caché ISR
  * de Next.js cuando se actualizan datos del tenant (BrandSettings, branding, etc.)
- * 
- * Seguridad: Valida contra REVALIDATION_SECRET.
  */
 export async function POST(req: NextRequest) {
     try {
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
         const expectedSecret = process.env.REVALIDATION_SECRET;
 
         if (!expectedSecret || secret !== expectedSecret) {
-            console.warn(`[Revalidate Webhook] Intento de revalidación no autorizado`);
+            console.warn(`[ISR Webhook] Unauthorized attempt`);
             return new Response('Unauthorized', { status: 401 });
         }
 
@@ -27,10 +25,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Missing tag or path parameter" }, { status: 400 });
         }
 
-        if (tag) {
-            // Usamos updateTag para invalidación inmediata de un solo tag (Next.js 16/15)
-            updateTag(tag);
-            console.log(`[Revalidate Webhook] Tag invalidado: ${tag}`);
+        if (tag && typeof tag === 'string') {
+            // API estándar de Next.js App Router (1 solo argumento string)
+            // Se usa cast a any para satisfacer definiciones de tipos locales divergentes
+            (revalidateTag as any)(tag);
+            console.log(`[ISR Webhook] Tag invalidado: ${tag}`);
         }
 
         if (path) {

@@ -72,4 +72,4 @@ EXPOSE 3001
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "dist/main"]
+CMD ["npm", "run", "start:migrate:prod"]

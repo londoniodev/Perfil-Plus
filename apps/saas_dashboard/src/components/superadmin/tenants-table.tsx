@@ -32,6 +32,7 @@ import {
 } from "@alvarosky/ui"
 import { MoreHorizontal, Search, Trash, Eye, Settings, Database } from "lucide-react"
 import { toast } from "sonner"
+import { CreateTenantModal } from "./create-tenant-modal"
 
 interface Tenant {
     id: string
@@ -138,6 +139,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
                         className="pl-9 bg-background/50 border-input"
                     />
                 </div>
+                <CreateTenantModal />
             </div>
 
             {/* Table */}

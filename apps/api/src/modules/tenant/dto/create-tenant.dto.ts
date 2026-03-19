@@ -6,18 +6,18 @@ export class CreateTenantDto {
   slug: string;
 
   @IsString()
+  @IsNotEmpty()
+  domain: string;
+
+  @IsString()
   @IsOptional()
   name?: string;
 
   @IsEmail()
-  @IsOptional()
-  ownerEmail?: string;
+  @IsNotEmpty()
+  ownerEmail: string;
 
   @IsString()
-  @IsOptional()
-  notes?: string;
-
-  @IsString()
-  @IsOptional()
-  adminPassword?: string;
+  @IsNotEmpty()
+  adminPassword: string;
 }

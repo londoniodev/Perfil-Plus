@@ -1,0 +1,11 @@
+{
+  "name": "@alvarosky/load-testing",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:smoke": "k6 run src/checkout-smoke.js"
+  },
+  "devDependencies": {
+    "@types/k6": "^0.54.1"
+  }
+}

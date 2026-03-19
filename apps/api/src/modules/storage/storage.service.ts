@@ -162,6 +162,18 @@ export class StorageService {
     }
   }
 
+  /**
+   * Aprovisiona preventivamente los buckets público y privado para un nuevo Tenant.
+   */
+  async provisionBuckets(tenantSlug: string): Promise<void> {
+    const publicBucket = `${tenantSlug}-public`;
+    const privateBucket = `${tenantSlug}-private`;
+    
+    this.logger.log(`[STORAGE] Aprovisionando buckets para Tenant: ${tenantSlug}`);
+    await this.ensureBucketExists(publicBucket, false);
+    await this.ensureBucketExists(privateBucket, true);
+  }
+
   private async setPublicPolicy(bucket: string) {
     const client = await this.getS3Client();
     const { PutBucketPolicyCommand } = await import('@aws-sdk/client-s3');

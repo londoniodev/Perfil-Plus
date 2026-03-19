@@ -37,7 +37,7 @@ export class TenantController {
   // Endpoint SaaS the aprovisionamiento automático the Tenants
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN) // Sólo administradores globales thel SaaS pueden crear inquilinos en producción.
+  @Roles(Role.SUPERADMIN as any) // Sólo administradores globales (SuperAdmin) del SaaS pueden crear inquilinos.
   async createTenant(@Body() createDto: CreateTenantDto) {
     return this.tenantService.create(createDto);
   }

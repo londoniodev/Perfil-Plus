@@ -6,6 +6,7 @@ import { AdminSidebar, type AdminSidebarSection } from "@alvarosky/ui"
 import { getSidebarSections, getStaffSections, getUserSections, type FeatureKey } from "@/config/sidebar.config"
 import { STAFF_ROLES } from "@/types/auth"
 import { TENANT_ID } from "@/lib/config"
+import { Database } from "lucide-react"
 
 // ============================================================================
 // TYPES
@@ -34,6 +35,22 @@ export function DashboardSidebar({ features, tenantName, logoUrl }: DashboardSid
         sections = getStaffSections(user.role, features);
     } else {
         sections = getUserSections(features);
+    }
+
+    // Inyección de Administración Global para SuperAdmin
+    if (user?.role === 'SUPERADMIN') {
+        sections.unshift({
+            label: "Administración Global",
+            groups: [
+                {
+                    title: "Inquilinos",
+                    icon: Database,
+                    items: [
+                        { title: "Ver todos", href: "/superadmin/tenants" },
+                    ]
+                }
+            ]
+        });
     }
 
     // Dynamic Injection: Menu Digital Link (only for admin)

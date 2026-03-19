@@ -1,4 +1,4 @@
-export type UserRole = "USER" | "ADMIN" | "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
+export type UserRole = "USER" | "ADMIN" | "SUPERADMIN" | "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
 export type StaffRole = "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
 export const STAFF_ROLES: StaffRole[] = ["WAITER", "KITCHEN", "CASHIER", "DRIVER"];
 

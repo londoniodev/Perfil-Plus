@@ -11,6 +11,7 @@ datasource db {
 model Tenant {
   id                 String              @id @default(cuid())
   slug               String              @unique
+  domain             String?             @unique
   dbName             String
   name               String?
   status             String              @default("ACTIVE")
@@ -870,6 +871,7 @@ model WaCart {
 enum Role {
   USER
   ADMIN
+  SUPERADMIN
   WAITER
   KITCHEN
   CASHIER

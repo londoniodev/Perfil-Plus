@@ -14,6 +14,7 @@ const LANDING_REGISTRY: Record<string, any> = {
     "soydeborasoysaludable": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")),
     "cm7mman6x000208jsf3h9h2k1": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")),
     "cocinasiete": dynamic(() => import("@/components/storefronts/cocinasiete/Landing")),
+    "alvarolondono": dynamic(() => import("@/components/storefronts/alvarolondono/Landing")),
 };
 
 const FORMACION_REGISTRY: Record<string, any> = {

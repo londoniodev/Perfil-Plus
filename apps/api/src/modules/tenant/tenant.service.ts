@@ -11,6 +11,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
+import { StorageService } from '../storage/storage.service';
 
 import * as bcrypt from 'bcryptjs';
 
@@ -26,14 +27,15 @@ export class TenantService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly storageService: StorageService,
   ) {}
 
   /**
    * Crea un nuevo Tenant asegurando los valores por defecto "Plug & Play",
-   * y opcionalmente aprovisiona el usuario administrador inicial.
+   * y aprovisiona el usuario administrador inicial.
    */
   async create(createDto: CreateTenantDto) {
-    const { adminPassword, ...tenantData } = createDto;
+    const { adminPassword, ownerEmail, slug, domain, name } = createDto;
     const defaultFeatures = [
       'RESTAURANT',
       'POS',
@@ -47,39 +49,78 @@ export class TenantService {
       radius: 0.5,
     };
 
-    const newTenant = await this.prisma.secure.tenant.create({
-      data: {
-        ...tenantData,
-        dbName: 'web-projects', // Estandarizado en Monorepo
-        status: 'ACTIVE',
-        plan: 'free',
-        features: defaultFeatures,
-        design: defaultDesign,
-      },
-    });
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    this.logger.log(
-      `Nuevo Tenant creado exitosamente "Plug & Play": ${newTenant.slug}`,
-    );
-
-    // Si se proveen email y password inicial, aprovisionar el usuario administrador
-    if (tenantData.ownerEmail && adminPassword) {
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
-      await this.prisma.secure.user.create({
+    // Transacción Atómica para asegurar consistencia
+    const newTenant = await this.prisma.$transaction(async (tx) => {
+      // 1. Crear Tenant (Usando this.prisma regular, bypass .secure)
+      const tenant = await tx.tenant.create({
         data: {
-          tenantId: newTenant.id,
-          email: tenantData.ownerEmail.toLowerCase(),
+          slug: slug.toLowerCase(),
+          domain: domain.toLowerCase(),
+          name: name || slug,
+          dbName: 'web-projects', // Estandarizado
+          status: 'ACTIVE',
+          plan: 'free',
+          features: defaultFeatures,
+          design: defaultDesign,
+          ownerEmail: ownerEmail.toLowerCase(),
+        },
+      });
+
+      // 2. Crear Usuario Administrador
+      await tx.user.create({
+        data: {
+          tenantId: tenant.id,
+          email: ownerEmail.toLowerCase(),
           name: 'Administrador Inicial',
           password: hashedPassword,
           role: 'ADMIN',
           emailVerified: true,
-          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ADMIN',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${tenant.slug}`,
         },
       });
-      this.logger.log(
-        `Usuario administrador inicial auto-aprovisionado para: ${tenantData.ownerEmail}`,
+
+      // 3. Crear StoreSettings
+      await tx.storeSettings.create({
+        data: {
+          tenantId: tenant.id,
+          storeName: name || tenant.slug,
+          storeEmail: ownerEmail.toLowerCase(),
+        },
+      });
+
+      // 4. Crear Warehouse por defecto
+      await tx.warehouse.create({
+        data: {
+          tenantId: tenant.id,
+          name: 'Principal',
+          isDefault: true,
+        },
+      });
+
+      return tenant;
+    });
+
+    this.logger.log(
+      `Nuevo Tenant creado exitosamente "Everything-as-Code": ${newTenant.slug} (${newTenant.domain})`,
+    );
+
+    // 5. Infraestructura Preventiva (Buckets MinIO)
+    try {
+      await this.storageService.provisionBuckets(newTenant.slug);
+    } catch (error) {
+      this.logger.error(
+        `Error aprovisionando buckets para: ${newTenant.slug}: ${error.message}`,
       );
+      // No fallamos el endpoint si el storage falla (ya la BD se guardó), 
+      // pero debería estar aprovisionado.
     }
+
+    // 6. Invalidar caché en Redis para el dominio
+    const cacheKey = `tenant_resolve_${domain.toLowerCase()}`;
+    await this.cacheManager.del(cacheKey);
+    this.logger.log(`Caché de dominio invalidado para: ${domain}`);
 
     return newTenant;
   }

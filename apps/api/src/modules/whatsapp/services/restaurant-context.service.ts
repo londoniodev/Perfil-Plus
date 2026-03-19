@@ -39,7 +39,7 @@ export class RestaurantContextService {
 
     this.logger.log(`[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`);
 
-    const products = await (this.prisma.secure as any).product.findMany({
+    const products = await this.prisma.secure.product.findMany({
       where: {
         productType: 'RESTAURANT',
         published: true,
@@ -55,12 +55,12 @@ export class RestaurantContextService {
       },
     });
 
-    const catalog: CatalogProduct[] = products.map((p: any) => ({
+    const catalog: CatalogProduct[] = products.map((p) => ({
       id: p.id,
       name: p.name,
       basePrice: Number(p.basePrice),
       description: p.description || null,
-      variantId: p.variants[0]?.id || p.id,
+      variantId: (p as any).variants[0]?.id || p.id,
       images: p.images || [],
     }));
 
@@ -94,7 +94,7 @@ export class RestaurantContextService {
 
   private async generateMenuContext(tenantId: string): Promise<string> {
     // Obtener configuración del restaurante
-    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+    const storeSettings = await this.prisma.secure.storeSettings.findFirst({
       include: { tenant: { select: { slug: true } } }
     });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
@@ -162,7 +162,7 @@ ${menuText}
     let needsGps = true; // Rastrear si falta ubicación GPS
 
     if (customerPhone) {
-      const customer = await (this.prisma.secure as any).waCustomer.findUnique({
+      const customer = await this.prisma.secure.waCustomer.findUnique({
         where: { tenantId_phone: { tenantId, phone: customerPhone } }
       });
       if (customer) {

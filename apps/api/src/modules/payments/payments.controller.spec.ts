@@ -174,6 +174,7 @@ describe('PaymentsController', () => {
         body,
         'ts=1;v1=abc',
         'req-1',
+        'tenant-1',
       );
 
       expect(mockPaymentsService.verifyWebhookSignature).toHaveBeenCalledWith(
@@ -200,6 +201,7 @@ describe('PaymentsController', () => {
         body,
         'ts=1;v1=FALSA',
         'req-1',
+        'tenant-1',
       );
 
       expect(result).toEqual({ status: 'error', reason: 'invalid signature' });
@@ -215,6 +217,7 @@ describe('PaymentsController', () => {
         body,
         'ts=1;v1=abc',
         'req-1',
+        'tenant-1',
       );
 
       expect(result).toEqual({
@@ -238,6 +241,7 @@ describe('PaymentsController', () => {
         body,
         'ts=1;v1=abc',
         'req-1',
+        'tenant-1',
       );
 
       expect(mockPaymentsService.handleWebhook).toHaveBeenCalledWith(

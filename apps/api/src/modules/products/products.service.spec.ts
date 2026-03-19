@@ -373,7 +373,7 @@ describe('ProductsService', () => {
       ];
       mockClient.product.findMany.mockResolvedValue(products);
 
-      const result = await service.findAllAdmin();
+      const result = await service.findAllAdmin('test-tenant');
 
       expect(result).toEqual(products);
       expect(mockClient.product.findMany).toHaveBeenCalledWith(
@@ -390,7 +390,7 @@ describe('ProductsService', () => {
     it('debería retornar array vacío cuando no hay productos', async () => {
       mockClient.product.findMany.mockResolvedValue([]);
 
-      const result = await service.findAllAdmin();
+      const result = await service.findAllAdmin('test-tenant');
 
       expect(result).toEqual([]);
     });

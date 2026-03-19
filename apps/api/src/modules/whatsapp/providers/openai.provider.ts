@@ -113,10 +113,10 @@ export class OpenAiProvider implements AiProvider {
               const args = JSON.parse(toolCall.function.arguments);
               const { name, address } = args;
               
-              const customer = await (this.prisma.secure as any).waCustomer.upsert({
-                where: { tenantId_phone: { tenantId, phone: customerPhone } },
+              const customer = await this.prisma.secure.waCustomer.upsert({
+                where: { tenantId_phone: { tenantId, phone: customerPhone || '' } },
                 update: { name, address },
-                create: { tenantId, phone: customerPhone, name, address },
+                create: { tenantId, phone: customerPhone || '', name, address },
               });
               
               toolResponseText = JSON.stringify({ success: true, customerId: customer.id });
@@ -134,8 +134,8 @@ export class OpenAiProvider implements AiProvider {
           } else if (toolCall.function.name === 'getLatestOrderStatus') {
             this.logger.log(`[Tenant: ${tenantId}] OpenAI invocó la herramienta getLatestOrderStatus para ${customerPhone}`);
             
-            const order = await (this.prisma.secure as any).order.findFirst({
-              where: { customerPhone },
+            const order = await this.prisma.secure.order.findFirst({
+              where: { customerPhone: customerPhone || '' },
               orderBy: { createdAt: 'desc' },
               select: { status: true, totalAmount: true, updatedAt: true },
             });
@@ -217,8 +217,8 @@ export class OpenAiProvider implements AiProvider {
                    const cartId = `wa-${Date.now().toString(36)}-${Math.random().toString(36).substring(7)}`;
 
                    // Obtener perfil del cliente para hidratar el checkout
-                   const customer = await (this.prisma.secure as any).waCustomer.findUnique({
-                     where: { tenantId_phone: { tenantId, phone: customerPhone } }
+                   const customer = await this.prisma.secure.waCustomer.findUnique({
+                     where: { tenantId_phone: { tenantId, phone: customerPhone || '' } }
                    });
 
                    const cartPayload = {
@@ -242,12 +242,12 @@ export class OpenAiProvider implements AiProvider {
                    this.logger.log(`[CART_SAVE] TenantID: ${tenantId}`);
                    
                    try {
-                     await (this.prisma.secure as any).waCart.create({
+                     await this.prisma.secure.waCart.create({
                        data: {
                          id: cartId,
                          tenantId,
-                         customerPhone,
-                         cartData: cartPayload,
+                         customerPhone: customerPhone || '',
+                         cartData: cartPayload as any,
                          expiresAt
                        }
                      });
@@ -263,7 +263,7 @@ export class OpenAiProvider implements AiProvider {
                     detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
                    
                    // Generar recibo determinista consultando la DB (deliveryFee)
-                   const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+                   const storeSettings = await this.prisma.secure.storeSettings.findFirst({
                      where: { tenantId }
                    });
                    const deliveryFee = Number(storeSettings?.deliveryFee || 0);

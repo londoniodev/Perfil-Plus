@@ -74,14 +74,13 @@ export async function middleware(request: NextRequest) {
 
     const protectedPaths = [
         ...rewritesPaths,
-        '/login',
-        '/registro'
     ];
     const isProtected = protectedPaths.some(path => url.pathname === path || url.pathname.startsWith(`${path}/`));
 
-    // Bloquear acceso a rutas del SaaS si el tenant NO tiene el feature activo
+    // Bloquear acceso a rutas del SaaS Admin/Panel si el tenant NO tiene el feature activo
     // (Bypass para isBaseDomain, ideal para desarrollo local del dashboard core)
-    if (isProtected && !isBaseDomain && !tenantFeatures.includes('dashboard')) {
+    const hasDashboardFeature = tenantFeatures.some(f => f.toUpperCase() === 'DASHBOARD');
+    if (isProtected && !isBaseDomain && !hasDashboardFeature) {
         url.pathname = '/';
         return NextResponse.redirect(url);
     }

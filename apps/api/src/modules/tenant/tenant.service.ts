@@ -488,12 +488,20 @@ export class TenantService {
    * Fire-and-forget: No bloquea la respuesta al cliente.
    */
   private triggerStorefrontRevalidation(tenantId: string) {
-    const storefrontUrl =
-      process.env.STOREFRONT_URL || process.env.INTERNAL_FRONTEND_URL || 'http://127.0.0.1:3000';
+    const storefrontUrl = process.env.STOREFRONT_URL || process.env.INTERNAL_FRONTEND_URL;
     const revalidationSecret = process.env.REVALIDATION_SECRET;
 
     if (!revalidationSecret) {
-      this.logger.warn('[Cross-App Revalidation] REVALIDATION_SECRET no configurado. Revalidación cruzada abortada.');
+      this.logger.warn(
+        '[Cross-App Revalidation] REVALIDATION_SECRET no configurado. Revalidación abortada.',
+      );
+      return;
+    }
+
+    if (!storefrontUrl) {
+      this.logger.error(
+        '[Cross-App Revalidation] Error: Ni STOREFRONT_URL ni INTERNAL_FRONTEND_URL están definidos. No se pudo revalidar ISR.',
+      );
       return;
     }
 

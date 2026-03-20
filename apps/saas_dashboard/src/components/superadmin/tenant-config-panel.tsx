@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
     Button,
     Input,
@@ -19,8 +19,12 @@ import {
     Puzzle,
     Mail,
     Code,
-    Share2
+    Share2,
+    Save
 } from "lucide-react";
+import { AVAILABLE_FEATURES, TenantFeature } from "@alvarosky/types";
+import { getTenantFeaturesAction, updateTenantFeatures } from "@/actions/super-admin/update-tenant-features";
+import { toast } from "sonner";
 
 interface Props {
     tenantSlug: string;
@@ -29,13 +33,24 @@ interface Props {
 
 export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
     const [settings, setSettings] = useState<Record<string, unknown>>({});
+    const [features, setFeatures] = useState<TenantFeature[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isPendingFeatures, startTransition] = useTransition();
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     useEffect(() => {
-        fetchSettings();
+        Promise.all([fetchSettings(), fetchFeatures()]).finally(() => setLoading(false));
     }, [tenantSlug]);
+
+    const fetchFeatures = async () => {
+        const res = await getTenantFeaturesAction(tenantSlug);
+        if (res.success && res.data) {
+            setFeatures(res.data as TenantFeature[]);
+        } else {
+            console.error("Error fetching features:", res.error);
+        }
+    };
 
     const fetchSettings = async () => {
         try {
@@ -46,8 +61,6 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
             }
         } catch (err) {
             console.error("Error fetching settings:", err);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -78,6 +91,27 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
 
     const updateSetting = (key: string, value: unknown) => {
         setSettings((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleFeatureToggle = (featureValue: TenantFeature, checked: boolean) => {
+        setFeatures((prev) =>
+            checked ? [...prev, featureValue] : prev.filter((f) => f !== featureValue)
+        );
+    };
+
+    const handleSaveFeatures = () => {
+        startTransition(async () => {
+            const result = await updateTenantFeatures({
+                tenantSlug,
+                features,
+            });
+
+            if (result.success) {
+                toast.success("Features guardadas correctamente");
+            } else {
+                toast.error(result.error || "Error al guardar features");
+            }
+        });
     };
 
     if (loading) {
@@ -251,21 +285,36 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                         </TabsContent>
 
                         <TabsContent value="features" className="mt-0 space-y-4">
-                            <div className="max-w-2xl space-y-3">
-                                {[
-                                    { key: "enable_blog", label: "Blog", desc: "Sistema de artículos" },
-                                    { key: "enable_store", label: "Tienda", desc: "E-commerce" },
-                                    { key: "enable_lms", label: "LMS", desc: "Cursos y lecciones" },
-                                    { key: "enable_restaurant", label: "Restaurante", desc: "Sistema de pedidos para restaurantes" },
-                                ].map((feature) => (
-                                    <div key={feature.key} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-700/50">
-                                        <div>
-                                            <p className="text-sm font-medium text-white">{feature.label}</p>
-                                            <p className="text-xs text-slate-500">{feature.desc}</p>
+                            <div className="flex items-center justify-between p-4 mb-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                                <div>
+                                    <h4 className="font-medium text-indigo-400">Provisioning de Módulos</h4>
+                                    <p className="text-sm text-slate-400">Activa o desactiva funcionalidades completas para este tenant. Los cambios recargan la caché del Storefront automáticamente.</p>
+                                </div>
+                                <Button
+                                    onClick={handleSaveFeatures}
+                                    disabled={isPendingFeatures}
+                                    variant="outline"
+                                    className="border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/20 shrink-0"
+                                >
+                                    <Save className="w-4 h-4 mr-2" />
+                                    {isPendingFeatures ? "Guardando..." : "Guardar Features"}
+                                </Button>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                {AVAILABLE_FEATURES.map((feature) => (
+                                    <div key={feature.value} className="flex items-start justify-between p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:bg-slate-800/50 transition-colors">
+                                        <div className="pr-4">
+                                            <p className="text-sm font-semibold text-white">{feature.label}</p>
+                                            {feature.description && (
+                                                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{feature.description}</p>
+                                            )}
                                         </div>
                                         <Switch
-                                            checked={Boolean(settings[feature.key])}
-                                            onCheckedChange={(checked) => updateSetting(feature.key, checked)}
+                                            checked={features.includes(feature.value)}
+                                            onCheckedChange={(checked) => handleFeatureToggle(feature.value, checked)}
+                                            disabled={isPendingFeatures}
+                                            className="mt-1"
                                         />
                                     </div>
                                 ))}

@@ -2,6 +2,7 @@ import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { getTenantId } from "@/lib/config-server";
 import { getTenantDesign } from "@/lib/tenant-server";
+import { FEATURE_ROUTES } from "@alvarosky/types";
 import { headers } from "next/headers";
 import React from "react";
 
@@ -35,30 +36,35 @@ export default async function MarketingLayout({
         }
     }
 
-    // --- LÓGICA DE NAVEGACIÓN ---
-    let navLinks = headerLinksFromDb ? [...headerLinksFromDb] : [];
 
-    if (navLinks.length === 0) {
-        navLinks = [{ label: "Inicio", href: "/" }];
-        const upperFeatures = featureArray.map(f => f.toUpperCase());
-        if (upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) navLinks.push({ label: "Tienda", href: "/tienda" });
-        if (upperFeatures.includes("LMS")) navLinks.push({ label: "Cursos", href: "/formacion" });
-        if (upperFeatures.includes("BLOG")) navLinks.push({ label: "Blog", href: "/blog" });
-        if (upperFeatures.includes("RESTAURANT")) navLinks.push({ label: "Menú", href: "/menu" });
-    } else {
-        const upperFeatures = featureArray.map(f => f.toUpperCase());
-        const hasTiendaLink = navLinks.some(link => link.href === "/tienda");
-        
-        // 1. Filtrar el enlace "/menu" si NO tiene el feature RESTAURANT (Seguridad/Aislamiento)
-        if (!upperFeatures.includes("RESTAURANT")) {
-            navLinks = navLinks.filter(link => link.href !== "/menu" && !link.href.startsWith("/menu/"));
-        }
+    // --- LÓGICA DE NAVEGACIÓN UNIFICADA ---
+    const upperFeatures = new Set(featureArray.map(f => f.toUpperCase()));
 
-        // 2. Auto-inyectar el enlace de Tienda si tiene ECOMMERCE y omitió ponerlo
-        if ((upperFeatures.includes("ECOMMERCE") || upperFeatures.includes("ECOMERCE")) && !hasTiendaLink) {
-            navLinks.push({ label: "Tienda", href: "/tienda" });
+    // 1. Base: enlaces personalizados del tenant, o fallback con "Inicio"
+    let navLinks = headerLinksFromDb?.length
+        ? [...headerLinksFromDb]
+        : [{ label: "Inicio", href: "/" }];
+
+    // 2. Auto-inyectar enlaces de features activas que no existan aún (Merge declarativo)
+    for (const [feature, route] of Object.entries(FEATURE_ROUTES)) {
+        const isActive = upperFeatures.has(feature);
+        const alreadyExists = navLinks.some(link => link.href === route.href);
+
+        if (isActive && !alreadyExists) {
+            navLinks.push(route);
         }
     }
+
+    // 3. Seguridad: filtrar enlaces de features NO activas (ej. /menu sin RESTAURANT)
+    navLinks = navLinks.filter(link => {
+        const restrictedRoute = Object.entries(FEATURE_ROUTES).find(
+            ([, route]) => route.href === link.href
+        );
+        // Si el enlace no pertenece a ninguna feature restringida, se mantiene siempre
+        if (!restrictedRoute) return true;
+        // Si pertenece a una feature, solo se mantiene si la feature está activa
+        return upperFeatures.has(restrictedRoute[0]);
+    });
 
     const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
 

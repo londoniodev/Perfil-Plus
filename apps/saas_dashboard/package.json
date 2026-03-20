@@ -16,6 +16,7 @@
     "@alvarosky/features": "workspace:*",
     "@alvarosky/restaurant-sdk": "workspace:*",
     "@alvarosky/tailwind-config": "workspace:*",
+    "@alvarosky/types": "workspace:*",
     "@alvarosky/typescript-config": "workspace:*",
     "@alvarosky/ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",

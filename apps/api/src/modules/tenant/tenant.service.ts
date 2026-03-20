@@ -538,4 +538,54 @@ export class TenantService {
       },
     });
   }
+
+  /**
+   * Actualiza las features habilitadas de un tenant (Provisioning de módulos).
+   * - Actualiza Tenant.features[] en la DB.
+   * - Invalida la caché Redis del tenant para que el middleware refleje los cambios.
+   * - Dispara revalidación ISR del storefront.
+   */
+  async updateFeatures(tenantIdOrSlug: string, features: string[]) {
+    // 1. Verificar que el tenant existe buscando por ID o Slug
+    const tenant = await this.prisma.tenant.findFirst({
+      where: {
+        OR: [{ id: tenantIdOrSlug }, { slug: tenantIdOrSlug }],
+      },
+      select: { id: true, slug: true, domain: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant con identificador ${tenantIdOrSlug} no encontrado`);
+    }
+
+    // 2. Actualizar features en la DB usando el ID real
+    const updated = await this.prisma.tenant.update({
+      where: { id: tenant.id },
+      data: { features },
+      select: { id: true, slug: true, features: true },
+    });
+
+    this.logger.log(
+      `Features actualizadas para Tenant "${tenant.slug}" (${tenant.id}): [${features.join(', ')}]`,
+    );
+
+    // 3. Invalidar caché Redis (el middleware cachea la resolución del tenant)
+    const cacheKeys = [
+      `tenant_resolve_${tenant.slug}`,
+      ...(tenant.domain ? [`tenant_resolve_${tenant.domain}`] : []),
+    ];
+
+    for (const key of cacheKeys) {
+      await this.cacheManager.del(key);
+      this.logger.log(`Caché Redis invalidada: ${key}`);
+    }
+
+    // 4. Revalidación ISR del storefront
+    this.triggerFrontendRevalidation([
+      `tenant-branding-${tenant.id}`,
+      `tenant-branding`,
+    ]);
+
+    return updated;
+  }
 }

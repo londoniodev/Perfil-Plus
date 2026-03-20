@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   UseGuards,
@@ -18,6 +19,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@alvarosky/database';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateBrandSettingsDto } from './dto/update-brand-settings.dto';
+import { UpdateFeaturesDto } from './dto/update-features.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { SkipThrottle } from '@nestjs/throttler';
 
@@ -91,5 +93,16 @@ export class TenantController {
     @Body() dto: UpdateBrandSettingsDto,
   ) {
     return this.tenantService.updateBrandSettings(tenantId, dto);
+  }
+
+  // Provisioning: Actualizar los módulos/features habilitados de un tenant
+  @Patch(':id/features')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async updateFeatures(
+    @Param('id') tenantId: string,
+    @Body() dto: UpdateFeaturesDto,
+  ) {
+    return this.tenantService.updateFeatures(tenantId, dto.features);
   }
 }

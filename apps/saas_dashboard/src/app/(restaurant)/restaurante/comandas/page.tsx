@@ -198,20 +198,22 @@ export default function AdminOrdersPage() {
             className="h-[calc(100vh-2rem)]"
         >
             <Tabs defaultValue="NEW" value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-                <TabsList className="mb-4 flex w-full max-w-3xl overflow-x-auto no-scrollbar justify-start sm:justify-center rounded-xl p-1.5 h-auto bg-muted/50 border gap-1">
-                    <TabsTrigger value="NEW" className="flex gap-2 rounded-lg py-2.5 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground group transition-all duration-300 ease-in-out">
-                        Nuevos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5 group-data-[state=active]:bg-primary-foreground/20 group-data-[state=active]:text-primary-foreground group-data-[state=active]:hover:bg-primary-foreground/30">{getGroupedOrders(STATUS_GROUPS.NEW).length}</Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="COOKING" className="flex gap-2 rounded-lg py-2.5 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground group transition-all duration-300 ease-in-out">
-                        Cocina <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5 group-data-[state=active]:bg-primary-foreground/20 group-data-[state=active]:text-primary-foreground group-data-[state=active]:hover:bg-primary-foreground/30">{getGroupedOrders(STATUS_GROUPS.COOKING).length}</Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="READY" className="flex gap-2 rounded-lg py-2.5 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground group transition-all duration-300 ease-in-out">
-                        Listos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5 group-data-[state=active]:bg-primary-foreground/20 group-data-[state=active]:text-primary-foreground group-data-[state=active]:hover:bg-primary-foreground/30">{getGroupedOrders(STATUS_GROUPS.READY).length}</Badge>
-                    </TabsTrigger>
-                    <TabsTrigger value="COMPLETED" className="flex gap-2 rounded-lg py-2.5 data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground group transition-all duration-300 ease-in-out">
-                        Hechos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5 group-data-[state=active]:bg-primary-foreground/20 group-data-[state=active]:text-primary-foreground group-data-[state=active]:hover:bg-primary-foreground/30">{getGroupedOrders(STATUS_GROUPS.COMPLETED).length}</Badge>
-                    </TabsTrigger>
-                </TabsList>
+                <div className="flex justify-center mb-8">
+                    <TabsList>
+                        <TabsTrigger value="NEW" className="gap-2">
+                            Nuevos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5">{getGroupedOrders(STATUS_GROUPS.NEW).length}</Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="COOKING" className="gap-2">
+                            Cocina <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5">{getGroupedOrders(STATUS_GROUPS.COOKING).length}</Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="READY" className="gap-2">
+                            Listos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5">{getGroupedOrders(STATUS_GROUPS.READY).length}</Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="COMPLETED" className="gap-2">
+                            Hechos <Badge variant="secondary" className="hidden sm:inline-flex ml-1 px-1.5 min-w-5">{getGroupedOrders(STATUS_GROUPS.COMPLETED).length}</Badge>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <div className="flex-1 overflow-y-auto pb-20">
                     <TabsContent value="NEW" className="h-full m-0">

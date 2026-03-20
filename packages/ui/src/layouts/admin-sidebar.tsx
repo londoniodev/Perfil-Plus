@@ -114,7 +114,7 @@ export function AdminSidebar({
         .substring(0, 2) || "U";
 
     return (
-        <Sidebar collapsible="icon" className="border-r" {...props}>
+        <Sidebar collapsible="icon" className="border-r border-border/40" {...props}>
             {/* Header: Brand */}
             <SidebarHeader>
                 <SidebarMenu>
@@ -300,7 +300,7 @@ export function AdminSidebar({
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
                                                 onClick={onLogout}
-                                                className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                                                className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:bg-destructive focus:text-destructive-foreground cursor-pointer m-1 rounded-md transition-colors opacity-100"
                                             >
                                                 <LogOut className="size-4" />
                                                 <span>Cerrar Sesión</span>

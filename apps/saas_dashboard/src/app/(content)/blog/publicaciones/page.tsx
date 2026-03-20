@@ -4,7 +4,22 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, redirect } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { Pagination, AdminPageWrapper, BlogCard, Button, useToast, IconPlus, StatusFilter, StatusFilterType } from "@alvarosky/ui";
+import { 
+    Pagination, 
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    AdminPageWrapper, 
+    BlogCard, 
+    Button, 
+    useToast, 
+    IconPlus, 
+    StatusFilter, 
+    StatusFilterType 
+} from "@alvarosky/ui";
 import { Input } from "@alvarosky/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui";
 import Link from "next/link";
@@ -234,13 +249,61 @@ export default function AdminBlogPage() {
             )}
 
             {/* Pagination */}
-            <div className="mt-4">
-                <Pagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                />
-            </div>
+            {totalPages > 1 && (
+                <div className="mt-4">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious 
+                                    onClick={() => setPage(Math.max(1, page - 1))}
+                                    className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+                            
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                                if (
+                                    totalPages <= 7 || 
+                                    pageNumber === 1 || 
+                                    pageNumber === totalPages || 
+                                    (pageNumber >= page - 1 && pageNumber <= page + 1)
+                                ) {
+                                    return (
+                                        <PaginationItem key={pageNumber}>
+                                            <PaginationLink 
+                                                isActive={page === pageNumber}
+                                                onClick={() => setPage(pageNumber)}
+                                                className="cursor-pointer"
+                                            >
+                                                {pageNumber}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    );
+                                }
+                                
+                                if (
+                                    (pageNumber === 2 && page > 3) || 
+                                    (pageNumber === totalPages - 1 && page < totalPages - 2)
+                                ) {
+                                    return (
+                                        <PaginationItem key={pageNumber}>
+                                            <PaginationEllipsis />
+                                        </PaginationItem>
+                                    );
+                                }
+
+                                return null;
+                            })}
+
+                            <PaginationItem>
+                                <PaginationNext 
+                                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                                    className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
         </AdminPageWrapper>
     );
 }

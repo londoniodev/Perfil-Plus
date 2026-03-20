@@ -417,6 +417,18 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
 
                         </CardContent>
                     </Card>
+                    <div className="flex justify-end pt-4">
+                        <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[150px]">
+                            {form.formState.isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                "Guardar Cambios"
+                            )}
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

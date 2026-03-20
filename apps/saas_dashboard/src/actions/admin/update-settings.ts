@@ -6,68 +6,44 @@ import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { revalidateStorefront } from "@/lib/revalidate-storefront"
-import { settingsSchema, SettingsFormValues } from "@alvarosky/features"
+import { 
+    generalSettingsSchema, GeneralSettingsValues,
+    financeSettingsSchema, FinanceSettingsValues,
+    emailSettingsSchema, EmailSettingsValues,
+    apiSettingsSchema, ApiSettingsValues 
+} from "@alvarosky/features"
 
 interface UpdateSettingsResult {
     success: boolean
     error?: string
 }
 
+async function validateAdmin() {
+    const user = await getSessionUser()
+    if (!user) redirect("/login")
+    if (user.role !== "ADMIN") {
+        throw new Error("No tienes permisos para realizar esta acción")
+    }
+    return user
+}
+
 /**
- * Server Action: Actualizar configuración de la tienda delegándolo a NestJS
+ * 1. Actualizar Configuración General
  */
-export async function updateSettings(data: SettingsFormValues): Promise<UpdateSettingsResult> {
+export async function updateGeneralSettings(data: GeneralSettingsValues): Promise<UpdateSettingsResult> {
     try {
-        // 1. Verificar autenticación y permisos
-        const user = await getSessionUser()
-
-        if (!user) {
-            redirect("/login")
-        }
-
-        if (user.role !== "ADMIN") {
-            return {
-                success: false,
-                error: "No tienes permisos para realizar esta acción"
-            }
-        }
-
-        // 2. Validar datos
-        const validated = settingsSchema.parse(data)
-
-        // 3. Para no romper la lógica actual del form, obtenemos los settings primero desde la DB mediante la API
+        await validateAdmin()
+        const validated = generalSettingsSchema.parse(data)
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
-        // 4. Preparar nuevos objetos de configuración
         const newConfig = {
             ...currentConfig,
             storeName: validated.storeName ?? currentConfig.storeName,
             storeEmail: validated.storeEmail ?? currentConfig.storeEmail,
-            currency: validated.currency ?? currentConfig.currency,
             enableBlog: validated.enableBlog ?? currentConfig.enableBlog,
             enableStore: validated.enableStore ?? currentConfig.enableStore,
             enableLMS: validated.enableLMS ?? currentConfig.enableLMS,
             orderTrackingEnabled: validated.orderTrackingEnabled ?? currentConfig.orderTrackingEnabled,
-            api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
-            MERCADOPAGO_CONFIG: {
-                ...currentConfig.MERCADOPAGO_CONFIG,
-                publicKey: validated.mpPublicKey ?? currentConfig.MERCADOPAGO_CONFIG?.publicKey,
-                accessToken: validated.mpAccessToken ?? currentConfig.MERCADOPAGO_CONFIG?.accessToken,
-                webhookSecret: validated.mpWebhookSecret ?? currentConfig.MERCADOPAGO_CONFIG?.webhookSecret,
-                clientId: validated.mpClientId ?? currentConfig.MERCADOPAGO_CONFIG?.clientId,
-                clientSecret: validated.mpClientSecret ?? currentConfig.MERCADOPAGO_CONFIG?.clientSecret,
-            },
-            smtp: {
-                ...currentConfig.smtp,
-                host: validated.smtpHost ?? currentConfig.smtp?.host,
-                port: validated.smtpPort ?? currentConfig.smtp?.port,
-                secure: validated.smtpSecure ?? currentConfig.smtp?.secure,
-                auth: {
-                    ...currentConfig.smtp?.auth,
-                    user: validated.smtpUser ?? currentConfig.smtp?.auth?.user,
-                    pass: validated.smtpPass ?? currentConfig.smtp?.auth?.pass,
-                }
-            },
             contact: {
                 ...(currentConfig.contact || {}),
                 whatsapp: validated.whatsapp !== undefined ? validated.whatsapp : currentConfig.contact?.whatsapp,
@@ -80,39 +56,98 @@ export async function updateSettings(data: SettingsFormValues): Promise<UpdateSe
                 slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
                 logo: validated.menuLogo !== undefined ? validated.menuLogo : currentConfig.menu?.logo,
             },
-            deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
         }
 
-        // 5. Enviar el config unificado a NestJS para que procese el guardado en SystemSettings
-        await serverFetch('/settings/tenant-config', {
-            method: 'PATCH',
-            body: JSON.stringify(newConfig)
-        })
-
-        // 5.b Revalidar el storefront para aplicar el cambio en el Layout
-        await revalidateStorefront({ tag: "tenant-branding" });
-
-        // 6. Revalidar rutas
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidatePath("/admin/settings")
-        revalidatePath("/admin")
-        revalidatePath("/")
-
         return { success: true }
-
     } catch (error: any) {
-        console.error("Error updating settings:", error)
+        return { success: false, error: error.message || "Error al actualizar configuración general" }
+    }
+}
 
-        if (error instanceof z.ZodError) {
-            return {
-                success: false,
-                error: error.issues[0].message
-            }
+/**
+ * 2. Actualizar Configuración Financiera
+ */
+export async function updateFinanceSettings(data: FinanceSettingsValues): Promise<UpdateSettingsResult> {
+    try {
+        await validateAdmin()
+        const validated = financeSettingsSchema.parse(data)
+        const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
+
+        const newConfig = {
+            ...currentConfig,
+            currency: validated.currency ?? currentConfig.currency,
+            deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
+            MERCADOPAGO_CONFIG: {
+                ...currentConfig.MERCADOPAGO_CONFIG,
+                publicKey: validated.mpPublicKey ?? currentConfig.MERCADOPAGO_CONFIG?.publicKey,
+                accessToken: validated.mpAccessToken ?? currentConfig.MERCADOPAGO_CONFIG?.accessToken,
+                webhookSecret: validated.mpWebhookSecret ?? currentConfig.MERCADOPAGO_CONFIG?.webhookSecret,
+                clientId: validated.mpClientId ?? currentConfig.MERCADOPAGO_CONFIG?.clientId,
+                clientSecret: validated.mpClientSecret ?? currentConfig.MERCADOPAGO_CONFIG?.clientSecret,
+            },
         }
 
-        return {
-            success: false,
-            error: error.message || "Error desconocido"
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidatePath("/admin/settings")
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar configuración financiera" }
+    }
+}
+
+/**
+ * 3. Actualizar Configuración de Email
+ */
+export async function updateEmailSettings(data: EmailSettingsValues): Promise<UpdateSettingsResult> {
+    try {
+        await validateAdmin()
+        const validated = emailSettingsSchema.parse(data)
+        const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
+
+        const newConfig = {
+            ...currentConfig,
+            smtp: {
+                ...currentConfig.smtp,
+                host: validated.smtpHost ?? currentConfig.smtp?.host,
+                port: validated.smtpPort ?? currentConfig.smtp?.port,
+                secure: validated.smtpSecure ?? currentConfig.smtp?.secure,
+                auth: {
+                    ...currentConfig.smtp?.auth,
+                    user: validated.smtpUser ?? currentConfig.smtp?.auth?.user,
+                    pass: validated.smtpPass ?? currentConfig.smtp?.auth?.pass,
+                }
+            },
         }
+
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidatePath("/admin/settings")
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar configuración de email" }
+    }
+}
+
+/**
+ * 4. Actualizar Configuración de APIs
+ */
+export async function updateApiSettings(data: ApiSettingsValues): Promise<UpdateSettingsResult> {
+    try {
+        await validateAdmin()
+        const validated = apiSettingsSchema.parse(data)
+        const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
+
+        const newConfig = {
+            ...currentConfig,
+            api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
+        }
+
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidatePath("/admin/settings")
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar configuración de APIs" }
     }
 }
 

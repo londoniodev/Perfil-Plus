@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth-server"
 import { serverFetch } from "@/lib/api-server"
 import { AdminPageWrapper } from "@alvarosky/ui"
-import { SettingsForm } from "@/components/admin/settings/settings-form"
+import { SettingsLayout } from "@/components/admin/settings/settings-layout"
 
 export default async function SettingsPage() {
     // 1. Verificar autenticación y rol
@@ -25,7 +25,7 @@ export default async function SettingsPage() {
             title="Ajustes de Negocio"
             description="Gestiona la configuración general, apariencia, pagos y más."
         >
-            <SettingsForm initialData={settings ?? undefined} brandingData={branding ?? undefined} />
+            <SettingsLayout initialData={settings ?? undefined} brandingData={branding ?? undefined} />
         </AdminPageWrapper>
     )
 }

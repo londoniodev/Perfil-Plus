@@ -24,6 +24,7 @@ import type { Request } from 'express';
 
 import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
+import { OrderCreatedEvent, OrderStatusChangedEvent } from './events/order.events';
 
 @Injectable({ scope: Scope.REQUEST })
 export class OrdersService {
@@ -66,7 +67,7 @@ export class OrdersService {
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        return await this.prisma.$transaction(async (tx) => {
+        const createdOrder = await this.prisma.$transaction(async (tx) => {
           // 2. Generar número de orden
           const orderCount = await tx.order.count();
           const year = new Date().getFullYear();
@@ -123,44 +124,6 @@ export class OrdersService {
             },
           });
 
-          // 4. Lógica de Side Effects pendientes de mover a Listeners (Fase 3)
-          const analyticsData: any = { orderId: order.id, pendingAt: new Date() };
-          if (dto.status === 'PREPARING') {
-            analyticsData.preparingAt = new Date();
-            analyticsData.timeToPrepare = 0;
-          }
-          await tx.orderDeliveryAnalytics.create({ data: analyticsData });
-
-          if (dto.customerPhone && dto.customerPhone !== '0000000000') {
-            const existingLead = await tx.lead.findFirst({ where: { phone: dto.customerPhone } });
-            if (!existingLead) {
-              await tx.lead.create({
-                data: {
-                  tenantId, phone: dto.customerPhone, name: dto.customerName || null,
-                  email: null, source: 'Menu Checkout', status: 'new',
-                },
-              });
-            } else if (dto.customerName && !existingLead.name) {
-              await tx.lead.update({ where: { id: existingLead.id }, data: { name: dto.customerName } });
-            }
-          }
-
-          if (dto.customerPhone && (dto.orderType === 'DELIVERY' || dto.orderType === 'TAKE_AWAY')) {
-            const shipping = dto.shippingData as any;
-            await (tx as any).waCustomer.upsert({
-              where: { tenantId_phone: { tenantId, phone: dto.customerPhone } },
-              update: {
-                name: dto.customerName || undefined, address: shipping?.address || undefined,
-                lat: shipping?.lat ? parseFloat(shipping.lat) : undefined, lng: shipping?.lng ? parseFloat(shipping.lng) : undefined,
-              },
-              create: {
-                tenantId, phone: dto.customerPhone, name: dto.customerName || null,
-                address: shipping?.address || null, lat: shipping?.lat ? parseFloat(shipping.lat) : null,
-                lng: shipping?.lng ? parseFloat(shipping.lng) : null,
-              },
-            });
-          }
-
           // DEDUCT INVENTORY RAW INGREDIENTS
           const productItems = orderItemsData.map((item) => ({
             productId: item.productId,
@@ -174,21 +137,15 @@ export class OrdersService {
             }
           }
 
-          this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
-
-          // SSE & WhatsApp Emit (Fase 3 to remove)
-          this.ordersGateway.emit(tenantId, { type: 'new_order', orderId: order.id, data: order });
-
-          if (dto.customerPhone) {
-            this.eventEmitter.emit('order.created', {
-              tenantId, customerPhone: dto.customerPhone, orderNumber,
-              totalAmount: totalAmount.toNumber(), orderType: dto.orderType || 'DINE_IN',
-              paymentMethod: dto.paymentMethod || 'CASH',
-            });
-          }
-
           return order;
         });
+
+        this.logger.log(`Orden ${createdOrder.orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
+
+        // DISPATCH DOMAIN EVENT (Side Effects handled asíncronamente por los Listeners)
+        this.eventEmitter.emit('order.created', new OrderCreatedEvent(tenantId, createdOrder, dto));
+
+        return createdOrder;
       } catch (error) {
         lastError = error;
         this.logger.error(`[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`);

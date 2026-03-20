@@ -10,6 +10,7 @@ import { REQUEST } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
+import { OrderCreatedEvent } from './events/order.events';
 
 // ============ MOCK FACTORIES ============
 
@@ -279,16 +280,11 @@ describe('OrdersService', () => {
 
       expect(result).toEqual(MOCK_ORDER);
 
-      // Verifica que se emitió evento SSE
-      expect(mockGateway.emit).toHaveBeenCalledWith(
-        'tenant-test-1',
-        expect.objectContaining({
-          type: 'new_order',
-          orderId: MOCK_ORDER.id,
-          data: expect.objectContaining({
-            orderNumber: MOCK_ORDER.orderNumber,
-          }),
-        }),
+      // Verifica que se emitió evento de dominio OrderCreatedEvent
+      const eventEmitter = (service as any).eventEmitter;
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'order.created',
+        expect.any(OrderCreatedEvent),
       );
     });
 
@@ -1225,14 +1221,11 @@ describe('OrdersService', () => {
 
       await service.createOrder('user-1', dto);
 
-      // Obtener mock del gateway
-      const mockGateway = (service as any).ordersGateway;
-      expect(mockGateway.emit).toHaveBeenCalledWith(
-        'tenant-test-1',
-        expect.objectContaining({
-          type: 'new_order',
-          orderId: MOCK_ORDER.id,
-        }),
+      // Obtener mock del EventEmitter
+      const eventEmitter = (service as any).eventEmitter;
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'order.created',
+        expect.any(OrderCreatedEvent),
       );
     });
 

@@ -18,6 +18,8 @@ export interface OrderEvent {
   type: 'new_order' | 'status_changed' | 'payment_received' | 'driver_assigned';
   orderId: string;
   data: Record<string, any>;
+  oldStatus?: string;
+  newStatus?: string;
 }
 
 export interface SseMessage {

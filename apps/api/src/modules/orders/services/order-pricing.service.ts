@@ -30,7 +30,7 @@ export class OrderPricingService {
 
   async calculate(tenantId: string, items: CreateOrderItemDto[]): Promise<CalculatedOrderItems> {
     let totalAmount = new Decimal(0);
-    const orderItemsData = [];
+    const orderItemsData: any[] = [];
 
     for (const item of items) {
       const variant = await this.prisma.productVariant.findUnique({
@@ -51,7 +51,7 @@ export class OrderPricingService {
       }
 
       let itemPrice = variant.price;
-      const modifiersData = [];
+      const modifiersData: any[] = [];
 
       if (item.modifiers && item.modifiers.length > 0) {
         for (const mod of item.modifiers) {

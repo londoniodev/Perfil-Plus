@@ -22,6 +22,15 @@ import {
     TableHeader,
     TableRow,
 } from "../../table"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "../../pagination"
 import { Badge } from "../../badge"
 import { Button } from "../../button"
 import { Input } from "../../input"
@@ -289,13 +298,17 @@ export function ProductsTable({ data, onEdit, onDelete, onView, onToggleAvailabl
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-x-auto">
-                <Table className="min-w-[800px] w-full">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="hover:bg-transparent">
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="h-11 whitespace-nowrap">
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header, index) => (
+                                    <TableHead key={header.id} className={cn(
+                                        "h-11 whitespace-nowrap",
+                                        index === 0 && "pl-4",
+                                        index === headerGroup.headers.length - 1 && "pr-4"
+                                    )}>
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
@@ -313,10 +326,13 @@ export function ProductsTable({ data, onEdit, onDelete, onView, onToggleAvailabl
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    className="transition-colors"
                                 >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className="py-3">
+                                    {row.getVisibleCells().map((cell, index) => (
+                                        <TableCell key={cell.id} className={cn(
+                                            "py-3",
+                                            index === 0 && "pl-4",
+                                            index === row.getVisibleCells().length - 1 && "pr-4"
+                                        )}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()
@@ -339,34 +355,31 @@ export function ProductsTable({ data, onEdit, onDelete, onView, onToggleAvailabl
                 </Table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                    Página {table.getState().pagination.pageIndex + 1} de{" "}
-                    {table.getPageCount()}
+            {/* Pagination Controls */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-sm text-muted-foreground mt-4">
+                <div className="text-center lg:text-left w-full lg:w-auto px-1">
+                    Mostrando productos de la página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                        className="h-8 w-8 p-0"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                        <span className="sr-only">Anterior</span>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                        className="h-8 w-8 p-0"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                        <span className="sr-only">Siguiente</span>
-                    </Button>
-                </div>
+
+                <Pagination className="justify-end w-auto mx-0">
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                className="cursor-pointer"
+                                onClick={() => table.previousPage()}
+                                aria-disabled={!table.getCanPreviousPage()}
+                            />
+                        </PaginationItem>
+                        
+                        <PaginationItem>
+                            <PaginationNext 
+                                className="cursor-pointer"
+                                onClick={() => table.nextPage()}
+                                aria-disabled={!table.getCanNextPage()}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     )

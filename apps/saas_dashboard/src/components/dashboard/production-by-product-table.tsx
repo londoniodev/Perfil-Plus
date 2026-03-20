@@ -14,6 +14,7 @@ import {
     TableRow,
 } from "@alvarosky/ui"
 import { ChefHat } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export interface ProductionByProductData {
     productName: string
@@ -44,21 +45,21 @@ export function ProductionByProductTable({ data }: ProductionByProductTableProps
                         Ningún dato de producción para mostrar aún.
                     </div>
                 ) : (
-                    <div className="rounded-md border bg-card/40">
-                        <Table>
+                    <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                        <Table className="w-full">
                             <TableHeader>
                                 <TableRow className="hover:bg-transparent">
-                                    <TableHead className="w-[60%]">Producto</TableHead>
-                                    <TableHead className="text-right whitespace-nowrap">Promedio</TableHead>
+                                    <TableHead className="w-[60%] pl-4">Producto</TableHead>
+                                    <TableHead className="text-right whitespace-nowrap pr-4">Promedio</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {data.map((item, index) => (
                                     <TableRow key={`${item.productName}-${index}`}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium pl-4">
                                             {item.productName}
                                         </TableCell>
-                                        <TableCell className="text-right tabular-nums text-muted-foreground">
+                                        <TableCell className="text-right tabular-nums text-muted-foreground pr-4">
                                             {item.avgMinutes} min
                                         </TableCell>
                                     </TableRow>

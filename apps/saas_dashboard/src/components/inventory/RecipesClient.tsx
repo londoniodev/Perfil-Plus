@@ -13,6 +13,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@alvarosky/ui"
 import { Card } from "@alvarosky/ui"
+import { cn } from "@/lib/utils"
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@alvarosky/ui"
@@ -181,11 +182,11 @@ export function RecipesClient({
                 </Button>
             </div>
 
-            <Card className="rounded-xl shadow-sm border-border/50 overflow-x-auto bg-card/60 backdrop-blur-xl">
-                <Table className="min-w-[800px]">
-                    <TableHeader className="bg-muted/50">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
+                    <TableHeader>
                         <TableRow>
-                            <TableHead>Producto</TableHead>
+                            <TableHead className="pl-4">Producto</TableHead>
                             <TableHead className="text-center">Porciones</TableHead>
                             <TableHead className="text-right">Costo Total</TableHead>
                             <TableHead className="text-right">Costo / Porción</TableHead>
@@ -193,7 +194,7 @@ export function RecipesClient({
                             <TableHead className="text-right">Utilidad Bruta</TableHead>
                             <TableHead className="text-right">Margen</TableHead>
                             <TableHead className="text-center">Estado</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -225,7 +226,7 @@ export function RecipesClient({
 
                                 return (
                                     <TableRow key={recipe.id} className="transition-colors hover:bg-muted/30">
-                                        <TableCell className="font-medium whitespace-nowrap">{recipe.product.name}</TableCell>
+                                        <TableCell className="font-medium whitespace-nowrap pl-4">{recipe.product.name}</TableCell>
                                         <TableCell className="text-center">{recipe.yield}</TableCell>
                                         <TableCell className="text-right font-mono text-muted-foreground">
                                             ${totalCost.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
@@ -248,7 +249,7 @@ export function RecipesClient({
                                         <TableCell className="text-center">
                                             {marginBadge}
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right pr-4">
                                             <div className="flex justify-end gap-1">
                                                 <Button
                                                     size="icon"
@@ -276,7 +277,7 @@ export function RecipesClient({
                         )}
                     </TableBody>
                 </Table>
-            </Card>
+            </div>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">

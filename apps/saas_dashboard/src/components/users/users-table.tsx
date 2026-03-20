@@ -41,6 +41,13 @@ import {
     Tabs,
     TabsList,
     TabsTrigger,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
 } from "@alvarosky/ui";
 import {
     Search,
@@ -51,9 +58,8 @@ import {
     Crown,
     ChevronLeft,
     ChevronRight,
-    ChevronsLeft,
-    ChevronsRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ============================================================================
 // TYPES
@@ -394,13 +400,16 @@ export function UsersTable({
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border bg-card overflow-x-auto">
-                <Table className="min-w-[800px] w-full">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
+                            <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id} className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                                    <TableHead key={header.id} className={cn(
+                                        "text-xs font-medium text-muted-foreground whitespace-nowrap",
+                                        header.id === headerGroup.headers[0].id && "pl-4"
+                                    )}>
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(header.column.columnDef.header, header.getContext())}
@@ -417,8 +426,8 @@ export function UsersTable({
                                     data-state={row.getIsSelected() && "selected"}
                                     className="group"
                                 >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                    {row.getVisibleCells().map((cell, index) => (
+                                        <TableCell key={cell.id} className={cn(index === 0 && "pl-4")}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
@@ -436,14 +445,14 @@ export function UsersTable({
             </div>
 
             {/* Footer: Selection Info + Pagination */}
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-sm text-muted-foreground mt-4">
                 <div className="text-center lg:text-left w-full lg:w-auto">
                     {table.getFilteredSelectedRowModel().rows.length} de{" "}
                     {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto overflow-x-auto pb-2 sm:pb-0">
-                    <div className="flex items-center gap-2 whitespace-nowrap">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
                         <span className="text-xs">Filas por página</span>
                         <Select
                             value={table.getState().pagination.pageSize.toString()}
@@ -462,48 +471,32 @@ export function UsersTable({
                         </Select>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs whitespace-nowrap">
-                        Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
-                    </div>
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious 
+                                    className="cursor-pointer"
+                                    onClick={() => table.previousPage()}
+                                    aria-disabled={!table.getCanPreviousPage()}
+                                />
+                            </PaginationItem>
+                            
+                            {/* Logic for simple pagination numbers could go here, but for now we follow the user's manual style or just next/prev */}
+                            <PaginationItem>
+                                <span className="text-xs font-medium px-2">
+                                    Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+                                </span>
+                            </PaginationItem>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.setPageIndex(0)}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <ChevronsRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                            <PaginationItem>
+                                <PaginationNext 
+                                    className="cursor-pointer"
+                                    onClick={() => table.nextPage()}
+                                    aria-disabled={!table.getCanNextPage()}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </div>

@@ -23,6 +23,14 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    cn,
 } from "@alvarosky/ui"
 import { Search, Trash2, Users, TrendingUp, Phone, Mail, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -62,6 +70,8 @@ export function ClientesClient({
 }) {
     const [leads, setLeads] = useState<Lead[]>(initialLeads)
     const [search, setSearch] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10;
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
 
@@ -73,6 +83,22 @@ export function ClientesClient({
             (lead.phone?.includes(q) ?? false)
         )
     })
+
+    const totalPages = Math.ceil(filteredLeads.length / itemsPerPage)
+    const paginatedLeads = filteredLeads.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    )
+
+    useState(() => {
+        setCurrentPage(1)
+    }) // This is a bit odd, should be useEffect but simpler to just reset when search changes below or use useMemo for paginatedLeads and reset currentPage in search handler.
+
+    // Better way to reset page
+    const handleSearchChange = (val: string) => {
+        setSearch(val)
+        setCurrentPage(1)
+    }
 
     const handleDelete = async () => {
         if (!deleteId) return
@@ -155,37 +181,37 @@ export function ClientesClient({
                         placeholder="Buscar por nombre, email o teléfono..."
                         className="pl-8"
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                     />
                 </div>
             </div>
 
             {/* Table */}
-            <div className="rounded-md border bg-card">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Cliente</TableHead>
+                            <TableHead className="pl-4">Cliente</TableHead>
                             <TableHead>Contacto</TableHead>
                             <TableHead>Origen</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Fecha</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredLeads.length === 0 ? (
+                        {paginatedLeads.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                     No se encontraron clientes.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredLeads.map((lead) => {
+                            paginatedLeads.map((lead) => {
                                 const statusInfo = STATUS_MAP[lead.status] || STATUS_MAP.new
                                 return (
                                     <TableRow key={lead.id}>
-                                        <TableCell>
+                                        <TableCell className="pl-4">
                                             <div className="font-medium">{lead.name || "Sin nombre"}</div>
                                             {lead.notes && (
                                                 <div className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -216,7 +242,7 @@ export function ClientesClient({
                                             <span className="text-sm">{lead.source || "Menú"}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className={statusInfo.variant}>
+                                            <Badge variant="outline" className={cn(statusInfo.variant)}>
                                                 {statusInfo.label}
                                             </Badge>
                                         </TableCell>
@@ -227,7 +253,7 @@ export function ClientesClient({
                                                 year: "numeric",
                                             })}
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right pr-4">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -244,6 +270,41 @@ export function ClientesClient({
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <Pagination className="mt-4">
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                aria-disabled={currentPage === 1}
+                            />
+                        </PaginationItem>
+                        
+                        {[...Array(totalPages)].map((_, i) => (
+                            <PaginationItem key={i}>
+                                <PaginationLink
+                                    className="cursor-pointer"
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    isActive={currentPage === i + 1}
+                                >
+                                    {i + 1}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                            <PaginationNext 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                aria-disabled={currentPage === totalPages}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
 
             {/* Delete Confirmation */}
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>

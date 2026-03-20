@@ -9,7 +9,9 @@ import {
     TableHeader,
     TableRow,
 } from "@alvarosky/ui"
-import { Badge, Card } from "@alvarosky/ui"
+import { Badge } from "@alvarosky/ui"
+import { Card } from "@alvarosky/ui"
+import { cn } from "@/lib/utils"
 import { Button } from "@alvarosky/ui"
 import {
     Dialog,
@@ -245,18 +247,18 @@ export function InventoryClient({
             </div>
 
             {/* Ingredients table */}
-            <Card className="rounded-xl shadow-sm border-border/50 overflow-hidden bg-card/60 backdrop-blur-xl">
-                <Table>
-                    <TableHeader className="bg-muted/50">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
+                    <TableHeader>
                         <TableRow>
-                            <TableHead>Ingrediente</TableHead>
+                            <TableHead className="pl-4">Ingrediente</TableHead>
                             <TableHead>Unidad</TableHead>
                             <TableHead className="text-right">Stock Total</TableHead>
                             <TableHead className="text-right">Costo Prom.</TableHead>
                             <TableHead className="text-right">Último Costo</TableHead>
                             <TableHead className="text-right">Mín. Stock</TableHead>
                             <TableHead className="text-center">Estado</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -275,8 +277,11 @@ export function InventoryClient({
                                 const isLow = alertItemIds.has(item.id)
 
                                 return (
-                                    <TableRow key={item.id} className={`transition-colors hover:bg-muted/30 ${isLow ? "bg-orange-500/5 hover:bg-orange-500/10" : ""}`}>
-                                        <TableCell className="font-medium">
+                                    <TableRow key={item.id} className={cn(
+                                        "transition-colors hover:bg-muted/30",
+                                        isLow && "bg-orange-500/5 hover:bg-orange-500/10"
+                                    )}>
+                                        <TableCell className="font-medium pl-4">
                                             <div className="flex items-center gap-2">
                                                 {isLow && (
                                                     <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" aria-label="Stock bajo" />
@@ -307,7 +312,7 @@ export function InventoryClient({
                                                 {item.isActive ? "Activo" : "Inactivo"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right pr-4">
                                             <div className="flex justify-end gap-1">
                                                 <Button
                                                     size="icon"
@@ -335,7 +340,7 @@ export function InventoryClient({
                         )}
                     </TableBody>
                 </Table>
-            </Card>
+            </div>
 
             {/* Stock Movement Dialog */}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

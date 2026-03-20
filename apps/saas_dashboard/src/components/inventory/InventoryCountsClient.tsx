@@ -16,6 +16,7 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@alvarosky/ui"
 import { Plus, ClipboardCheck, Eye, AlertTriangle } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import type { InventoryCount, Warehouse } from "@/actions/admin/inventory"
 import {
@@ -148,16 +149,16 @@ export function InventoryCountsClient({
             </div>
 
             {/* Counts list */}
-            <div className="rounded-lg border">
-                <Table>
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Fecha</TableHead>
+                            <TableHead className="pl-4">Fecha</TableHead>
                             <TableHead>Almacén</TableHead>
                             <TableHead className="text-center">Estado</TableHead>
                             <TableHead className="text-center">Líneas</TableHead>
                             <TableHead>Notas</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -170,7 +171,7 @@ export function InventoryCountsClient({
                         ) : (
                             counts.map((count) => (
                                 <TableRow key={count.id}>
-                                    <TableCell className="font-mono text-sm">
+                                    <TableCell className="font-mono text-sm pl-4">
                                         {new Date(count.createdAt).toLocaleDateString("es-CO", {
                                             year: "numeric",
                                             month: "short",
@@ -191,7 +192,7 @@ export function InventoryCountsClient({
                                     <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                                         {count.notes || "—"}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right pr-4">
                                         {count.status === "DRAFT" ? (
                                             <Button
                                                 size="sm"

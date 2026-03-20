@@ -148,14 +148,14 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                 </Button>
             </div>
 
-            <div className="border rounded-md overflow-hidden">
-                <Table>
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
                     <TableHeader>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
-                            <TableHead className="w-[40%]">Nombre</TableHead>
+                            <TableHead className="w-[40%] pl-4">Nombre</TableHead>
                             <TableHead className="w-[20%]">Precio</TableHead>
                             <TableHead className="w-[20%]">Stock</TableHead>
-                            <TableHead className="w-[10%] text-right"></TableHead>
+                            <TableHead className="w-[10%] text-right pr-4"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -168,7 +168,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                         )}
                         {fields.map((field, k) => (
                             <TableRow key={field.id} className="group">
-                                <TableCell className="p-2">
+                                <TableCell className="p-2 pl-4">
                                     <FormField
                                         control={control}
                                         name={`modifierGroups.${nestIndex}.modifiers.${k}.name`}
@@ -208,7 +208,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                                         )}
                                     />
                                 </TableCell>
-                                <TableCell className="p-2 text-right">
+                                <TableCell className="p-2 text-right pr-4">
                                     <Button
                                         type="button"
                                         variant="ghost"

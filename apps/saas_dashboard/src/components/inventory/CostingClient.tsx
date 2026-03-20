@@ -5,6 +5,7 @@ import {
 } from "@alvarosky/ui"
 import { Badge } from "@alvarosky/ui"
 import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { CostingData } from "@/actions/admin/inventory"
 
 function getMarginColor(margin: number) {
@@ -54,17 +55,17 @@ export function CostingClient({ data }: { data: CostingData[] }) {
             </div>
 
             {/* Costing table */}
-            <Card className="rounded-xl shadow-sm border-border/50 overflow-hidden bg-card/60 backdrop-blur-xl">
-                <Table>
-                    <TableHeader className="bg-muted/50">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
+                    <TableHeader>
                         <TableRow>
-                            <TableHead>Producto</TableHead>
+                            <TableHead className="pl-4">Producto</TableHead>
                             <TableHead className="text-right">Precio Venta</TableHead>
                             <TableHead className="text-right">Costo Producción</TableHead>
                             <TableHead className="text-right">Ganancia</TableHead>
                             <TableHead className="text-right">Margen</TableHead>
                             <TableHead className="text-center">Porciones</TableHead>
-                            <TableHead className="text-center">Estado</TableHead>
+                            <TableHead className="text-center pr-4">Estado</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -80,7 +81,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
 
                                 return (
                                     <TableRow key={item.productId} className="transition-colors hover:bg-muted/30">
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium pl-4">
                                             <div className="flex items-center gap-2">
                                                 {getMarginIcon(item.margin)}
                                                 {item.productName}
@@ -101,7 +102,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
                                         <TableCell className="text-center font-mono">
                                             {item.recipeYield}
                                         </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell className="text-center pr-4">
                                             {getMarginBadge(item.margin)}
                                         </TableCell>
                                     </TableRow>
@@ -110,7 +111,7 @@ export function CostingClient({ data }: { data: CostingData[] }) {
                         )}
                     </TableBody>
                 </Table>
-            </Card>
+            </div>
         </section>
     )
 }

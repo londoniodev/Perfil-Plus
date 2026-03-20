@@ -35,7 +35,15 @@ import {
     AlertDialogTitle,
     Avatar,
     AvatarFallback,
-    AvatarImage
+    AvatarImage,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    cn,
 } from "@alvarosky/ui";
 import { toast } from "sonner";
 import { TENANT_ID, API_BASE } from "@/lib/config";
@@ -60,6 +68,8 @@ export function EmployeesClient() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // Dialog states
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -212,6 +222,16 @@ export function EmployeesClient() {
         emp.email.toLowerCase().includes(search.toLowerCase())
     );
 
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+    const paginatedEmployees = filteredEmployees.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
+
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -232,15 +252,15 @@ export function EmployeesClient() {
                 </Button>
             </div>
 
-            <div className="rounded-md border bg-card">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Empleado</TableHead>
+                            <TableHead className="pl-4">Empleado</TableHead>
                             <TableHead>Rol</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Fecha Registro</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -250,28 +270,30 @@ export function EmployeesClient() {
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
-                        ) : filteredEmployees.length === 0 ? (
+                        ) : paginatedEmployees.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                                     No se encontraron empleados.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredEmployees.map((employee) => (
+                            paginatedEmployees.map((employee) => (
                                 <TableRow key={employee.id}>
-                                    <TableCell className="flex items-center gap-3">
-                                        <Avatar className="h-9 w-9">
-                                            <AvatarImage src={employee.avatar} />
-                                            <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="font-medium">{employee.name}</div>
+                                    <TableCell className="pl-4">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarImage src={employee.avatar} />
+                                                <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="font-medium">{employee.name}</div>
+                                        </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className={
+                                        <Badge variant="outline" className={cn(
                                             employee.role === "WAITER" ? "bg-blue-50 text-blue-700 border-blue-200" :
                                                 employee.role === "KITCHEN" ? "bg-orange-50 text-orange-700 border-orange-200" :
                                                     "bg-green-50 text-green-700 border-green-200"
-                                        }>
+                                        )}>
                                             {ROLES.find(r => r.value === employee.role)?.label || employee.role}
                                         </Badge>
                                     </TableCell>
@@ -279,7 +301,7 @@ export function EmployeesClient() {
                                     <TableCell>
                                         {new Date(employee.createdAt).toLocaleDateString()}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right pr-4">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" onClick={() => openEdit(employee)}>
                                                 <Pencil className="h-4 w-4" />
@@ -295,6 +317,41 @@ export function EmployeesClient() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <Pagination className="mt-4">
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                aria-disabled={currentPage === 1}
+                            />
+                        </PaginationItem>
+                        
+                        {[...Array(totalPages)].map((_, i) => (
+                            <PaginationItem key={i}>
+                                <PaginationLink
+                                    className="cursor-pointer"
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    isActive={currentPage === i + 1}
+                                >
+                                    {i + 1}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                            <PaginationNext 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                aria-disabled={currentPage === totalPages}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            )}
 
             {/* CREATE DIALOG */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

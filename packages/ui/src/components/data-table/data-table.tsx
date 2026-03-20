@@ -16,15 +16,9 @@ import {
     TableOptions,
 } from "@tanstack/react-table"
 
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "../../table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../table"
 import { Input } from "../../input"
+import { cn } from "../../lib/utils"
 import { DataTablePagination } from "./data-table-pagination"
 
 // ============================================================================
@@ -134,15 +128,19 @@ export function DataTable<TData, TValue>({
             {toolbar && <div className="flex items-center justify-between">{toolbar}</div>}
 
             {/* Table */}
-            <div className="rounded-lg border border-border/40 bg-card/60 backdrop-blur-xl shadow-sm transition-all duration-300 overflow-x-auto">
-                <Table className="w-full min-w-[800px]">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+                <Table className="w-full">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="bg-muted/30 hover:bg-muted/30">
-                                {headerGroup.headers.map((header) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header, index) => (
                                     <TableHead
                                         key={header.id}
-                                        className="text-xs font-medium text-muted-foreground whitespace-nowrap"
+                                        className={cn(
+                                            "h-11 whitespace-nowrap",
+                                            index === 0 && "pl-4",
+                                            index === headerGroup.headers.length - 1 && "pr-4"
+                                        )}
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -172,10 +170,12 @@ export function DataTable<TData, TValue>({
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    className="group"
                                 >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                    {row.getVisibleCells().map((cell, index) => (
+                                        <TableCell key={cell.id} className={cn(
+                                            index === 0 && "pl-4",
+                                            index === row.getVisibleCells().length - 1 && "pr-4"
+                                        )}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

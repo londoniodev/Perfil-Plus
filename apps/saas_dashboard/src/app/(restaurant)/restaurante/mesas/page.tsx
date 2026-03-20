@@ -32,7 +32,8 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
+    cn
 } from "@alvarosky/ui"
 import { Plus, MoreHorizontal, Download, Edit, Trash2, Search } from "lucide-react"
 import { getTables, upsertTable, deleteTable } from "@/actions/admin/tables"
@@ -265,40 +266,40 @@ export default function TablesPage() {
                     />
                 </div>
 
-                <div className="rounded-md border bg-white dark:bg-black/20">
+                <div className="w-full overflow-hidden rounded-md border">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[300px]">Nombre del QR</TableHead>
+                                <TableHead className="w-[300px] pl-4">Nombre del QR</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead>Puestos</TableHead>
-                                <TableHead className="text-right"></TableHead>
+                                <TableHead className="text-right pr-4">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {/* FIXED ROW: General */}
                             <TableRow className="bg-muted/30 hover:bg-muted/50">
-                                <TableCell>
+                                <TableCell className="pl-4">
                                     <span className="font-bold text-primary">General</span>
                                 </TableCell>
                                 <TableCell>
                                     <Badge variant="default" className="bg-blue-600 hover:bg-blue-700">General</Badge>
                                 </TableCell>
                                 <TableCell className="text-muted-foreground">-</TableCell>
-                                <TableCell className="text-right flex justify-end gap-2">
-
-                                    <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(generalMenuUrl, "General")}>
-                                        Descargar QR
-                                    </Button>
-                                    {/* Placeholder to match the Trash button space in other rows */}
-                                    <div className="w-9 h-9" aria-hidden="true"></div>
+                                <TableCell className="text-right pr-4">
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(generalMenuUrl, "General")}>
+                                            Descargar QR
+                                        </Button>
+                                        <div className="w-9 h-9" aria-hidden="true"></div>
+                                    </div>
                                 </TableCell>
                             </TableRow>
 
                             {/* Dynamic Rows */}
                             {filteredTables.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="h-24 text-center">
+                                    <TableCell colSpan={4} className="h-24 text-center">
                                         No se encontraron mesas que coincidan con la búsqueda.
                                     </TableCell>
                                 </TableRow>
@@ -307,26 +308,27 @@ export default function TablesPage() {
                                     const tableUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/menu?table=${table.id}`
                                     return (
                                         <TableRow key={table.id}>
-                                            <TableCell className="font-medium">{table.label}</TableCell>
+                                            <TableCell className="font-medium pl-4">{table.label}</TableCell>
                                             <TableCell>
                                                 <Badge variant={table.status === 'ACTIVE' ? 'default' : 'secondary'} className={table.status === 'ACTIVE' ? "bg-green-600 hover:bg-green-700" : ""}>
                                                     {table.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>{table.capacity} pax</TableCell>
-                                            <TableCell className="text-right flex justify-end gap-2 items-center">
-
-                                                <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(tableUrl, table.label)}>
-                                                    Descargar QR
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                    onClick={() => handleDelete(table.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                            <TableCell className="text-right pr-4">
+                                                <div className="flex justify-end gap-2 items-center">
+                                                    <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(tableUrl, table.label)}>
+                                                        Descargar QR
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                        onClick={() => handleDelete(table.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     )

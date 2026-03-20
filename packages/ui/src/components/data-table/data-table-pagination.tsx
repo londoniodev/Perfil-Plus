@@ -16,6 +16,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../../select"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "../../pagination"
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>
@@ -61,44 +68,46 @@ export function DataTablePagination<TData>({
                     Página {table.getState().pagination.pageIndex + 1} de{" "}
                     {table.getPageCount()}
                 </div>
-                <div className="flex items-center gap-1">
-                    <Button
-                        variant="outline"
-                        className="hidden h-8 w-8 p-0 lg:flex"
-                        onClick={() => table.setPageIndex(0)}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <span className="sr-only">Ir a primera página</span>
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <span className="sr-only">Ir a página anterior</span>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <span className="sr-only">Ir a página siguiente</span>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="hidden h-8 w-8 p-0 lg:flex"
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <span className="sr-only">Ir a última página</span>
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                </div>
+                <Pagination className="justify-end w-auto mx-0">
+                    <PaginationContent>
+                        <PaginationItem className="hidden lg:block">
+                            <Button
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                onClick={() => table.setPageIndex(0)}
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <span className="sr-only">Ir a primera página</span>
+                                <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                className="cursor-pointer"
+                                onClick={() => table.previousPage()}
+                                aria-disabled={!table.getCanPreviousPage()}
+                            />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationNext 
+                                className="cursor-pointer"
+                                onClick={() => table.nextPage()}
+                                aria-disabled={!table.getCanNextPage()}
+                            />
+                        </PaginationItem>
+                        <PaginationItem className="hidden lg:block">
+                            <Button
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <span className="sr-only">Ir a última página</span>
+                                <ChevronsRight className="h-4 w-4" />
+                            </Button>
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     )

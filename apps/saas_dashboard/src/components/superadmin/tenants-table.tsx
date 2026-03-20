@@ -29,6 +29,14 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    cn,
 } from "@alvarosky/ui"
 import { MoreHorizontal, Search, Trash, Eye, Settings, Database } from "lucide-react"
 import { toast } from "sonner"
@@ -143,15 +151,15 @@ export function TenantsTable({ data }: TenantsTableProps) {
             </div>
 
             {/* Table */}
-            <div className="rounded-md border bg-card/50 backdrop-blur-sm">
+            <div className="w-full overflow-hidden rounded-md border bg-card/40">
                 <Table>
                     <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b-border/50">
-                            <TableHead className="w-[250px]">Tenant</TableHead>
+                        <TableRow>
+                            <TableHead className="w-[250px] pl-4">Tenant</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Base de Datos</TableHead>
                             <TableHead>Creado</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="text-right pr-4">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -163,8 +171,8 @@ export function TenantsTable({ data }: TenantsTableProps) {
                             </TableRow>
                         ) : (
                             paginatedData.map((tenant) => (
-                                <TableRow key={tenant.id} className="hover:bg-muted/50 border-b-border/50">
-                                    <TableCell>
+                                <TableRow key={tenant.id}>
+                                    <TableCell className="pl-4">
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-9 w-9 border border-border/50">
                                                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
@@ -178,7 +186,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className={getStatusColor(tenant.status)}>
+                                        <Badge variant="outline" className={cn(getStatusColor(tenant.status))}>
                                             {tenant.status}
                                         </Badge>
                                     </TableCell>
@@ -191,7 +199,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                     <TableCell className="text-muted-foreground text-sm">
                                         {new Date(tenant.createdAt).toLocaleDateString()}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-right pr-4">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -229,27 +237,37 @@ export function TenantsTable({ data }: TenantsTableProps) {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-end space-x-2 py-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                    >
-                        Anterior
-                    </Button>
-                    <div className="text-sm text-muted-foreground">
-                        Página {currentPage} de {totalPages}
-                    </div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                    >
-                        Siguiente
-                    </Button>
-                </div>
+                <Pagination className="mt-4">
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                aria-disabled={currentPage === 1}
+                            />
+                        </PaginationItem>
+                        
+                        {[...Array(totalPages)].map((_, i) => (
+                            <PaginationItem key={i}>
+                                <PaginationLink
+                                    className="cursor-pointer"
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    isActive={currentPage === i + 1}
+                                >
+                                    {i + 1}
+                                </PaginationLink>
+                            </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                            <PaginationNext 
+                                className="cursor-pointer"
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                aria-disabled={currentPage === totalPages}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             )}
 
             <AlertDialog open={!!tenantToDelete} onOpenChange={(open) => !open && setTenantToDelete(null)}>

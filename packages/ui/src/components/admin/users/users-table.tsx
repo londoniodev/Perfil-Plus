@@ -66,7 +66,7 @@ export function UsersTable({
 
     return (
         <>
-            <div className="rounded-lg border bg-card overflow-hidden">
+            <div className="rounded-lg border border-border/40 bg-card overflow-hidden">
                 <Table>
                     <TableHeader>
                         <TableRow className="hover:bg-transparent">
@@ -230,8 +230,8 @@ function RoleSelector({ role, disabled, onChange }: RoleSelectorProps) {
             className={`
                 px-2 py-1 rounded text-xs font-medium border transition-colors
                 ${isAdmin
-                    ? "bg-primary/20 text-primary border-primary/30"
-                    : "bg-info/20 text-info border-info/30"
+                    ? "bg-primary/20 text-primary border-primary/20"
+                    : "bg-info/20 text-info border-info/20"
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
             `}

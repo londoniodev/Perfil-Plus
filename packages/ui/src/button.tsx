@@ -28,7 +28,7 @@ const buttonVariants = cva(
                 // Secondary: Clean border, transparent/dark background
                 secondary: [
                     "bg-secondary/50 text-foreground",
-                    "border border-border backdrop-blur-sm",
+                    "border border-border/40 backdrop-blur-sm",
                     "hover:bg-secondary/80 hover:border-foreground/20",
                     "active:scale-[0.98]",
                 ],
@@ -47,7 +47,7 @@ const buttonVariants = cva(
                 // Outline: Clean border
                 outline: [
                     "bg-transparent text-foreground",
-                    "border border-input",
+                    "border border-border/40",
                     "hover:bg-white/5 hover:border-foreground/30",
                     "active:scale-[0.98]",
                 ],
@@ -64,7 +64,7 @@ const buttonVariants = cva(
                 pagination: [
                     "px-4 py-2 text-sm",
                     "bg-card text-foreground",
-                    "border border-border rounded-md",
+                    "border border-border/40 rounded-md",
                     "hover:bg-secondary/50",
                     "disabled:opacity-40 disabled:hover:bg-card",
                 ],

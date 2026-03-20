@@ -11,13 +11,13 @@ const TENANT_SLUG = 'cocinasiete';
 const IMAGES_DIR = 'c:/Users/Pc/Desktop/ALVARO/REPOSITORIOS/Web Projects/PRODUCTOS';
 const DB_URL = 'postgresql://postgres:alvarojose1998@72.62.161.199:5432/web-projects';
 
-// S3 Credentials from .env
+// S3 Credentials
 const S3_CONFIG = {
-  endpoint: 'http://localhost:9000',
+  endpoint: 'https://s3.xn--alvarolondoo-khb.dev',
   region: 'us-east-1',
   accessKeyId: 'minioadmin',
-  secretAccessKey: 'minioadmin',
-  publicUrl: 'http://localhost:9000', // Update this if public access is different
+  secretAccessKey: 'KJ<?k53Q8XG5Tj5sV2CXe}R4t$*ZgVBi',
+  publicUrl: 'https://s3.xn--alvarolondoo-khb.dev',
 };
 
 const s3 = new S3Client({

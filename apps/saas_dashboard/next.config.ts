@@ -81,10 +81,17 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3000',
         'localhost:3001',
+        'localhost:3002',
         'cocinasiete.com',
         '*.cocinasiete.com',
         'mauromera.com',
         'deborahmoscoso.com',
+        'xn--alvarolondoo-khb.dev',
+        '*.xn--alvarolondoo-khb.dev',
+        'alvarolondoo-khb.dev',
+        '*.alvarolondoo-khb.dev',
+        'alvarolondoño.dev',
+        '*.alvarolondoño.dev',
         ...allowedTenantDomains
       ],
     },

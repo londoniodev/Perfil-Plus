@@ -114,6 +114,7 @@ export async function middleware(request: NextRequest) {
 
         requestHeaders.set('x-forwarded-host', request.headers.get('host') || '');
         requestHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || url.protocol.replace(':', ''));
+        requestHeaders.set('x-forwarded-path', url.pathname);
 
         return NextResponse.rewrite(destinationTarget, {
             request: { headers: requestHeaders },

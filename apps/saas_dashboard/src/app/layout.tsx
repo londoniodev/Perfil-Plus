@@ -21,7 +21,8 @@ async function getTenantData() {
             name: data?.name || null,
             features: data?.features || [],
             design: data?.design || null,
-            logo: data?.logo || null
+            logo: data?.logo || null,
+            brandSettings: data?.brandSettings || null
         };
     } catch (e) {
         console.warn("⚠️ Error obteniendo configuración del Tenant vía API en el Dashboard:", e);
@@ -76,7 +77,7 @@ export default async function DashboardLayout({
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
     // Resolve Tenant ID data directly from API
-    const { name, features: dbFeatures, design, logo } = await getTenantData();
+    const { name, features: dbFeatures, design, logo, brandSettings } = await getTenantData();
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
@@ -100,7 +101,11 @@ export default async function DashboardLayout({
                 >
                     <AuthProvider>
                         <DashboardProvider>
-                            <BrandProvider settings={design as any}>
+                            <BrandProvider settings={{
+                                primary: brandSettings?.primaryColor || design?.colors?.primary || "zinc",
+                                radius: brandSettings?.borderRadius ?? design?.radius ?? 0.5,
+                                ...design,
+                            } as any}>
                                 <ToastProvider>
                                     <DashboardShell
                                         features={features}

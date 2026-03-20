@@ -11,10 +11,10 @@ const ContentSecurityPolicy = `
   script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com https://cdn.jsdelivr.net;
   worker-src 'self' blob: https://cdn.jsdelivr.net;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' data: blob: https: http: http://localhost:3001 https://${s3Domain};
+  img-src 'self' data: blob: https: http: http://localhost:3001 https://${s3Domain} https://api.dicebear.com;
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;
-  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000 https://fonts.googleapis.com https://fonts.gstatic.com https://${s3Domain} https://*.tile.openstreetmap.org https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;
+  connect-src 'self' ${apiDomain} http://localhost:3001 http://localhost:3000 http://127.0.0.1:3001 http://127.0.0.1:3000 https://fonts.googleapis.com https://fonts.gstatic.com https://${s3Domain} https://*.tile.openstreetmap.org https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.dicebear.com;
   media-src 'self' https://${s3Domain} http://localhost:3001 blob:;
   object-src 'none';
   base-uri 'self';

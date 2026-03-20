@@ -41,7 +41,8 @@ export function EmailSettingsForm({ initialData }: EmailSettingsFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Card className="p-6 space-y-6 max-w-2xl">
+                <Card className="p-6">
+                    <div className="space-y-6">
                     <h3 className="text-lg font-semibold">Configuración SMTP</h3>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
@@ -117,6 +118,7 @@ export function EmailSettingsForm({ initialData }: EmailSettingsFormProps) {
                                 </FormItem>
                             )}
                         />
+                    </div>
                     </div>
                 </Card>
 

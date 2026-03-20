@@ -13,10 +13,9 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
     Separator,
     cn,
-    themes,
     SingleImageDropzone
 } from "@alvarosky/ui";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { updateTenantBranding } from "@/actions/branding-actions";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { toast } from "sonner";
@@ -164,19 +163,14 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
     }, [defaultValues, form])
 
     const watchedPrimary = form.watch("primary");
+    const [customHex, setCustomHex] = useState<string>("#000000");
 
-    // Logic for Custom Hex
-    const isCustomPrimary = watchedPrimary && !themes[watchedPrimary as keyof typeof themes];
-    const [customHex, setCustomHex] = useState<string>(
-        isCustomPrimary && watchedPrimary.includes(" ") ? hslToHex(watchedPrimary) : "#000000"
-    );
-
-    // Sync customHex when watchedPrimary changes (if custom)
+    // Sync customHex when watchedPrimary changes
     useEffect(() => {
-        if (isCustomPrimary && watchedPrimary.includes(" ")) {
+        if (watchedPrimary && watchedPrimary.includes(" ")) {
             setCustomHex(hslToHex(watchedPrimary));
         }
-    }, [watchedPrimary, isCustomPrimary]);
+    }, [watchedPrimary]);
 
     const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const hex = e.target.value;
@@ -209,49 +203,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <FormField
-                                control={form.control}
-                                name="primary"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Color Principal</FormLabel>
-                                        <FormControl>
-                                            <div className="flex flex-wrap gap-3">
-                                                {Object.keys(themes).map((themeKey) => (
-                                                    <div
-                                                        key={themeKey}
-                                                        role="button"
-                                                        tabIndex={0}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === "Enter" || e.key === " ") {
-                                                                e.preventDefault();
-                                                                field.onChange(themeKey);
-                                                            }
-                                                        }}
-                                                        className={cn(
-                                                            "h-10 w-10 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
-                                                            field.value === themeKey ? "ring-2 ring-offset-2 ring-primary" : "ring-1 ring-border"
-                                                        )}
-                                                        style={{ backgroundColor: getThemeColor(themeKey) }}
-                                                        onClick={() => field.onChange(themeKey)}
-                                                        title={themeKey}
-                                                        aria-label={`Seleccionar color ${themeKey}`}
-                                                        aria-pressed={field.value === themeKey}
-                                                    >
-                                                        {field.value === themeKey && (
-                                                            <Check className="h-4 w-4 text-white drop-shadow-md" />
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </FormControl>
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <FormField
                                     control={form.control}
                                     name="logoUrl"

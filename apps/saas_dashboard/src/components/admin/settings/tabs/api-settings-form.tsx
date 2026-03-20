@@ -40,7 +40,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid gap-6 max-w-2xl">
+                <div className="grid gap-6">
                     <Card className="p-6 space-y-4">
                         <h3 className="text-lg font-semibold">API Internas</h3>
                         <FormField

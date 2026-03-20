@@ -29,7 +29,7 @@ export function PageHeader({
         <section
             className={cn(
                 "flex flex-col gap-1",
-                !isMarketing && "py-2 md:py-8 mt-4 md:mt-8",
+                !isMarketing && "py-1 md:py-4",
                 isCentered ? "items-center text-center" : "items-start text-left w-full",
                 className
             )}

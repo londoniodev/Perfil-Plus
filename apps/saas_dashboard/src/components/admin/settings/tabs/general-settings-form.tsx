@@ -57,8 +57,8 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Card className="p-6 space-y-6">
-                    <div className="space-y-4 max-w-2xl">
+                <Card className="p-6">
+                    <div className="space-y-6">
                         <h3 className="text-lg font-semibold">Información del Negocio</h3>
                         <div className="grid gap-6">
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -90,36 +90,38 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                 />
                             </div>
 
-                            <FormField
-                                control={form.control}
-                                name="whatsapp"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>WhatsApp (incluir código de país)</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} placeholder="+57310..." />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <FormField
+                                    control={form.control}
+                                    name="whatsapp"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>WhatsApp (con código de país)</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="+57310..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            <FormField
-                                control={form.control}
-                                name="address"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Dirección Física</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                <Input {...field} placeholder="Calle 123, Ciudad" className="pl-10" />
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                <FormField
+                                    control={form.control}
+                                    name="address"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Dirección Física</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input {...field} placeholder="Calle 123, Ciudad" className="pl-10" />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <FormField
@@ -187,16 +189,15 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                     </div>
                 </Card>
 
-                <Card className="p-6 space-y-4">
-                    <h3 className="text-lg font-semibold">Logotipo y Mensaje</h3>
-                    <div className="space-y-4 max-w-2xl">
-
+                <Card className="p-6">
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Mensaje de Bienvenida</h3>
                         <FormField
                             control={form.control}
                             name="menuSlogan"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Mensaje de bienvenida (Slogan)</FormLabel>
+                                    <FormLabel>Slogan del Menú Digital</FormLabel>
                                     <FormControl>
                                         <Input {...field} placeholder="Bienvenido a nuestro menú digital" />
                                     </FormControl>

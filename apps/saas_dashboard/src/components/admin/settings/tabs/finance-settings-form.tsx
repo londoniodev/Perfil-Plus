@@ -43,45 +43,19 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <Card className="p-6 space-y-6">
-                    <div className="space-y-4 max-w-2xl">
-                        <h4 className="text-sm font-medium">Mercado Pago</h4>
-                        <div className="grid gap-4">
-                            <FormField
-                                control={form.control}
-                                name="mpPublicKey"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Public Key</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} placeholder="APP_USR-xxx" className="font-mono text-sm" />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="mpAccessToken"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Access Token</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} type="password" placeholder="APP_USR-xxx" className="font-mono text-sm" />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="grid gap-4 sm:grid-cols-2">
+                <Card className="p-6">
+                    <div className="space-y-6">
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium">Mercado Pago</h4>
+                            <div className="grid gap-4">
                                 <FormField
                                     control={form.control}
-                                    name="mpClientId"
+                                    name="mpPublicKey"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client ID (Opcional)</FormLabel>
+                                            <FormLabel>Public Key</FormLabel>
                                             <FormControl>
-                                                <Input {...field} placeholder="1234..." className="font-mono text-sm" />
+                                                <Input {...field} placeholder="APP_USR-xxx" className="font-mono text-sm" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -89,22 +63,48 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="mpClientSecret"
+                                    name="mpAccessToken"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Client Secret (Opcional)</FormLabel>
+                                            <FormLabel>Access Token</FormLabel>
                                             <FormControl>
-                                                <Input {...field} type="password" placeholder="xxx..." className="font-mono text-sm" />
+                                                <Input {...field} type="password" placeholder="APP_USR-xxx" className="font-mono text-sm" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="mpClientId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Client ID (Opcional)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="1234..." className="font-mono text-sm" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="mpClientSecret"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Client Secret (Opcional)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="password" placeholder="xxx..." className="font-mono text-sm" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="pt-6 border-t">
-                            <h4 className="text-sm font-medium mb-4">Tarifas y Moneda</h4>
+                            <div className="pt-6 border-t font-semibold">Tarifas y Moneda</div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
@@ -114,8 +114,8 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                             <FormLabel>Moneda</FormLabel>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecciona moneda" />
+                                                    <SelectTrigger aria-label="Seleccionar moneda">
+                                                        <SelectValue placeholder="Selecciona" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>

@@ -57,7 +57,7 @@ export function AdminPageWrapper({
             </div>
             {/* Page Header with Breadcrumbs */}
             {(breadcrumbs || title) && (
-                <div className="space-y-4">
+                <div className="space-y-2">
                     {/* Breadcrumbs (Only if explicitely provided) */}
                     {breadcrumbs && breadcrumbs.length > 0 && (
                         <Breadcrumb className="justify-center">

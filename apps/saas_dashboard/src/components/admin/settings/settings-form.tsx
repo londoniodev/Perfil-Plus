@@ -67,6 +67,22 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const [authToken, setAuthToken] = useState("");
     const brandingFormRef = useRef<any>(null);
 
+    // Mapear la respuesta cruda de la API (BrandSettings) a los campos del BrandingForm
+    const mappedBrandingData = (() => {
+        const bs = brandingData?.brandSettings;
+        if (!bs) return undefined;
+        return {
+            primary: bs.primaryColor || "",
+            radius: bs.borderRadius ?? 0.5,
+            density: "default" as const,
+            mode: "system" as const,
+            logoUrl: bs.logoUrl || "",
+            faviconUrl: bs.faviconUrl || "",
+            secondaryColor: bs.secondaryColor || "",
+            fontFamily: bs.fontFamily?.split(",")[0]?.trim() || "Inter",
+        };
+    })();
+
     // Read auth token on client side
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -322,7 +338,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
                             </Card>
 
                             {/* Colores y Diseño (Manejados por BrandingForm) */}
-                            <BrandingForm ref={brandingFormRef} defaultValues={brandingData} />
+                            <BrandingForm ref={brandingFormRef} defaultValues={mappedBrandingData} />
                         </div>
                     </TabsContent>
 

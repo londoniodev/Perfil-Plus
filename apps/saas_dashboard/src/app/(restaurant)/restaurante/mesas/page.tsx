@@ -266,7 +266,7 @@ export default function TablesPage() {
                     />
                 </div>
 
-                <div className="w-full overflow-hidden rounded-md border">
+                <div>
                     <Table>
                         <TableHeader>
                             <TableRow>

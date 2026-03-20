@@ -182,7 +182,7 @@ export function RecipesClient({
                 </Button>
             </div>
 
-            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+            <div className="w-full">
                 <Table className="w-full">
                     <TableHeader>
                         <TableRow>
@@ -335,7 +335,7 @@ export function RecipesClient({
 
                         <div className="space-y-3">
                             <Label>Lista de Ingredientes</Label>
-                            <div className="rounded-md border p-4 bg-muted/10 space-y-3">
+                            <div className="rounded-md border border-border/40 p-4 bg-muted/10 space-y-3">
                                 {ingredients.map((ing, idx) => (
                                     <div key={idx} className="flex gap-2 items-end">
                                         <div className="flex-1">

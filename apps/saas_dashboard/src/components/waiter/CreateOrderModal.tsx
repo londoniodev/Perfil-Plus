@@ -74,7 +74,7 @@ function ProductRow({ product, onSelect }: { product: PublicProduct; onSelect: (
     return (
         <button
             onClick={() => onSelect(product)}
-            className="w-full flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left group"
+            className="w-full flex items-center justify-between p-3 rounded-lg border border-transparent bg-muted/40 hover:bg-accent/50 transition-colors text-left group"
         >
             <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{product.name}</p>
@@ -178,7 +178,7 @@ function ModifierPanel({
                                                     onClick={() => onToggleModifier(group.id, mod.id, ((group as any).maxSelect ?? group.maxSelections))}
                                                     className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${isSelected
                                                         ? "border-primary bg-primary/5"
-                                                        : "border-transparent bg-muted/30 hover:bg-muted/50"
+                                                        : "border-transparent bg-muted/40 hover:bg-muted/50"
                                                         }`}
                                                 >
                                                     <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ function CartPanel({
                         ) : (
                             <div className="space-y-2">
                                 {cart.map(item => (
-                                    <div key={item.variantId} className="flex items-center gap-3 p-3 bg-muted/20 rounded-lg border">
+                                    <div key={item.variantId} className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border border-transparent">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium truncate">{item.productName}</p>
                                             {item.modifiers.length > 0 && (

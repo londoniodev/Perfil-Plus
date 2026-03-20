@@ -129,7 +129,7 @@ export function POSInterface({ products, tableId, tableName }: POSInterfaceProps
                 </div>
 
                 {/* Grid */}
-                <ScrollArea className="flex-1 rounded-md border p-4 bg-muted/10">
+                <ScrollArea className="flex-1 rounded-md border border-border/40 p-4 bg-muted/10">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
                         {filteredProducts.map(product => (
                             <Card

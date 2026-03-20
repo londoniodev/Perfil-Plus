@@ -247,7 +247,7 @@ export function InventoryClient({
             </div>
 
             {/* Ingredients table */}
-            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+            <div className="w-full">
                 <Table className="w-full">
                     <TableHeader>
                         <TableRow>

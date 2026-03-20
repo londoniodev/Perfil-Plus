@@ -128,7 +128,7 @@ export function DataTable<TData, TValue>({
             {toolbar && <div className="flex items-center justify-between">{toolbar}</div>}
 
             {/* Table */}
-            <div className="w-full overflow-hidden rounded-md border bg-card/40">
+            <div className="w-full">
                 <Table className="w-full">
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (

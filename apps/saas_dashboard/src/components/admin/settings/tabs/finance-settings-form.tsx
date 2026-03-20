@@ -104,7 +104,7 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t font-semibold">Tarifas y Moneda</div>
+                            <div className="pt-6 border-t border-border/40 font-semibold">Tarifas y Moneda</div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}

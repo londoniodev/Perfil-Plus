@@ -37,7 +37,7 @@ export function POSCart({ cart, tableId, tableName, onUpdateQuantity, onClearCar
 
     return (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b bg-muted/20">
+            <div className="p-4 border-b border-border/40 bg-muted/20">
                 <h2 className="font-semibold flex items-center gap-2">
                     <ShoppingCart className="h-4 w-4" />
                     Pedido (Mesa {tableName || tableId})
@@ -95,7 +95,7 @@ export function POSCart({ cart, tableId, tableName, onUpdateQuantity, onClearCar
                 </div>
             </ScrollArea>
 
-            <div className="p-4 border-t bg-muted/20 space-y-4 mt-auto">
+            <div className="p-4 border-t border-border/40 bg-muted/20 space-y-4 mt-auto">
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Opciones</span>
                     <Button variant="ghost" size="sm" className="h-auto py-0 text-xs text-red-500" onClick={onClearCart}>

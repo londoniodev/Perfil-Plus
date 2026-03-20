@@ -161,13 +161,13 @@ export default function DespachosBoard() {
         >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-hidden pb-10">
                 {/* Columna: Listos para Despacho */}
-                <div className="flex flex-col h-full bg-muted/10 rounded-xl p-4 border shadow-sm">
+                <div className="flex flex-col h-full bg-muted/10 rounded-xl p-4 border border-border/40 shadow-sm">
                     <h2 className="text-lg font-bold flex items-center mb-4">
                         <Badge variant="secondary" className="mr-2 px-2 py-0.5">{readyOrders.length}</Badge> Listos para Despacho
                     </h2>
                     <div className="flex-1 overflow-y-auto pr-2 space-y-4">
                         {readyOrders.length === 0 ? (
-                            <div className="flex items-center justify-center p-12 text-muted-foreground bg-background border rounded-lg border-dashed">
+                            <div className="flex items-center justify-center p-12 text-muted-foreground bg-background border border-border/40 rounded-lg border-dashed">
                                 Sin pedidos listos
                             </div>
                         ) : (
@@ -179,20 +179,20 @@ export default function DespachosBoard() {
                 </div>
 
                 {/* Columna: En Tránsito */}
-                <div className="flex flex-col h-full bg-blue-50/20 rounded-xl p-4 border shadow-sm">
+                <div className="flex flex-col h-full bg-blue-50/20 rounded-xl p-4 border border-border/40 shadow-sm">
                     <h2 className="text-lg font-bold flex items-center mb-4 text-blue-900">
                         <Badge variant="default" className="mr-2 px-2 py-0.5 bg-blue-600 hover:bg-blue-700">{inTransitOrders.length}</Badge> En Tránsito
                     </h2>
                     <div className="flex-1 overflow-y-auto pr-2 space-y-6">
                         {inTransitOrders.length === 0 ? (
-                            <div className="flex items-center justify-center p-12 text-muted-foreground bg-background border rounded-lg border-dashed">
+                            <div className="flex items-center justify-center p-12 text-muted-foreground bg-background border border-border/40 rounded-lg border-dashed">
                                 Sin despachos activos
                             </div>
                         ) : (
                             <div className="space-y-6">
                                 {/* Componente de Ruta por cada Domiciliario activo */}
                                 {Object.values(ordersByDriver).map(({ driver, orders }: any) => (
-                                    <div key={driver.id} className="bg-background rounded-lg border shadow-sm overflow-hidden">
+                                    <div key={driver.id} className="bg-background rounded-lg border border-border/40 shadow-sm overflow-hidden">
                                         <div className="bg-blue-100/50 p-3 border-b flex justify-between items-center">
                                             <div>
                                                 <h3 className="font-semibold text-sm text-blue-900">{driver.user?.name}</h3>

@@ -164,7 +164,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col p-0 gap-0 bg-card">
-                <DialogHeader className="p-4 pb-2 border-b bg-muted/10">
+                <DialogHeader className="p-4 pb-2 border-b border-border/40 bg-muted/10">
                     <DialogTitle className="text-xl font-bold">{product?.name}</DialogTitle>
                 </DialogHeader>
 
@@ -178,7 +178,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                     {variants.map((variant) => (
                                         <div key={variant.id} className={`
                                             flex items-center justify-between space-x-2 border p-3 rounded-lg transition-all cursor-pointer
-                                            ${selectedVariantId === variant.id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input hover:bg-muted/50'}
+                                            ${selectedVariantId === variant.id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/40 hover:bg-muted/50'}
                                         `} onClick={() => setSelectedVariantId(variant.id)}>
                                             <div className="flex items-center space-x-2">
                                                 <RadioGroupItem value={variant.id} id={variant.id} />
@@ -200,7 +200,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                             const isSatisfied = currentCount >= group.minSelect && currentCount <= group.maxSelect
 
                             return (
-                                <div key={group.id} className="space-y-3 border rounded-xl p-4 bg-card/50">
+                                <div key={group.id} className="space-y-3 border border-border/40 rounded-xl p-4 bg-card/50">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h4 className="font-semibold text-base">{group.name}</h4>
@@ -225,8 +225,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                                 <div
                                                     key={mod.id}
                                                     className={`
-                                                        flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer
-                                                        ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50 border-transparent bg-muted/20'}
+                                                        ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50 border-border/40 bg-muted/20'}
                                                     `}
                                                     onClick={() => handleModifierToggle(group.id, mod.id, group.maxSelect)}
                                                 >
@@ -279,7 +278,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                     </div>
                 </ScrollArea>
 
-                <div className="p-4 border-t bg-background shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="p-4 border-t border-border/40 bg-background shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                     <Button
                         className="w-full h-14 text-lg font-bold shadow-md"
                         size="lg"

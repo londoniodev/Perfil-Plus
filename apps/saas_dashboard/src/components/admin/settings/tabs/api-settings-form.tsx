@@ -63,7 +63,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                         </div>
                     </Card>
 
-                    <Card className="p-6 space-y-4">
+                    <Card className="p-6 space-y-4 border-border/40">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold">Integración de WhatsApp</h3>
                             {waPhoneNumberId && (
@@ -78,7 +78,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                         }} />
 
                         {waPhoneNumberId && (
-                            <div className="pt-4 border-t space-y-3">
+                            <div className="pt-4 border-t border-border/40 space-y-3">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Phone Number ID:</span>
                                     <span className="font-mono">{waPhoneNumberId}</span>

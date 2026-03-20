@@ -557,7 +557,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                         control={form.control}
                         name="published"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card shadow-sm">
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border/40 p-4 bg-card shadow-sm">
                                 <div className="space-y-0.5">
                                     <FormLabel className="text-base font-medium">Publicado</FormLabel>
                                     <FormDescription className="text-sm">

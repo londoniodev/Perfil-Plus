@@ -101,7 +101,7 @@ export function WarehousesClient({ warehouses }: { warehouses: Warehouse[] }) {
                 {warehouses.map((w) => (
                     <article
                         key={w.id}
-                        className="rounded-lg border p-4 flex flex-col gap-3 hover:border-primary/50 transition-colors bg-card"
+                        className="rounded-lg border border-border/40 p-4 flex flex-col gap-3 hover:border-primary/50 transition-colors bg-card"
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-2">

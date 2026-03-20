@@ -132,7 +132,7 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                             <FormLabel>Instagram (usuario)</FormLabel>
                                             <FormControl>
                                                 <div className="flex items-center">
-                                                    <span className="bg-muted px-3 h-10 flex items-center border border-r-0 rounded-l-md text-muted-foreground text-sm">@</span>
+                                                    <span className="bg-muted px-3 h-10 flex items-center border border-border/40 border-r-0 rounded-l-md text-muted-foreground text-sm">@</span>
                                                     <Input {...field} placeholder="mi_negocio" className="rounded-l-none" />
                                                 </div>
                                             </FormControl>
@@ -155,13 +155,13 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                 />
                             </div>
 
-                            <div className="pt-6 border-t font-semibold">Configuración de Funciones</div>
+                            <div className="pt-6 border-t border-border/40 font-semibold">Configuración de Funciones</div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <FormField
                                     control={form.control}
                                     name="orderTrackingEnabled"
                                     render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border">
+                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/40">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-base">Seguimiento de Pedidos</FormLabel>
                                                 <p className="text-xs text-muted-foreground">Estado del pedido tras la compra.</p>
@@ -176,7 +176,7 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                     control={form.control}
                                     name="enableStore"
                                     render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border">
+                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/40">
                                             <FormLabel className="text-base">Tienda Online</FormLabel>
                                             <FormControl>
                                                 <Switch checked={field.value} onCheckedChange={field.onChange} />

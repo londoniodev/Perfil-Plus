@@ -80,7 +80,7 @@ export function EmailSettingsForm({ initialData }: EmailSettingsFormProps) {
                         control={form.control}
                         name="smtpSecure"
                         render={({ field }) => (
-                            <FormItem className="flex items-center justify-between p-3 rounded-lg border">
+                            <FormItem className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/40">
                                 <FormLabel className="text-base">SSL/TLS</FormLabel>
                                 <FormControl>
                                     <Switch

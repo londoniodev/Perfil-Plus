@@ -34,7 +34,6 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
             facebook: initialData?.facebook || "",
             address: initialData?.address || "",
             menuSlogan: initialData?.menuSlogan || "",
-            menuLogo: initialData?.menuLogo || "",
             enableBlog: initialData?.enableBlog ?? true,
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
@@ -191,27 +190,6 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                 <Card className="p-6 space-y-4">
                     <h3 className="text-lg font-semibold">Logotipo y Mensaje</h3>
                     <div className="space-y-4 max-w-2xl">
-                        <FormField
-                            control={form.control}
-                            name="menuLogo"
-                            render={({ field }) => (
-                                <div className="space-y-3">
-                                    <FormLabel>Logo Principal</FormLabel>
-                                    <FormControl>
-                                        <SingleImageDropzone
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            endpoint={`${API_BASE}/storage/upload/image`}
-                                            token={authToken}
-                                            tenantId={TENANT_ID}
-                                            folder="branding"
-                                            className="max-w-[300px]"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </div>
-                            )}
-                        />
 
                         <FormField
                             control={form.control}
@@ -229,11 +207,11 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                     </div>
                 </Card>
 
-                <div className="flex justify-end pt-4">
-                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[150px]">
+                <div className="flex justify-center pt-4">
+                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[200px] h-12 text-lg">
                         {form.formState.isSubmitting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Guardando...
                             </>
                         ) : (

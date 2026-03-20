@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { financeSettingsSchema, FinanceSettingsValues } from "@alvarosky/features"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui"
 import { Loader2 } from "lucide-react"
 import { updateFinanceSettings } from "@/actions/admin/update-settings"
 
@@ -111,10 +111,22 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                     name="currency"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Moneda (ISO)</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="COP" />
-                                            </FormControl>
+                                            <FormLabel>Moneda</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona moneda" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="COP">Peso Colombiano (COP)</SelectItem>
+                                                    <SelectItem value="USD">Dólar Estadounidense (USD)</SelectItem>
+                                                    <SelectItem value="MXN">Peso Mexicano (MXN)</SelectItem>
+                                                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                                                    <SelectItem value="CLP">Peso Chileno (CLP)</SelectItem>
+                                                    <SelectItem value="PEN">Sol Peruano (PEN)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -141,11 +153,11 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                     </div>
                 </Card>
 
-                <div className="flex justify-end pt-4">
-                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[150px]">
+                <div className="flex justify-center pt-4">
+                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[200px] h-12 text-lg">
                         {form.formState.isSubmitting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Guardando...
                             </>
                         ) : (

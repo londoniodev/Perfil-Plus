@@ -56,8 +56,8 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 </FormItem>
                             )}
                         />
-                        <div className="flex justify-end pt-2">
-                            <Button type="submit" disabled={form.formState.isSubmitting}>
+                        <div className="flex justify-center pt-2">
+                            <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[180px]">
                                 {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar OpenAI"}
                             </Button>
                         </div>

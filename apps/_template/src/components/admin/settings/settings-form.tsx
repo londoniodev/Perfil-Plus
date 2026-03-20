@@ -225,31 +225,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                                         />
                                     </div>
 
-                                    {/* Menu Digital */}
                                     <div className="pt-4 border-t space-y-4">
                                         <h4 className="text-sm font-medium">Menu Digital</h4>
-
-                                        <FormField
-                                            control={form.control}
-                                            name="menuLogo"
-                                            render={({ field }) => (
-                                                <div className="space-y-3">
-                                                    <FormLabel>Logo del Restaurante</FormLabel>
-                                                    <FormControl>
-                                                        <ImageUploader
-                                                            apiBase={API_BASE || ""}
-                                                            tenantId={tenantId || ""}
-                                                            value={field.value || null}
-                                                            onChange={field.onChange}
-                                                            label="Haz clic para subir el logo (JPG, PNG, WEBP)"
-                                                            folder="logos"
-                                                            className="max-w-[200px]"
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            )}
-                                        />
 
                                         <FormField
                                             control={form.control}

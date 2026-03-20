@@ -47,7 +47,6 @@ const settingsSchema = z.object({
 
     // Menu
     menuSlogan: z.string().optional(),
-    menuLogo: z.string().optional(),
 })
 
 type UpdateSettingsInput = z.infer<typeof settingsSchema>
@@ -117,7 +116,6 @@ export async function updateSettings(data: UpdateSettingsInput): Promise<UpdateS
             menu: {
                 ...(currentConfig.menu || {}),
                 slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
-                logo: validated.menuLogo !== undefined ? validated.menuLogo : currentConfig.menu?.logo,
             }
         }
 

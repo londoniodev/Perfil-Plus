@@ -49,7 +49,7 @@ export function AdminPageWrapper({
     className,
 }: AdminPageWrapperProps) {
     return (
-        <div className={`relative flex flex-1 flex-col gap-4 p-2 md:p-4 pt-0 min-h-screen ${className || ""}`}>
+        <div className={`relative flex flex-1 flex-col gap-2 p-2 md:p-4 min-h-screen ${className || ""}`}>
             {/* Ambient Background Glow for Premium Feel */}
             <div className="pointer-events-none fixed inset-0 flex items-center justify-center overflow-hidden z-[-1]">
                 <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary/5 blur-[120px] mix-blend-multiply opacity-70 animate-[float_10s_ease-in-out_infinite]" />

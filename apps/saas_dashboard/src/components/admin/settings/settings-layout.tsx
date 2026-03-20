@@ -44,7 +44,6 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
         enableLMS: initialData?.enableLMS ?? false,
         orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
         menuSlogan: initialData?.menu?.slogan || "",
-        menuLogo: initialData?.menu?.logo || "",
     }), [initialData]);
 
     const financeData = useMemo(() => ({
@@ -70,14 +69,17 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
     }), [initialData]);
 
     return (
-        <Tabs defaultValue="general" className="w-full">
-            <TabsList className="mb-6">
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="branding">Branding</TabsTrigger>
-                <TabsTrigger value="finance">Finanzas</TabsTrigger>
-                <TabsTrigger value="email">Email</TabsTrigger>
-                <TabsTrigger value="apis">API's</TabsTrigger>
-            </TabsList>
+        <div className="max-w-4xl mx-auto w-full space-y-6">
+            <Tabs defaultValue="general" className="w-full">
+                <div className="flex justify-center mb-8">
+                    <TabsList>
+                        <TabsTrigger value="general">General</TabsTrigger>
+                        <TabsTrigger value="branding">Branding</TabsTrigger>
+                        <TabsTrigger value="finance">Finanzas</TabsTrigger>
+                        <TabsTrigger value="email">Email</TabsTrigger>
+                        <TabsTrigger value="apis">API's</TabsTrigger>
+                    </TabsList>
+                </div>
 
             <TabsContent value="general">
                 <GeneralSettingsForm initialData={generalData} />

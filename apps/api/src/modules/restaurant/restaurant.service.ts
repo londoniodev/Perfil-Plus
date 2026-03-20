@@ -32,6 +32,7 @@ export class RestaurantService {
     try {
       tenant = await this.prisma.secure.tenant.findUnique({
         where: { id: slugOrId },
+        include: { brandSettings: true },
       });
     } catch (e) {
       // Probably not a valid UUID, ignore and try slug
@@ -41,6 +42,7 @@ export class RestaurantService {
     if (!tenant) {
       tenant = await this.prisma.secure.tenant.findUnique({
         where: { slug: slugOrId },
+        include: { brandSettings: true },
       });
     }
 
@@ -159,14 +161,16 @@ export class RestaurantService {
         name: tenant.name || 'Restaurant',
         slug: tenant.slug,
         logo:
+          tenant.brandSettings?.faviconUrl ||
           tenantConfig.menu?.logo ||
           tenant.design?.logo ||
           `https://api.dicebear.com/7.x/initials/svg?seed=${tenant.name}`,
         slogan:
+          tenant.brandSettings?.tagline ||
           tenantConfig.menu?.slogan ||
           tenant.design?.slogan ||
           'Bienvenido a nuestro menú digital',
-        coverVideo: tenant.design?.coverVideo || null,
+        coverVideo: tenant.brandSettings?.authBgUrl || tenant.design?.coverVideo || null,
         social: {
           instagram: contact.instagram
             ? `https://instagram.com/${contact.instagram.replace('@', '')}`

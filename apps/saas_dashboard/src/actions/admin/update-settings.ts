@@ -54,7 +54,6 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
             menu: {
                 ...(currentConfig.menu || {}),
                 slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
-                logo: validated.menuLogo !== undefined ? validated.menuLogo : currentConfig.menu?.logo,
             },
         }
 

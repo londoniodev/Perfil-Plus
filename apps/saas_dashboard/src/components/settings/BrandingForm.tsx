@@ -246,41 +246,6 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                             </div>
                                         </FormControl>
 
-                                        {/* Custom Hex Section */}
-                                        <div className="mt-4 pt-4 border-t">
-                                            <Label className="text-sm font-medium mb-1.5 block">O color personalizado (Hex)</Label>
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative w-10 h-10 rounded-full overflow-hidden border shadow-sm shrink-0">
-                                                    <input
-                                                        type="color"
-                                                        ref={colorInputRef}
-                                                        className="absolute -top-2 -left-2 w-16 h-16 p-0 border-0 cursor-pointer opacity-0"
-                                                        value={customHex}
-                                                        onChange={handleHexChange}
-                                                    />
-                                                    <div
-                                                        className="w-full h-full"
-                                                        style={{ backgroundColor: customHex }}
-                                                        onClick={() => colorInputRef.current?.click()}
-                                                    />
-                                                </div>
-                                                <Input
-                                                    value={customHex}
-                                                    onChange={handleHexChange}
-                                                    placeholder="#000000"
-                                                    className="font-mono w-32 uppercase"
-                                                    maxLength={7}
-                                                    aria-label="Color personalizado Hex"
-                                                />
-                                                {isCustomPrimary && (
-                                                    <div className="text-xs text-muted-foreground animate-in fade-in">
-                                                        <Check className="h-3 w-3 inline mr-1 text-green-500" />
-                                                        Aplicado
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -292,7 +257,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                     name="logoUrl"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Logo de la Plataforma</FormLabel>
+                                            <FormLabel>Logo Horizontal</FormLabel>
                                             <FormControl>
                                                 <SingleImageDropzone
                                                     value={field.value}
@@ -303,7 +268,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                                     folder="branding"
                                                 />
                                             </FormControl>
-                                            <FormDescription>Se mostrará en el header y correos.</FormDescription>
+                                            <FormDescription>Utilizado en headers y correos electrónicos.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -314,7 +279,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                     name="faviconUrl"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Favicon (Icono Navegador)</FormLabel>
+                                            <FormLabel>Logo Cuadrado / Favicon</FormLabel>
                                             <FormControl>
                                                 <SingleImageDropzone
                                                     value={field.value}
@@ -325,7 +290,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                                     folder="branding"
                                                 />
                                             </FormControl>
-                                            <FormDescription>Imagen cuadrada pequeña (.ico, .png).</FormDescription>
+                                            <FormDescription>Utilizado en el Menú Digital, favicon y móviles.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -334,94 +299,100 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
 
                             <Separator />
 
-                            {/* ── Tipografía ── */}
-                            <FormField
-                                control={form.control}
-                                name="fontFamily"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tipografía</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value || "Inter"}>
-                                            <FormControl>
-                                                <SelectTrigger aria-label="Seleccionar tipografía">
-                                                    <SelectValue placeholder="Selecciona una fuente" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {FONT_CATALOG.map((font) => (
-                                                    <SelectItem
-                                                        key={font.value}
-                                                        value={font.value}
-                                                    >
-                                                        <span style={{ fontFamily: `"${font.value}", sans-serif` }}>
-                                                            {font.label}
-                                                        </span>
-                                                        <span className="ml-2 text-xs text-muted-foreground">
-                                                            {font.type}
-                                                        </span>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormDescription>
-                                            Fuente principal para toda la plataforma.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {/* ── Controles de Estilo en Fila ── */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                                {/* Tipografía */}
+                                <FormField
+                                    control={form.control}
+                                    name="fontFamily"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tipografía</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value || "Inter"}>
+                                                <FormControl>
+                                                    <SelectTrigger aria-label="Seleccionar tipografía">
+                                                        <SelectValue placeholder="Fuente" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {FONT_CATALOG.map((font) => (
+                                                        <SelectItem key={font.value} value={font.value}>
+                                                            <span style={{ fontFamily: `"${font.value}", sans-serif` }}>{font.label}</span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* ── Border Radius ── */}
-                            <FormField
-                                control={form.control}
-                                name="radius"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Redondeo de Bordes</FormLabel>
-                                        <FormControl>
-                                            <div className="flex flex-wrap gap-3">
-                                                {RADIUS_OPTIONS.map((option) => (
-                                                    <button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => field.onChange(option.value)}
-                                                        className={cn(
-                                                            "flex flex-col items-center gap-1.5 p-3 border-2 transition-all min-w-[72px]",
-                                                            field.value === option.value
-                                                                ? "border-primary bg-primary/5 shadow-sm"
-                                                                : "border-border hover:border-muted-foreground/30"
-                                                        )}
-                                                        style={{ borderRadius: `${option.value}rem` }}
-                                                        aria-label={`Radio de borde: ${option.label}`}
-                                                        aria-pressed={field.value === option.value}
-                                                    >
-                                                        {/* Preview visual */}
-                                                        <div
-                                                            className="w-10 h-10 bg-primary/20 border border-primary/40"
-                                                            style={{ borderRadius: `${option.value * 8}px` }}
-                                                        />
-                                                        <span className="text-xs font-medium text-muted-foreground">
-                                                            {option.label}
-                                                        </span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </FormControl>
-                                        <FormDescription>
-                                            Afecta botones, tarjetas y todos los componentes.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                {/* Color (Hex) */}
+                                <FormItem>
+                                    <FormLabel>Color Principal (Hex)</FormLabel>
+                                    <div className="flex items-center gap-2">
+                                        <div className="relative w-10 h-10 rounded-full overflow-hidden border shadow-sm shrink-0">
+                                            <input
+                                                type="color"
+                                                ref={colorInputRef}
+                                                className="absolute -top-2 -left-2 w-16 h-16 p-0 border-0 cursor-pointer opacity-0"
+                                                value={customHex}
+                                                onChange={handleHexChange}
+                                            />
+                                            <div
+                                                className="w-full h-full"
+                                                style={{ backgroundColor: customHex }}
+                                                onClick={() => colorInputRef.current?.click()}
+                                            />
+                                        </div>
+                                        <Input
+                                            value={customHex}
+                                            onChange={handleHexChange}
+                                            placeholder="#0000"
+                                            className="font-mono uppercase h-10"
+                                            maxLength={7}
+                                        />
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+
+                                {/* Border Radius */}
+                                <FormField
+                                    control={form.control}
+                                    name="radius"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bordes</FormLabel>
+                                            <Select 
+                                                onValueChange={(val) => field.onChange(parseFloat(val))} 
+                                                value={field.value?.toString()}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Radio" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {RADIUS_OPTIONS.map((opt) => (
+                                                        <SelectItem key={opt.value} value={opt.value.toString()}>
+                                                            {opt.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
                         </CardContent>
                     </Card>
-                    <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[150px]">
+                    <div className="flex justify-center pt-4">
+                        <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[200px] h-12 text-lg">
                             {form.formState.isSubmitting ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                     Guardando...
                                 </>
                             ) : (

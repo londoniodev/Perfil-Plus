@@ -9,7 +9,6 @@ export const generalSettingsSchema = z.object({
     facebook: z.string().optional().or(z.literal("")),
     address: z.string().optional().or(z.literal("")),
     menuSlogan: z.string().optional().or(z.literal("")),
-    menuLogo: z.string().optional().or(z.literal("")),
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),

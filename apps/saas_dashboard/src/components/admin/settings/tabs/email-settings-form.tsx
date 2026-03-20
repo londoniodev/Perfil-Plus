@@ -120,11 +120,11 @@ export function EmailSettingsForm({ initialData }: EmailSettingsFormProps) {
                     </div>
                 </Card>
 
-                <div className="flex justify-end pt-4">
-                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[150px]">
+                <div className="flex justify-center pt-4">
+                    <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[200px] h-12 text-lg">
                         {form.formState.isSubmitting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Guardando...
                             </>
                         ) : (

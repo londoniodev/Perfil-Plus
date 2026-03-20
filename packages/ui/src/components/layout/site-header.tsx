@@ -69,7 +69,7 @@ export function SiteHeader({
                 <div className="lg:hidden ml-2">
                     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className={cn(!isScrolled ? "text-black" : "text-foreground", isWhiteText && !isScrolled ? "text-white" : "")}>
+                            <Button variant="ghost" size="icon" className={cn(isScrolled ? "text-black" : (isWhiteText ? "text-white" : "text-foreground"))}>
                                 <IconMenu size={28} />
                                 <span className="sr-only">Menú</span>
                             </Button>
@@ -118,12 +118,13 @@ export function SiteHeader({
                         profileUrl={profileUrl}
                         showAuthButtons={showAuthButtons}
                         isWhiteText={isWhiteText}
+                        isScrolled={isScrolled}
                     />
                 </nav>
 
                 {/* Cart Button (Desktop & Mobile) */}
                 <div className="flex items-center gap-2 mr-2">
-                    <div className={cn(isWhiteText && "text-white")}>
+                    <div className={cn(isWhiteText ? "text-white" : (isScrolled ? "text-black" : ""))}>
                         {cartComponent}
                     </div>
                 </div>
@@ -142,12 +143,13 @@ interface DesktopNavLinksProps {
     profileUrl: string;
     showAuthButtons?: boolean;
     isWhiteText?: boolean;
+    isScrolled?: boolean;
 }
 
-function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true, isWhiteText = false }: DesktopNavLinksProps) {
+function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true, isWhiteText = false, isScrolled = false }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
         "text-base font-medium transition-colors hover:text-primary",
-        currentPath === path ? "text-primary font-bold" : (isWhiteText ? "text-white/90" : "text-foreground/80")
+        currentPath === path ? "text-primary font-bold" : (isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground/80"))
     );
 
     return (
@@ -179,7 +181,7 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
                         </Button>
                     ) : (
                         <>
-                            <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex text-foreground hover:text-accent">
+                            <Button asChild variant="ghost" size="sm" className={cn("hidden xl:inline-flex hover:text-accent", isScrolled ? "text-black" : "text-foreground")}>
                                 <Link href={registerUrl}>Registrarse</Link>
                             </Button>
                             <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">

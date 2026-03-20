@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Tabs, TabsList, TabsTrigger, TabsContent, Switch } from "@alvarosky/ui"
@@ -68,7 +68,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
     const brandingFormRef = useRef<any>(null);
 
     // Mapear la respuesta cruda de la API (BrandSettings) a los campos del BrandingForm
-    const mappedBrandingData = (() => {
+    const mappedBrandingData = useMemo(() => {
         const bs = brandingData?.brandSettings;
         if (!bs) return undefined;
         return {
@@ -81,7 +81,7 @@ export function SettingsForm({ initialData, brandingData }: SettingsFormProps) {
             secondaryColor: bs.secondaryColor || "",
             fontFamily: bs.fontFamily?.split(",")[0]?.trim() || "Inter",
         };
-    })();
+    }, [brandingData]);
 
     // Read auth token on client side
     useEffect(() => {

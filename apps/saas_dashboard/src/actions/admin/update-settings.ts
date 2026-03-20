@@ -48,8 +48,6 @@ export async function updateSettings(data: SettingsFormValues): Promise<UpdateSe
             enableStore: validated.enableStore ?? currentConfig.enableStore,
             enableLMS: validated.enableLMS ?? currentConfig.enableLMS,
             orderTrackingEnabled: validated.orderTrackingEnabled ?? currentConfig.orderTrackingEnabled,
-            theme: validated.theme ?? currentConfig.theme,
-            primary_color: validated.primaryColor ?? currentConfig.primary_color,
             api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
             MERCADOPAGO_CONFIG: {
                 ...currentConfig.MERCADOPAGO_CONFIG,

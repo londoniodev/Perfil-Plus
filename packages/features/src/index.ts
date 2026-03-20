@@ -9,4 +9,5 @@ export * from './schemas';
 // API Client & Configuration
 export * from './api';
 
-
+// Constants (Brand Catalog, etc.)
+export * from './constants/brand-catalog';

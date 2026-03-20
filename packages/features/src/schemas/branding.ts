@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FONT_VALUES } from "../constants/brand-catalog";
 
 export const brandingSchema = z.object({
     primary: z.string().min(1, "El color primario es requerido"),
@@ -8,7 +9,7 @@ export const brandingSchema = z.object({
     logoUrl: z.string().optional().or(z.literal("")),
     faviconUrl: z.string().optional().or(z.literal("")),
     secondaryColor: z.string().optional().or(z.literal("")),
-    fontFamily: z.string().optional().or(z.literal("")),
+    fontFamily: z.enum(FONT_VALUES).default("Inter"),
 });
 
 export type BrandingFormValues = z.infer<typeof brandingSchema>;

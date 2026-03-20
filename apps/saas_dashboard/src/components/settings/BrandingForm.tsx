@@ -3,13 +3,14 @@
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { brandingSchema, BrandingFormValues } from "@alvarosky/features";
+import { brandingSchema, BrandingFormValues, FONT_CATALOG, RADIUS_OPTIONS } from "@alvarosky/features";
 import {
     Button,
     Card, CardContent, CardDescription, CardHeader, CardTitle,
     Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,
     Input,
     Label,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
     Separator,
     cn,
     themes,
@@ -333,6 +334,86 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
 
                             <Separator />
 
+                            {/* ── Tipografía ── */}
+                            <FormField
+                                control={form.control}
+                                name="fontFamily"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tipografía</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value || "Inter"}>
+                                            <FormControl>
+                                                <SelectTrigger aria-label="Seleccionar tipografía">
+                                                    <SelectValue placeholder="Selecciona una fuente" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {FONT_CATALOG.map((font) => (
+                                                    <SelectItem
+                                                        key={font.value}
+                                                        value={font.value}
+                                                    >
+                                                        <span style={{ fontFamily: `"${font.value}", sans-serif` }}>
+                                                            {font.label}
+                                                        </span>
+                                                        <span className="ml-2 text-xs text-muted-foreground">
+                                                            {font.type}
+                                                        </span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>
+                                            Fuente principal para toda la plataforma.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* ── Border Radius ── */}
+                            <FormField
+                                control={form.control}
+                                name="radius"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Redondeo de Bordes</FormLabel>
+                                        <FormControl>
+                                            <div className="flex flex-wrap gap-3">
+                                                {RADIUS_OPTIONS.map((option) => (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        onClick={() => field.onChange(option.value)}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-1.5 p-3 border-2 transition-all min-w-[72px]",
+                                                            field.value === option.value
+                                                                ? "border-primary bg-primary/5 shadow-sm"
+                                                                : "border-border hover:border-muted-foreground/30"
+                                                        )}
+                                                        style={{ borderRadius: `${option.value}rem` }}
+                                                        aria-label={`Radio de borde: ${option.label}`}
+                                                        aria-pressed={field.value === option.value}
+                                                    >
+                                                        {/* Preview visual */}
+                                                        <div
+                                                            className="w-10 h-10 bg-primary/20 border border-primary/40"
+                                                            style={{ borderRadius: `${option.value * 8}px` }}
+                                                        />
+                                                        <span className="text-xs font-medium text-muted-foreground">
+                                                            {option.label}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                        <FormDescription>
+                                            Afecta botones, tarjetas y todos los componentes.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
                         </CardContent>
                     </Card>

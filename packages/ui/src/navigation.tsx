@@ -35,7 +35,7 @@ const BottomNav = React.forwardRef<HTMLDivElement, BottomNavProps>(
                         className={cn(
                             "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors min-w-[60px]",
                             value === item.value
-                                ? "text-indigo-400 bg-indigo-500/10"
+                                ? "text-primary bg-primary/10"
                                 : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                         )}
                     >
@@ -91,7 +91,7 @@ const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
                                 value === item.value
-                                    ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                                    ? "bg-primary/10 text-primary border border-primary/20"
                                     : "text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent"
                             )}
                         >

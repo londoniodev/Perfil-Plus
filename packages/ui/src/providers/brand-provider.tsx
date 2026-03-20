@@ -128,13 +128,20 @@ export function BrandProvider({
     // Use isomorphic effect for safe DOM mutation
     const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
+    // Si primary === "custom", las variables CSS ya fueron inyectadas vía SSR
+    // en el <body> del Root Layout. NO debemos sobreescribirlas.
+    const isServerInjected = config.primary === "custom";
+
     useIsomorphicLayoutEffect(() => {
         const root = document.documentElement;
 
-        // 1. Inject Radius directly to :root (this is fine globally)
+        // 1. Inject Radius directly to :root (always applies)
         root.style.setProperty("--radius", `${config.radius}rem`);
 
-        // 2 & 3. Inject Light & Dark Variables via <style> to preserve CSS specificity rules
+        // 2. Si es "custom" (inyectado vía SSR), NO sobreescribir las variables de color.
+        if (isServerInjected) return;
+
+        // 3. Inject Light & Dark Variables via <style> to preserve CSS specificity rules
         // Inline styles (root.style.setProperty) have higher specificity than .dark class, 
         // breaking dark mode. So we MUST inject them as CSS rules.
         const combinedCssContent = `
@@ -163,7 +170,7 @@ export function BrandProvider({
         const oldDarkStyleEl = document.getElementById("dynamic-branding-dark-styles");
         if (oldDarkStyleEl) oldDarkStyleEl.remove();
 
-    }, [theme, config.radius]);
+    }, [theme, config.radius, isServerInjected]);
 
     // Apply specific color theme (Light / Dark / System)
     const { setTheme } = require("next-themes").useTheme();

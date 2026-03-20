@@ -71,7 +71,7 @@ function VerifyEmailContent() {
             <div className={containerClass}>
                 <Card className={cardClass}>
                     <CardHeader>
-                        <div className={`${iconWrapperClass} bg-indigo-500/10`}>⏳</div>
+                        <div className={`${iconWrapperClass} bg-primary/10`}>⏳</div>
                         <CardTitle>Verificando tu email...</CardTitle>
                         <CardDescription>Por favor espera un momento.</CardDescription>
                     </CardHeader>

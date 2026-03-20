@@ -107,8 +107,10 @@ export default async function RootLayout({
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
   
-  // Color fallback
-  const primaryColor = design?.primary || "zinc";
+  // Color fallback: si brandSettings tiene un HEX personalizado, usar "custom"
+  // para que BrandProvider NO sobreescriba las variables CSS ya inyectadas vía SSR.
+  const rawPrimaryColor = design?.brandSettings?.primaryColor || design?.primary || "zinc";
+  const primaryColor = rawPrimaryColor.startsWith('#') ? 'custom' : rawPrimaryColor;
   const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
   const headerLinksFromDb = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;

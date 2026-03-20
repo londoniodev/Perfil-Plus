@@ -126,7 +126,7 @@ export function createUserColumns(actions?: UserTableActions): ColumnDef<User>[]
                 return (
                     <Badge
                         variant={user.role === "ADMIN" ? "default" : "secondary"}
-                        className={user.role === "ADMIN" ? "bg-indigo-500 hover:bg-indigo-600" : ""}
+                        className={user.role === "ADMIN" ? "bg-primary hover:bg-primary/90" : ""}
                     >
                         {user.role === "ADMIN" ? "Admin" : "Usuario"}
                     </Badge>

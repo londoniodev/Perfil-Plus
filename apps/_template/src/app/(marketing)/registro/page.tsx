@@ -63,7 +63,7 @@ export default function RegisterPage() {
             <div className="min-h-screen flex items-center justify-center p-8 bg-background">
                 <Card className="w-full max-w-[500px] text-center border-green-500/20 shadow-2xl shadow-green-500/10 bg-zinc-950/80 backdrop-blur-md">
                     <CardHeader>
-                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg animate-pulse">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg animate-pulse">
                             <CheckCircle className="h-10 w-10" />
                         </div>
 
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                             acceder a todos los contenidos. El enlace expira en 24 horas.
                         </p>
 
-                        <div className="p-4 bg-indigo-500/10 rounded-lg text-sm text-foreground-muted border border-indigo-500/20 text-left">
+                        <div className="p-4 bg-primary/10 rounded-lg text-sm text-foreground-muted border border-primary/20 text-left">
                             💡 <strong>Tip:</strong> Revisa también tu carpeta de spam si no ves el correo en tu bandeja principal.
                         </div>
 

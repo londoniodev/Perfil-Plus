@@ -77,8 +77,8 @@ export function PostsTable({
                                     variant={post.isPremium ? "secondary" : "secondary"}
                                     className={cn(
                                         post.isPremium
-                                            ? "bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 border-purple-200"
-                                            : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-200"
+                                            ? "bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-200"
+                                            : "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
                                     )}
                                 >
                                     {post.isPremium ? "Premium" : "Gratis"}

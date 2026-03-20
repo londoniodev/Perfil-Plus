@@ -111,7 +111,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                         className="transition-all"
                     />
                     {isDigital && (
-                        <Badge className="absolute top-4 left-4 bg-blue-600">Digital</Badge>
+                        <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">Digital</Badge>
                     )}
                     
                     {/* Overlay de Título para Móvil (Se oculta al expandir) */}

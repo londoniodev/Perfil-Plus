@@ -56,12 +56,12 @@ export function ProductCard({
                         </Badge>
                     )}
                     {isDigital && (
-                        <Badge className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
+                        <Badge className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
                             <Download className="h-3 w-3 mr-1" /> Digital
                         </Badge>
                     )}
                     {isService && (
-                        <Badge className="bg-purple-600 text-white hover:bg-purple-700 shadow-sm">
+                        <Badge className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-sm">
                             <Briefcase className="h-3 w-3 mr-1" /> Servicio
                         </Badge>
                     )}

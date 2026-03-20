@@ -3,7 +3,6 @@
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
-import { revalidateTag } from "next/cache"
 import { z } from "zod"
 import { VALID_FEATURE_VALUES } from "@alvarosky/types"
 
@@ -64,10 +63,6 @@ export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<
             method: "PATCH",
             body: JSON.stringify({ features: validated.features }),
         })
-
-        // Revalidar tags de ISR para que el storefront refleje los cambios
-        revalidateTag("tenant-branding")
-        revalidateTag(`tenant-branding-${validated.tenantSlug}`)
 
         return { success: true }
     } catch (error: any) {

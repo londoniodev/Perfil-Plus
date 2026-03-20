@@ -16,6 +16,7 @@
         "@alvarosky/restaurant-sdk": "workspace:*",
         "@alvarosky/tailwind-config": "workspace:*",
         "@alvarosky/typescript-config": "workspace:*",
+        "@alvarosky/types": "workspace:*",
         "@alvarosky/ui": "workspace:*",
         "@ducanh2912/next-pwa": "^10.2.9",
         "@hookform/resolvers": "^5.2.2",

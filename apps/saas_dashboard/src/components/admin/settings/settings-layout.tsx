@@ -106,6 +106,7 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
                     wabaId={initialData?.wabaId}
                 />
             </TabsContent>
-        </Tabs>
+            </Tabs>
+        </div>
     )
 }

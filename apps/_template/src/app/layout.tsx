@@ -91,10 +91,9 @@ export default async function RootLayout({
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
   
-  // Color fallback: si brandSettings tiene un HEX personalizado, usar "custom"
-  // para que BrandProvider NO sobreescriba las variables CSS ya inyectadas vía SSR.
+  // Color principal. Lo pasamos enteramente a BrandProvider en _providers_.
   const rawPrimaryColor = design?.brandSettings?.primaryColor || design?.primary || "zinc";
-  const primaryColor = rawPrimaryColor.startsWith('#') ? 'custom' : rawPrimaryColor;
+  const primaryColor = rawPrimaryColor;
   const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
   const headerLinksFromDb = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;
@@ -121,28 +120,28 @@ export default async function RootLayout({
   // ── Motor de Marca Blanca: Inyección de CSS Custom Properties ──
   const brand = design?.brandSettings;
   
-  // Las funciones hexToHsl y getContrastForegroundHsl son robustas:
-  // - HEX válido → convierte a "H S% L%"
-  // - HSL ya parseado → passthrough
-  // - String inválido (ej: "zinc") → fallback seguro
-  const primaryHsl = hexToHsl(brand?.primaryColor || '#09090b');
-  const primaryFgHsl = getContrastForegroundHsl(brand?.primaryColor || '#09090b');
-  const secondaryHsl = hexToHsl(brand?.secondaryColor || '#f4f4f5');
-  const secondaryFgHsl = getContrastForegroundHsl(brand?.secondaryColor || '#f4f4f5');
+  // ¿Es un color hexadecimal o HSL personalizado?
+  const isCustomPrimary = brand?.primaryColor && (brand.primaryColor.startsWith('#') || brand.primaryColor.includes(' '));
+  const isCustomSecondary = brand?.secondaryColor && (brand.secondaryColor.startsWith('#') || brand.secondaryColor.includes(' '));
 
   // ── Fuente del tenant (next/font/google self-hosted) ──
   const tenantFont = getTenantFont(brand?.fontFamily);
 
-  const brandStyles: React.CSSProperties = brand
-    ? {
-        '--primary': primaryHsl,
-        '--primary-foreground': primaryFgHsl,
-        '--secondary': secondaryHsl,
-        '--secondary-foreground': secondaryFgHsl,
-        '--radius': `${brand.borderRadius ?? 0.5}rem`,
-        '--font-sans': `var(--font-tenant), ${tenantFont.family}, sans-serif`,
-      } as React.CSSProperties
-    : {};
+  const brandStyles: React.CSSProperties = {
+    '--radius': `${brand?.borderRadius ?? 0.5}rem`,
+    '--font-sans': `var(--font-tenant), ${tenantFont.family}, sans-serif`,
+  } as React.CSSProperties;
+
+  // Solo inyectar como inline styles (alta especificidad) si es un custom color para evitar pisar las clases de los themas (ej. "theme-red")  
+  if (isCustomPrimary) {
+    (brandStyles as any)['--primary'] = hexToHsl(brand.primaryColor);
+    (brandStyles as any)['--primary-foreground'] = getContrastForegroundHsl(brand.primaryColor);
+  }
+
+  if (isCustomSecondary) {
+    (brandStyles as any)['--secondary'] = hexToHsl(brand.secondaryColor);
+    (brandStyles as any)['--secondary-foreground'] = getContrastForegroundHsl(brand.secondaryColor);
+  }
 
   return (
     <html lang="es" suppressHydrationWarning>

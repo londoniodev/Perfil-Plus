@@ -22,6 +22,9 @@ import { Inject, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 
+import { OrderPricingService } from './services/order-pricing.service';
+import { OrderValidationService } from './services/order-validation.service';
+
 @Injectable({ scope: Scope.REQUEST })
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
@@ -33,6 +36,8 @@ export class OrdersService {
     private ordersGateway: OrdersGateway,
     private inventoryService: InventoryService,
     private eventEmitter: EventEmitter2,
+    private pricingService: OrderPricingService,
+    private validationService: OrderValidationService,
   ) { }
 
   private getTenantId(): string {
@@ -52,184 +57,34 @@ export class OrdersService {
   async createOrder(userId: string | undefined, dto: CreateOrderDto) {
     const tenantId = this.getTenantId();
     this.logger.log(`[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`);
-    this.logger.debug(`[CREATE_ORDER] Body: ${JSON.stringify(dto)}`);
     
+    // 1. Validar y Calcular Precíos y Modificadores (Síncrono)
+    const { totalAmount, orderItemsData } = await this.pricingService.calculate(tenantId, dto.items);
+
     let lastError: any;
     const MAX_RETRIES = 3;
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          // Generar orderNumber único
+          // 2. Generar número de orden
           const orderCount = await tx.order.count();
           const year = new Date().getFullYear();
           const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
 
-          let totalAmount = new Decimal(0);
-          const orderItemsData: Array<{
-            variantId: string;
-            quantity: number;
-            price: Decimal;
-            productName: string;
-            variantName: string | null;
-            notes: string | null;
-            modifiers: Array<{
-              modifierId: string;
-              modifierName: string;
-              priceAdjustment: Decimal;
-              quantity: number;
-            }>;
-          }> = [];
+          // Validación de inventario lógico y deductivas
+          await this.validationService.validateAndDeductStock(orderItemsData, tx);
 
-          // Procesar cada item
-          for (const item of dto.items) {
-            const variant = await tx.productVariant.findUnique({
-              where: { id: item.variantId },
-              include: {
-                product: {
-                  include: { modifierGroups: { include: { modifiers: true } } },
-                },
-              },
-            });
-
-            if (!variant) {
-              throw new NotFoundException(
-                `Variante no encontrada: ${item.variantId}`,
-              );
-            }
-
-            if (!variant.product.published || !variant.product.isAvailable) {
-              throw new BadRequestException(
-                `Producto no disponible: ${variant.product.name}`,
-              );
-            }
-
-            // Validar Stock de Variante
-            if (variant.stock !== -1) {
-              // -1 = Infinito/Digital
-              if (variant.stock < item.quantity) {
-                throw new BadRequestException(
-                  `Stock insuficiente para ${variant.product.name} (${variant.name})`,
-                );
-              }
-              // Decrementar stock
-              await tx.productVariant.update({
-                where: { id: variant.id },
-                data: { stock: { decrement: item.quantity } },
-              });
-            }
-
-            let itemPrice = variant.price;
-            const modifiersData: Array<{
-              modifierId: string;
-              modifierName: string;
-              priceAdjustment: Decimal;
-              quantity: number;
-            }> = [];
-
-            // Validar Modificadores
-            if (item.modifiers && item.modifiers.length > 0) {
-              for (const mod of item.modifiers) {
-                // 1. Try to find in pre-fetched structure
-                let dbModifier: any = null;
-
-                // Check against the structure we already included: variant.product.modifierGroups...
-                for (const group of variant.product.modifierGroups) {
-                  const match = group.modifiers.find(
-                    (m) => m.id === mod.modifierId,
-                  );
-                  if (match) {
-                    dbModifier = match;
-                    break;
-                  }
-                }
-
-                // 2. Fallback to DB if not found
-                if (!dbModifier) {
-                  dbModifier = await tx.modifier.findUnique({
-                    where: { id: mod.modifierId },
-                  });
-                }
-
-                if (!dbModifier) continue;
-
-                if (!dbModifier.isAvailable) {
-                  throw new BadRequestException(
-                    `Modificador no disponible: ${dbModifier.name}`,
-                  );
-                }
-
-                // Validar stock modificador
-                if (
-                  dbModifier.stock !== null &&
-                  dbModifier.stock < mod.quantity
-                ) {
-                  throw new BadRequestException(
-                    `Stock insuficiente para modificador ${dbModifier.name}`,
-                  );
-                }
-
-                itemPrice = itemPrice.plus(
-                  dbModifier.priceAdjustment.times(mod.quantity),
-                );
-                modifiersData.push({
-                  modifierId: dbModifier.id,
-                  modifierName: dbModifier.name,
-                  priceAdjustment: dbModifier.priceAdjustment,
-                  quantity: mod.quantity,
-                });
-              }
-            }
-
-            // Validar Min/Max Select de Grupos
-            for (const group of variant.product.modifierGroups) {
-              const selectedInGroup =
-                item.modifiers?.filter((m) =>
-                  group.modifiers.some((gm) => gm.id === m.modifierId),
-                ) || [];
-
-              const totalSelected = selectedInGroup.reduce(
-                (sum, m) => sum + m.quantity,
-                0,
-              );
-
-              if (totalSelected < group.minSelect) {
-                throw new BadRequestException(
-                  `El grupo ${group.name} requiere mínimo ${group.minSelect} selecciones.`,
-                );
-              }
-              if (totalSelected > group.maxSelect) {
-                throw new BadRequestException(
-                  `El grupo ${group.name} permite máximo ${group.maxSelect} selecciones.`,
-                );
-              }
-            }
-
-            totalAmount = totalAmount.plus(itemPrice.times(item.quantity));
-
-            orderItemsData.push({
-              variantId: variant.id,
-              quantity: item.quantity,
-              price: itemPrice, // Precio unitario con modificadores
-              productName: variant.product.name,
-              variantName: variant.name,
-              notes: item.notes || null,
-              modifiers: modifiersData,
-            });
-          }
-
-          // 8. Crear la orden
+          // 3. Crear la orden atómica
           const order = await tx.order.create({
             data: {
-              tenantId: this.getTenantId(),
-              userId: userId || null, // Allow null for Guest
+              tenantId,
+              userId: userId || null,
               orderNumber,
               totalAmount,
-              status: dto.status || 'PENDING', // Use provided status or default
+              status: dto.status || 'PENDING',
               orderType: dto.orderType || 'DINE_IN',
               tableNumber: dto.tableNumber || null,
-
-              // New Fields
               customerName: dto.customerName || null,
               customerPhone: dto.customerPhone || null,
               customerEmail: dto.customerEmail || null,
@@ -239,15 +94,11 @@ export class OrdersService {
                 if (methodLabel === 'CASH') methodLabel = 'Efectivo';
                 if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                 if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
-                const paymentNote = dto.paymentMethod
-                  ? `Forma de pago: ${methodLabel}`
-                  : null;
-                if (dto.notes && paymentNote)
-                  return `${dto.notes}\n\n${paymentNote}`;
+                const paymentNote = dto.paymentMethod ? `Forma de pago: ${methodLabel}` : null;
+                if (dto.notes && paymentNote) return `${dto.notes}\n\n${paymentNote}`;
                 return paymentNote || dto.notes || null;
               })(),
-              shippingData: dto.shippingData || Prisma.DbNull, // Handle Json null
-
+              shippingData: dto.shippingData || Prisma.DbNull,
               items: {
                 create: orderItemsData.map((item) => ({
                   variantId: item.variantId,
@@ -268,158 +119,83 @@ export class OrdersService {
               },
             },
             include: {
-              items: {
-                include: {
-                  modifiers: true,
-                  variant: {
-                    include: { product: true },
-                  },
-                },
-              },
+              items: { include: { modifiers: true, variant: { include: { product: true } } } },
             },
           });
 
-          // 8.5 Initialize Delivery Analytics explicitly to avoid type issues
-          const analyticsData: any = {
-            orderId: order.id,
-            pendingAt: new Date(),
-          };
-
+          // 4. Lógica de Side Effects pendientes de mover a Listeners (Fase 3)
+          const analyticsData: any = { orderId: order.id, pendingAt: new Date() };
           if (dto.status === 'PREPARING') {
             analyticsData.preparingAt = new Date();
-            analyticsData.timeToPrepare = 0; // nació en cocina
+            analyticsData.timeToPrepare = 0;
           }
+          await tx.orderDeliveryAnalytics.create({ data: analyticsData });
 
-          const analytics = await tx.orderDeliveryAnalytics.create({
-            data: analyticsData,
-          });
-
-          // 9. Capturar Lead si hay teléfono
           if (dto.customerPhone && dto.customerPhone !== '0000000000') {
-            // Buscar si ya existe un lead con este teléfono
-            const existingLead = await tx.lead.findFirst({
-              where: { phone: dto.customerPhone },
-            });
-
+            const existingLead = await tx.lead.findFirst({ where: { phone: dto.customerPhone } });
             if (!existingLead) {
               await tx.lead.create({
                 data: {
-                  tenantId: this.getTenantId(),
-                  phone: dto.customerPhone,
-                  name: dto.customerName || null,
-                  email: null,
-                  source: 'Menu Checkout',
-                  status: 'new',
+                  tenantId, phone: dto.customerPhone, name: dto.customerName || null,
+                  email: null, source: 'Menu Checkout', status: 'new',
                 },
               });
-              this.logger.log(`Nuevo lead capturado: ${dto.customerPhone}`);
             } else if (dto.customerName && !existingLead.name) {
-              // Actualizar nombre si no lo tenía
-              await tx.lead.update({
-                where: { id: existingLead.id },
-                data: { name: dto.customerName },
-              });
+              await tx.lead.update({ where: { id: existingLead.id }, data: { name: dto.customerName } });
             }
           }
 
-          // 9.5 Persistencia de Perfil de WhatsApp (WaCustomer)
           if (dto.customerPhone && (dto.orderType === 'DELIVERY' || dto.orderType === 'TAKE_AWAY')) {
             const shipping = dto.shippingData as any;
             await (tx as any).waCustomer.upsert({
-              where: {
-                tenantId_phone: {
-                  tenantId: this.getTenantId(),
-                  phone: dto.customerPhone,
-                },
-              },
+              where: { tenantId_phone: { tenantId, phone: dto.customerPhone } },
               update: {
-                name: dto.customerName || undefined,
-                address: shipping?.address || undefined,
-                lat: shipping?.lat ? parseFloat(shipping.lat) : undefined,
-                lng: shipping?.lng ? parseFloat(shipping.lng) : undefined,
+                name: dto.customerName || undefined, address: shipping?.address || undefined,
+                lat: shipping?.lat ? parseFloat(shipping.lat) : undefined, lng: shipping?.lng ? parseFloat(shipping.lng) : undefined,
               },
               create: {
-                tenantId: this.getTenantId(),
-                phone: dto.customerPhone,
-                name: dto.customerName || null,
-                address: shipping?.address || null,
-                lat: shipping?.lat ? parseFloat(shipping.lat) : null,
+                tenantId, phone: dto.customerPhone, name: dto.customerName || null,
+                address: shipping?.address || null, lat: shipping?.lat ? parseFloat(shipping.lat) : null,
                 lng: shipping?.lng ? parseFloat(shipping.lng) : null,
               },
             });
           }
 
-          this.logger.log(
-            `Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`,
-          );
-
-          // SSE: notificar cocina/POS con la orden completa
-          this.ordersGateway.emit(this.getTenantId(), {
-            type: 'new_order',
-            orderId: order.id,
-            data: order,
-          });
-
-          // Notificar al cliente vía WhatsApp si tiene teléfono
-          if (dto.customerPhone) {
-            this.eventEmitter.emit('order.created', {
-              tenantId: this.getTenantId(),
-              customerPhone: dto.customerPhone,
-              orderNumber,
-              totalAmount: totalAmount.toNumber(),
-              orderType: dto.orderType || 'DINE_IN',
-              paymentMethod: dto.paymentMethod || 'CASH',
-            });
-          }
-
-          // --- DEDUCCIÓN DE INVENTARIO (ATÓMICA dentro del mismo tx) ---
-          const productItems = orderItemsData
-            .map((item) => {
-              // Extract productId from the variant relationship
-              const variant = dto.items.find(
-                (i) => i.variantId === item.variantId,
-              );
-              return {
-                productId:
-                  order.items.find((oi) => oi.variantId === item.variantId)
-                    ?.variant?.product?.id || '',
-                quantity: item.quantity,
-              };
-            })
-            .filter((i) => i.productId);
+          // DEDUCT INVENTORY RAW INGREDIENTS
+          const productItems = orderItemsData.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          }));
 
           if (productItems.length > 0) {
-            const inventoryResult = await this.inventoryService.deductByOrder(
-              this.getTenantId(),
-              order.id,
-              productItems,
-              tx,
-            );
-
+            const inventoryResult = await this.inventoryService.deductByOrder(tenantId, order.id, productItems, tx);
             if (inventoryResult.alerts.length > 0) {
-              this.logger.warn(
-                `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
-              );
+              this.logger.warn(`Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`);
             }
+          }
+
+          this.logger.log(`Orden ${orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
+
+          // SSE & WhatsApp Emit (Fase 3 to remove)
+          this.ordersGateway.emit(tenantId, { type: 'new_order', orderId: order.id, data: order });
+
+          if (dto.customerPhone) {
+            this.eventEmitter.emit('order.created', {
+              tenantId, customerPhone: dto.customerPhone, orderNumber,
+              totalAmount: totalAmount.toNumber(), orderType: dto.orderType || 'DINE_IN',
+              paymentMethod: dto.paymentMethod || 'CASH',
+            });
           }
 
           return order;
         });
       } catch (error) {
         lastError = error;
-        this.logger.error(`[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`, error.stack);
-        // Esperar un poco antes de reintentar si es un error de concurrencia
+        this.logger.error(`[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`);
         if (i < MAX_RETRIES - 1) {
           await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
         }
-        // Retry only on unique constraint violation (P2002) for orderNumber
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
-          // Check if it's strictly orderNumber if possible, or just retry P2002
-          continue;
-        }
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') continue;
         throw error;
       }
     }

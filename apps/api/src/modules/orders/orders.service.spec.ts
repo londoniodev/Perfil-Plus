@@ -7,6 +7,9 @@ import { InventoryService } from '../inventory/inventory.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 import { REQUEST } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { OrderPricingService } from './services/order-pricing.service';
+import { OrderValidationService } from './services/order-validation.service';
 
 // ============ MOCK FACTORIES ============
 
@@ -140,6 +143,9 @@ function createMockTx() {
       create: jest.fn().mockResolvedValue({ id: 'analytics-1' }),
       update: jest.fn(),
     },
+    waCustomer: {
+      upsert: jest.fn(),
+    },
   };
   return tx;
 }
@@ -171,6 +177,8 @@ describe('OrdersService', () => {
     module = await Test.createTestingModule({
       providers: [
         OrdersService,
+        OrderPricingService,
+        OrderValidationService,
         {
           provide: REQUEST,
           useValue: mockRequest,
@@ -194,6 +202,10 @@ describe('OrdersService', () => {
         {
           provide: InventoryService,
           useValue: mockInventoryService,
+        },
+        {
+          provide: EventEmitter2,
+          useValue: { emit: jest.fn() },
         },
       ],
     }).compile();
@@ -300,7 +312,13 @@ describe('OrdersService', () => {
       mockTx.productVariant.findUnique.mockResolvedValue(lowStockVariant);
 
       const dto = {
-        items: [{ variantId: 'var-1', quantity: 5 }], // quiere 5, solo hay 2
+        items: [
+          {
+            variantId: 'var-1',
+            quantity: 5,
+            modifiers: [{ modifierId: 'mod-3', quantity: 1 }],
+          },
+        ],
       };
 
       await expect(service.createOrder('user-1', dto as any)).rejects.toThrow(

@@ -7,6 +7,8 @@ import { InventoryModule } from '../inventory/inventory.module';
 import { OrderNotificationListener } from './order-notification.listener';
 import { WhatsappModule } from '../whatsapp/whatsapp.module';
 
+import { OrderPricingService } from './services/order-pricing.service';
+import { OrderValidationService } from './services/order-validation.service';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -17,7 +19,13 @@ import { AuthModule } from '../auth/auth.module';
     OrdersEventsController,
     DriverOrdersController,
   ],
-  providers: [OrdersService, OrdersGateway, OrderNotificationListener],
+  providers: [
+    OrdersService, 
+    OrdersGateway, 
+    OrderNotificationListener,
+    OrderPricingService,
+    OrderValidationService
+  ],
   exports: [OrdersService, OrdersGateway],
 })
 export class OrdersModule {}

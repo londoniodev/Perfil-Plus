@@ -10,13 +10,16 @@ export const metadata = {
     openGraph: { url: "/tienda" }
 }
 
+import { TenantFeature } from "@alvarosky/types"
+
 export default async function TiendaPage() {
     const headersList = await headers()
     const features = headersList.get("x-tenant-features")?.split(",") || [];
     const tenantId = headersList.get("x-tenant-id") || "template"
 
-    // Protección de ruta por Feature
-    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+    // Protección de ruta por Feature delegando al SSOT
+    const shopFeature: TenantFeature = "SHOP";
+    if (!features.includes(shopFeature)) {
         return notFound();
     }
 

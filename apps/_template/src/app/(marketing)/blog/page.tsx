@@ -27,10 +27,14 @@ async function getBlogPosts(tenantId: string) {
   }
 }
 
+import { notFound } from "next/navigation";
+import { TenantFeature } from "@alvarosky/types";
+
 export default async function BlogPage() {
   const headersList = await headers();
   const tenantId = headersList.get("x-tenant-id") || await getTenantId();
   const tenantSlug = headersList.get("x-tenant-slug") || "";
+  const features = headersList.get("x-tenant-features")?.split(",") || [];
 
   if (!tenantId) {
     return (
@@ -38,6 +42,11 @@ export default async function BlogPage() {
         <h1 className="text-2xl font-bold mb-4">Blog no disponible</h1>
       </Fill>
     );
+  }
+
+  const blogFeature: TenantFeature = "BLOG";
+  if (!features.includes(blogFeature)) {
+    return notFound();
   }
 
   const { data: posts } = await getBlogPosts(tenantId);

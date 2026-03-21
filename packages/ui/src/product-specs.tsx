@@ -10,28 +10,59 @@ interface ProductSpecsProps {
 export function ProductSpecs({ specs, className }: ProductSpecsProps) {
     if (!specs || Object.keys(specs).length === 0) return null
 
-    // Mapeo simple de claves a etiquetas legibles
     const formatLabel = (key: string) => {
-        // Convierte "camelCase" a "Title Case" (ej: fileSize -> File Size)
         return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
     }
 
+    const isUrl = (val: string) => {
+        return val.startsWith('http://') || val.startsWith('https://') || val.includes('http');
+    }
+
+    // Limpia el valor si viene con prefijos como "PDF: "
+    const getLinkData = (val: string) => {
+        const urlMatch = val.match(/https?:\/\/[^\s]+/);
+        if (!urlMatch) return { isLink: false, url: '', label: val };
+        
+        const url = urlMatch[0];
+        let label = val.replace(url, '').replace(/[:\s]+$/, '').trim();
+        if (!label) label = "Ver enlace";
+        
+        return { isLink: true, url, label };
+    }
+
     return (
-        <div className={cn("grid grid-cols-2 gap-3", className)}>
+        <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3", className)}>
             {Object.entries(specs).map(([key, value]) => {
                 if (value === null) return null
+                const valStr = String(value);
+                const { isLink, url, label } = getLinkData(valStr);
+
                 return (
-                    <div key={key} className="flex items-start gap-3 p-3 rounded-md border bg-muted/20">
-                        <div className="mt-0.5 text-muted-foreground">
+                    <div key={key} className="flex items-start gap-3 p-3 rounded-md border bg-muted/20 hover:bg-muted/30 transition-colors">
+                        <div className="mt-0.5 text-muted-foreground shrink-0">
                             <Check className="h-4 w-4" />
                         </div>
-                        <div className="flex flex-col text-sm">
-                            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                        <div className="flex flex-col text-sm min-w-0 w-full">
+                            <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider mb-1">
                                 {formatLabel(key)}
                             </span>
-                            <span className="font-semibold text-foreground truncate" title={String(value)}>
-                                {String(value)}
-                            </span>
+                            {isLink ? (
+                                <a 
+                                    href={url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="font-semibold text-primary hover:underline flex flex-col gap-0.5"
+                                >
+                                    <span className="text-xs text-foreground/80">{label}</span>
+                                    <span className="text-[10px] opacity-60 truncate w-full block font-normal">
+                                        {new URL(url).hostname}
+                                    </span>
+                                </a>
+                            ) : (
+                                <span className="font-semibold text-foreground break-all" title={valStr}>
+                                    {valStr}
+                                </span>
+                            )}
                         </div>
                     </div>
                 )

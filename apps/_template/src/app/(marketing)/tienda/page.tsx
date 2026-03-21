@@ -11,15 +11,16 @@ export const metadata = {
 }
 
 import { TenantFeature } from "@alvarosky/types"
+import { getTenantFeatures } from "@alvarosky/shared"
 
 export default async function TiendaPage() {
     const headersList = await headers()
-    const features = headersList.get("x-tenant-features")?.split(",") || [];
+    const features = getTenantFeatures(headersList);
     const tenantId = headersList.get("x-tenant-id") || "template"
 
     // Protección de ruta por Feature delegando al SSOT
     const shopFeature: TenantFeature = "SHOP";
-    if (!features.includes(shopFeature)) {
+    if (!features.has(shopFeature)) {
         return notFound();
     }
 

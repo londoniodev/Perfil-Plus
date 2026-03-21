@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { getTenantDesign } from "@/lib/tenant-server"
 import { TenantFeature } from "@alvarosky/types"
+import { getTenantFeatures } from "@alvarosky/shared"
 
 // ─────────────────────────────────────────────
 // Main Menu Page (Instagram Style)
@@ -19,10 +20,10 @@ export default async function MenuPage({
     const { table } = await searchParams
 
     const headersList = await headers()
-    const features = headersList.get("x-tenant-features")?.split(",") || [];
+    const features = getTenantFeatures(headersList);
 
     const restaurantFeature: TenantFeature = "RESTAURANT";
-    if (!features.includes(restaurantFeature)) {
+    if (!features.has(restaurantFeature)) {
         return notFound();
     }
 

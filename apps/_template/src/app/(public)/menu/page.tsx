@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import MenuClient from "@/components/menu/MenuClient"
 import { getTenantDesign } from "@/lib/tenant-server"
 import { TenantFeature } from "@alvarosky/types"
+import { getTenantFeatures } from "@alvarosky/shared"
 
 export default async function MenuPage({
     searchParams
@@ -11,11 +12,11 @@ export default async function MenuPage({
 }) {
     const headersList = await headers()
     const tenantId = headersList.get("x-tenant-id") || "template"
-    const features = headersList.get("x-tenant-features")?.split(",") || [];
+    const features = getTenantFeatures(headersList);
     const { table } = await searchParams
     
     const restaurantFeature: TenantFeature = "RESTAURANT";
-    if (!features.includes(restaurantFeature)) {
+    if (!features.has(restaurantFeature)) {
         return notFound();
     }
     

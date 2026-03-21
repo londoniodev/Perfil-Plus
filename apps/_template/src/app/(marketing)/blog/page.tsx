@@ -29,12 +29,13 @@ async function getBlogPosts(tenantId: string) {
 
 import { notFound } from "next/navigation";
 import { TenantFeature } from "@alvarosky/types";
+import { getTenantFeatures } from "@alvarosky/shared";
 
 export default async function BlogPage() {
   const headersList = await headers();
   const tenantId = headersList.get("x-tenant-id") || await getTenantId();
   const tenantSlug = headersList.get("x-tenant-slug") || "";
-  const features = headersList.get("x-tenant-features")?.split(",") || [];
+  const features = getTenantFeatures(headersList);
 
   if (!tenantId) {
     return (
@@ -45,7 +46,7 @@ export default async function BlogPage() {
   }
 
   const blogFeature: TenantFeature = "BLOG";
-  if (!features.includes(blogFeature)) {
+  if (!features.has(blogFeature)) {
     return notFound();
   }
 

@@ -233,7 +233,7 @@ export default function AdminBlogPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {filteredAndSortedPosts.map((post) => (
+                    {Array.isArray(filteredAndSortedPosts) && filteredAndSortedPosts.map((post) => (
                         <BlogCard
                             key={post.id}
                             post={{

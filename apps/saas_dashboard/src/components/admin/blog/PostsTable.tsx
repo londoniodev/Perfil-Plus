@@ -14,16 +14,17 @@ interface PostsTableProps {
 export default function PostsTable({ posts, onDelete, onTogglePublish }: PostsTableProps) {
     const router = useRouter();
 
-    const mappedPosts: PostGridItem[] = posts.map(post => ({
+    // Proteger contra posts que no sea un array (API 404)
+    const mappedPosts: PostGridItem[] = Array.isArray(posts) ? posts.map(post => ({
         id: post.id,
         title: post.title,
         excerpt: post.excerpt,
-        coverImage: post.coverImage,
+        coverImage: post.coverImage || null,
         published: post.published ?? false,
         isPremium: post.isPremium ?? false,
         readingTime: post.readingTime ?? null,
-        createdAt: post.createdAt,
-    }));
+        createdAt: new Date(post.createdAt),
+    })) : [];
 
     return (
         <SharedPostsTable

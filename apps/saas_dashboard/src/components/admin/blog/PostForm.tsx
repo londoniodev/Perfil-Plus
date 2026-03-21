@@ -107,10 +107,14 @@ export default function PostForm({ mode, postId }: PostFormProps) {
             fetch(`${API_BASE}/admin/blog/tags`, { headers, credentials: "include", signal: controller.signal }),
         ])
             .then(async ([catRes, tagRes]) => {
-                const cats = await catRes.json();
-                const tgs = await tagRes.json();
-                setCategories(cats);
-                setTags(tgs);
+                if (catRes.ok) {
+                    const cats = await catRes.json();
+                    if (Array.isArray(cats)) setCategories(cats);
+                }
+                if (tagRes.ok) {
+                    const tgs = await tagRes.json();
+                    if (Array.isArray(tgs)) setTags(tgs);
+                }
             })
             .catch((err) => {
                 if (err.name !== "AbortError") {
@@ -263,7 +267,7 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {categories.map((category) => (
+                                                    {Array.isArray(categories) && categories.map((category: any) => (
                                                         <SelectItem key={category.id} value={category.id}>
                                                             {category.name}
                                                         </SelectItem>

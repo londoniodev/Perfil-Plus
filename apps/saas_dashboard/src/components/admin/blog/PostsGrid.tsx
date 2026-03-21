@@ -15,11 +15,11 @@ export default function PostsGrid({ posts, onDelete, onTogglePublish }: PostsGri
     const router = useRouter();
 
     // Map local Post to shared PostGridItem
-    const mappedPosts: PostGridItem[] = posts.map(post => ({
+    const mappedPosts: PostGridItem[] = (Array.isArray(posts) ? posts : []).map(post => ({
         id: post.id,
         title: post.title,
         excerpt: post.excerpt,
-        coverImage: post.coverImage,
+        coverImage: post.coverImage || null,
         published: post.published ?? false,
         isPremium: post.isPremium ?? false, // Handle optional
         readingTime: post.readingTime ?? null,

@@ -5,6 +5,11 @@ import { TenantMarketingData } from "@/types/marketing";
 import { resolveLanding } from "@/lib/storefront-resolver";
 import { Metadata } from "next";
 
+// ── Plasmic SDK (Strangler Fig) ──
+import { PLASMIC } from "@/plasmic-init";
+import { PlasmicClientRootProvider } from "@/plasmic-init-client";
+import { PlasmicComponent } from "@plasmicapp/loader-nextjs";
+
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,13 +52,33 @@ import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront
 
 export default async function MarketingHubPage() {
   const headersList = await headers();
-  // El Edge Middleware ya nos regaló el ID en el túnel the proxy
+  // El Edge Middleware ya nos regaló el ID y el SLUG en el túnel del proxy
   const tenantId = headersList.get("x-tenant-id") || await getTenantId();
+  const tenantSlug = headersList.get("x-tenant-slug");
 
-  if (!tenantId) {
+  if (!tenantId || !tenantSlug) {
     return notFound();
   }
 
+  // ── Strangler Fig: Intento de resolver la landing desde Plasmic ──
+  // Usamos el SLUG para diferenciar tenants dentro del Workspace compartido.
+  // En Plasmic, cada tenant tiene su página bajo /{slug} (ej: /mauromera).
+  // Si Plasmic no tiene una página publicada para este slug, retorna null
+  // y el flujo cae al código legacy de forma transparente.
+  const plasmicPath = `/${tenantSlug}`;
+  const plasmicData = await PLASMIC.maybeFetchComponentData(plasmicPath).catch(() => null);
+
+  if (plasmicData) {
+    return (
+      <PlasmicClientRootProvider prefetchedData={plasmicData}>
+        <PlasmicComponent component={plasmicData.entryCompMetas[0].displayName} />
+      </PlasmicClientRootProvider>
+    );
+  }
+
+  // ── Legacy Fallback: Storefront Registry + DefaultStorefront ──
+  // Este bloque es el código original INTACTO. Se ejecuta cuando el tenant
+  // NO tiene una landing publicada en Plasmic.
   const marketingData = await getMarketingData(tenantId);
 
   // Fallback the contingencia en caso the error en API o DB vacía para el cliente visual.

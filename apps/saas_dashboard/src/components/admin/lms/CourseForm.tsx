@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { useToast } from "@alvarosky/ui";
-import { Button } from "@alvarosky/ui";
-import { Input } from "@alvarosky/ui";
-import { Textarea } from "@alvarosky/ui";
-import { Switch } from "@alvarosky/ui";
-import {
+import { 
+    useToast,
+    Button,
+    Input,
+    Textarea,
     Form,
     FormControl,
     FormDescription,
@@ -18,6 +17,10 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
+    FormSwitchField,
+    AdminPageWrapper,
+    IconSave,
+    IconLoader,
 } from "@alvarosky/ui";
 import { CourseSchema, type CourseValues } from "@alvarosky/features";
 
@@ -127,161 +130,148 @@ export default function CourseForm({
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Title */}
-                <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Título del Curso *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Introducción al Liderazgo" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Slug */}
-                <FormField
-                    control={form.control}
-                    name="slug"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Slug (URL) *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="introduccion-al-liderazgo" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                Identificador único para la URL. Solo letras minúsculas, números y guiones.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Description */}
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Descripción</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="Describe el contenido del curso..."
-                                    className="min-h-[100px]"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Cover Image URL */}
-                <FormField
-                    control={form.control}
-                    name="coverImage"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>URL de Imagen de Portada</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://ejemplo.com/imagen.jpg" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Order */}
-                <FormField
-                    control={form.control}
-                    name="order"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Orden</FormLabel>
-                            <FormControl>
-                                <Input type="number" min={0} {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                Posición del curso en la lista (menor número = primero)
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Switches Row */}
-                <div className="flex flex-col sm:flex-row gap-6">
-                    {/* Is Free */}
+        <AdminPageWrapper
+            title={mode === "create" ? "Nuevo Curso" : "Editar Curso"}
+            description="Configura los detalles del curso y su estado de publicación"
+            maxWidth="sm"
+        >
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-10">
+                    {/* Title */}
                     <FormField
                         control={form.control}
-                        name="isFree"
+                        name="title"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 flex-1">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Gratuito</FormLabel>
-                                    <FormDescription>
-                                        El curso estará disponible sin suscripción
-                                    </FormDescription>
-                                </div>
+                            <FormItem>
+                                <FormLabel>Título del Curso *</FormLabel>
                                 <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
+                                    <Input placeholder="Introducción al Liderazgo" {...field} />
                                 </FormControl>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
 
-                    {/* Published */}
+                    {/* Slug */}
                     <FormField
                         control={form.control}
-                        name="published"
+                        name="slug"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 flex-1">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base">Publicado</FormLabel>
-                                    <FormDescription>
-                                        Visible para los usuarios
-                                    </FormDescription>
-                                </div>
+                            <FormItem>
+                                <FormLabel>Slug (URL) *</FormLabel>
                                 <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
+                                    <Input placeholder="introduccion-al-liderazgo" {...field} />
                                 </FormControl>
+                                <FormDescription>
+                                    Identificador único para la URL. Solo letras minúsculas, números y guiones.
+                                </FormDescription>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
-                </div>
 
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.back()}
-                        disabled={isSubmitting}
-                        className="w-full sm:w-auto"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting || (!isDirty && mode === "edit")} className="w-full sm:w-auto">
-                        {isSubmitting
-                            ? "Guardando..."
-                            : mode === "create"
-                                ? "Crear Curso"
-                                : "Guardar Cambios"}
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    {/* Description */}
+                    <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Descripción</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="Describe el contenido del curso..."
+                                        className="min-h-[100px]"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Cover Image URL */}
+                    <FormField
+                        control={form.control}
+                        name="coverImage"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>URL de Imagen de Portada</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="https://ejemplo.com/imagen.jpg" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Order */}
+                    <FormField
+                        control={form.control}
+                        name="order"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Orden</FormLabel>
+                                <FormControl>
+                                    <Input type="number" min={0} {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                    Posición del curso en la lista (menor número = primero)
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* Switches Row */}
+                    <div className="flex flex-col sm:flex-row gap-6">
+                        <FormSwitchField
+                            control={form.control}
+                            name="isFree"
+                            label="Gratuito"
+                            description="El curso estará disponible sin suscripción"
+                            className="flex-1"
+                        />
+
+                        <FormSwitchField
+                            control={form.control}
+                            name="published"
+                            label="Publicado"
+                            description="Visible para los usuarios"
+                            className="flex-1"
+                        />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => router.back()}
+                            disabled={isSubmitting}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="w-full sm:w-auto"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <IconLoader className="mr-2 h-4 w-4 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                <>
+                                    <IconSave className="mr-2 h-4 w-4" />
+                                    {mode === "create" ? "Crear Curso" : "Guardar Cambios"}
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+        </AdminPageWrapper>
     );
 }
-

@@ -3,33 +3,29 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { postSchema, PostFormValues } from "@alvarosky/features";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { postSchema, type PostFormValues } from "@alvarosky/features";
 import { useAuth } from "@/context/AuthContext";
 import { API_BASE, TENANT_ID } from "@/lib/config";
-import { 
-    BlogEditor, 
-    ImageUploader, 
-    IconBack, 
-    useToast, 
-    Input, 
-    Textarea, 
-    Button, 
-    AdminPageWrapper, 
-    Switch,
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-    FormDescription
+import {
+    Button, Input, Textarea, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription,
+    useToast, Card, CardContent, CardHeader, CardTitle, CardDescription,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch,
+    SingleImageDropzone,
+    AdminPageWrapper, IconSave, IconLoader, IconBack,
 } from "@alvarosky/ui";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
 
-import { Category, Tag } from "@/types/blog";
-import { revalidateStorefront } from "@/lib/revalidate-storefront";
+interface Category {
+    id: string;
+    name: string;
+}
+
+interface Tag {
+    id: string;
+    name: string;
+}
 
 interface PostFormProps {
     mode: "create" | "edit";
@@ -37,93 +33,93 @@ interface PostFormProps {
 }
 
 export default function PostForm({ mode, postId }: PostFormProps) {
-    const { isAdmin, loading: authLoading } = useAuth();
     const router = useRouter();
+    const { user } = useAuth();
     const toast = useToast();
-
-    // Estado de datos auxiliares (no del formulario)
     const [categories, setCategories] = useState<Category[]>([]);
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(mode === "edit");
+    const [authToken, setAuthToken] = useState("");
+
+    // Read auth token on client side
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setAuthToken(localStorage.getItem("token") || "");
+        }
+    }, []);
 
     const form = useForm<PostFormValues>({
-        resolver: zodResolver(postSchema) as any,
+        resolver: standardSchemaResolver(postSchema) as any,
         defaultValues: {
             title: "",
             excerpt: "",
             content: "",
-            coverImage: null,
-            isPremium: false,
-            published: false,
+            coverImage: "",
             categoryId: "",
-            tagIds: [],
+            published: false,
+            isPremium: false,
             metaTitle: "",
             metaDescription: "",
         },
     });
 
-    // Redirigir si no es admin
+    // Fetch initial data for edit mode
     useEffect(() => {
-        if (!authLoading && !isAdmin) {
-            router.push("/perfil");
+        if (mode === "edit" && postId) {
+            const controller = new AbortController();
+            fetch(`${API_BASE}/admin/blog/posts/${postId}`, {
+                headers: { "x-tenant-id": TENANT_ID },
+                credentials: "include",
+                signal: controller.signal,
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    form.reset({
+                        title: data.title,
+                        excerpt: data.excerpt,
+                        content: data.content,
+                        coverImage: data.coverImage,
+                        categoryId: data.categoryId,
+                        published: data.published,
+                        isPremium: data.isPremium,
+                        metaTitle: data.metaTitle || "",
+                        metaDescription: data.metaDescription || "",
+                    });
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    if (err.name !== "AbortError") {
+                        toast.error("Error al cargar la publicación");
+                        setLoading(false);
+                    }
+                });
+            return () => controller.abort();
         }
-    }, [authLoading, isAdmin, router]);
+    }, [mode, postId, form, toast]);
 
-    // Cargar datos iniciales
+    // Fetch categories and tags
     useEffect(() => {
         const controller = new AbortController();
+        const headers = { "x-tenant-id": TENANT_ID };
 
-        const fetchData = async () => {
-            try {
-                const requests: Promise<Response>[] = [
-                    fetch(`${API_BASE}/blog/categories`, { headers: { 'x-tenant-id': TENANT_ID }, signal: controller.signal }),
-                    fetch(`${API_BASE}/blog/tags`, { headers: { 'x-tenant-id': TENANT_ID }, signal: controller.signal }),
-                ];
-
-                if (mode === "edit" && postId) {
-                    requests.push(
-                        fetch(`${API_BASE}/admin/blog/posts/${postId}`, { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include", signal: controller.signal })
-                    );
+        Promise.all([
+            fetch(`${API_BASE}/admin/blog/categories`, { headers, credentials: "include", signal: controller.signal }),
+            fetch(`${API_BASE}/admin/blog/tags`, { headers, credentials: "include", signal: controller.signal }),
+        ])
+            .then(async ([catRes, tagRes]) => {
+                const cats = await catRes.json();
+                const tgs = await tagRes.json();
+                setCategories(cats);
+                setTags(tgs);
+            })
+            .catch((err) => {
+                if (err.name !== "AbortError") {
+                    console.error("Error fetching dependencies:", err);
                 }
-
-                const results = await Promise.all(requests);
-                const [catRes, tagRes, postRes] = results;
-
-                if (catRes.ok) setCategories(await catRes.json());
-                if (tagRes.ok) setTags(await tagRes.json());
-
-                if (postRes) {
-                    if (!postRes.ok) throw new Error("Post no encontrado");
-                    const post = await postRes.json();
-                    
-                    form.reset({
-                        title: post.title,
-                        excerpt: post.excerpt,
-                        content: post.content,
-                        coverImage: post.coverImage,
-                        isPremium: post.isPremium,
-                        published: post.published,
-                        categoryId: post.categories[0]?.id || "",
-                        tagIds: post.tags.map((t: Tag) => t.id),
-                        metaTitle: post.metaTitle || "",
-                        metaDescription: post.metaDescription || "",
-                    });
-                }
-            } catch (err) {
-                if ((err as Error).name !== 'AbortError') {
-                    toast.error(err instanceof Error ? err.message : "Error al cargar datos");
-                }
-            } finally {
-                if (!controller.signal.aborted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        if (isAdmin) fetchData();
+            });
 
         return () => controller.abort();
-    }, [isAdmin, mode, postId, form, toast]);
+    }, []);
 
     const onSubmit = async (values: PostFormValues) => {
         try {
@@ -131,45 +127,48 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 ? `${API_BASE}/admin/blog/posts`
                 : `${API_BASE}/admin/blog/posts/${postId}`;
 
+            const method = mode === "create" ? "POST" : "PATCH";
+
             const res = await fetch(url, {
-                method: mode === "create" ? "POST" : "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-tenant-id": TENANT_ID,
+                },
                 credentials: "include",
                 body: JSON.stringify(values),
             });
 
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data.message || `Error al ${mode === "create" ? "crear" : "actualizar"} el post`);
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Error al guardar la publicación");
             }
 
-            toast.success(mode === "create" ? "Post creado correctamente" : "Post actualizado correctamente");
-            
-            // Revalidar caché de la tienda pública bajo demanda para Blog
-            await revalidateStorefront({ tag: `tenant-blog-${TENANT_ID}` });
-
+            toast.success(mode === "create" ? "Publicación creada" : "Publicación actualizada");
             router.push("/blog/publicaciones");
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Error desconocido");
+        } catch (err: any) {
+            toast.error(err.message);
         }
     };
 
-    if (authLoading || loading) return <div className="p-8 text-center text-muted-foreground">Cargando...</div>;
-    if (!isAdmin) return null;
+    if (loading) {
+        return (
+            <AdminPageWrapper title="Cargando..." description="Un momento por favor...">
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <IconLoader className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AdminPageWrapper>
+        );
+    }
 
     return (
         <AdminPageWrapper
-            title={mode === "create" ? "Nuevo Post" : "Editar Post"}
-            className="max-w-5xl mx-auto py-6 space-y-8"
-            actions={
-                <Button variant="ghost" onClick={() => router.push("/blog/publicaciones")} className="gap-2">
-                    <IconBack className="h-4 w-4" />
-                    Volver
-                </Button>
-            }
+            title={mode === "create" ? "Nueva Publicación" : "Editar Publicación"}
+            description="Gestiona el contenido del blog y su visibilidad"
+            maxWidth="lg"
         >
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-12">
                     <div className="grid gap-6">
                         <FormField
                             control={form.control}
@@ -190,14 +189,17 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                             name="excerpt"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Extracto *</FormLabel>
+                                    <FormLabel>Resumen (Excerpt) *</FormLabel>
                                     <FormControl>
-                                        <Textarea 
-                                            placeholder="Breve descripción..." 
-                                            className="min-h-[80px]" 
-                                            {...field} 
+                                        <Textarea
+                                            placeholder="Breve descripción del artículo..."
+                                            className="resize-none"
+                                            {...field}
                                         />
                                     </FormControl>
+                                    <FormDescription>
+                                        Se mostrará en la lista de artículos.
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -210,13 +212,13 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                                 <FormItem>
                                     <FormLabel>Imagen de portada</FormLabel>
                                     <FormControl>
-                                        <ImageUploader
-                                            apiBase={API_BASE}
-                                            tenantId={TENANT_ID}
-                                            value={field.value || null}
+                                        <SingleImageDropzone
+                                            value={field.value || ""}
                                             onChange={field.onChange}
-                                            label="Imagen de portada"
-                                            folder="blog-covers"
+                                            endpoint={`${API_BASE}/storage/upload/image`}
+                                            token={authToken}
+                                            tenantId={TENANT_ID}
+                                            folder="blog"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -231,10 +233,10 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                                 <FormItem>
                                     <FormLabel>Contenido *</FormLabel>
                                     <FormControl>
-                                        <BlogEditor
-                                            value={field.value}
-                                            onChange={field.onChange}
+                                        <Textarea
                                             placeholder="Escribe el contenido del artículo..."
+                                            className="min-h-[400px]"
+                                            {...field}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -242,147 +244,161 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                             )}
                         />
 
-                        <div className="grid gap-6 md:grid-cols-2 p-6 border rounded-lg bg-card">
-                            <FormField
-                                control={form.control}
-                                name="categoryId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Categoría</FormLabel>
-                                        <FormControl>
-                                            <CategorySelector
-                                                categories={categories}
-                                                selectedId={field.value}
-                                                onChange={field.onChange}
-                                                onCategoryCreated={(cat) => setCategories(prev => [...prev, cat])}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="flex flex-col gap-4 justify-center">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Categoría y Visibilidad</CardTitle>
+                                <CardDescription>Define la categoría del post y su estado de publicación.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid sm:grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
-                                    name="isPremium"
+                                    name="categoryId"
                                     render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between p-4 border rounded-md space-y-0">
-                                            <div className="space-y-0.5">
-                                                <FormLabel className="text-base font-medium">Premium</FormLabel>
-                                                <FormDescription>Contenido exclusivo para suscriptores</FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch 
-                                                    checked={field.value} 
-                                                    onCheckedChange={field.onChange} 
-                                                />
-                                            </FormControl>
+                                        <FormItem>
+                                            <FormLabel>Categoría</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecciona una categoría" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {categories.map((category) => (
+                                                        <SelectItem key={category.id} value={category.id}>
+                                                            {category.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="published"
-                                    render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between p-4 border rounded-md space-y-0">
-                                            <div className="space-y-0.5">
-                                                <FormLabel className="text-base font-medium">Publicado</FormLabel>
-                                                <FormDescription>Visible para los usuarios</FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch 
-                                                    checked={field.value} 
-                                                    onCheckedChange={field.onChange} 
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </div>
+                                <div className="flex flex-col gap-4 justify-center">
+                                    <FormField
+                                        control={form.control}
+                                        name="isPremium"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel className="text-base">Premium</FormLabel>
+                                                    <FormDescription>Contenido exclusivo para suscriptores</FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
 
-                        <FormField
-                            control={form.control}
-                            name="tagIds"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Etiquetas</FormLabel>
-                                    <FormControl>
-                                        <TagSelector
-                                            tags={tags}
-                                            selectedIds={field.value || []}
-                                            onChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                    <FormField
+                                        control={form.control}
+                                        name="published"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel className="text-base">Publicado</FormLabel>
+                                                    <FormDescription>Visible para los usuarios</FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                        <div className="p-6 border rounded-lg bg-card space-y-4">
-                            <h3 className="font-semibold text-lg">SEO</h3>
-                            <div className="grid gap-4 md:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>SEO</CardTitle>
+                                <CardDescription>Optimiza el post para motores de búsqueda.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid sm:grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
                                     name="metaTitle"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Meta Título</FormLabel>
+                                            <FormLabel className="flex justify-between">
+                                                <span>Meta Título</span>
+                                                <span className={`text-[10px] ${
+                                                    (field.value?.length || 0) > 60 ? "text-destructive" : "text-muted-foreground"
+                                                }`}>
+                                                    {field.value?.length || 0}/60
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder={form.getValues("title") || "Meta título"}
-                                                    maxLength={70}
-                                                    {...field}
-                                                />
+                                                <Input placeholder="Título para buscadores..." {...field} />
                                             </FormControl>
-                                            <FormDescription className="text-right">
-                                                {(field.value?.length || 0)}/70
-                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+
                                 <FormField
                                     control={form.control}
                                     name="metaDescription"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Meta Descripción</FormLabel>
+                                            <FormLabel className="flex justify-between">
+                                                <span>Meta Descripción</span>
+                                                <span className={`text-[10px] ${
+                                                    (field.value?.length || 0) > 160 ? "text-destructive" : "text-muted-foreground"
+                                                }`}>
+                                                    {field.value?.length || 0}/160
+                                                </span>
+                                            </FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder={form.getValues("excerpt") || "Meta descripción"}
-                                                    maxLength={160}
-                                                    className="resize-none"
+                                                    placeholder="Resumen para buscadores..."
+                                                    className="resize-none h-[80px]"
                                                     {...field}
                                                 />
                                             </FormControl>
-                                            <FormDescription className="text-right">
-                                                {(field.value?.length || 0)}/160
-                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
 
                         <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={() => router.push("/blog/publicaciones")} 
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => router.push("/blog/publicaciones")}
+                                disabled={form.formState.isSubmitting}
                                 className="w-full sm:w-auto"
                             >
+                                <IconBack className="mr-2 h-4 w-4" />
                                 Cancelar
                             </Button>
-                            <Button 
-                                type="submit" 
-                                disabled={form.formState.isSubmitting} 
+
+                            <Button
+                                type="submit"
+                                disabled={form.formState.isSubmitting}
                                 className="w-full sm:w-auto"
                             >
-                                {form.formState.isSubmitting ? "Guardando..." : "Guardar Cambios"}
+                                {form.formState.isSubmitting ? (
+                                    <>
+                                        <IconLoader className="mr-2 h-4 w-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <IconSave className="mr-2 h-4 w-4" />
+                                        {mode === "create" ? "Publicar" : "Guardar Cambios"}
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </div>

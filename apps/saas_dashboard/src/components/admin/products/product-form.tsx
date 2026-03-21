@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus, Trash2, Loader2, Save, ArrowLeft, AlertCircle } from "lucide-react"
+import { Trash2 } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { createProduct } from "@/actions/admin/create-product"
@@ -17,7 +18,9 @@ import {
     Button, Input, Textarea, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription,
     useToast, Card, CardContent, CardHeader, CardTitle, CardDescription,
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch,
-    SingleImageDropzone, YouTubeEmbedInput, PrivateDocumentDropzone
+    SingleImageDropzone, YouTubeEmbedInput, PrivateDocumentDropzone,
+    AdminFormSection, FormSwitchField, IconTrash,
+    AdminPageWrapper, IconPlus, IconSave, IconLoader, IconBack,
 } from "@alvarosky/ui"
 
 // Shared Schema
@@ -152,8 +155,13 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit, (errors: any) => console.error("Validation Errors:", errors))} className="space-y-6 w-full max-w-[1000px] mx-auto pb-20">
+        <AdminPageWrapper
+            title={initialData ? "Editar Producto" : "Nuevo Producto"}
+            description="Gestiona los detalles, variantes y archivos de tu producto"
+            maxWidth="md"
+        >
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit, (errors: any) => console.error("Validation Errors:", errors))} className="space-y-6 pb-20">
 
                 <Card>
                     <CardHeader>
@@ -418,22 +426,22 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             variant="outline"
                             onClick={() => appendAttachment({ name: "", url: "" })}
                         >
-                            <Plus className="h-4 w-4 mr-2" />
+                            <IconPlus className="h-4 w-4 mr-2" />
                             Agregar Documento
                         </Button>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {attachmentFields.map((field, index) => (
-                            <div key={field.id} className="grid grid-cols-12 gap-4 items-start p-4 border rounded-lg bg-card/50">
+                            <AdminFormSection key={field.id} grid className="gap-4">
                                 <div className="col-span-12 sm:col-span-5">
                                     <FormField
                                         control={form.control}
                                         name={`attachments.${index}.name`}
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-xs">Nombre del documento (Ej: Ficha Técnica)</FormLabel>
+                                                <FormLabel>Nombre del adjunto</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} placeholder="Nombre descriptivo" />
+                                                    <Input placeholder="Ej: PDF de la guía" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -446,33 +454,27 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                         name={`attachments.${index}.url`}
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="text-xs">Archivo PDF</FormLabel>
+                                                <FormLabel>URL del archivo</FormLabel>
                                                 <FormControl>
-                                                    <PrivateDocumentDropzone
-                                                        endpoint={`${API_BASE}/storage/upload/attachment`}
-                                                        fileIntent="PUBLIC_ATTACHMENT"
-                                                        token={authToken}
-                                                        value={field.value}
-                                                        onChange={field.onChange}
-                                                    />
+                                                    <Input placeholder="https://..." {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                 </div>
-                                <div className="col-span-12 sm:col-span-1 flex justify-end mt-6">
+                                <div className="col-span-12 sm:col-span-1 flex items-end justify-end">
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
+                                        className="text-destructive h-10 w-10"
                                         onClick={() => removeAttachment(index)}
-                                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        <IconTrash className="h-4 w-4" />
                                     </Button>
                                 </div>
-                            </div>
+                            </AdminFormSection>
                         ))}
                         {attachmentFields.length === 0 && (
                             <p className="text-sm text-muted-foreground text-center py-4">No hay documentos adjuntos. Haz clic en "Agregar Documento".</p>
@@ -493,22 +495,22 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                 variant="outline"
                                 onClick={() => append({ name: "", sku: "", price: null, stock: 0, isDefault: false })}
                             >
-                                <Plus className="h-4 w-4 mr-2" />
+                                <IconPlus className="h-4 w-4 mr-2" />
                                 Agregar
                             </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 border rounded-lg bg-card/50">
+                                <AdminFormSection key={field.id} grid className="gap-3">
                                     <div className="col-span-12 sm:col-span-3">
                                         <FormField
                                             control={form.control}
                                             name={`variants.${index}.name`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-xs">Nombre</FormLabel>
+                                                    <FormLabel>Nombre</FormLabel>
                                                     <FormControl>
-                                                        <Input {...field} placeholder="Ej: Standard" />
+                                                        <Input placeholder="Ej: Standard" {...field} />
                                                     </FormControl>
                                                 </FormItem>
                                             )}
@@ -520,7 +522,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                             name={`variants.${index}.stock`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-xs">Stock</FormLabel>
+                                                    <FormLabel>Stock</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             {...field}
@@ -534,44 +536,31 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                             )}
                                         />
                                     </div>
-                                    <div className="col-span-12 sm:col-span-1 flex justify-end">
+                                    <div className="col-span-12 sm:col-span-1 flex items-end justify-end">
                                         {fields.length > 1 && (
                                             <Button
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
+                                                className="text-destructive h-10 w-10"
                                                 onClick={() => remove(index)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <IconTrash className="h-4 w-4" />
                                             </Button>
                                         )}
                                     </div>
-                                </div>
+                                </AdminFormSection>
                             ))}
                         </CardContent>
                     </Card>
                 )}
 
                 <div className="pb-4">
-                    <FormField
+                    <FormSwitchField
                         control={form.control}
                         name="published"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border/40 p-4 bg-card shadow-sm">
-                                <div className="space-y-0.5">
-                                    <FormLabel className="text-base font-medium">Publicado</FormLabel>
-                                    <FormDescription className="text-sm">
-                                        Visible en la tienda/menú
-                                    </FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                            </FormItem>
-                        )}
+                        label="Publicado"
+                        description="Visible en la tienda/menú"
                     />
                 </div>
 
@@ -584,12 +573,12 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                     >
                         {form.formState.isSubmitting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <IconLoader className="mr-2 h-4 w-4 animate-spin" />
                                 Guardando...
                             </>
                         ) : (
                             <>
-                                <Save className="mr-2 h-4 w-4" />
+                                <IconSave className="mr-2 h-4 w-4" />
                                 {initialData ? "Guardar Cambios" : "Crear Producto"}
                             </>
                         )}
@@ -604,11 +593,12 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                         }}
                         disabled={form.formState.isSubmitting}
                     >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        <IconBack className="mr-2 h-4 w-4" />
                         Cancelar
                     </Button>
                 </div>
             </form>
         </Form>
+    </AdminPageWrapper>
     )
 }

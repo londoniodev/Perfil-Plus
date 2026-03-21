@@ -34,6 +34,8 @@ export interface AdminPageWrapperProps {
     children: React.ReactNode;
     /** Custom class for wrapper */
     className?: string;
+    /** Max width for children container */
+    maxWidth?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 // ============================================================================
@@ -47,7 +49,16 @@ export function AdminPageWrapper({
     actions,
     children,
     className,
+    maxWidth = "full",
 }: AdminPageWrapperProps) {
+    const maxWidthClasses = {
+        sm: "max-w-3xl",
+        md: "max-w-5xl",
+        lg: "max-w-6xl",
+        xl: "max-w-7xl",
+        full: "max-w-full",
+    };
+
     return (
         <div className={`relative flex flex-1 flex-col gap-2 p-2 md:p-4 min-h-screen ${className || ""}`}>
             {/* Ambient Background Glow for Premium Feel */}
@@ -96,7 +107,9 @@ export function AdminPageWrapper({
             )}
 
             {/* Page Content */}
-            {children}
+            <div className={`w-full mx-auto ${maxWidthClasses[maxWidth]}`}>
+                {children}
+            </div>
         </div>
     );
 }

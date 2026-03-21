@@ -11,7 +11,6 @@ datasource db {
 model Tenant {
   id                 String              @id @default(cuid())
   slug               String              @unique
-  domain             String?             @unique
   dbName             String
   name               String?
   status             String              @default("ACTIVE")
@@ -22,6 +21,8 @@ model Tenant {
   features           String[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  domain             String?             @unique
+  brandSettings      BrandSettings?
   categories         Category[]
   courses            Course[]
   deliveryDrivers    DeliveryDriver[]
@@ -42,12 +43,11 @@ model Tenant {
   tags               Tag[]
   themes             Theme[]
   users              User[]
-  waConversations    WaConversation[]
-  waMessages         WaMessage[]
-  waCustomers        WaCustomer[]
   waCarts            WaCart[]
+  waConversations    WaConversation[]
+  waCustomers        WaCustomer[]
+  waMessages         WaMessage[]
   warehouses         Warehouse[]
-  brandSettings      BrandSettings?
 }
 
 model User {
@@ -153,17 +153,12 @@ model Post {
   @@index([published, isPremium])
 }
 
-enum CategoryType {
-  PRODUCT
-  BLOG
-}
-
 model Category {
   id       String                 @id @default(cuid())
   name     String
   slug     String
-  type     CategoryType           @default(PRODUCT)
   tenantId String
+  type     CategoryType           @default(PRODUCT)
   posts    CategoriesOnPosts[]
   products CategoriesOnProducts[]
   tenant   Tenant                 @relation(fields: [tenantId], references: [id])
@@ -373,11 +368,11 @@ model StoreSettings {
   storeEmail      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  deliveryFee     Decimal? @default(0) @db.Decimal(10, 2)
   tenantId        String
   waAccessToken   String?
   waPhoneNumberId String?  @unique
   wabaId          String?  @unique
-  deliveryFee     Decimal? @default(0) @db.Decimal(10, 2)
   tenant          Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
@@ -534,13 +529,13 @@ model Order {
   notes             String?
   orderType         OrderType               @default(DINE_IN)
   tableNumber       String?
-  tenantId          String
-  guestCount        Int?                    @default(1)
   assignedAt        DateTime?
+  customerEmail     String?
   deliverySequence  Int?
   driverId          String?
-  customerEmail     String?
+  guestCount        Int?                    @default(1)
   identification    String?
+  tenantId          String
   driver            DeliveryDriver?         @relation(fields: [driverId], references: [id])
   tenant            Tenant                  @relation(fields: [tenantId], references: [id])
   user              User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -856,27 +851,50 @@ model WaCustomer {
 }
 
 model WaCart {
-  id           String   @id @default(cuid()) // Format: wa-xxxx-yyyy
-  tenantId     String
+  id            String   @id @default(cuid())
+  tenantId      String
   customerPhone String?
-  cartData     Json     // { items: [...], customerData: {...} }
-  expiresAt    DateTime // Custom TTL, e.g., 24h
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  cartData      Json
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, id])
   @@index([expiresAt])
 }
 
+model BrandSettings {
+  id             String     @id @default(cuid())
+  tenantId       String     @unique
+  primaryColor   String     @default("#09090b")
+  secondaryColor String     @default("#f4f4f5")
+  borderRadius   Float      @default(0.5)
+  fontFamily     String     @default("Inter, sans-serif")
+  layoutType     LayoutType @default(CLASSIC)
+  logoUrl        String?
+  faviconUrl     String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  tagline        String?
+  authBgUrl      String?
+  authQuote      String?
+  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+enum CategoryType {
+  PRODUCT
+  BLOG
+}
+
 enum Role {
   USER
   ADMIN
-  SUPERADMIN
   WAITER
   KITCHEN
   CASHIER
   DRIVER
+  SUPERADMIN
 }
 
 enum SubscriptionStatus {
@@ -960,22 +978,4 @@ enum LayoutType {
   CLASSIC
   INSTAGRAM
   MINIMAL
-}
-
-model BrandSettings {
-  id             String     @id @default(cuid())
-  tenantId       String     @unique
-  primaryColor   String     @default("#09090b")
-  secondaryColor String     @default("#f4f4f5")
-  borderRadius   Float      @default(0.5)
-  fontFamily     String     @default("Inter, sans-serif")
-  layoutType     LayoutType @default(CLASSIC)
-  logoUrl        String?
-  faviconUrl     String?
-  tagline        String?
-  authBgUrl      String?
-  authQuote      String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }

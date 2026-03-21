@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button, useToast } from "@alvarosky/ui"
 import { Power, Loader2, RefreshCw } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 type DriverProfile = {
     id: string
@@ -11,6 +12,7 @@ type DriverProfile = {
 
 export function DriverMobileHeader() {
     const toast = useToast()
+    const router = useRouter()
     const [status, setStatus] = useState<string | null>(null)
     const [toggling, setToggling] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
@@ -55,7 +57,8 @@ export function DriverMobileHeader() {
 
     const handleRefresh = () => {
         setRefreshing(true)
-        window.location.reload()
+        router.refresh()
+        setTimeout(() => setRefreshing(false), 500)
     }
 
     const isOnline = status === "AVAILABLE"

@@ -28,6 +28,7 @@ export function CategorySelector({ value = EMPTY_VALUE, onChange }: CategorySele
     const [inputValue, setInputValue] = React.useState("")
     const [editingId, setEditingId] = React.useState<string | null>(null)
     const [editValue, setEditValue] = React.useState("")
+    const listboxId = React.useId()
 
     const {
         categories,
@@ -100,6 +101,7 @@ export function CategorySelector({ value = EMPTY_VALUE, onChange }: CategorySele
                     type="button"
                     variant="outline"
                     role="combobox"
+                    aria-controls={listboxId}
                     aria-expanded={open}
                     className="w-full justify-between"
                 >
@@ -109,7 +111,7 @@ export function CategorySelector({ value = EMPTY_VALUE, onChange }: CategorySele
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start">
+            <PopoverContent id={listboxId} className="w-[300px] p-0" align="start">
                 <div className="flex flex-col overflow-hidden rounded-md border text-popover-foreground shadow-md outline-none">
                     <div className="border-b px-3 py-2">
                         <Input

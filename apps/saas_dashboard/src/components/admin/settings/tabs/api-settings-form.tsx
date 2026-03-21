@@ -7,6 +7,7 @@ import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel,
 import { Loader2 } from "lucide-react"
 import { updateApiSettings } from "@/actions/admin/update-settings"
 import { WhatsAppEmbeddedSignup } from "@/components/admin/whatsapp/embedded-signup"
+import { useRouter } from "next/navigation"
 
 interface ApiSettingsFormProps {
     initialData?: ApiSettingsValues
@@ -16,6 +17,7 @@ interface ApiSettingsFormProps {
 
 export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSettingsFormProps) {
     const toast = useToast()
+    const router = useRouter()
 
     const form = useForm<ApiSettingsValues>({
         resolver: zodResolver(apiSettingsSchema),
@@ -74,7 +76,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                         </div>
                         
                         <WhatsAppEmbeddedSignup onSuccess={() => {
-                            window.location.reload()
+                            router.refresh()
                         }} />
 
                         {waPhoneNumberId && (

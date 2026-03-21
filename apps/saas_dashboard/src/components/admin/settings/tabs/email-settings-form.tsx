@@ -112,7 +112,7 @@ export function EmailSettingsForm({ initialData }: EmailSettingsFormProps) {
                                 <FormItem>
                                     <FormLabel>Contraseña</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="password" />
+                                        <Input {...field} type="password" autoComplete="off" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

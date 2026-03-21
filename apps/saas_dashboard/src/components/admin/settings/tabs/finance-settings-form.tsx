@@ -68,7 +68,7 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                         <FormItem>
                                             <FormLabel>Access Token</FormLabel>
                                             <FormControl>
-                                                <Input {...field} type="password" placeholder="APP_USR-xxx" className="font-mono text-sm" />
+                                                <Input {...field} type="password" placeholder="APP_USR-xxx" className="font-mono text-sm" autoComplete="off" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -82,7 +82,7 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                             <FormItem>
                                                 <FormLabel>Client ID (Opcional)</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} placeholder="1234..." className="font-mono text-sm" />
+                                                    <Input {...field} placeholder="1234..." className="font-mono text-sm" autoComplete="off" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

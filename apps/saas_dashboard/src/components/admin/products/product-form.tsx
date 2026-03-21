@@ -168,7 +168,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                 <FormItem>
                                     <FormLabel>Nombre del Producto *</FormLabel>
                                     <FormControl>
-                                        <Input {...field} placeholder="Ej: Hamburguesa Doble" className="bg-background" />
+                                        <Input {...field} placeholder="Ej: Hamburguesa Doble" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -190,7 +190,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                                     type="number"
                                                     step="0.01"
                                                     min="0"
-                                                    className="pl-7 bg-background"
+                                                    className="pl-7"
                                                     placeholder="0.00"
                                                     onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                                                 />
@@ -226,7 +226,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                 <FormItem>
                                     <FormLabel>Descripción *</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} rows={4} placeholder="Descripción detallada..." className="resize-none bg-background" />
+                                        <Textarea {...field} rows={4} placeholder="Descripción detallada..." className="resize-none" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -246,7 +246,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                             disabled={!!initialData}
                                         >
                                             <FormControl>
-                                                <SelectTrigger className="bg-background">
+                                                <SelectTrigger>
                                                     <SelectValue placeholder="Selecciona un tipo" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -359,7 +359,7 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                                                 defaultValue={field.value}
                                             >
                                                 <FormControl>
-                                                    <SelectTrigger className="bg-background">
+                                                    <SelectTrigger>
                                                         <SelectValue placeholder="Selecciona un curso (opcional)" />
                                                     </SelectTrigger>
                                                 </FormControl>

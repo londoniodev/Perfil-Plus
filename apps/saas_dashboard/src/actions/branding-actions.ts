@@ -20,7 +20,7 @@ export async function updateTenantBranding(data: any) {
 
         revalidatePath("/", "layout"); // Revalidate everything to apply new theme everywhere
         // @ts-ignore - Bypass Next.js 16 type restrictiveness
-        revalidateTag("tenant-branding"); // Invalidar la caché the 5 mins
+        revalidateTag("tenant-branding", "max" as any); // Invalidar la caché the 5 mins
 
         return { success: true };
     } catch (e) {

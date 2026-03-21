@@ -23,7 +23,7 @@ export async function updateBrandSettings(data: BrandSettingsFormValues) {
 
         revalidatePath("/", "layout");
         // @ts-ignore - Bypass Next.js 16 type restrictiveness
-        revalidateTag("tenant-branding");
+        revalidateTag("tenant-branding", "max" as any);
 
         return { success: true };
     } catch (e: any) {

@@ -161,7 +161,7 @@ export class TenantService {
    * Ahora también incluye el logo desde SystemSettings.
    */
   async getTenantBranding(tenantId: string) {
-    if (tenantId === 'default' || tenantId === 'default_tenant') {
+    if (tenantId === 'default' || tenantId === 'default_tenant' || tenantId === 'admin_build' || tenantId === 'template') {
       this.logger.log(`[BRANDING DEBUG] Ignorando búsqueda en BD para tenant '${tenantId}' (Next.js ISR Fallback)`);
       return {
         id: 'default',

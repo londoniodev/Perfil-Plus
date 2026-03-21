@@ -103,7 +103,10 @@ export class AuthService {
 
     // Buscar usuario
     const user = await this.prisma.secure.user.findFirst({
-      where: { tenantId: actualTenantId, email: dto.email.toLowerCase() },
+      where: {
+        tenantId: actualTenantId,
+        email: dto.email.toLowerCase().trim(),
+      },
       select: {
         id: true,
         email: true,

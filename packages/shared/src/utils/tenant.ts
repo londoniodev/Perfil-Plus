@@ -1,13 +1,13 @@
-import { TenantFeature } from "@alvarosky/types";
+import { TenantFeature, AVAILABLE_FEATURES } from "@alvarosky/types";
 
 /**
  * Extrae y parsea limpiamente los módulos (features) activos del Tenant
  * desde sus cabeceras HTTP (inyectadas habitualmente por el Middleware).
  *
- * @param headersList - Instancia ReadonlyHeaders nativa de Next.js (devuelta por `headers()`) o un objeto Headers estándar.
- * @returns Set<TenantFeature> que garantiza búsquedas O(1) consistentes y un tipado fuerte (Single Source of Truth).
+ * @param headersList - Instancia de Headers (nativo o de Next.js `headers()`).
+ * @returns Set<TenantFeature> que garantiza búsquedas O(1) y validación contra el SSOT.
  */
-export function getTenantFeatures(headersList: Headers | any): Set<TenantFeature> {
+export function getTenantFeatures(headersList: Headers): Set<TenantFeature> {
     const rawHeader = headersList.get("x-tenant-features") || "";
     let parsedArray: string[] = [];
   
@@ -23,16 +23,10 @@ export function getTenantFeatures(headersList: Headers | any): Set<TenantFeature
       parsedArray = rawHeader.split(",");
     }
   
-    // Sanitización estricta: trim, UPPERCASE, y eliminar vacíos
-    const safeFeatures = parsedArray
-      .map((f: string) => f.trim().toUpperCase())
-      .filter((f: string) => f.length > 0) as TenantFeature[];
-
-    const finalSet = new Set(safeFeatures);
-
-    // DEBUGGING ACTIVO
-    console.log("[DEBUG getTenantFeatures] Raw Header:", rawHeader);
-    console.log("[DEBUG getTenantFeatures] Parsed Set:", Array.from(finalSet));
-
-    return finalSet;
+    // Sanitización estricta y validación contra el SSOT (AVAILABLE_FEATURES)
+    const validFeatures = parsedArray
+        .map((f: string) => f.trim().toUpperCase())
+        .filter((f: string) => AVAILABLE_FEATURES.some(feat => feat.value === f)) as TenantFeature[];
+  
+    return new Set(validFeatures);
 }

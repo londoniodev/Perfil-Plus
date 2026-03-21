@@ -47,18 +47,33 @@ export function DashboardShell({ children, features, tenantName, defaultOpen, ap
     }
 
     // Generate breadcrumbs with overrides
+    // Generate breadcrumbs with overrides
     const breadcrumbs = React.useMemo(() => {
         const segments = pathname.split('/').filter(Boolean)
         // Skip the first segment if it's 'dashboard' (it's the basePath)
         const displaySegments = segments[0] === 'dashboard' ? segments.slice(1) : segments
+        
         return displaySegments.map((segment, index) => {
-            const href = `/${displaySegments.slice(0, index + 1).join('/')}`
-            // Priority: context override > known labels > formatted segment
-            const label = breadcrumbOverrides[segment]
-                || segmentLabels[segment]
-                || segment
+            const href = `/${segments.slice(0, segments.indexOf(segment) + 1).join('/')}`
+            
+            // Contextual label for 'nuevo'
+            let label = breadcrumbOverrides[segment] || segmentLabels[segment];
+            
+            if (segment === 'nuevo' && !breadcrumbOverrides[segment]) {
+                const prevSegment = displaySegments[index - 1];
+                if (prevSegment === 'menu') label = 'Nuevo Plato';
+                else if (prevSegment === 'publicaciones') label = 'Nuevo Post';
+                else if (prevSegment === 'productos') label = 'Nuevo Producto';
+                else if (prevSegment === 'temas') label = 'Nuevo Tema';
+                else if (prevSegment === 'usuarios') label = 'Nuevo Usuario';
+                else label = 'Nuevo';
+            }
+
+            if (!label) {
+                label = segment
                     .replace(/-/g, ' ')
-                    .replace(/^./, (c) => c.toUpperCase())
+                    .replace(/^./, (c) => c.toUpperCase());
+            }
 
             return { label, href }
         })

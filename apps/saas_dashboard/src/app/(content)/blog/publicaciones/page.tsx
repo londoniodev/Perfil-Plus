@@ -188,7 +188,7 @@ export default function AdminBlogPage() {
             title="Gestión del Blog"
             description="Gestiona tus artículos y publicaciones"
             actions={
-                <Button onClick={() => router.push("/blog/nuevo")}>
+                <Button onClick={() => router.push("/blog/publicaciones/nuevo")}>
                     <IconPlus className="mr-2 h-4 w-4" />
                     Nuevo Post
                 </Button>

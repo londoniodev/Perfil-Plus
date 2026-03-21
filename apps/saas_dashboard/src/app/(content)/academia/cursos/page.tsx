@@ -181,15 +181,15 @@ export default function AdminCursosPage() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
-                <div className="rounded-lg border bg-card p-4">
+                <div className="rounded-lg border border-border/40 bg-card p-4">
                     <p className="text-sm text-muted-foreground">Total Temas</p>
                     <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
-                <div className="rounded-lg border bg-card p-4">
+                <div className="rounded-lg border border-border/40 bg-card p-4">
                     <p className="text-sm text-muted-foreground">Publicados</p>
                     <p className="text-2xl font-bold text-green-600">{stats.published}</p>
                 </div>
-                <div className="rounded-lg border bg-card p-4">
+                <div className="rounded-lg border border-border/40 bg-card p-4">
                     <p className="text-sm text-muted-foreground">Borradores</p>
                     <p className="text-2xl font-bold text-yellow-600">{stats.draft}</p>
                 </div>

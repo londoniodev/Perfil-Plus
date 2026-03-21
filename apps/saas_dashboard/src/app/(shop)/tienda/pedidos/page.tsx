@@ -66,23 +66,23 @@ export default async function OrdersPage() {
         >
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
                     <div className="text-sm font-medium text-muted-foreground">Total Ventas</div>
                     <div className="text-2xl font-bold mt-2">
                         <PriceDisplay price={stats.totalSales} />
                     </div>
                 </div>
-                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
                     <div className="text-sm font-medium text-muted-foreground">Órdenes</div>
                     <div className="text-2xl font-bold mt-2">{stats.totalOrders}</div>
                 </div>
-                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
                     <div className="text-sm font-medium text-muted-foreground">Ticket Medio</div>
                     <div className="text-2xl font-bold mt-2">
                         <PriceDisplay price={stats.averageTicket} />
                     </div>
                 </div>
-                <div className="rounded-xl border bg-card text-card-foreground shadow p-4">
+                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
                     <div className="text-sm font-medium text-muted-foreground">Pendientes</div>
                     <div className="text-2xl font-bold mt-2">{stats.pendingOrders}</div>
                 </div>

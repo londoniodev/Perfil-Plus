@@ -141,7 +141,7 @@ export default function NuevoTemaPage() {
                             </div>
 
                             <div className="flex items-end h-full pb-2">
-                                <div className="flex items-center justify-between w-full p-3 bg-muted/30 rounded-lg border">
+                                <div className="flex items-center justify-between w-full p-3 bg-muted/30 rounded-lg border border-border/40">
                                     <div className="space-y-0.5">
                                         <Label className="text-base">Publicar</Label>
                                         <p className="text-xs text-muted-foreground">Hacer visible para usuarios</p>

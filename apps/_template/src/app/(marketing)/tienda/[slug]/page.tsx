@@ -4,6 +4,8 @@ import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
 import { headers } from "next/headers"
 import { Metadata } from "next"
+import { getTenantFeatures } from "@alvarosky/shared"
+import { TenantFeature } from "@alvarosky/types"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>
@@ -12,10 +14,11 @@ interface ProductPageProps {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
     const { slug } = await params;
     const headersList = await headers();
-    const features = headersList.get("x-tenant-features")?.split(",") || [];
+    const features = getTenantFeatures(headersList);
 
     // Protección de ruta por Feature
-    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+    const shopFeature: TenantFeature = "SHOP";
+    if (!features.has(shopFeature)) {
         return { title: "No encontrado" };
     }
 
@@ -54,10 +57,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params }: ProductPageProps) {
     const { slug } = await params
     const headersList = await headers();
-    const features = headersList.get("x-tenant-features")?.split(",") || [];
+    const features = getTenantFeatures(headersList);
 
     // Protección de ruta por Feature
-    if (!features.includes("ECOMMERCE") && !features.includes("STORE")) {
+    const shopFeature: TenantFeature = "SHOP";
+    if (!features.has(shopFeature)) {
         return notFound();
     }
 

@@ -4,6 +4,8 @@ import { getPostBySlug } from "@/lib/api";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { headers } from "next/headers";
 import { Metadata } from "next";
+import { getTenantFeatures } from "@alvarosky/shared";
+import { TenantFeature } from "@alvarosky/types";
 import { PostHeader, RelatedTopics, AdaptiveImage, Button, IconLock, IconDocument, IconFile, ShareButtons, TableOfContents, type TocItem } from "@alvarosky/ui";
 import { BlogBackButton } from "../BlogBackButton";
 
@@ -17,6 +19,14 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const { slug } = await params;
   try {
     const headersList = await headers()
+    const features = getTenantFeatures(headersList);
+    
+    // Protección de ruta por Feature (Si no tiene BLOG, no generamos meta)
+    const blogFeature: TenantFeature = "BLOG";
+    if (!features.has(blogFeature)) {
+      return { title: "No encontrado" };
+    }
+
     const tenantId = headersList.get("x-tenant-id") || "template"
     const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
     const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
@@ -74,6 +84,14 @@ export default async function PostPage({ params }: PostPageProps) {
   let dynamicSiteUrl = "http://localhost:3000";
   try {
     const headersList = await headers()
+    const features = getTenantFeatures(headersList);
+
+    // 1. Protección de ruta por Feature (DRY + Performance: Antes de DB)
+    const blogFeature: TenantFeature = "BLOG";
+    if (!features.has(blogFeature)) {
+      return notFound();
+    }
+
     const tenantId = headersList.get("x-tenant-id") || "template"
     const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
     const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");

@@ -148,10 +148,8 @@ export class TenantService {
       // pero debería estar aprovisionado.
     }
 
-    // 6. Invalidar caché en Redis para el dominio
-    const cacheKey = `tenant_resolve_${domain.toLowerCase()}`;
-    await this.cacheManager.del(cacheKey);
-    this.logger.log(`Caché de dominio invalidado para: ${domain}`);
+    // 6. Invalidar caché en Redis (slug + dominio completo)
+    await this.invalidateTenantCache(slug, domain);
 
     return newTenant;
   }
@@ -570,15 +568,7 @@ export class TenantService {
     );
 
     // 3. Invalidar caché Redis (el middleware cachea la resolución del tenant)
-    const cacheKeys = [
-      `tenant_resolve_${tenant.slug}`,
-      ...(tenant.domain ? [`tenant_resolve_${tenant.domain}`] : []),
-    ];
-
-    for (const key of cacheKeys) {
-      await this.cacheManager.del(key);
-      this.logger.log(`Caché Redis invalidada: ${key}`);
-    }
+    await this.invalidateTenantCache(tenant.slug, tenant.domain ?? undefined);
 
     // 4. Revalidación ISR del storefront
     this.triggerFrontendRevalidation([
@@ -587,5 +577,25 @@ export class TenantService {
     ]);
 
     return updated;
+  }
+
+  /**
+   * Invalida todas las claves de caché Redis asociadas a un tenant.
+   * Borra tanto la clave por slug (lo que envía el middleware) como la de dominio completo.
+   */
+  private async invalidateTenantCache(slug?: string, domain?: string) {
+    const keys = new Set<string>();
+    if (slug) keys.add(`tenant_resolve_${slug.toLowerCase()}`);
+    if (domain) {
+      keys.add(`tenant_resolve_${domain.toLowerCase()}`);
+      // El middleware quita el TLD, así que también invalidamos sin él
+      const withoutTld = domain.toLowerCase().split('.')[0];
+      if (withoutTld) keys.add(`tenant_resolve_${withoutTld}`);
+    }
+
+    for (const key of keys) {
+      await this.cacheManager.del(key);
+      this.logger.log(`Caché de tenant invalidado: ${key}`);
+    }
   }
 }

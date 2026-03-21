@@ -44,7 +44,7 @@ function getFallbackImage(id: string | number, name?: string): string {
     return FOOD_FALLBACK_IMAGES[hash % FOOD_FALLBACK_IMAGES.length]
 }
 // Lazy loaded modals to strip hundreds of KB from the initial JS bundle
-const ProductModal = dynamic(() => import("./ProductModal").then(mod => mod.ProductModal), {
+const ProductModal = dynamic(() => import("@alvarosky/ui").then(mod => mod.ProductModal), {
     ssr: false,
     loading: () => <div className="fixed inset-0 bg-white/50 z-50 flex items-center justify-center"><div className="animate-spin text-primary w-10 h-10 border-4 border-current border-t-transparent rounded-full" /></div>
 })
@@ -522,7 +522,7 @@ export default function MenuClient({
                         suggestedProducts={products.filter(p => p.id !== selectedProduct.id).slice(0, 5)}
                         onProductSelect={setSelectedProduct}
                         onClose={() => setSelectedProduct(null)}
-                        onAddToCart={(p, v, m, q) => {
+                        onAddToCart={(p: PublicProduct, v: string, m: any[], q: number) => {
                             addItem({
                                 productId: p.id,
                                 name: p.name,

@@ -102,6 +102,7 @@ export * from "./components/commerce/order-details-sheet";
 export * from "./components/commerce/orders-table";
 export * from "./components/commerce/cart-sheet";
 export * from "./components/commerce/product-configurator";
+export * from "./components/commerce/product-modal";
 
 // Upload Components
 export * from "./components/upload";
@@ -129,6 +130,8 @@ export * from "./components/subscription";
 export * from "./hooks/use-mobile";
 export * from "./hooks/use-scroll";
 export * from "./hooks/use-digital-product";
+export * from "./hooks/use-product-modifiers";
+export * from "./hooks/use-product-social";
 export * from "./hooks/useFileUpload";
 
 // Layouts (Admin Panel Components)

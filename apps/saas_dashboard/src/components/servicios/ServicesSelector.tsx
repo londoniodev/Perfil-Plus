@@ -117,7 +117,7 @@ const ContentEmpresas = ({ color = "hsl(var(--primary))" }: { color?: string }) 
         </div>
 
         <div className="text-center mt-12">
-            <Button asChild size="lg" style={{ background: color, borderColor: color }} className="shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+            <Button asChild size="lg" style={{ background: color, borderColor: color }} className="shadow-lg hover:shadow-xl transition hover:-translate-y-1">
                 <Link
                     href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20consultoría%20para%20empresas."
                     target="_blank"
@@ -200,7 +200,7 @@ const ContentExplora = () => (
         </div>
 
         <div className="text-center">
-            <Button asChild variant="accent" size="lg" className="shadow-lg hover:shadow-xl hover:shadow-accent/20 transition-all hover:-translate-y-1">
+            <Button asChild variant="accent" size="lg" className="shadow-lg hover:shadow-xl hover:shadow-accent/20 transition hover:-translate-y-1">
                 <Link
                     href="https://app.universoexplora.tech"
                     target="_blank"
@@ -294,7 +294,7 @@ const ContentTerapia = ({ color = "hsl(var(--success))" }: { color?: string }) =
         </div>
 
         <div className="text-center">
-            <Button asChild size="lg" style={{ background: color, borderColor: color }} className="shadow-lg hover:shadow-xl hover:shadow-green-500/20 transition-all hover:-translate-y-1">
+            <Button asChild size="lg" style={{ background: color, borderColor: color }} className="shadow-lg hover:shadow-xl hover:shadow-green-500/20 transition hover:-translate-y-1">
                 <Link
                     href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20iniciar%20psicoterapia."
                     target="_blank"
@@ -348,7 +348,7 @@ export function ServicesSelector() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={cn(
-                                        "flex items-center rounded-full transition-all duration-300 font-medium text-sm",
+                                        "flex items-center rounded-full transition duration-300 font-medium text-sm",
                                         isActive ? "gap-2.5 px-6 py-2.5 text-white" : "p-2.5"
                                     )}
                                     style={{

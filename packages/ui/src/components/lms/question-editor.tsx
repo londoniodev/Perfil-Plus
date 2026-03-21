@@ -143,7 +143,7 @@ export function QuestionEditor({
                             <button
                                 type="button"
                                 onClick={() => handleTypeChange("single")}
-                                className={`flex-1 p-4 border rounded-lg cursor-pointer transition-all flex flex-col items-center gap-2 text-center hover:border-primary ${type === "single" ? "bg-primary/10 border-primary text-primary" : "bg-background text-muted-foreground"}`}
+                                className={`flex-1 p-4 border rounded-lg cursor-pointer transition flex flex-col items-center gap-2 text-center hover:border-primary ${type === "single" ? "bg-primary/10 border-primary text-primary" : "bg-background text-muted-foreground"}`}
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="12" cy="12" r="10" />
@@ -156,7 +156,7 @@ export function QuestionEditor({
                             <button
                                 type="button"
                                 onClick={() => handleTypeChange("true_false")}
-                                className={`flex-1 p-4 border rounded-lg cursor-pointer transition-all flex flex-col items-center gap-2 text-center hover:border-primary ${type === "true_false" ? "bg-primary/10 border-primary text-primary" : "bg-background text-muted-foreground"}`}
+                                className={`flex-1 p-4 border rounded-lg cursor-pointer transition flex flex-col items-center gap-2 text-center hover:border-primary ${type === "true_false" ? "bg-primary/10 border-primary text-primary" : "bg-background text-muted-foreground"}`}
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
@@ -197,7 +197,7 @@ export function QuestionEditor({
                             {options.map((option, index) => (
                                 <div
                                     key={option.id}
-                                    className={`flex items-center gap-3 p-3 bg-background border rounded-lg transition-all ${correctId === option.id ? "bg-success/10 border-success" : "border-border"}`}
+                                    className={`flex items-center gap-3 p-3 bg-background border rounded-lg transition ${correctId === option.id ? "bg-success/10 border-success" : "border-border"}`}
                                 >
                                     <div
                                         onClick={() => setCorrectId(option.id)}

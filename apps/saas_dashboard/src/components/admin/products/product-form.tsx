@@ -27,7 +27,10 @@ import {
 import { productSchema, ProductFormValues } from "@alvarosky/features"
 
 import { ModifierGroupsBuilder } from "./modifier-groups-builder"
-import { CategorySelector } from "./category-selector"
+import { ProductBasicInfoForm } from "./product-basic-info-form"
+import { ProductDigitalContentForm } from "./product-digital-content-form"
+import { ProductAttachmentsForm } from "./product-attachments-form"
+import { ProductVariantsForm } from "./product-variants-form"
 
 interface ProductFormProps {
     initialData?: any
@@ -163,442 +166,88 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit, (errors: any) => console.error("Validation Errors:", errors))} className="space-y-6 pb-20">
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Información del Producto</CardTitle>
-                        <CardDescription>Detalles básicos e imágenes</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Nombre del Producto *</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="Ej: Hamburguesa Doble" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                        <ProductBasicInfoForm 
+                            initialData={initialData}
+                            authToken={authToken}
+                            handleAddImage={handleAddImage}
+                            handleRemoveImage={handleRemoveImage}
                         />
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="basePrice"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Precio *</FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                                <Input
-                                                    {...field}
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    className="pl-7"
-                                                    placeholder="0.00"
-                                                    onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                                                />
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="categories"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Categorías</FormLabel>
-                                        <FormControl>
-                                            <CategorySelector
-                                                value={field.value || []}
-                                                onChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Descripción *</FormLabel>
-                                    <FormControl>
-                                        <Textarea {...field} rows={4} placeholder="Descripción detallada..." className="resize-none" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                        <ProductDigitalContentForm 
+                            courses={courses}
+                            authToken={authToken}
                         />
 
-                        {initialData?.productType !== "RESTAURANT" && (
-                            <FormField
-                                control={form.control}
-                                name="productType"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tipo de Producto *</FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            disabled={!!initialData}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona un tipo" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="PHYSICAL">Físico (Tienda)</SelectItem>
-                                                <SelectItem value="DIGITAL">Digital</SelectItem>
-                                                <SelectItem value="RESTAURANT">Restaurante (Plato/Bebida)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-
-                        <div className="space-y-2">
-                            <FormLabel>Imágenes *</FormLabel>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                {form.watch("images").map((url: string, index: number) => (
-                                    <div key={url} className="relative group aspect-square rounded-lg overflow-hidden border bg-muted">
-                                        <Image src={url} alt={`Imagen ${index + 1}`} fill sizes="200px" className="object-cover transition-transform group-hover:scale-105" />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <Button
-                                                type="button"
-                                                variant="destructive"
-                                                size="icon"
-                                                onClick={() => handleRemoveImage(index)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                        {(productType === "PHYSICAL" || productType === "RESTAURANT") && (
+                            <Card className="border-primary/20 bg-primary/5">
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-1">
+                                            <CardTitle>Modificadores</CardTitle>
+                                            <CardDescription>Opcionales, acompañamientos, términos de cocción</CardDescription>
                                         </div>
+                                        <Switch
+                                            checked={hasModifiers}
+                                            onCheckedChange={setHasModifiers}
+                                        />
                                     </div>
-                                ))}
-
-                                <div className="col-span-2 sm:col-span-4 mt-2">
-                                    <SingleImageDropzone
-                                        endpoint={`${API_BASE}/storage/upload/image`}
-                                        token={authToken}
-                                        tenantId={TENANT_ID}
-                                        folder="products"
-                                        onUploadSuccess={handleAddImage}
-                                        maxSizeMB={5}
-                                    />
-                                    <p className="text-xs text-muted-foreground mt-2">Si adjuntas varias, la primera será la portada</p>
-                                </div>
-                            </div>
-                            {form.formState.errors.images && (
-                                <p className="text-sm font-medium text-destructive flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4" />
-                                    {form.formState.errors.images.message}
-                                </p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {productType === "DIGITAL" && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contenido Digital</CardTitle>
-                            <CardDescription>Video de introducción o demo y archivo a entregar</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <FormField
-                                control={form.control}
-                                name="videoUrl"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <YouTubeEmbedInput
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                label="Enlace del Video de Demostración (YouTube)"
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
+                                </CardHeader>
+                                {hasModifiers && (
+                                    <CardContent>
+                                        <ModifierGroupsBuilder />
+                                    </CardContent>
                                 )}
-                            />
+                            </Card>
+                        )}
 
-                            <FormField
+                        <ProductAttachmentsForm />
+
+                        <ProductVariantsForm hasModifiers={hasModifiers} />
+
+                        <div className="pb-4">
+                            <FormSwitchField
                                 control={form.control}
-                                name="downloadUrl"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Archivo Digital Protegido (Ebook, ZIP, etc.)</FormLabel>
-                                        <FormControl>
-                                            <PrivateDocumentDropzone
-                                                endpoint={`${API_BASE}/storage/upload/attachment`}
-                                                fileIntent="PRIVATE_ASSET"
-                                                token={authToken}
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                                name="published"
+                                label="Publicado"
+                                description="Visible en la tienda/menú"
                             />
-
-                            {courses && courses.length > 0 && (
-                                <FormField
-                                    control={form.control}
-                                    name="courseId"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Vincular a un Curso (LMS)</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecciona un curso (opcional)" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="">Ninguno</SelectItem>
-                                                    {courses.map(course => (
-                                                        <SelectItem key={course.id} value={course.id}>
-                                                            {course.title}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>
-                                                Si el cliente compra este producto, se le dará acceso al curso seleccionado.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {(productType === "PHYSICAL" || productType === "RESTAURANT") && (
-                    <Card className="border-primary/20 bg-primary/5">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <CardTitle>Modificadores</CardTitle>
-                                    <CardDescription>Opcionales, acompañamientos, términos de cocción</CardDescription>
-                                </div>
-                                <Switch
-                                    checked={hasModifiers}
-                                    onCheckedChange={setHasModifiers}
-                                />
-                            </div>
-                        </CardHeader>
-                        {hasModifiers && (
-                            <CardContent>
-                                <ModifierGroupsBuilder />
-                            </CardContent>
-                        )}
-                    </Card>
-                )}
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Documentos Adjuntos</CardTitle>
-                            <CardDescription>Cualquier archivo PDF, ficha técnica o manual descargable</CardDescription>
                         </div>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => appendAttachment({ name: "", url: "" })}
-                        >
-                            <IconPlus className="h-4 w-4 mr-2" />
-                            Agregar Documento
-                        </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {attachmentFields.map((field, index) => (
-                            <AdminFormSection key={field.id} grid className="gap-4">
-                                <div className="col-span-12 sm:col-span-5">
-                                    <FormField
-                                        control={form.control}
-                                        name={`attachments.${index}.name`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Nombre del adjunto</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Ej: PDF de la guía" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="col-span-12 sm:col-span-6">
-                                    <FormField
-                                        control={form.control}
-                                        name={`attachments.${index}.url`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>URL del archivo</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="https://..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="col-span-12 sm:col-span-1 flex items-end justify-end">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive h-10 w-10"
-                                        onClick={() => removeAttachment(index)}
-                                    >
-                                        <IconTrash className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </AdminFormSection>
-                        ))}
-                        {attachmentFields.length === 0 && (
-                            <p className="text-sm text-muted-foreground text-center py-4">No hay documentos adjuntos. Haz clic en "Agregar Documento".</p>
-                        )}
-                    </CardContent>
-                </Card>
 
-                {productType === "PHYSICAL" && !hasModifiers && (
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle>Variantes Físicas</CardTitle>
-                                <CardDescription>SKUs específicos para inventario (Tallas, Colores)</CardDescription>
-                            </div>
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            <Button
+                                type="submit"
+                                disabled={form.formState.isSubmitting}
+                                className="w-full sm:flex-1"
+                                size="lg"
+                            >
+                                {form.formState.isSubmitting ? (
+                                    <>
+                                        <IconLoader className="mr-2 h-4 w-4 animate-spin" />
+                                        Guardando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <IconSave className="mr-2 h-4 w-4" />
+                                        {initialData ? "Guardar Cambios" : "Crear Producto"}
+                                    </>
+                                )}
+                            </Button>
                             <Button
                                 type="button"
-                                size="sm"
                                 variant="outline"
-                                onClick={() => append({ name: "", sku: "", price: null, stock: 0, isDefault: false })}
+                                className="w-full sm:flex-none sm:w-auto"
+                                onClick={() => {
+                                    const type = form.getValues("productType")
+                                    router.push(type === "RESTAURANT" ? "/restaurante/menu" : "/tienda/productos")
+                                }}
+                                disabled={form.formState.isSubmitting}
                             >
-                                <IconPlus className="h-4 w-4 mr-2" />
-                                Agregar
+                                <IconBack className="mr-2 h-4 w-4" />
+                                Cancelar
                             </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {fields.map((field, index) => (
-                                <AdminFormSection key={field.id} grid className="gap-3">
-                                    <div className="col-span-12 sm:col-span-3">
-                                        <FormField
-                                            control={form.control}
-                                            name={`variants.${index}.name`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Nombre</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Ej: Standard" {...field} />
-                                                    </FormControl>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="col-span-6 sm:col-span-3">
-                                        <FormField
-                                            control={form.control}
-                                            name={`variants.${index}.stock`}
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Stock</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            {...field}
-                                                            type="number"
-                                                            min="0"
-                                                            placeholder="0"
-                                                            onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                                                        />
-                                                    </FormControl>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="col-span-12 sm:col-span-1 flex items-end justify-end">
-                                        {fields.length > 1 && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive h-10 w-10"
-                                                onClick={() => remove(index)}
-                                            >
-                                                <IconTrash className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-                                </AdminFormSection>
-                            ))}
-                        </CardContent>
-                    </Card>
-                )}
-
-                <div className="pb-4">
-                    <FormSwitchField
-                        control={form.control}
-                        name="published"
-                        label="Publicado"
-                        description="Visible en la tienda/menú"
-                    />
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <Button
-                        type="submit"
-                        disabled={form.formState.isSubmitting}
-                        className="w-full sm:flex-1"
-                        size="lg"
-                    >
-                        {form.formState.isSubmitting ? (
-                            <>
-                                <IconLoader className="mr-2 h-4 w-4 animate-spin" />
-                                Guardando...
-                            </>
-                        ) : (
-                            <>
-                                <IconSave className="mr-2 h-4 w-4" />
-                                {initialData ? "Guardar Cambios" : "Crear Producto"}
-                            </>
-                        )}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full sm:flex-none sm:w-auto"
-                        onClick={() => {
-                            const type = form.getValues("productType")
-                            router.push(type === "RESTAURANT" ? "/restaurante/menu" : "/tienda/productos")
-                        }}
-                        disabled={form.formState.isSubmitting}
-                    >
-                        <IconBack className="mr-2 h-4 w-4" />
-                        Cancelar
-                    </Button>
-                </div>
-            </form>
-        </Form>
-    </AdminPageWrapper>
+                        </div>
+                    </form>
+                </Form>
+            </AdminPageWrapper>
     )
 }

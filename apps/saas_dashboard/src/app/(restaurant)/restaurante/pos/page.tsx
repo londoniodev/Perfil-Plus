@@ -104,7 +104,7 @@ export default function POSPage() {
                     return (
                         <Card
                             key={table.id}
-                            className={`cursor-pointer hover:scale-[1.02] transition-all duration-200 border-2 
+                            className={`cursor-pointer hover:scale-[1.02] transition duration-200 border-2 
                                 ${isOccupied ? 'border-red-200 bg-red-50/50 hover:border-red-300' : 'border-green-200 bg-green-50/50 hover:border-green-300'}`}
                             onClick={() => handleTableClick(table.id)}
                         >

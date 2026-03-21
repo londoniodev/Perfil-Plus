@@ -113,7 +113,7 @@ export function SingleImageDropzone({
     return (
         <div className={`relative ${className}`}>
             <div
-                className={`relative flex flex-col items-center justify-center w-full min-h-[200px] rounded-lg border-2 border-dashed transition-all duration-200 overflow-hidden cursor-pointer
+                className={`relative flex flex-col items-center justify-center w-full min-h-[200px] rounded-lg border-2 border-dashed transition duration-200 overflow-hidden cursor-pointer
           ${isDragActive ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}
           ${preview && !isUploading ? "border-solid border-border/50" : ""}
           ${isUploading ? "pointer-events-none" : ""}
@@ -150,7 +150,7 @@ export function SingleImageDropzone({
                         <div className="w-3/4 max-w-[200px]">
                             <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-primary transition-all duration-300 ease-out"
+                                    className="h-full bg-primary transition duration-300 ease-out"
                                     style={{ width: `${progress}%` }}
                                 />
                             </div>

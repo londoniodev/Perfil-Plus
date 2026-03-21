@@ -31,7 +31,7 @@ export default async function RestaurantMenuPage() {
             title="Menú del Restaurante"
             description="Gestiona los platos y bebidas de tu carta"
             actions={
-                <Button asChild className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
+                <Button asChild className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]">
                     <Link href="/restaurante/menu/nuevo">
                         <IconPlus className="mr-2 h-4 w-4" />
                         Nuevo Plato

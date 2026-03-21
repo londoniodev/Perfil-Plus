@@ -139,7 +139,7 @@ export function AreasImpactoSection() {
                         >
                             <div
                                 className={cn(
-                                    "mx-auto text-center px-6 md:px-4 max-w-5xl transition-all duration-[2000ms]",
+                                    "mx-auto text-center px-6 md:px-4 max-w-5xl transition duration-[2000ms]",
                                     activeIndex === index ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
                                 )}
                             >
@@ -151,7 +151,7 @@ export function AreasImpactoSection() {
                                     {area.description}
                                 </p>
 
-                                <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-2xl bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full">
+                                <Button asChild size="lg" className="h-14 md:h-16 px-8 md:px-10 text-lg md:text-2xl bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition duration-300 rounded-full">
                                     <Link href={area.href}>Ver más</Link>
                                 </Button>
                             </div>

@@ -100,7 +100,7 @@ export function MetodoSection() {
                                 }}
                                 aria-expanded={isActive}
                                 className={cn(
-                                    "relative rounded-xl overflow-hidden cursor-pointer transition-all duration-500 ease-out border",
+                                    "relative rounded-xl overflow-hidden cursor-pointer transition duration-500 ease-out border",
                                     isActive ? "h-80" : "h-20"
                                 )}
                                 style={{
@@ -132,7 +132,7 @@ export function MetodoSection() {
                                         <div className="flex items-center gap-4">
                                             <div
                                                 className={cn(
-                                                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
+                                                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition duration-300",
                                                     isActive ? "text-white" : "bg-muted text-muted-foreground"
                                                 )}
                                                 style={{ background: isActive ? step.accentColor : undefined }}
@@ -158,7 +158,7 @@ export function MetodoSection() {
 
                                     {/* Description (Hidden when collapsed) */}
                                     <div className={cn(
-                                        "transition-all duration-500 overflow-hidden flex-1 flex items-center",
+                                        "transition duration-500 overflow-hidden flex-1 flex items-center",
                                         isActive ? "opacity-100" : "opacity-0"
                                     )}>
                                         <p className="text-white/90 text-lg leading-relaxed max-w-lg">

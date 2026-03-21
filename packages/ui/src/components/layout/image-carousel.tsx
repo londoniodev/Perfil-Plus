@@ -42,7 +42,7 @@ export function ImageCarousel({
                     <div
                         key={src}
                         className={cn(
-                            "absolute bottom-0 h-full w-full transition-all duration-700 ease-out",
+                            "absolute bottom-0 h-full w-full transition duration-700 ease-out",
                             isActive
                                 ? "opacity-100 z-10 scale-100" // Visible and normal scale
                                 : "opacity-0 z-0 scale-95"    // Hidden and slightly smaller (for pop-in effect)

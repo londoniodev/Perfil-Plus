@@ -52,7 +52,7 @@ export function CartSheet({
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-border/50 bg-card/50 hover:bg-accent hover:text-accent-foreground transition-all duration-300">
+                <Button aria-label="Abrir carrito" variant="outline" size="icon" className="relative h-10 w-10 rounded-full border-border/50 bg-card/50 hover:bg-accent hover:text-accent-foreground transition duration-300">
                     <ShoppingCart className="h-5 w-5" />
                     {items.length > 0 && (
                         <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full shadow-sm">
@@ -121,7 +121,7 @@ export function CartSheet({
                             </div>
                         </div>
                         <Button
-                            className="w-full bg-primary text-primary-foreground hover:opacity-90 transition-all duration-300 font-medium tracking-wide h-12 rounded-[var(--radius)]"
+                            className="w-full bg-primary text-primary-foreground hover:opacity-90 transition duration-300 font-medium tracking-wide h-12 rounded-[var(--radius)]"
                             size="lg"
                             onClick={async () => {
                                 try {

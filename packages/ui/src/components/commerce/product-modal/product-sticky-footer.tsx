@@ -21,7 +21,7 @@ export function ProductStickyFooter({
                     <div className="flex items-center gap-3 bg-slate-100 rounded-xl p-1.5 h-14 border border-slate-200 shadow-inner" role="group" aria-label="Cantidad">
                         <button 
                             onClick={() => setQuantity(q => Math.max(1, q - 1))} 
-                            className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                            className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition focus-visible:ring-2 focus-visible:ring-primary outline-none"
                             aria-label="Disminuir cantidad"
                         >
                             <Minus className="w-5 h-5" aria-hidden="true" />
@@ -31,7 +31,7 @@ export function ProductStickyFooter({
                         </span>
                         <button 
                             onClick={() => setQuantity(q => q + 1)} 
-                            className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                            className="w-10 h-full flex items-center justify-center hover:bg-white hover:shadow-sm rounded-lg text-slate-700 transition focus-visible:ring-2 focus-visible:ring-primary outline-none"
                             aria-label="Aumentar cantidad"
                         >
                             <Plus className="w-5 h-5" aria-hidden="true" />
@@ -40,7 +40,7 @@ export function ProductStickyFooter({
 
                     <button
                         onClick={onAdd}
-                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-6 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-between gap-2 transition-all active:scale-[0.98] whitespace-nowrap text-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary outline-none"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-6 rounded-xl shadow-lg shadow-primary/25 flex items-center justify-between gap-2 transition active:scale-[0.98] whitespace-nowrap text-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary outline-none"
                     >
                         <span>Añadir</span>
                         <span className="bg-black/10 px-2 py-1 rounded-lg text-sm">{formatCurrency(totalPrice)}</span>

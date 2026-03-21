@@ -89,7 +89,7 @@ export function ServiciosSection() {
                     </Card>
 
                     {/* Service 3 - Orientación (Explora) */}
-                    <Card className={cn(GLASS_CARD_STYLES, "p-0 relative h-full flex flex-col overflow-visible border-accent/20 shadow-xl shadow-accent/5 group transform hover:-translate-y-1 transition-all duration-300")}>
+                    <Card className={cn(GLASS_CARD_STYLES, "p-0 relative h-full flex flex-col overflow-visible border-accent/20 shadow-xl shadow-accent/5 group transform hover:-translate-y-1 transition duration-300")}>
                         {/* Featured Badge */}
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#0f1419] border border-accent/40 text-accent px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-30 shadow-lg whitespace-nowrap">
                             Tecnología + IA

@@ -176,7 +176,7 @@ export function RecipesClient({
     return (
         <section className="space-y-6">
             <div className="flex justify-end">
-                <Button onClick={openCreateModal} className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]">
+                <Button onClick={openCreateModal} className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]">
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                     Nueva Receta
                 </Button>

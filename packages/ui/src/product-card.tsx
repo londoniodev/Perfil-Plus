@@ -33,7 +33,7 @@ export function ProductCard({
     return (
         <div
             className={cn(
-                "group relative flex flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md",
+                "group relative flex flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition hover:shadow-md",
                 className
             )}
             {...props}

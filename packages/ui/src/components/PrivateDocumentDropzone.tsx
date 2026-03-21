@@ -125,7 +125,7 @@ export function PrivateDocumentDropzone({
     return (
         <div className={`relative ${className}`}>
             <div
-                className={`relative flex flex-col items-center justify-center w-full min-h-[160px] rounded-lg border-2 border-dashed transition-all duration-200 cursor-pointer overflow-hidden
+                className={`relative flex flex-col items-center justify-center w-full min-h-[160px] rounded-lg border-2 border-dashed transition duration-200 cursor-pointer overflow-hidden
           ${isDragActive ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}
           ${fileData && !isUploading ? "border-solid border-primary/30 bg-primary/5" : ""}
           ${isUploading ? "pointer-events-none" : ""}
@@ -165,7 +165,7 @@ export function PrivateDocumentDropzone({
                             </div>
                             <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-primary transition-all duration-300 ease-out"
+                                    className="h-full bg-primary transition duration-300 ease-out"
                                     style={{ width: `${progress}%` }}
                                 />
                             </div>

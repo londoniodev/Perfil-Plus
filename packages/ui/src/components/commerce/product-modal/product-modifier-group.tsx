@@ -44,7 +44,7 @@ export function ProductModifierGroup({
                             role={itemRole}
                             aria-checked={isSelected}
                             onClick={() => toggleModifier(group.id, mod, maxSelections)}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none ${isSelected ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none ${isSelected ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
                         >
                             <div className="flex items-center gap-3">
                                 <div 
@@ -90,7 +90,7 @@ export function ProductVariantSelector({
                         role="radio"
                         aria-checked={selectedVariant === variant.id}
                         onClick={() => onSelect(variant.id)}
-                        className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none ${selectedVariant === variant.id ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
+                        className={`w-full flex items-center justify-between p-3 rounded-lg border transition text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none ${selectedVariant === variant.id ? 'border-primary bg-primary/10 text-primary shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}`}
                     >
                         <span>{variant.name}</span>
                         <span className={selectedVariant === variant.id ? "font-bold" : ""}>

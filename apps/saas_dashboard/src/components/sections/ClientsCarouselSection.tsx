@@ -50,7 +50,7 @@ export function ClientsCarouselSection() {
                 <div className="mb-10 flex overflow-hidden relative w-full [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
                     <div className="flex min-w-full shrink-0 gap-8 md:gap-12 animate-scroll-left items-center">
                         {duplicatedRow1.map((logo, index) => (
-                            <div key={`mobile-row1-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+                            <div key={`mobile-row1-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition duration-300 opacity-60 hover:opacity-100">
                                 <Image
                                     src={logo.src}
                                     alt={logo.alt}
@@ -67,7 +67,7 @@ export function ClientsCarouselSection() {
                 <div className="flex overflow-hidden relative w-full [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
                     <div className="flex min-w-full shrink-0 gap-8 md:gap-12 animate-scroll-right items-center">
                         {duplicatedRow2.map((logo, index) => (
-                            <div key={`mobile-row2-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+                            <div key={`mobile-row2-${index}`} className="flex-shrink-0 px-4 grayscale hover:grayscale-0 transition duration-300 opacity-60 hover:opacity-100">
                                 <Image
                                     src={logo.src}
                                     alt={logo.alt}
@@ -86,7 +86,7 @@ export function ClientsCarouselSection() {
                 <div className="flex overflow-hidden relative w-full [mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]">
                     <div className="flex min-w-full shrink-0 gap-16 animate-scroll-left items-center py-4">
                         {duplicatedFull.map((logo, index) => (
-                            <div key={`desktop-${index}`} className="flex-shrink-0 px-8 grayscale hover:grayscale-0 transition-all duration-500 opacity-50 hover:opacity-100">
+                            <div key={`desktop-${index}`} className="flex-shrink-0 px-8 grayscale hover:grayscale-0 transition duration-500 opacity-50 hover:opacity-100">
                                 <Image
                                     src={logo.src}
                                     alt={logo.alt}

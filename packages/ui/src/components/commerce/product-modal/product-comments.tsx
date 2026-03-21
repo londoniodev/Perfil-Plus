@@ -67,7 +67,7 @@ export function ProductComments({
                             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/95 to-transparent flex items-end justify-center pb-0 z-10 pt-10">
                                 <button
                                     onClick={() => setIsCommentsExpanded(true)}
-                                    className="flex items-center gap-2 text-primary font-bold text-sm bg-white px-6 py-2.5 rounded-full shadow-lg border border-slate-100 hover:scale-105 hover:shadow-xl transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                                    className="flex items-center gap-2 text-primary font-bold text-sm bg-white px-6 py-2.5 rounded-full shadow-lg border border-slate-100 hover:scale-105 hover:shadow-xl transition focus-visible:ring-2 focus-visible:ring-primary outline-none"
                                     aria-expanded="false"
                                     aria-controls="comments-list"
                                 >
@@ -81,7 +81,7 @@ export function ProductComments({
                             <div className="sticky bottom-4 flex justify-center z-20 py-4 transition-opacity duration-300">
                                 <button
                                     onClick={() => setIsCommentsExpanded(false)}
-                                    className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-bold text-xs bg-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl border border-slate-200 hover:scale-105 transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                                    className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-bold text-xs bg-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-xl border border-slate-200 hover:scale-105 transition focus-visible:ring-2 focus-visible:ring-primary outline-none"
                                     aria-expanded="true"
                                     aria-controls="comments-list"
                                 >
@@ -103,7 +103,7 @@ export function ProductComments({
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Escribe tu opinión..."
                     rows={1}
-                    className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3.5 pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 placeholder:text-slate-500 resize-none overflow-hidden min-h-[48px] transition-all"
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3.5 pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 placeholder:text-slate-500 resize-none overflow-hidden min-h-[48px] transition"
                     style={{ maxHeight: '120px' }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {

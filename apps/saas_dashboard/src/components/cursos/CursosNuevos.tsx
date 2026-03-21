@@ -38,7 +38,7 @@ export function CursosNuevos({ themes }: Props) {
                     <Link
                         key={course.id}
                         href={`/formacion/${course.themeSlug ?? ""}/${course.slug}`}
-                        className="flex-shrink-0 w-64 bg-card rounded-xl p-3 shadow-sm border border-border flex gap-3 items-center group cursor-pointer hover:border-primary/40 hover:shadow-md transition-all duration-300"
+                        className="flex-shrink-0 w-64 bg-card rounded-xl p-3 shadow-sm border border-border flex gap-3 items-center group cursor-pointer hover:border-primary/40 hover:shadow-md transition duration-300"
                     >
                         {/* Mini thumbnail */}
                         <div className="w-20 h-20 rounded-lg flex-shrink-0 overflow-hidden bg-muted">

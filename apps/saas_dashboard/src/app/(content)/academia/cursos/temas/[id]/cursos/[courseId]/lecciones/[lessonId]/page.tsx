@@ -155,7 +155,7 @@ export default function EditarLeccionPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setVideoType("upload"); setVideoUrl(""); }}
-                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition-all ${videoType === "upload"
+                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition ${videoType === "upload"
                                         ? "bg-primary/10 border-primary text-primary"
                                         : "bg-background hover:bg-muted"
                                         }`}
@@ -166,7 +166,7 @@ export default function EditarLeccionPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setVideoType("youtube"); setVideoUrl(""); }}
-                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition-all ${videoType === "youtube"
+                                    className={`flex items-center justify-center gap-2 p-4 border rounded-lg transition ${videoType === "youtube"
                                         ? "bg-primary/10 border-primary text-primary"
                                         : "bg-background hover:bg-muted"
                                         }`}

@@ -55,7 +55,7 @@ export function CursosPopulares({ themes }: Props) {
                     <Link
                         key={course.id}
                         href={`/formacion/${course.themeSlug ?? ""}/${course.slug}`}
-                        className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col group hover:border-primary/40 hover:shadow-md transition-all duration-300"
+                        className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col group hover:border-primary/40 hover:shadow-md transition duration-300"
                     >
                         {/* Course Image */}
                         <div className="h-40 relative overflow-hidden bg-muted">

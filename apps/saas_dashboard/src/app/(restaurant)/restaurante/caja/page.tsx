@@ -362,7 +362,7 @@ export default function CashierPage() {
                 <Button
                     variant={filter === 'OPEN' ? 'default' : 'outline'}
                     onClick={() => setFilter('OPEN')}
-                    className="rounded-full px-6 transition-all whitespace-nowrap"
+                    className="rounded-full px-6 transition whitespace-nowrap"
                 >
                     Por Cobrar
                     {orders.some(o => o.status !== 'DELIVERED' && o.status !== 'CANCELLED') && (
@@ -374,14 +374,14 @@ export default function CashierPage() {
                 <Button
                     variant={filter === 'DELIVERED' ? 'default' : 'outline'}
                     onClick={() => setFilter('DELIVERED')}
-                    className="rounded-full px-6 transition-all whitespace-nowrap"
+                    className="rounded-full px-6 transition whitespace-nowrap"
                 >
                     Pagados
                 </Button>
                 <Button
                     variant={filter === 'ALL' ? 'default' : 'outline'}
                     onClick={() => setFilter('ALL')}
-                    className="rounded-full px-6 transition-all whitespace-nowrap"
+                    className="rounded-full px-6 transition whitespace-nowrap"
                 >
                     Todos
                 </Button>

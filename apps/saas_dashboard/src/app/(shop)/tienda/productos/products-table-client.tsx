@@ -7,11 +7,13 @@ import {
     Button,
     Badge,
     PriceDisplay,
-    AdminDataSheet,
     IconEdit,
     IconTrash,
     IconExternalLink,
 } from "@alvarosky/ui"
+import dynamic from "next/dynamic"
+
+const AdminDataSheet = dynamic(() => import("@alvarosky/ui").then((mod) => mod.AdminDataSheet))
 import Link from "next/link"
 import { ProductsTable, ProductTableData } from "@alvarosky/ui"
 import { toggleProductAvailability } from "@/actions/admin/toggle-product-availability"

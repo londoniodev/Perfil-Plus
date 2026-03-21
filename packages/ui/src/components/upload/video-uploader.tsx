@@ -150,7 +150,7 @@ export function VideoUploader({
                                 <span>{progress}%</span>
                             </div>
                             <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">
-                                <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+                                <div className="h-full bg-primary transition duration-300" style={{ width: `${progress}%` }} />
                             </div>
                         </div>
                     ) : (

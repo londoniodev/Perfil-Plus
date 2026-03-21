@@ -172,7 +172,7 @@ export function AdminSidebar({
                                                     <SidebarMenuButton
                                                         tooltip={group.title}
                                                         isActive={isGroupActive}
-                                                        className="transition-all duration-200 ease-in-out hover:translate-x-0.5"
+                                                        className="transition duration-200 ease-in-out hover:translate-x-0.5"
                                                     >
                                                         {Icon && <Icon className="size-4" />}
                                                         <span>{group.title}</span>
@@ -218,7 +218,7 @@ export function AdminSidebar({
                                             asChild
                                             isActive={isActive(group.href!)}
                                             tooltip={group.title}
-                                            className="transition-all duration-200 ease-in-out hover:translate-x-0.5 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
+                                            className="transition duration-200 ease-in-out hover:translate-x-0.5 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:font-medium"
                                         >
                                             <Link href={group.href!}>
                                                 {Icon && <Icon className="size-4" />}
@@ -242,7 +242,7 @@ export function AdminSidebar({
                                 <DropdownMenuTrigger asChild>
                                     <SidebarMenuButton
                                         size="lg"
-                                        className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-200"
+                                        className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition duration-200"
                                     >
                                         <div className="size-8 rounded-lg overflow-hidden shrink-0">
                                             <Avatar className="size-full">

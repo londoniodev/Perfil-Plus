@@ -120,7 +120,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                                         className="block group"
                                     >
                                         <div className={`
-                                            flex items-center gap-4 p-4 rounded-xl border transition-all duration-200
+                                            flex items-center gap-4 p-4 rounded-xl border transition duration-200
                                             ${lesson.completed
                                                 ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10'
                                                 : 'bg-card border-border hover:border-primary/50 hover:shadow-md'

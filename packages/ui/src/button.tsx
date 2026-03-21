@@ -11,7 +11,7 @@ const buttonVariants = cva(
     // Base styles (from .btn)
     [
         "inline-flex items-center justify-center gap-2",
-        "rounded-lg transition-all duration-200 cursor-pointer",
+        "rounded-lg transition duration-200 cursor-pointer",
         "no-underline font-medium font-[family-name:var(--font-sans)]",
         "disabled:pointer-events-none disabled:opacity-50",
     ],

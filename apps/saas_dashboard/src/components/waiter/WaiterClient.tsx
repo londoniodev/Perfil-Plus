@@ -259,14 +259,19 @@ function WaiterClientContent({ initialTables = EMPTY_TABLES }: { initialTables?:
                     { label: "Listas", count: ready.length, color: "text-green-500", tab: "ready" },
                     //{ label: "Completadas", count: completed.length, color: "text-muted-foreground", tab: "history" },
                 ].map(s => (
-                    <Card
+                    <button
+                        type="button"
                         key={s.label}
-                        className={`p-3 text-center cursor-pointer transition-all hover:bg-muted/50 ${tab === s.tab ? 'ring-2 ring-primary bg-muted/30' : ''}`}
                         onClick={() => router.push(`${pathname}?tab=${s.tab}`)}
+                        className="text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-xl"
                     >
-                        <p className={`text-3xl font-bold ${s.color}`}>{s.count}</p>
-                        <p className="text-xs text-muted-foreground">{s.label}</p>
-                    </Card>
+                        <Card
+                            className={`p-3 text-center transition hover:bg-muted/50 ${tab === s.tab ? 'ring-2 ring-primary bg-muted/30' : ''}`}
+                        >
+                            <p className={`text-3xl font-bold ${s.color}`}>{s.count}</p>
+                            <p className="text-xs text-muted-foreground">{s.label}</p>
+                        </Card>
+                    </button>
                 ))}
             </div>
 

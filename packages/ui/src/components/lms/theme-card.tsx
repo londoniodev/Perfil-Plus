@@ -36,7 +36,7 @@ export function ThemeCard({ theme, onEdit, onDelete }: ThemeCardProps) {
     };
 
     return (
-        <Card className="overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300">
+        <Card className="overflow-hidden hover:border-primary/50 hover:shadow-lg transition duration-300">
             <div className="relative h-40 bg-gradient-to-br from-primary/10 to-primary/20 overflow-hidden group">
                 {theme.coverImage ? (
                     <img src={theme.coverImage} alt={theme.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />

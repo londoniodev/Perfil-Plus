@@ -298,7 +298,7 @@ export default function MenuClient({
                     {/* Search Bar - Expandable */}
                     <motion.div
                         layout
-                        className={`relative flex items-center bg-slate-100 rounded-full transition-all border border-slate-200 ${isSearchActive ? "flex-1" : "w-12 h-12 justify-center"
+                        className={`relative flex items-center bg-slate-100 rounded-full transition border border-slate-200 ${isSearchActive ? "flex-1" : "w-12 h-12 justify-center"
                             }`}
                         initial={false}
                     >
@@ -383,11 +383,12 @@ export default function MenuClient({
                         onScroll={handleCategoryScroll}
                         className="flex gap-4 px-4 pb-6 pt-2 overflow-x-auto scrollbar-hide"
                     >
-                        <div
+                        <button
+                            type="button"
                             onClick={() => setSelectedCategoryId("ALL")}
-                            className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group"
+                            className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-xl p-1"
                         >
-                            <div className={`w-[72px] h-[72px] rounded-full p-[2px] transition-all ${selectedCategoryId === "ALL"
+                            <div className={`w-[72px] h-[72px] rounded-full p-[2px] transition ${selectedCategoryId === "ALL"
                                 ? "bg-gradient-to-tr from-primary to-primary/60"
                                 : "bg-transparent border-2 border-dashed border-slate-300 group-hover:border-primary/50"
                                 }`}>
@@ -402,7 +403,7 @@ export default function MenuClient({
                                 }`}>
                                 Ver Todo
                             </span>
-                        </div>
+                        </button>
 
                         {categories.map((cat) => {
                             // Find first product image for this category
@@ -411,12 +412,13 @@ export default function MenuClient({
                                 || getFallbackImage(catIndex, cat.name)
 
                             return (
-                                <div
+                                <button
+                                    type="button"
                                     key={cat.id}
                                     onClick={() => setSelectedCategoryId(cat.id)}
-                                    className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group"
+                                    className="flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-xl p-1"
                                 >
-                                    <div className={`w-[72px] h-[72px] rounded-full p-[2px] transition-all ${selectedCategoryId === cat.id
+                                    <div className={`w-[72px] h-[72px] rounded-full p-[2px] transition ${selectedCategoryId === cat.id
                                         ? "bg-gradient-to-tr from-primary to-primary/60 shadow-lg shadow-primary/20 scale-105"
                                         : "bg-transparent border-2 border-slate-200 group-hover:border-primary/50"
                                         }`}>
@@ -434,7 +436,7 @@ export default function MenuClient({
                                         }`}>
                                         {cat.name}
                                     </span>
-                                </div>
+                                </button>
                             )
                         })}
                     </div>
@@ -448,7 +450,8 @@ export default function MenuClient({
                 >
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product) => (
-                            <motion.div
+                            <motion.button
+                                type="button"
                                 layout
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -457,7 +460,7 @@ export default function MenuClient({
                                 whileTap={{ scale: 0.95 }}
                                 key={product.id}
                                 onClick={() => setSelectedProduct(product)}
-                                className="aspect-square relative cursor-pointer group overflow-hidden bg-white"
+                                className="aspect-square relative cursor-pointer group overflow-hidden bg-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                             >
                                 <Image
                                     src={product.images?.[0] || getFallbackImage(product.id, product.name)}
@@ -473,7 +476,7 @@ export default function MenuClient({
                                         </span>
                                     </div>
                                 )}
-                            </motion.div>
+                            </motion.button>
                         ))}
                     </AnimatePresence>
                     {filteredProducts.length === 0 && (

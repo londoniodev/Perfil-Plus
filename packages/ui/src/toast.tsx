@@ -165,7 +165,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
     return (
         <div className={`
             relative overflow-hidden pointer-events-auto flex w-full items-start gap-3 rounded-2xl p-4 pr-10 
-            transition-all duration-400 ease-out animate-in slide-in-from-top-4 md:slide-in-from-right-full 
+            transition duration-400 ease-out animate-in slide-in-from-top-4 md:slide-in-from-right-full 
             border border-border/30 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]
             bg-background/70 dark:bg-card/50
         `}>

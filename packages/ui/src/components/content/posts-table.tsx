@@ -29,7 +29,7 @@ export function PostsTable({
     className
 }: PostsTableProps) {
     return (
-        <div className={cn("w-full overflow-x-auto rounded-lg border border-border/40 bg-card/60 backdrop-blur-xl shadow-sm transition-all duration-300", className)}>
+        <div className={cn("w-full overflow-x-auto rounded-lg border border-border/40 bg-card/60 backdrop-blur-xl shadow-sm transition duration-300", className)}>
             <table className="w-full text-sm text-left min-w-[800px]">
                 <thead>
                     <tr>

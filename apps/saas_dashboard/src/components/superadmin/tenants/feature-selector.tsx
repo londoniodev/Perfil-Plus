@@ -31,7 +31,7 @@ export function FeatureSelector({ control, name = "features" }: FeatureSelectorP
                         return (
                             <div
                                 className={`
-                  flex items-start space-x-3 p-4 rounded-lg border transition-all cursor-pointer hover:bg-muted/50
+                  flex items-start space-x-3 p-4 rounded-lg border transition cursor-pointer hover:bg-muted/50
                   ${isChecked ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'bg-card'}
                 `}
                                 onClick={() => {

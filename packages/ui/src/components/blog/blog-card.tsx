@@ -42,7 +42,7 @@ export function BlogCard({ post, onDelete, viewUrl }: BlogCardProps) {
     };
 
     return (
-        <div className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-all duration-200 group">
+        <div className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition duration-200 group">
             {/* Thumbnail */}
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border bg-muted">
                 {post.image ? (

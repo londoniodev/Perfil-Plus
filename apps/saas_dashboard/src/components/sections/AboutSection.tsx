@@ -55,7 +55,7 @@ export function AboutSection() {
                             </p>
                         </div>
 
-                        <Button asChild size="lg" className="h-14 px-8 text-lg bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition-all duration-300 rounded-full mt-6">
+                        <Button asChild size="lg" className="h-14 px-8 text-lg bg-slate-950 hover:bg-black text-white border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:scale-105 transition duration-300 rounded-full mt-6">
                             <Link href="#metodo" className="flex items-center gap-2">
                                 Conocer mi enfoque
                                 <IconArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

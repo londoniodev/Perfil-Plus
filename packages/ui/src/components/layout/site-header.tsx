@@ -59,7 +59,7 @@ export function SiteHeader({
 
     return (
         <header className={cn(
-            "fixed top-0 left-0 w-full z-50 transition-all duration-300",
+            "fixed top-0 left-0 w-full z-50 transition duration-300",
             isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "bg-transparent py-6",
             className
         )}>
@@ -100,7 +100,7 @@ export function SiteHeader({
                         alt={logoAlt}
                         width={200}
                         height={80}
-                        className="h-8 md:h-10 w-auto object-contain rounded-full transition-all group-hover:scale-105"
+                        className="h-8 md:h-10 w-auto object-contain rounded-full transition group-hover:scale-105"
                         priority
                         unoptimized={logoUnoptimized}
                     />
@@ -231,7 +231,7 @@ function MobileNavLinks({ links, onClick, isLoggedIn, currentPath, loginUrl, pro
                         <span className="absolute left-0 top-0 w-1.5 h-full bg-primary" />
                     )}
                     <span className={cn(currentPath === link.href ? "pl-2" : "")}>{link.label}</span>
-                    <IconArrowRight size={18} className={cn("transition-all", currentPath === link.href ? "text-primary translate-x-1" : "text-muted-foreground opacity-50")} />
+                    <IconArrowRight size={18} className={cn("transition", currentPath === link.href ? "text-primary translate-x-1" : "text-muted-foreground opacity-50")} />
                 </Link>
             ))}
 

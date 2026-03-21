@@ -46,7 +46,7 @@ export function PropuestaSection() {
                     {pillars.map((item) => (
                         <Card
                             key={item.title}
-                            className="group relative overflow-hidden text-center p-0 rounded-3xl border-white/10 bg-[#0a0e14]/60 hover:border-white/20 transition-all duration-500 shadow-2xl"
+                            className="group relative overflow-hidden text-center p-0 rounded-3xl border-white/10 bg-[#0a0e14]/60 hover:border-white/20 transition duration-500 shadow-2xl"
                         >
                             {/* Background Animation Layer */}
                             <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden rounded-3xl">

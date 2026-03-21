@@ -88,7 +88,7 @@ export function PricingCard({
                     onClick={onSubscribe}
                     fullWidth
                     disabled={processing}
-                    className="w-full py-6 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
+                    className="w-full py-6 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition"
                 >
                     {processing ? "Procesando..." : "Suscribirme ahora"}
                 </Button>

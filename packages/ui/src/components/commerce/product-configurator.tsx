@@ -95,7 +95,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
             {/* COLUMNA IZQUIERDA: Galería */}
             <div 
                 className={cn(
-                    "space-y-4 transition-all duration-700 ease-out transform",
+                    "space-y-4 transition duration-700 ease-out transform",
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
@@ -108,7 +108,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                         alt={product.name}
                         aspectRatio={isDigital ? "portrait" : "9/10"}
                         priority
-                        className="transition-all"
+                        className="transition"
                     />
                     {isDigital && (
                         <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">Digital</Badge>
@@ -129,7 +129,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
             {/* COLUMNA DERECHA: Info y Acciones */}
             <div 
                 className={cn(
-                    "flex flex-col gap-6 transition-all duration-700 delay-200 ease-out transform",
+                    "flex flex-col gap-6 transition duration-700 delay-200 ease-out transform",
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
@@ -177,7 +177,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                                     onClick={() => setSelectedVariant(variant)}
                                     disabled={variant.stock === 0}
                                     className={cn(
-                                        "relative flex items-center justify-between gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                        "relative flex items-center justify-between gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                         selectedVariant.id === variant.id
                                             ? "border-primary bg-primary/5 ring-1 ring-primary"
                                             : "hover:bg-muted/50 hover:text-foreground",

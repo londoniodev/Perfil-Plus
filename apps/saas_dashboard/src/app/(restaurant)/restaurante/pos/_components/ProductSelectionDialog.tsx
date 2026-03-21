@@ -177,7 +177,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                 <RadioGroup value={selectedVariantId} onValueChange={setSelectedVariantId}>
                                     {variants.map((variant) => (
                                         <div key={variant.id} className={`
-                                            flex items-center justify-between space-x-2 border p-3 rounded-lg transition-all cursor-pointer
+                                            flex items-center justify-between space-x-2 border p-3 rounded-lg transition cursor-pointer
                                             ${selectedVariantId === variant.id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/40 hover:bg-muted/50'}
                                         `} onClick={() => setSelectedVariantId(variant.id)}>
                                             <div className="flex items-center space-x-2">

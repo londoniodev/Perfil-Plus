@@ -69,7 +69,7 @@ export default async function ThemePage({ params }: ThemePageProps) {
                                     href={`/cursos/${theme.slug}/${course.slug}`}
                                     className="block group h-full"
                                 >
-                                    <Card className="h-full hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/50 group-hover:-translate-y-0.5 flex flex-col">
+                                    <Card className="h-full hover:shadow-lg transition duration-300 border-border/50 hover:border-primary/50 group-hover:-translate-y-0.5 flex flex-col">
                                         <CardContent className="flex flex-col p-6 h-full">
                                             <div className="flex items-start justify-between mb-4">
                                                 <span className="text-4xl font-serif font-bold text-muted-foreground/10 group-hover:text-primary/20 transition-colors">
@@ -99,7 +99,7 @@ export default async function ThemePage({ params }: ThemePageProps) {
                                                     </div>
                                                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-primary transition-all duration-500"
+                                                            className="h-full bg-primary transition duration-500"
                                                             style={{ width: `${(course.progress.completed / course.progress.total) * 100}%` }}
                                                         />
                                                     </div>

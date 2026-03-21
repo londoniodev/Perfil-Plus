@@ -37,7 +37,7 @@ export function FloatingBackButton({
                 "absolute top-8 left-8 z-50",
                 colorClasses,
                 "rounded-full shadow-lg hover:shadow-xl",
-                "transition-all hover:-translate-y-0.5 hover:scale-105",
+                "transition hover:-translate-y-0.5 hover:scale-105",
                 "border border-white/10",
                 className
             )}

@@ -35,7 +35,7 @@ export function CourseCard({ course, onEdit, onDelete }: CourseCardProps) {
     };
 
     return (
-        <div className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-all duration-200 group">
+        <div className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition duration-200 group">
             <span className="text-muted-foreground text-sm font-medium w-8 text-center bg-muted/30 rounded py-1">
                 #{course.order}
             </span>

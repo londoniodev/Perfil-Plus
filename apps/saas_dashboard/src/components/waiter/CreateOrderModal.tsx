@@ -46,7 +46,7 @@ function TableGrid({ tables, onSelect }: { tables: Table[]; onSelect: (t: Table)
                     <button
                         key={table.id}
                         onClick={() => onSelect(table)}
-                        className="flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all hover:scale-105 bg-card hover:border-primary/50 text-card-foreground shadow-sm"
+                        className="flex flex-col items-center justify-center p-6 rounded-xl border-2 transition hover:scale-105 bg-card hover:border-primary/50 text-card-foreground shadow-sm"
                     >
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 text-primary font-bold text-xl">
                             {table.label}
@@ -176,7 +176,7 @@ function ModifierPanel({
                                                 <button
                                                     key={mod.id}
                                                     onClick={() => onToggleModifier(group.id, mod.id, ((group as any).maxSelect ?? group.maxSelections))}
-                                                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${isSelected
+                                                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition text-left ${isSelected
                                                         ? "border-primary bg-primary/5"
                                                         : "border-transparent bg-muted/40 hover:bg-muted/50"
                                                         }`}

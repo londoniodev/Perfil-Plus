@@ -11,7 +11,7 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, icon: Icon, trend, trendUp }: StatsCardProps) {
     return (
-        <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 bg-card/60 backdrop-blur-xl border-border/50 hover:border-primary/20">
+        <Card className="relative overflow-hidden transition duration-300 hover:shadow-lg hover:-translate-y-1 bg-card/60 backdrop-blur-xl border-border/50 hover:border-primary/20">
             {/* Subtle glow effect on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 hover:opacity-100" />
 

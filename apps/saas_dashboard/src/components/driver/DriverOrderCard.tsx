@@ -35,7 +35,7 @@ export function DriverOrderCard({ order, onDelivered }: { order: any, onDelivere
     }
 
     return (
-        <article className="mb-6 rounded-2xl overflow-hidden bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-white/20">
+        <article className="mb-6 rounded-2xl overflow-hidden bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl transition hover:border-white/20">
             {/* Header: Order Info */}
             <CardHeader className="p-5 pb-4 border-b border-white/5 space-y-4">
                 <div className="flex justify-between items-start">
@@ -111,7 +111,7 @@ export function DriverOrderCard({ order, onDelivered }: { order: any, onDelivere
                 <Button 
                     onClick={handleDeliver} 
                     disabled={loading}
-                    className="w-full h-14 text-base font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl transition-all"
+                    className="w-full h-14 text-base font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl transition"
                     aria-label="Marcar pedido como entregado"
                 >
                     {loading ? (

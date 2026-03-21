@@ -74,7 +74,7 @@ export default function PerfilPage() {
                         </div>
                         <Button
                             variant="outline"
-                            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-[0.98]"
+                            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 transition duration-200 active:scale-[0.98]"
                             onClick={logout}
                         >
                             <IconLogout className="mr-2 h-4 w-4" /> Cerrar Sesión
@@ -86,13 +86,13 @@ export default function PerfilPage() {
                 <div className="flex-1 w-full space-y-6">
                     <Tabs defaultValue="data" className="w-full" onValueChange={setActiveTab}>
                         <TabsList className="grid w-full grid-cols-3 mb-6">
-                            <TabsTrigger value="data" className="transition-all duration-200">
+                            <TabsTrigger value="data" className="transition duration-200">
                                 <IconUser className="mr-2 h-4 w-4" /> Mis Datos
                             </TabsTrigger>
-                            <TabsTrigger value="purchases" className="transition-all duration-200">
+                            <TabsTrigger value="purchases" className="transition duration-200">
                                 <IconShoppingBag className="mr-2 h-4 w-4" /> Mis Compras
                             </TabsTrigger>
-                            <TabsTrigger value="security" className="transition-all duration-200">
+                            <TabsTrigger value="security" className="transition duration-200">
                                 <IconShield className="mr-2 h-4 w-4" /> Seguridad
                             </TabsTrigger>
                         </TabsList>
@@ -107,7 +107,7 @@ export default function PerfilPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium text-muted-foreground">Nombre Completo</label>
-                                            <div className="p-3 bg-muted rounded-md text-foreground border border-transparent focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
+                                            <div className="p-3 bg-muted rounded-md text-foreground border border-transparent focus-within:ring-2 focus-within:ring-primary/20 transition duration-200">
                                                 {user.name}
                                             </div>
                                         </div>
@@ -148,7 +148,7 @@ export default function PerfilPage() {
                                     <CardContent>
                                         <Button
                                             asChild
-                                            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]"
+                                            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary transition duration-200 hover:scale-[1.01] active:scale-[0.98]"
                                         >
                                             <Link href="/suscripcion">
                                                 Suscribirme Ahora
@@ -174,7 +174,7 @@ export default function PerfilPage() {
                                     </p>
                                     <Button
                                         asChild
-                                        className="transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]"
+                                        className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]"
                                     >
                                         <Link href="/ebooks/mis-compras">
                                             Ir a Mis E-books

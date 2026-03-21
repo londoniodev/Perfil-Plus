@@ -123,7 +123,7 @@ export function LeadForm({
 
     return (
         <div className={cn(
-            "bg-card/60 backdrop-blur-md border border-border rounded-2xl transition-all",
+            "bg-card/60 backdrop-blur-md border border-border rounded-2xl transition",
             variant === "default" && "p-8",
             variant === "compact" && "p-4",
             variant === "inline" && "p-4",

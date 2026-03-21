@@ -66,7 +66,7 @@ export default function NewInventoryItemPage() {
                 <Button
                     variant="outline"
                     onClick={() => router.back()}
-                    className="transition-all duration-200"
+                    className="transition duration-200"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
                     Volver

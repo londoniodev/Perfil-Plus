@@ -346,9 +346,16 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   // ── Step 8: Sanitize body HTML (without the CSS link yet) ──
   const sanitizedBody = sanitizeBodyHtml(bodyInnerHtml);
 
-  // ── Step 9: Inject CSS link at the very top of the sanitized body ──
+  // ── Step 8.5: Extract <link rel="stylesheet"> from <head> to preserve fonts ──
+  const headLinks: string[] = [];
+  $("head link[rel='stylesheet']").each((_i, el) => {
+    headLinks.push($.html(el));
+  });
+
+  // ── Step 9: Inject CSS link and font links at the very top of the sanitized body ──
   const cssLink = '<link rel="stylesheet" href="./assets/styles.min.css">';
-  const finalBodyHtml = `${cssLink}\n${sanitizedBody}`;
+  const allLinks = [cssLink, ...headLinks].join("\n");
+  const finalBodyHtml = `${allLinks}\n${sanitizedBody}`;
 
   // ── Step 10: Write body.html ──
   const bodyHtmlPath = path.join(outputDir, "body.html");

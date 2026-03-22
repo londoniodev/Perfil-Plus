@@ -46,10 +46,10 @@ function requireEnv(name: string): string {
 
 function loadS3Config(): S3EnvConfig {
   return {
-    endpoint: requireEnv("S3_ENDPOINT"),
-    region: requireEnv("S3_REGION"),
-    accessKeyId: requireEnv("S3_ACCESS_KEY"),
-    secretAccessKey: requireEnv("S3_SECRET_KEY"),
+    endpoint: process.env.S3_ENDPOINT || process.env.S3_PUBLIC_URL || "http://localhost:9000",
+    region: process.env.S3_REGION || "us-east-1",
+    accessKeyId: process.env.S3_ACCESS_KEY || requireEnv("MINIO_ROOT_USER"),
+    secretAccessKey: process.env.S3_SECRET_KEY || requireEnv("MINIO_ROOT_PASSWORD"),
     publicUrl: requireEnv("S3_PUBLIC_URL"),
   };
 }

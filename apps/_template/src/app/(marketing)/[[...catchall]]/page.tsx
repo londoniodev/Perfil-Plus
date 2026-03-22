@@ -22,24 +22,42 @@ const s3 = new S3Client({
 const MINIO_BUCKET = process.env.MINIO_LANDING_BUCKET || "landings";
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
+// ── Types ──
+interface LandingData {
+  body: string;
+  meta: {
+    title: string;
+    description: string;
+    og: Record<string, string>;
+  };
+}
+
 // ── Cached Landing Fetcher (MinIO → HTML string) ──
 function createCachedLandingFetcher(tenantSlug: string) {
   return unstable_cache(
-    async (): Promise<string | null> => {
+    async (): Promise<LandingData | null> => {
       try {
-        const key = `${tenantSlug}/index.html`;
-        const command = new GetObjectCommand({
-          Bucket: MINIO_BUCKET,
-          Key: key,
-        });
+        const bodyKey = `landings/home/body.html`;
+        const metaKey = `landings/home/meta.json`;
 
-        const response = await s3.send(command);
-        if (!response.Body) return null;
+        // 1. Fetch Body
+        const bodyResponse = await s3.send(new GetObjectCommand({
+          Bucket: `${tenantSlug}-public`,
+          Key: bodyKey,
+        }));
+        if (!bodyResponse.Body) return null;
+        const body = await bodyResponse.Body.transformToString("utf-8");
 
-        const html = await response.Body.transformToString("utf-8");
-        return html;
+        // 2. Fetch Meta
+        const metaResponse = await s3.send(new GetObjectCommand({
+          Bucket: `${tenantSlug}-public`,
+          Key: metaKey,
+        }));
+        if (!metaResponse.Body) return null;
+        const meta = JSON.parse(await metaResponse.Body.transformToString("utf-8"));
+
+        return { body, meta };
       } catch (error: unknown) {
-        // NoSuchKey u otro error → no hay landing en MinIO
         const errorName = error instanceof Error ? error.name : "Unknown";
         if (errorName !== "NoSuchKey") {
           console.error(`[Landing] Error al leer landing de MinIO para ${tenantSlug}:`, error);
@@ -55,11 +73,30 @@ function createCachedLandingFetcher(tenantSlug: string) {
 }
 
 // ── Metadata ──
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const headersList = await headers();
-  const tenantSlug = headersList.get("x-tenant-slug") || headersList.get("x-tenant-id") || await getTenantId();
+  const tenantSlug = headersList.get("x-tenant-slug");
+  const resolvedParams = await params;
 
-  if (tenantSlug === "alvarolondono" || tenantSlug === "xn--alvarolondoo-khb.dev") {
+  // Only for the home page (landing)
+  if (tenantSlug && (!resolvedParams.catchall || resolvedParams.catchall.length === 0)) {
+    const fetchLanding = createCachedLandingFetcher(tenantSlug);
+    const landing = await fetchLanding();
+
+    if (landing?.meta) {
+      return {
+        title: landing.meta.title,
+        description: landing.meta.description,
+        openGraph: {
+          title: landing.meta.og["og:title"] || landing.meta.title,
+          description: landing.meta.og["og:description"] || landing.meta.description,
+        },
+      };
+    }
+  }
+
+  const tenantId = headersList.get("x-tenant-id") || await getTenantId();
+  if (tenantId === "alvarolondono" || tenantId === "xn--alvarolondoo-khb.dev") {
     return {
       other: {
         "facebook-domain-verification": "wa9miawih97u6xsx1yhc1ub3w9dy0a",
@@ -78,7 +115,6 @@ async function getMarketingData(tenantId: string): Promise<TenantMarketingData |
         "x-internal-token": process.env.INTERNAL_API_KEY || "default_dev_secret_key",
       },
       next: {
-        revalidate: 3600,
         tags: ["tenant-marketing", `tenant-marketing-${tenantId}`],
       },
     });
@@ -111,14 +147,14 @@ export default async function MarketingHubPage({ params }: Props) {
   // Solo intentamos en la raíz del tenant (sin subrutas)
   if (!resolvedParams.catchall || resolvedParams.catchall.length === 0) {
     const fetchLanding = createCachedLandingFetcher(tenantSlug);
-    const landingHtml = await fetchLanding();
+    const landing = await fetchLanding();
 
-    if (landingHtml) {
+    if (landing?.body) {
       // El HTML ya fue sanitizado por el pipeline de ingestión (DOMPurify)
       return (
         <div
           className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0"
-          dangerouslySetInnerHTML={{ __html: landingHtml }}
+          dangerouslySetInnerHTML={{ __html: landing.body }}
         />
       );
     }

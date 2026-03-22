@@ -7,8 +7,8 @@ import { uploadLanding } from "./uploader";
 //  Usage: npx tsx src/cli-upload.ts --tenant <slug> --landing <slug>
 // ─────────────────────────────────────────────
 
-// Load .env from monorepo root (two levels up from packages/landing-builder/)
-dotenvConfig({ path: path.resolve(__dirname, "../../.env") });
+// Load .env from monorepo root (three levels up from packages/landing-builder/src)
+dotenvConfig({ path: path.resolve(__dirname, "../../../.env") });
 // Also try from CWD in case script is run from monorepo root
 dotenvConfig({ path: path.resolve(process.cwd(), ".env") });
 

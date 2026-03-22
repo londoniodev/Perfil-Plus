@@ -151,8 +151,75 @@ async function downloadExternalImages(
 }
 
 // ─────────────────────────────────────────────
-//  Step 3 — Remove Tailwind CDN Scripts
+//  Step 3 — Extract Tailwind Config + Remove CDN Scripts
 // ─────────────────────────────────────────────
+
+interface ExtractedTailwindConfig {
+  colors: Record<string, string>;
+  fontFamily: Record<string, string[]>;
+  borderRadius: Record<string, string>;
+  backgroundImage: Record<string, string>;
+}
+
+/**
+ * Parses the inline `tailwind.config = { ... }` script tag and extracts
+ * theme.extend values (colors, fontFamily, etc.) so we can compile
+ * CSS with the EXACT same design tokens as the original HTML.
+ */
+function extractTailwindConfig($: cheerio.CheerioAPI): ExtractedTailwindConfig {
+  const defaults: ExtractedTailwindConfig = {
+    colors: {},
+    fontFamily: {},
+    borderRadius: {},
+    backgroundImage: {},
+  };
+
+  let configScript = "";
+  $("script").each((_i, el) => {
+    const content = $(el).html() || "";
+    if (content.includes("tailwind.config")) {
+      configScript = content;
+    }
+  });
+
+  if (!configScript) {
+    log("⚠️", "No inline tailwind.config found — using empty defaults");
+    return defaults;
+  }
+
+  try {
+    // Extract the config object using a safe sandbox
+    // We wrap it so `tailwind.config = { ... }` becomes an assignable expression
+    const sandbox = { tailwind: { config: {} as Record<string, unknown> } };
+    const fn = new Function("tailwind", configScript);
+    fn(sandbox.tailwind);
+
+    const theme = (sandbox.tailwind.config as Record<string, unknown>).theme as Record<string, unknown> | undefined;
+    const extend = theme?.extend as Record<string, unknown> | undefined;
+
+    if (extend?.colors) {
+      defaults.colors = extend.colors as Record<string, string>;
+    }
+    if (extend?.fontFamily) {
+      defaults.fontFamily = extend.fontFamily as Record<string, string[]>;
+    }
+    if (extend?.borderRadius) {
+      defaults.borderRadius = extend.borderRadius as Record<string, string>;
+    }
+    if (extend?.backgroundImage) {
+      defaults.backgroundImage = extend.backgroundImage as Record<string, string>;
+    }
+
+    const colorCount = Object.keys(defaults.colors).length;
+    const fontCount = Object.keys(defaults.fontFamily).length;
+    log("🎨", `Extracted Tailwind config — ${colorCount} colors, ${fontCount} font families`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    log("⚠️", `Failed to parse inline tailwind.config: ${message} — using empty defaults`);
+  }
+
+  return defaults;
+}
 
 function removeTailwindCdnScripts($: cheerio.CheerioAPI): string[] {
   const inlineStyles: string[] = [];
@@ -193,6 +260,7 @@ async function compileTailwindCss(
   intermediateHtmlPath: string,
   inlineStyles: string[],
   assetsDir: string,
+  extractedConfig: ExtractedTailwindConfig,
 ): Promise<string> {
   const inputCss = [
     "@tailwind base;",
@@ -207,18 +275,14 @@ async function compileTailwindCss(
     content: [intermediateHtmlPath],
     theme: {
       extend: {
-        colors: {
-          primary: "#D4AF37",
-          "background-light": "#1A3B2E",
-          "background-dark": "#0F241C",
-          "text-light": "#F5F5DC",
-          "text-dark": "#EAEAEA",
-          accent: "#B8860B",
-        },
-        fontFamily: {
-          display: ["Playfair Display", "serif"],
-          body: ["Lato", "sans-serif"],
-        },
+        colors: extractedConfig.colors,
+        fontFamily: extractedConfig.fontFamily,
+        ...(Object.keys(extractedConfig.borderRadius).length > 0 && {
+          borderRadius: extractedConfig.borderRadius,
+        }),
+        ...(Object.keys(extractedConfig.backgroundImage).length > 0 && {
+          backgroundImage: extractedConfig.backgroundImage,
+        }),
       },
     },
     corePlugins: {
@@ -227,6 +291,7 @@ async function compileTailwindCss(
   };
 
   log("⚙️", "Compiling Tailwind CSS (this may take a moment)...");
+  log("🎨", `Using colors: ${JSON.stringify(extractedConfig.colors)}`);
 
   const result = await postcss([
     tailwindcss(tailwindConfig as Parameters<typeof tailwindcss>[0]),
@@ -324,7 +389,10 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   // ── Step 2: Download external images ──
   const externalCount = await downloadExternalImages($, assetsDir, webpQuality);
 
-  // ── Step 3: Remove Tailwind CDN scripts + extract inline styles ──
+  // ── Step 3a: Extract Tailwind config from inline script (BEFORE removing it) ──
+  const extractedConfig = extractTailwindConfig($);
+
+  // ── Step 3b: Remove Tailwind CDN scripts + extract inline styles ──
   const inlineStyles = removeTailwindCdnScripts($);
 
   // ── Step 4: Write intermediate HTML (for Tailwind content scanning) ──
@@ -332,7 +400,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   await fs.writeFile(intermediateHtmlPath, $.html(), "utf-8");
 
   // ── Step 5: Compile Tailwind CSS against the intermediate HTML ──
-  const cssPath = await compileTailwindCss(intermediateHtmlPath, inlineStyles, assetsDir);
+  const cssPath = await compileTailwindCss(intermediateHtmlPath, inlineStyles, assetsDir, extractedConfig);
 
   // ── Step 6: Extract metadata from <head> → meta.json ──
   const metadata = extractMetadata($);
@@ -341,7 +409,11 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   log("📝", `Metadata written → meta.json`);
 
   // ── Step 7: Extract <body> inner HTML (THE DECAPITATION) ──
+  // CRITICAL: Capture the body's own classes (e.g., bg-background-light, text-text-light)
+  // and transfer them to a wrapper <div> so the design is preserved after decapitation.
+  const bodyClasses = $("body").attr("class") || "";
   const bodyInnerHtml = $("body").html() || "";
+  log("🔪", `Body classes captured: "${bodyClasses}"`);
 
   // ── Step 8: Sanitize body HTML (without the CSS link yet) ──
   const sanitizedBody = sanitizeBodyHtml(bodyInnerHtml);
@@ -352,10 +424,14 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
     headLinks.push($.html(el));
   });
 
-  // ── Step 9: Inject CSS link and font links at the very top of the sanitized body ──
+  // ── Step 9: Inject CSS link, font links, and body-class wrapper ──
   const cssLink = '<link rel="stylesheet" href="./assets/styles.min.css">';
   const allLinks = [cssLink, ...headLinks].join("\n");
-  const finalBodyHtml = `${allLinks}\n${sanitizedBody}`;
+  // Wrap in a <div> that inherits the original <body> classes
+  const bodyWrapper = bodyClasses
+    ? `<div class="${bodyClasses}">\n${sanitizedBody}\n</div>`
+    : sanitizedBody;
+  const finalBodyHtml = `${allLinks}\n${bodyWrapper}`;
 
   // ── Step 10: Write body.html ──
   const bodyHtmlPath = path.join(outputDir, "body.html");

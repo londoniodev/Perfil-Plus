@@ -91,3 +91,6 @@ react-doctor.json
 run-unlighthouse.mjs
 dump-cookies.mjs
 unlighthouse.config.*
+
+# Landing builder local workspace
+.local-landings/

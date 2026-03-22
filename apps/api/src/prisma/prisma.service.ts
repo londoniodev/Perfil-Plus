@@ -25,7 +25,7 @@ export class PrismaService
 
   async onModuleInit() {
     await this.$connect();
-    this.logger.log('Connected to database (Single-Database Multi-Tenant)');
+    this.logger.log('Base de datos conectada (Instancia Singleton Global)');
   }
 
   async onModuleDestroy() {

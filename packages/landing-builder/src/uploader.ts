@@ -214,6 +214,36 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
 
   const publicUrl = `${s3Config.publicUrl}/${bucket}/${bodyKey}`;
 
+  // 8. Fire revalidation webhook
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const secret = process.env.REVALIDATION_SECRET;
+
+    if (!appUrl || !secret) {
+      log("⚠️", "Upload succeeded, but cache revalidation skipped: Missing NEXT_PUBLIC_APP_URL or REVALIDATION_SECRET");
+    } else {
+      const webhookUrl = `${appUrl}/api/webhooks/revalidate`;
+      log("🔄", `Firing revalidation webhook: ${webhookUrl}`);
+      
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${secret}`,
+        },
+        body: JSON.stringify({ tag: `landings-${tenantSlug}` }),
+      });
+
+      if (!response.ok) {
+        log("⚠️", `Upload succeeded, but cache revalidation failed (${response.status}). The old version might still be served.`);
+      } else {
+        log("⚡", `Cache revalidated successfully for tag: landings-${tenantSlug}`);
+      }
+    }
+  } catch (error) {
+    log("⚠️", `Upload succeeded, but cache revalidation request failed. The old version might still be served.`);
+  }
+
   log("", "─────────────────────────────────────");
   log("🎉", "Upload complete!");
   log("📊", `Files uploaded: ${filesUploaded}`);

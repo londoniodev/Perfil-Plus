@@ -47,10 +47,9 @@ function createCachedLandingFetcher(tenantSlug: string) {
         return null;
       }
     },
-    [`tenant-landing-${tenantSlug}`],
+    [`landings-${tenantSlug}`],
     {
-      revalidate: 3600, // 1 hora
-      tags: [`tenant-landing-${tenantSlug}`],
+      tags: [`landings-${tenantSlug}`],
     }
   );
 }

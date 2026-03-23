@@ -451,7 +451,7 @@ export class TenantService {
 
     if (cachedResolution === 'NOT_FOUND') {
       throw new NotFoundException(`Dominio no registrado: ${domain}`);
-    } else if (cachedResolution) {
+    } else if (cachedResolution && (cachedResolution as any).slug) {
       return cachedResolution;
     }
 

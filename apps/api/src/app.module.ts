@@ -121,6 +121,7 @@ import { MetricsModule } from './modules/metrics';
     ScheduleModule.forRoot(),
 
     // Prometheus metrics collection (Node.js internals: heap, GC, event loop)
+    /*
     PrometheusModule.register({
       // Desactivamos el controller default porque usamos MetricsController custom
       // que concatena métricas de prom-client + Prisma
@@ -130,6 +131,7 @@ import { MetricsModule } from './modules/metrics';
 
     // Custom metrics endpoint (/metrics) — unifica prom-client + Prisma
     MetricsModule,
+    */
 
     // Core infrastructure (CORS cache, Dokploy)
     CoreModule,

@@ -121,17 +121,20 @@ import { MetricsModule } from './modules/metrics';
     ScheduleModule.forRoot(),
 
     // Prometheus metrics collection (Node.js internals: heap, GC, event loop)
-    /*
-    PrometheusModule.register({
-      // Desactivamos el controller default porque usamos MetricsController custom
-      // que concatena métricas de prom-client + Prisma
-      controller: undefined as any,
-      defaultMetrics: { enabled: true },
-    }),
+    // Usamos una función autoejecutada para asegurar que Reflect existe antes de inicializar
+    (() => {
+      if (typeof Reflect === 'undefined' || !Reflect.defineMetadata) {
+        console.warn('⚠️ [METRICS] Reflect.defineMetadata NOT FOUND during AppModule load. Retrying polyfill...');
+        require('reflect-metadata');
+      }
+      return PrometheusModule.register({
+        controller: undefined as any,
+        defaultMetrics: { enabled: true },
+      });
+    })(),
 
     // Custom metrics endpoint (/metrics) — unifica prom-client + Prisma
     MetricsModule,
-    */
 
     // Core infrastructure (CORS cache, Dokploy)
     CoreModule,

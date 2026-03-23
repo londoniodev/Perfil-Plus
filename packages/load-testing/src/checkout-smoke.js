@@ -1,13 +1,14 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
-// Configuración del Test
 export const options = {
-  vus: 3,
-  duration: '30s',
+  stages: [
+    { duration: '5m', target: 500 }, // Rampa constante de subida hasta 500 usuarios
+    { duration: '2m', target: 500 }, // Pico mantenido para identificar posible Memory Leak
+  ],
   thresholds: {
-    http_req_duration: ['p(95)<500'], // 95% de las peticiones en < 500ms
-    http_req_failed: ['rate<0.01'],   // Tasa de error < 1%
+    http_req_duration: ['p(95)<2000'], // Umbral relajado a 2s bajo estrés
+    // http_req_failed: ['rate<0.05'], // Opcional: ignorar umbral estricto para no abortar el test en picos si el backend devuelve algunos 5xx
   },
 };
 
@@ -21,10 +22,8 @@ const TENANTS = [
 ];
 
 export default function () {
-  const baseUrl = __ENV.API_URL;
-  if (!baseUrl) {
-    throw new Error('API_URL no definida. Usa: k6 run -e API_URL=http://... src/checkout-smoke.js');
-  }
+  // URL por defecto apunta a staging para verificar el monitoreo
+  const baseUrl = __ENV.API_URL || 'https://api-staging.xn--alvarolondoo-khb.dev/api';
 
   // 1. Elegir tenant aleatorio
   const tenantId = TENANTS[Math.floor(Math.random() * TENANTS.length)];

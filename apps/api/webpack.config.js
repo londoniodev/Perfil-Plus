@@ -1,12 +1,16 @@
 const webpack = require('webpack');
 
 module.exports = function (options) {
+  const externals = Array.isArray(options.externals)
+    ? options.externals
+    : [options.externals].filter(Boolean);
+
   return {
     ...options,
-    externals: {
-      ...options.externals,
-      sharp: 'commonjs sharp',
-    },
+    externals: [
+      ...externals,
+      { sharp: 'commonjs sharp' }
+    ],
     plugins: [
       ...options.plugins,
       new webpack.IgnorePlugin({

@@ -281,6 +281,10 @@ import { MetricsModule } from './modules/metrics';
       provide: 'PROM_CLIENT_REGISTRY',
       useValue: require('prom-client').register,
     },
+    {
+      provide: 'PROM_CLIENT_OPTIONS',
+      useValue: { defaultMetrics: { enabled: true } },
+    },
   ],
 })
 export class AppModule implements NestModule {

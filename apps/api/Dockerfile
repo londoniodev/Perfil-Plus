@@ -24,8 +24,8 @@ COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # Force flat node_modules to avoid symlink issues in Docker copy
 RUN echo "node-linker=hoisted" > .npmrc
 
-# Install dependencies
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+# Install dependencies (incluyendo binarios nativos para sharp en linux/musl)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --os=linux --libc=musl --cpu=x64
 
 # Copy source code
 COPY --from=pruner /app/out/full/ .

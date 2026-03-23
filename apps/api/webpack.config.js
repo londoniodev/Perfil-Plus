@@ -3,6 +3,10 @@ const webpack = require('webpack');
 module.exports = function (options) {
   return {
     ...options,
+    externals: {
+      ...options.externals,
+      sharp: 'commonjs sharp',
+    },
     plugins: [
       ...options.plugins,
       new webpack.IgnorePlugin({

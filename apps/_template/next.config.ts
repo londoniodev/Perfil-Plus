@@ -10,7 +10,7 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.youtube.com https://www.youtube-nocookie.com https://sdk.mercadopago.com https://cdn.jsdelivr.net;
   worker-src 'self' blob: https://cdn.jsdelivr.net;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://${s3Domain};
   img-src 'self' data: blob: https: http: http://localhost:3001 https://${s3Domain} https://api.dicebear.com;
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.mercadopago.com https://www.mercadopago.com.co;

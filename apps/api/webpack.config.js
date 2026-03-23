@@ -12,13 +12,19 @@ module.exports = function (options) {
         if (typeof external !== 'function') return external;
         return (data, callback) => {
           const request = data.request;
-          if (request && request.startsWith('@alvarosky/')) {
+          // Whitelist de paquetes que SÍ queremos bundlear
+          if (request && request.startsWith('@alvarosky/shared')) {
             return callback();
           }
+          // El resto (incluyendo database) los dejamos como externos
           return external(data, callback);
         };
       }),
-      { sharp: 'commonjs sharp' },
+      { 
+        sharp: 'commonjs sharp',
+        '@prisma/client': 'commonjs @prisma/client',
+        '@alvarosky/database': 'commonjs @alvarosky/database'
+      },
     ],
     plugins: [
       ...options.plugins,

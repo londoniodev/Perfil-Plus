@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Inject, Res } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Registry } from 'prom-client';

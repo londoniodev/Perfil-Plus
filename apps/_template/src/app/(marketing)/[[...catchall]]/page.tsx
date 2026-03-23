@@ -8,18 +8,16 @@ import { resolveLanding } from "@/lib/storefront-resolver";
 import { Metadata } from "next";
 import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront";
 
-// ── S3 / MinIO Client ──
+// ── S3 / MinIO Client (usa las mismas variables S3_* que el backend) ──
 const s3 = new S3Client({
-  endpoint: process.env.MINIO_ENDPOINT || "http://127.0.0.1:9000",
-  region: process.env.MINIO_REGION || "us-east-1",
+  endpoint: process.env.S3_ENDPOINT || "http://127.0.0.1:9000",
+  region: process.env.S3_REGION || "us-east-1",
   credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY || "",
-    secretAccessKey: process.env.MINIO_SECRET_KEY || "",
+    accessKeyId: process.env.S3_ACCESS_KEY || "",
+    secretAccessKey: process.env.S3_SECRET_KEY || "",
   },
   forcePathStyle: true, // Requerido para MinIO
 });
-
-const MINIO_BUCKET = process.env.MINIO_LANDING_BUCKET || "landings";
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
 // ── Types ──

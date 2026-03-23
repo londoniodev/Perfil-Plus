@@ -390,9 +390,15 @@ export class ProductsService {
     });
   }
 
-  async findAllPublished(type?: ProductType, allVariants: boolean = false) {
+  async findAllPublished(
+    type?: ProductType,
+    allVariants: boolean = false,
+    search?: string,
+    limit?: number,
+  ) {
     const tenantId = this.cls.get('tenantId');
-    const cacheKey = `menu:${tenantId}:${type || 'all'}:${allVariants}`;
+    const safeLimit = limit || 100;
+    const cacheKey = `menu:${tenantId}:${type || 'all'}:${allVariants}:${search || 'none'}:${safeLimit}`;
 
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
@@ -401,7 +407,16 @@ export class ProductsService {
       where: {
         published: true,
         ...(type ? { productType: type } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
       },
+      take: safeLimit,
       orderBy: { createdAt: 'desc' },
       include: {
         variants: allVariants ? true : { where: { isDefault: true } },

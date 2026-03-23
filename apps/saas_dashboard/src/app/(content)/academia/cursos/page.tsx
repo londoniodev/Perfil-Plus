@@ -70,7 +70,7 @@ export default function AdminCursosPage() {
         try {
             setLoading(true);
             const res = await fetch(`${API_BASE}/admin/lms/themes`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 
@@ -89,7 +89,7 @@ export default function AdminCursosPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${id}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 

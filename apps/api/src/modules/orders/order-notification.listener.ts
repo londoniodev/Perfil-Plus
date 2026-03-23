@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 import { MetaApiService } from '../whatsapp/services/meta-api.service';
 
 interface OrderCreatedPayload {
@@ -19,23 +20,37 @@ export class OrderNotificationListener {
   constructor(
     private readonly prisma: PrismaService,
     private readonly metaApiService: MetaApiService,
+    private readonly cls: ClsService,
   ) {}
 
   @OnEvent('order.created', { async: true })
   async handleOrderCreated(payload: OrderCreatedPayload) {
-    const { tenantId, customerPhone, orderNumber, totalAmount, orderType, paymentMethod } = payload;
+    const {
+      tenantId,
+      customerPhone,
+      orderNumber,
+      totalAmount,
+      orderType,
+      paymentMethod,
+    } = payload;
 
-    this.logger.log(`[Tenant: ${tenantId}] Notificando orden ${orderNumber} a ${customerPhone}`);
+    this.logger.log(
+      `[Tenant: ${tenantId}] Notificando orden ${orderNumber} a ${customerPhone}`,
+    );
 
     try {
       // Buscar si este teléfono es de una conversación de WhatsApp activa
-      const storeSetting = await this.prisma.storeSettings.findFirst({
-        where: { tenantId },
-        select: { waPhoneNumberId: true },
+      let storeSetting;
+      await this.cls.runWith({ tenantId } as any, async () => {
+        storeSetting = await this.prisma.secure.storeSettings.findFirst({
+          select: { waPhoneNumberId: true },
+        });
       });
 
       if (!storeSetting?.waPhoneNumberId) {
-        this.logger.log(`[Tenant: ${tenantId}] Sin WhatsApp configurado, omitiendo notificación.`);
+        this.logger.log(
+          `[Tenant: ${tenantId}] Sin WhatsApp configurado, omitiendo notificación.`,
+        );
         return;
       }
 
@@ -81,7 +96,9 @@ export class OrderNotificationListener {
         message,
       );
 
-      this.logger.log(`[Tenant: ${tenantId}] Confirmación WhatsApp enviada a ${customerPhone}`);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Confirmación WhatsApp enviada a ${customerPhone}`,
+      );
     } catch (error) {
       // Non-blocking: no queremos que un fallo de notificación afecte la orden
       this.logger.error(

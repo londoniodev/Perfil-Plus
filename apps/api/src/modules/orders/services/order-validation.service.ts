@@ -9,7 +9,9 @@ export class OrderValidationService {
     for (const item of orderItemsData) {
       if (item.stockType !== -1) {
         if (item.stockType < item.quantity) {
-          throw new BadRequestException(`Stock insuficiente para ${item.productName} (${item.variantName})`);
+          throw new BadRequestException(
+            `Stock insuficiente para ${item.productName} (${item.variantName})`,
+          );
         }
         // Deducción atómica dentro de la transacción
         await tx.productVariant.update({
@@ -20,7 +22,9 @@ export class OrderValidationService {
 
       for (const mod of item.modifiers) {
         if (mod.stock !== null && mod.stock < mod.quantity) {
-          throw new BadRequestException(`Stock insuficiente para modificador ${mod.modifierName}`);
+          throw new BadRequestException(
+            `Stock insuficiente para modificador ${mod.modifierName}`,
+          );
         }
       }
     }

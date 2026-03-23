@@ -10,7 +10,8 @@ import { ClsService } from 'nestjs-cls';
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy {
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(PrismaService.name);
 
   public readonly secure: ReturnType<typeof this.createExtendedClient>;

@@ -431,7 +431,9 @@ describe('OrdersService', () => {
         },
       };
 
-      mockTx.productVariant.findUnique.mockResolvedValue(variantWithUnavailableMod);
+      mockTx.productVariant.findUnique.mockResolvedValue(
+        variantWithUnavailableMod,
+      );
 
       const dto = {
         items: [
@@ -941,8 +943,8 @@ describe('OrdersService', () => {
 
     it('debería crear pago y marcar items como pagados', async () => {
       mockTx.order.findUnique
-        .mockResolvedValueOnce(MOCK_ORDER)          // 1st call: order validation
-        .mockResolvedValueOnce(MOCK_ORDER);          // 2nd call: SSE data fetch
+        .mockResolvedValueOnce(MOCK_ORDER) // 1st call: order validation
+        .mockResolvedValueOnce(MOCK_ORDER); // 2nd call: SSE data fetch
       mockTx.payment.create.mockResolvedValue({
         id: 'pay-1',
         amount: 21.49,
@@ -1708,9 +1710,7 @@ describe('OrdersService', () => {
 
       const result = await service.getDriverOrdersByUserId('user-driver-1');
 
-      expect(
-        mockClient.deliveryDriver.findUnique,
-      ).toHaveBeenCalledWith(
+      expect(mockClient.deliveryDriver.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId: 'user-driver-1' },
         }),

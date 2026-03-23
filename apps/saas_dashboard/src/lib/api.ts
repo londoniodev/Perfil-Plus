@@ -8,7 +8,6 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
     const getHeaders = (authToken: string | null) => ({
         'Content-Type': 'application/json',
-        'x-tenant-id': TENANT_ID,
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         ...options?.headers,
     });
@@ -29,7 +28,6 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
                     method: "POST",
                     credentials: 'include',
                     headers: {
-                        'x-tenant-id': TENANT_ID,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ refreshToken }),

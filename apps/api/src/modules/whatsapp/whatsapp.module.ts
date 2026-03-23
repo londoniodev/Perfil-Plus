@@ -17,7 +17,11 @@ import { WaCartCronService } from './services/wa-cart.cron';
     // Lo importamos aquí en caso de que este módulo pueda funcionar standalone,
     // pero idealmente EventEmitterModule.forRoot() se llama en AppModule.
   ],
-  controllers: [WhatsappController, WaCartController, WhatsappOnboardingController],
+  controllers: [
+    WhatsappController,
+    WaCartController,
+    WhatsappOnboardingController,
+  ],
   providers: [
     WhatsappProcessor,
     OpenAiProvider,
@@ -30,4 +34,3 @@ import { WaCartCronService } from './services/wa-cart.cron';
   exports: [MetaApiService],
 })
 export class WhatsappModule {}
-

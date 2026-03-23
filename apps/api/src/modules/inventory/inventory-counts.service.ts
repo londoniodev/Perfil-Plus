@@ -104,7 +104,12 @@ export class InventoryCountsService {
       throw new NotFoundException('Conteo no encontrado o ya fue completado');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.secure.$transaction(async (tx) => {
+      /* eslint-disable no-restricted-syntax */
+      const expectedCountsRaw = await this.prisma.$queryRaw<
+        { inventoryItemId: string; currentStock: number }[]
+      >`SELECT "inventoryItemId", "currentStock" FROM "secure"."WarehouseStock" WHERE "warehouseId" = ${count.warehouseId} AND "tenantId" = ${tenantId}`;
+      /* eslint-enable no-restricted-syntax */
       // Paso 1: Preparar datos y calcular diferencias
       const updates: {
         lineId: string;

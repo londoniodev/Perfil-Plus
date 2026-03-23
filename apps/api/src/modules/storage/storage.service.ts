@@ -168,8 +168,10 @@ export class StorageService {
   async provisionBuckets(tenantSlug: string): Promise<void> {
     const publicBucket = `${tenantSlug}-public`;
     const privateBucket = `${tenantSlug}-private`;
-    
-    this.logger.log(`[STORAGE] Aprovisionando buckets para Tenant: ${tenantSlug}`);
+
+    this.logger.log(
+      `[STORAGE] Aprovisionando buckets para Tenant: ${tenantSlug}`,
+    );
     await this.ensureBucketExists(publicBucket, false);
     await this.ensureBucketExists(privateBucket, true);
   }

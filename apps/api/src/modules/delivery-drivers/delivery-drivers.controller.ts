@@ -22,9 +22,7 @@ import { CurrentTenant, CurrentUser } from '../../common/decorators';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminDeliveryDriversController {
-  constructor(
-    private readonly driversService: DeliveryDriversService,
-  ) {}
+  constructor(private readonly driversService: DeliveryDriversService) {}
 
   @Post()
   async create(
@@ -45,10 +43,7 @@ export class AdminDeliveryDriversController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
+  async findOne(@Param('id') id: string, @CurrentTenant() tenantId: string) {
     return this.driversService.findOne(id, tenantId);
   }
 
@@ -62,10 +57,7 @@ export class AdminDeliveryDriversController {
   }
 
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
+  async remove(@Param('id') id: string, @CurrentTenant() tenantId: string) {
     return this.driversService.remove(id, tenantId);
   }
 }
@@ -76,9 +68,7 @@ export class AdminDeliveryDriversController {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.DRIVER, Role.ADMIN)
 export class DriverController {
-  constructor(
-    private readonly driversService: DeliveryDriversService,
-  ) {}
+  constructor(private readonly driversService: DeliveryDriversService) {}
 
   @Get('profile')
   async getProfile(@CurrentUser('id') userId: string) {
@@ -91,8 +81,12 @@ export class DriverController {
     @Body() dto: UpdateDriverDto,
   ) {
     const driver = await this.driversService.findByUserId(userId);
-    return this.driversService.update(driver.id, {
-      status: dto.status,
-    }, driver.tenantId);
+    return this.driversService.update(
+      driver.id,
+      {
+        status: dto.status,
+      },
+      driver.tenantId,
+    );
   }
 }

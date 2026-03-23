@@ -52,6 +52,7 @@ export class RecipesService {
             inventoryItemId: ing.inventoryItemId,
             quantity: ing.quantity,
             wasteFactor: ing.wasteFactor ?? 1,
+            tenantId, // agregado por compilar stricto de prisma
           })),
         },
       },
@@ -129,22 +130,18 @@ export class RecipesService {
     });
     if (!recipe) throw new NotFoundException('Receta no encontrada');
 
-    return this.prisma.$transaction(async (tx) => {
-      // Update basic fields
+    // ✅ secure.$transaction — el tx interno propaga el contexto de tenant automáticamente
+    return this.prisma.secure.$transaction(async (tx) => {
       await tx.recipe.update({
         where: { id },
-        data: {
-          yield: dto.yield,
-          notes: dto.notes,
-        },
+        data: { yield: dto.yield, notes: dto.notes },
       });
 
-      // Replace ingredients if provided
       if (dto.ingredients) {
-        // Verify all ingredients exist
         const ingredientIds = dto.ingredients.map((i) => i.inventoryItemId);
+        // ✅ Sin tenantId manual — el tx seguro filtra automáticamente por tenant
         const items = await tx.inventoryItem.findMany({
-          where: { id: { in: ingredientIds }, tenantId },
+          where: { id: { in: ingredientIds } },
         });
         if (items.length !== ingredientIds.length) {
           throw new BadRequestException(
@@ -152,10 +149,10 @@ export class RecipesService {
           );
         }
 
-        // Delete existing and recreate (replace strategy)
         await tx.recipeIngredient.deleteMany({ where: { recipeId: id } });
         await tx.recipeIngredient.createMany({
           data: dto.ingredients.map((ing) => ({
+            tenantId,
             recipeId: id,
             inventoryItemId: ing.inventoryItemId,
             quantity: ing.quantity,

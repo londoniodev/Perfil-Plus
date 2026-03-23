@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { CreateOrderItemDto } from '../dto/create-order.dto';
@@ -28,12 +32,14 @@ export interface CalculatedOrderItems {
 export class OrderPricingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async calculate(tenantId: string, items: CreateOrderItemDto[]): Promise<CalculatedOrderItems> {
+  // ✅ tenantId eliminado de la firma — this.prisma.secure inyecta el contexto automáticamente
+  async calculate(items: CreateOrderItemDto[]): Promise<CalculatedOrderItems> {
     let totalAmount = new Decimal(0);
     const orderItemsData: any[] = [];
 
     for (const item of items) {
-      const variant = await this.prisma.productVariant.findUnique({
+      // ✅ Usar this.prisma.secure en lugar del cliente crudo
+      const variant = await this.prisma.secure.productVariant.findUnique({
         where: { id: item.variantId },
         include: {
           product: {
@@ -43,11 +49,15 @@ export class OrderPricingService {
       });
 
       if (!variant) {
-        throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
+        throw new NotFoundException(
+          `Variante no encontrada: ${item.variantId}`,
+        );
       }
 
       if (!variant.product.published || !variant.product.isAvailable) {
-        throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
+        throw new BadRequestException(
+          `Producto no disponible: ${variant.product.name}`,
+        );
       }
 
       let itemPrice = variant.price;
@@ -66,7 +76,8 @@ export class OrderPricingService {
           }
 
           if (!dbModifier) {
-            dbModifier = await this.prisma.modifier.findUnique({
+            // ✅ Usar this.prisma.secure también para fallback de búsqueda de modificador
+            dbModifier = await this.prisma.secure.modifier.findUnique({
               where: { id: mod.modifierId },
             });
           }
@@ -74,10 +85,14 @@ export class OrderPricingService {
           if (!dbModifier) continue;
 
           if (!dbModifier.isAvailable) {
-            throw new BadRequestException(`Modificador no disponible: ${dbModifier.name}`);
+            throw new BadRequestException(
+              `Modificador no disponible: ${dbModifier.name}`,
+            );
           }
 
-          itemPrice = itemPrice.plus(dbModifier.priceAdjustment.times(mod.quantity));
+          itemPrice = itemPrice.plus(
+            dbModifier.priceAdjustment.times(mod.quantity),
+          );
           modifiersData.push({
             modifierId: dbModifier.id,
             modifierName: dbModifier.name,
@@ -88,19 +103,27 @@ export class OrderPricingService {
         }
       }
 
+      // Validar constraints de selección por grupo
       for (const group of variant.product.modifierGroups) {
         const selectedInGroup =
           item.modifiers?.filter((m) =>
             group.modifiers.some((gm) => gm.id === m.modifierId),
           ) || [];
 
-        const totalSelected = selectedInGroup.reduce((sum, m) => sum + m.quantity, 0);
+        const totalSelected = selectedInGroup.reduce(
+          (sum, m) => sum + m.quantity,
+          0,
+        );
 
         if (totalSelected < group.minSelect) {
-          throw new BadRequestException(`El grupo ${group.name} requiere mínimo ${group.minSelect} selecciones.`);
+          throw new BadRequestException(
+            `El grupo ${group.name} requiere mínimo ${group.minSelect} selecciones.`,
+          );
         }
         if (totalSelected > group.maxSelect) {
-          throw new BadRequestException(`El grupo ${group.name} permite máximo ${group.maxSelect} selecciones.`);
+          throw new BadRequestException(
+            `El grupo ${group.name} permite máximo ${group.maxSelect} selecciones.`,
+          );
         }
       }
 

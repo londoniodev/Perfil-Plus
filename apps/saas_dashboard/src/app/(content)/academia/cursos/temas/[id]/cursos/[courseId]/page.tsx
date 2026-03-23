@@ -76,7 +76,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
     const fetchCourse = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses/${ids!.courseId}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 
@@ -124,7 +124,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses/${ids!.courseId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(formData),
             });
@@ -152,7 +152,7 @@ export default function EditarCursoPage({ params }: EditarCursoPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${lessonId}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 

@@ -25,7 +25,11 @@ export const ORDER_TRANSITIONS: AllowedTransition[] = [
   // 4. Delivery Flow
   { from: ['READY'], to: 'ASSIGNED', roles: ['ADMIN', 'CASHIER'] }, // Admin assigns driver
   { from: ['ASSIGNED'], to: 'IN_TRANSIT', roles: ['ADMIN', 'DRIVER'] }, // Driver picks up
-  { from: ['IN_TRANSIT', 'ASSIGNED'], to: 'DELIVERED', roles: ['ADMIN', 'DRIVER'] }, // Driver delivers
+  {
+    from: ['IN_TRANSIT', 'ASSIGNED'],
+    to: 'DELIVERED',
+    roles: ['ADMIN', 'DRIVER'],
+  }, // Driver delivers
 
   // 5. Payment/Completion (Cashier)
   { from: ['SERVED', 'READY'], to: 'DELIVERED', roles: ['ADMIN', 'CASHIER'] },
@@ -37,7 +41,6 @@ export const ORDER_TRANSITIONS: AllowedTransition[] = [
     roles: ['ADMIN', 'CASHIER', 'WAITER'],
   },
 ];
-
 
 export function validateOrderTransition(
   currentStatus: OrderStatus,

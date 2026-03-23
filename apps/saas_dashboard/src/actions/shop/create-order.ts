@@ -1,11 +1,11 @@
 "use server"
 
-import { API_BASE, TENANT_ID } from "@/lib/config"
+import { API_BASE } from "@/lib/config"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { headers } from "next/headers"
 
-// Strict TypeScript schema to prevent malicious or flawed payloads (No arrays of any allowed)
+// Strict TypeScript schema to prevent malicious or flawed payloads
 const CreateOrderSchema = z.object({
     orderType: z.enum(["DINE_IN", "PICKUP", "DELIVERY"]),
     tableId: z.string().nullable().optional(),
@@ -44,23 +44,13 @@ export async function createOrder(data: unknown, items: unknown, tableId: string
             orderType: parsed.tableId ? "DINE_IN" : parsed.orderType,
             tableNumber: parsed.tableId || undefined,
             items: orderItems,
-            // Customer Info (API might need update to store this in Order or User)
-            // For now, valid 'CreateOrderDto' only has items, orderType, tableNumber.
-            // Client data might need to be passed in headers or a separate field if logic allows.
-            // However, usually we create a User or Guest.
-            // Let's assume for now we just send the order. 
-            // TODO: Add customer info support in API if missing.
         }
 
-        const resolvedHeaders = await headers();
-        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
-
-        // 3. Call API
+        // 3. Call API - Tenant resolution is handled by NestJS via context/auth
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "x-tenant-id": dynamicTenantId
+                "Content-Type": "application/json"
             },
             body: JSON.stringify(payload)
         })

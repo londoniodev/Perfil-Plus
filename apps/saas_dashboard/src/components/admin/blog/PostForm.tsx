@@ -71,7 +71,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         if (mode === "edit" && postId) {
             const controller = new AbortController();
             fetch(`${API_BASE}/admin/blog/posts/${postId}`, {
-                headers: { "x-tenant-id": TENANT_ID },
                 credentials: "include",
                 signal: controller.signal,
             })
@@ -106,8 +105,8 @@ export default function PostForm({ mode, postId }: PostFormProps) {
         const headers = { "x-tenant-id": TENANT_ID };
 
         Promise.all([
-            fetch(`${API_BASE}/admin/blog/categories`, { headers, credentials: "include", signal: controller.signal }),
-            fetch(`${API_BASE}/admin/blog/tags`, { headers, credentials: "include", signal: controller.signal }),
+            fetch(`${API_BASE}/admin/blog/categories`, { credentials: "include", signal: controller.signal }),
+            fetch(`${API_BASE}/admin/blog/tags`, { credentials: "include", signal: controller.signal }),
         ])
             .then(async ([catRes, tagRes]) => {
                 if (catRes.ok) {
@@ -140,7 +139,6 @@ export default function PostForm({ mode, postId }: PostFormProps) {
                 method,
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": TENANT_ID,
                 },
                 credentials: "include",
                 body: JSON.stringify(values),

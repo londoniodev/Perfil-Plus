@@ -24,14 +24,16 @@ export class UpdateBrandSettingsDto {
   @IsOptional()
   @IsString()
   @Matches(/^#[0-9A-Fa-f]{6}$/, {
-    message: 'primaryColor debe ser un HEX válido de 6 caracteres (ej. #09090b)',
+    message:
+      'primaryColor debe ser un HEX válido de 6 caracteres (ej. #09090b)',
   })
   primaryColor?: string;
 
   @IsOptional()
   @IsString()
   @Matches(/^#[0-9A-Fa-f]{6}$/, {
-    message: 'secondaryColor debe ser un HEX válido de 6 caracteres (ej. #f4f4f5)',
+    message:
+      'secondaryColor debe ser un HEX válido de 6 caracteres (ej. #f4f4f5)',
   })
   secondaryColor?: string;
 
@@ -46,6 +48,8 @@ export class UpdateBrandSettingsDto {
   fontFamily?: string;
 
   @IsOptional()
-  @IsEnum(LayoutType, { message: 'layoutType debe ser CLASSIC, INSTAGRAM o MINIMAL' })
+  @IsEnum(LayoutType, {
+    message: 'layoutType debe ser CLASSIC, INSTAGRAM o MINIMAL',
+  })
   layoutType?: LayoutType;
 }

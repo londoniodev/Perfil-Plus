@@ -47,7 +47,7 @@ export default function NuevaLeccionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({
                     courseId: params.courseId,

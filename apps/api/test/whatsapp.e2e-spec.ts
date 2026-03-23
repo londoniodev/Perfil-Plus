@@ -15,68 +15,105 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 // ============================================================
 // PAYLOADS DE META WEBHOOK
 // ============================================================
-const buildTextPayload = (phoneNumberId: string, from: string, text: string, messageId?: string) => ({
+const buildTextPayload = (
+  phoneNumberId: string,
+  from: string,
+  text: string,
+  messageId?: string,
+) => ({
   object: 'whatsapp_business_account',
-  entry: [{
-    id: 'WBA_ID',
-    changes: [{
-      value: {
-        messaging_product: 'whatsapp',
-        metadata: { display_phone_number: '15551234567', phone_number_id: phoneNumberId },
-        contacts: [{ profile: { name: 'Test User' }, wa_id: from }],
-        messages: [{
-          from,
-          id: messageId || `wamid.${Date.now()}`,
-          timestamp: String(Math.floor(Date.now() / 1000)),
-          text: { body: text },
-          type: 'text',
-        }],
-      },
-      field: 'messages',
-    }],
-  }],
+  entry: [
+    {
+      id: 'WBA_ID',
+      changes: [
+        {
+          value: {
+            messaging_product: 'whatsapp',
+            metadata: {
+              display_phone_number: '15551234567',
+              phone_number_id: phoneNumberId,
+            },
+            contacts: [{ profile: { name: 'Test User' }, wa_id: from }],
+            messages: [
+              {
+                from,
+                id: messageId || `wamid.${Date.now()}`,
+                timestamp: String(Math.floor(Date.now() / 1000)),
+                text: { body: text },
+                type: 'text',
+              },
+            ],
+          },
+          field: 'messages',
+        },
+      ],
+    },
+  ],
 });
 
-const buildLocationPayload = (phoneNumberId: string, from: string, lat: number, lng: number) => ({
+const buildLocationPayload = (
+  phoneNumberId: string,
+  from: string,
+  lat: number,
+  lng: number,
+) => ({
   object: 'whatsapp_business_account',
-  entry: [{
-    id: 'WBA_ID',
-    changes: [{
-      value: {
-        messaging_product: 'whatsapp',
-        metadata: { display_phone_number: '15551234567', phone_number_id: phoneNumberId },
-        contacts: [{ profile: { name: 'Test User' }, wa_id: from }],
-        messages: [{
-          from,
-          id: `wamid.${Date.now()}`,
-          timestamp: String(Math.floor(Date.now() / 1000)),
-          type: 'location',
-          location: { latitude: lat, longitude: lng },
-        }],
-      },
-      field: 'messages',
-    }],
-  }],
+  entry: [
+    {
+      id: 'WBA_ID',
+      changes: [
+        {
+          value: {
+            messaging_product: 'whatsapp',
+            metadata: {
+              display_phone_number: '15551234567',
+              phone_number_id: phoneNumberId,
+            },
+            contacts: [{ profile: { name: 'Test User' }, wa_id: from }],
+            messages: [
+              {
+                from,
+                id: `wamid.${Date.now()}`,
+                timestamp: String(Math.floor(Date.now() / 1000)),
+                type: 'location',
+                location: { latitude: lat, longitude: lng },
+              },
+            ],
+          },
+          field: 'messages',
+        },
+      ],
+    },
+  ],
 });
 
 const buildStatusPayload = () => ({
   object: 'whatsapp_business_account',
-  entry: [{
-    id: 'WBA_ID',
-    changes: [{
-      value: {
-        messaging_product: 'whatsapp',
-        metadata: { display_phone_number: '15551234567', phone_number_id: 'PHONE_ID_TEST' },
-        statuses: [{
-          id: 'wamid.status123',
-          status: 'read',
-          timestamp: String(Math.floor(Date.now() / 1000)),
-          recipient_id: '573001234567',
-        }],
-      },
-      field: 'messages',
-    }],
-  }],
+  entry: [
+    {
+      id: 'WBA_ID',
+      changes: [
+        {
+          value: {
+            messaging_product: 'whatsapp',
+            metadata: {
+              display_phone_number: '15551234567',
+              phone_number_id: 'PHONE_ID_TEST',
+            },
+            statuses: [
+              {
+                id: 'wamid.status123',
+                status: 'read',
+                timestamp: String(Math.floor(Date.now() / 1000)),
+                recipient_id: '573001234567',
+              },
+            ],
+          },
+          field: 'messages',
+        },
+      ],
+    },
+  ],
 });
 
 // ============================================================
@@ -101,7 +138,9 @@ const createMockPrisma = () => ({
     waConversation: {
       findFirst: jest.fn().mockResolvedValue(null),
       create: jest.fn().mockResolvedValue({
-        id: 'conv-001', customerPhone: CUSTOMER, status: 'OPEN',
+        id: 'conv-001',
+        customerPhone: CUSTOMER,
+        status: 'OPEN',
       }),
     },
     waMessage: {
@@ -114,7 +153,9 @@ const createMockPrisma = () => ({
       upsert: jest.fn().mockResolvedValue({ id: 'cust-001', phone: CUSTOMER }),
     },
     storeSettings: {
-      findFirst: jest.fn().mockResolvedValue({ storeName: 'Test', aiMonthlyLimit: 100 }),
+      findFirst: jest
+        .fn()
+        .mockResolvedValue({ storeName: 'Test', aiMonthlyLimit: 100 }),
     },
   },
 });
@@ -136,7 +177,9 @@ const createMockUsageGuard = () => ({
 });
 
 const createMockContextService = () => ({
-  buildSystemPrompt: jest.fn().mockResolvedValue('Eres un asistente de Test Restaurant...'),
+  buildSystemPrompt: jest
+    .fn()
+    .mockResolvedValue('Eres un asistente de Test Restaurant...'),
   getProductCatalog: jest.fn().mockResolvedValue([]),
 });
 
@@ -218,7 +261,9 @@ describe('WhatsApp Webhook (e2e)', () => {
     });
     mockPrisma.secure.waConversation.findFirst.mockResolvedValue(null);
     mockPrisma.secure.waConversation.create.mockResolvedValue({
-      id: 'conv-001', customerPhone: CUSTOMER, status: 'OPEN',
+      id: 'conv-001',
+      customerPhone: CUSTOMER,
+      status: 'OPEN',
     });
     mockPrisma.secure.waMessage.findUnique.mockResolvedValue(null);
     mockPrisma.secure.waMessage.create.mockResolvedValue({ id: 'msg-001' });
@@ -230,7 +275,9 @@ describe('WhatsApp Webhook (e2e)', () => {
     });
 
     mockUsageGuard.checkAiLimit.mockResolvedValue(true);
-    mockContextService.buildSystemPrompt.mockResolvedValue('Eres un asistente...');
+    mockContextService.buildSystemPrompt.mockResolvedValue(
+      'Eres un asistente...',
+    );
   });
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -246,8 +293,7 @@ describe('WhatsApp Webhook (e2e)', () => {
           'hub.challenge': 'CHALLENGE_OK',
         })
         .expect(HttpStatus.OK)
-        .expect('CHALLENGE_OK'),
-    );
+        .expect('CHALLENGE_OK'));
 
     it('debe retornar 403 con token incorrecto', () =>
       request(app.getHttpServer())
@@ -257,8 +303,7 @@ describe('WhatsApp Webhook (e2e)', () => {
           'hub.verify_token': 'TOKEN_MALO',
           'hub.challenge': 'CHALLENGE_OK',
         })
-        .expect(HttpStatus.FORBIDDEN),
-    );
+        .expect(HttpStatus.FORBIDDEN));
   });
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -267,7 +312,10 @@ describe('WhatsApp Webhook (e2e)', () => {
   describe('TEST 1: Mensaje de texto → Respuesta CTA (Smart Cart)', () => {
     it('debe procesar un mensaje de texto y responder con botón CTA', async () => {
       const payload = buildTextPayload(
-        PHONE_ID, CUSTOMER, 'Quiero 2 hamburguesas clásicas', 'wamid.text-001',
+        PHONE_ID,
+        CUSTOMER,
+        'Quiero 2 hamburguesas clásicas',
+        'wamid.text-001',
       );
 
       // El controller responde 200 inmediatamente
@@ -313,8 +361,8 @@ describe('WhatsApp Webhook (e2e)', () => {
       // ✅ La IA fue consultada con los args correctos
       expect(mockOpenAi.generateResponse).toHaveBeenCalledWith(
         TENANT_ID,
-        expect.any(String),   // systemPrompt
-        expect.any(Array),    // history
+        expect.any(String), // systemPrompt
+        expect.any(Array), // history
         'Quiero 2 hamburguesas clásicas',
         CUSTOMER,
         TENANT_SLUG,
@@ -352,7 +400,12 @@ describe('WhatsApp Webhook (e2e)', () => {
         text: '¡Gracias! Tu ubicación ha sido registrada.',
       });
 
-      const payload = buildLocationPayload(PHONE_ID, CUSTOMER, 4.6097, -74.0817);
+      const payload = buildLocationPayload(
+        PHONE_ID,
+        CUSTOMER,
+        4.6097,
+        -74.0817,
+      );
 
       await request(app.getHttpServer())
         .post('/webhook/whatsapp')
@@ -421,17 +474,21 @@ describe('WhatsApp Webhook (e2e)', () => {
         .post('/webhook/whatsapp')
         .send({
           object: 'whatsapp_business_account',
-          entry: [{
-            id: 'ID',
-            changes: [{
-              value: {
-                messaging_product: 'whatsapp',
-                metadata: { phone_number_id: 'PHONE_ID' },
-                // Sin "messages"
-              },
-              field: 'messages',
-            }],
-          }],
+          entry: [
+            {
+              id: 'ID',
+              changes: [
+                {
+                  value: {
+                    messaging_product: 'whatsapp',
+                    metadata: { phone_number_id: 'PHONE_ID' },
+                    // Sin "messages"
+                  },
+                  field: 'messages',
+                },
+              ],
+            },
+          ],
         })
         .expect(HttpStatus.OK);
 
@@ -459,7 +516,8 @@ describe('WhatsApp Webhook (e2e)', () => {
 
       // Simular que ya existe en DB
       mockPrisma.secure.waMessage.findUnique.mockResolvedValueOnce({
-        id: 'existing', waMessageId: dupId,
+        id: 'existing',
+        waMessageId: dupId,
       });
 
       const payload = buildTextPayload(PHONE_ID, CUSTOMER, 'Duplicado', dupId);

@@ -207,9 +207,7 @@ describe('DeliveryDriversService', () => {
   describe('update', () => {
     it('debería actualizar maxCapacity correctamente', async () => {
       const updatedDriver = { ...MOCK_DRIVER, maxCapacity: 5 };
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(
-        MOCK_DRIVER,
-      );
+      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
       mockPrisma.secure.deliveryDriver.update.mockResolvedValue(updatedDriver);
 
       const result = await service.update(
@@ -234,9 +232,7 @@ describe('DeliveryDriversService', () => {
         ...MOCK_DRIVER,
         status: DriverStatus.AVAILABLE,
       };
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(
-        MOCK_DRIVER,
-      );
+      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
       mockPrisma.secure.deliveryDriver.update.mockResolvedValue(onlineDriver);
 
       const result = await service.update(
@@ -258,9 +254,7 @@ describe('DeliveryDriversService', () => {
 
   describe('remove', () => {
     it('debería eliminar el driver y retornar mensaje de éxito', async () => {
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(
-        MOCK_DRIVER,
-      );
+      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
       mockPrisma.secure.deliveryDriver.delete.mockResolvedValue(MOCK_DRIVER);
 
       const result = await service.remove('driver-1', 'tenant-1');
@@ -280,9 +274,9 @@ describe('DeliveryDriversService', () => {
     it('debería lanzar NotFoundException si el driver no existe', async () => {
       mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.findOne('no-existe', 'tenant-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('no-existe', 'tenant-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('debería retornar el driver con sus órdenes activas', async () => {
@@ -315,9 +309,7 @@ describe('DeliveryDriversService', () => {
 
       const result = await service.findByUserId('user-driver-1');
 
-      expect(
-        mockPrisma.secure.deliveryDriver.findUnique,
-      ).toHaveBeenCalledWith({
+      expect(mockPrisma.secure.deliveryDriver.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-driver-1' },
         include: expect.objectContaining({
           user: expect.objectContaining({
@@ -331,12 +323,12 @@ describe('DeliveryDriversService', () => {
     it('debería lanzar NotFoundException si no hay perfil de driver', async () => {
       mockPrisma.secure.deliveryDriver.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.findByUserId('user-sin-driver'),
-      ).rejects.toThrow(NotFoundException);
-      await expect(
-        service.findByUserId('user-sin-driver'),
-      ).rejects.toThrow(/no encontrado/);
+      await expect(service.findByUserId('user-sin-driver')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.findByUserId('user-sin-driver')).rejects.toThrow(
+        /no encontrado/,
+      );
     });
   });
 

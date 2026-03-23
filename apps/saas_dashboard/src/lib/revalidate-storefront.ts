@@ -8,7 +8,10 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         const { tag, path } = options;
         const headersList = await headers();
         const publicHost = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-        const tenantIdFromHeader = headersList.get("x-tenant-id") || TENANT_ID;
+        
+        // Resolve tenant from JWT (session) to know which storefront to revalidate
+        const { getTenantId } = await import("./config-server");
+        const tenantId = await getTenantId();
 
         // El secreto DEBE ser REVALIDATION_SECRET para coincidir con el webhook de _template
         const revalidationSecret = process.env.REVALIDATION_SECRET;
@@ -29,7 +32,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         if (path) payload.path = path;
 
         if (!tag && !path) {
-            payload.tag = `tenant-${tenantIdFromHeader}-store`; 
+            payload.tag = `tenant-${tenantId}-store`; 
         }
 
         console.log(`[Revalidate] Triggering ISR: ${url} | Tag: ${payload.tag || 'none'} | Path: ${payload.path || 'none'}`);
@@ -38,8 +41,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-revalidate-secret": revalidationSecret,
-                "x-tenant-id": tenantIdFromHeader
+                "x-revalidate-secret": revalidationSecret
             },
             body: JSON.stringify(payload),
         });

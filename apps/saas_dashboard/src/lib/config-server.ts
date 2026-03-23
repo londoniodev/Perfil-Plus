@@ -31,17 +31,6 @@ export async function getTenantId(): Promise<string> {
         // Cookie/JWT no disponible
     }
 
-    // 2. Header inyectado por middleware (si existiera)
-    try {
-        const headersList = await headers();
-        const tenantFromHeader = headersList.get('x-tenant-id');
-        if (tenantFromHeader) {
-            return tenantFromHeader;
-        }
-    } catch {
-        // headers() not available (static rendering or build context)
-    }
-
     // 3. Fallback: env var (solo para rutas públicas sin auth, ej: login page)
     const envTenantId = process.env.NEXT_PUBLIC_TENANT_ID;
     if (envTenantId) {
@@ -57,10 +46,8 @@ export async function getTenantId(): Promise<string> {
  * Reads tenant ID from JWT or middleware-injected header
  */
 export async function getServerApiHeaders(additionalHeaders?: HeadersInit): Promise<HeadersInit> {
-    const tenantId = await getTenantId();
     return {
         'Content-Type': 'application/json',
-        'x-tenant-id': tenantId,
         ...additionalHeaders,
     };
 }

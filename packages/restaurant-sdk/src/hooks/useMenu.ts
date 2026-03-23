@@ -31,13 +31,13 @@ const fetcher = async (url: string) => {
     return res.json()
 }
 
-export function useMenu(restaurantSlug: string) {
+export function useMenu() {
     // Connect to real API running on port 3001
     // In production, this URL should be an env var
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
     const { data, error, isLoading } = useSWR(
-        restaurantSlug ? `${apiUrl}/public/restaurant/${restaurantSlug}/menu` : null,
+        `${apiUrl}/public/menu`,
         fetcher
     )
 

@@ -225,7 +225,7 @@ export class PaymentsService {
       const response = await this.preference.create({ body: preferenceData });
 
       // Crear o actualizar registro de suscripción como pendiente
-      await this.prisma.subscription.upsert({
+      await this.prisma.secure.subscription.upsert({
         where: { userId },
         create: {
           userId,
@@ -248,7 +248,7 @@ export class PaymentsService {
   }
 
   async cancelSubscription(userId: string) {
-    const subscription = await this.prisma.subscription.findUnique({
+    const subscription = await this.prisma.secure.subscription.findUnique({
       where: { userId },
     });
 
@@ -261,7 +261,7 @@ export class PaymentsService {
     }
 
     // Actualizar estado a CANCELLED
-    await this.prisma.subscription.update({
+    await this.prisma.secure.subscription.update({
       where: { userId },
       data: { status: 'CANCELLED' },
     });
@@ -270,7 +270,7 @@ export class PaymentsService {
   }
 
   async getSubscriptionStatus(userId: string) {
-    const subscription = await this.prisma.subscription.findUnique({
+    const subscription = await this.prisma.secure.subscription.findUnique({
       where: { userId },
     });
 
@@ -339,10 +339,15 @@ export class PaymentsService {
     const variantMap = new Map(variants.map((v) => [v.id, v]));
 
     // Batch fetch modifiers
-    const modifierIds = dto.items.flatMap((i) => i.modifiers?.map((m) => m.modifierId) || []);
-    const modifiers = modifierIds.length > 0
-      ? await this.prisma.secure.modifier.findMany({ where: { id: { in: modifierIds } } })
-      : [];
+    const modifierIds = dto.items.flatMap(
+      (i) => i.modifiers?.map((m) => m.modifierId) || [],
+    );
+    const modifiers =
+      modifierIds.length > 0
+        ? await this.prisma.secure.modifier.findMany({
+            where: { id: { in: modifierIds } },
+          })
+        : [];
     const modifierMap = new Map(modifiers.map((m) => [m.id, m]));
 
     for (const item of dto.items) {
@@ -371,7 +376,7 @@ export class PaymentsService {
           }
         }
         if (modDescriptions.length > 0) {
-          description = description 
+          description = description
             ? `${description} - ${modDescriptions.join(', ')}`
             : modDescriptions.join(', ');
         }
@@ -416,7 +421,8 @@ export class PaymentsService {
     const fullName = (dto.customer?.name || 'Cliente').trim();
     const nameParts = fullName.split(/\s+/);
     const firstName = nameParts[0];
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Cliente';
+    const lastName =
+      nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Cliente';
 
     const preferenceData = {
       items: preferenceItems,
@@ -424,18 +430,24 @@ export class PaymentsService {
         name: firstName,
         surname: lastName,
         email: dto.customer?.email || `invitado@${tenantId}.com`,
-        phone: dto.customer?.phone ? { 
-          area_code: '57', 
-          number: dto.customer.phone.replace(/\D/g, '') 
-        } : undefined,
-        identification: dto.customer?.identification ? { 
-          type: 'CC', 
-          number: dto.customer.identification.replace(/\D/g, '') 
-        } : undefined,
-        address: dto.customer?.address ? { 
-          street_name: dto.customer.address, 
-          zip_code: dto.customer.city || '' 
-        } : undefined,
+        phone: dto.customer?.phone
+          ? {
+              area_code: '57',
+              number: dto.customer.phone.replace(/\D/g, ''),
+            }
+          : undefined,
+        identification: dto.customer?.identification
+          ? {
+              type: 'CC',
+              number: dto.customer.identification.replace(/\D/g, ''),
+            }
+          : undefined,
+        address: dto.customer?.address
+          ? {
+              street_name: dto.customer.address,
+              zip_code: dto.customer.city || '',
+            }
+          : undefined,
       },
       back_urls: {
         success: `${frontendUrl}/checkout/success`,
@@ -597,16 +609,21 @@ export class PaymentsService {
           }
 
           // 5. Creación de la Orden (Prisma Transaction)
-          await this.prisma.$transaction(async (tx) => {
+          await this.prisma.secure.$transaction(async (tx) => {
             let totalAmount = 0;
             const orderItemsData: any[] = [];
             const digitalItemsDispatch: any[] = [];
 
             // Batch fetch all modifiers involved
-            const allModifierIds = items.flatMap((i: any) => i.modifiers?.map((m: any) => m.modifierId) || []);
-            const allModifiers = allModifierIds.length > 0
-              ? await tx.modifier.findMany({ where: { id: { in: allModifierIds } } })
-              : [];
+            const allModifierIds = items.flatMap(
+              (i: any) => i.modifiers?.map((m: any) => m.modifierId) || [],
+            );
+            const allModifiers =
+              allModifierIds.length > 0
+                ? await tx.modifier.findMany({
+                    where: { id: { in: allModifierIds } },
+                  })
+                : [];
             const modifierMap = new Map(allModifiers.map((m) => [m.id, m]));
 
             for (const item of items) {
@@ -662,11 +679,13 @@ export class PaymentsService {
 
             if (existingOrderId) {
               const preExisting = await tx.order.findUnique({
-                where: { id: existingOrderId }
+                where: { id: existingOrderId },
               });
 
               if (!preExisting) {
-                this.logger.error(`Order ${existingOrderId} not found for payment ${dataId}`);
+                this.logger.error(
+                  `Order ${existingOrderId} not found for payment ${dataId}`,
+                );
                 throw new Error(`Order ${existingOrderId} not found`);
               }
 
@@ -676,12 +695,14 @@ export class PaymentsService {
                   status: 'APPROVED',
                   mpPaymentId: dataId,
                   // Actualizar envío en caso de haberlo incluido
-                  shippingData: address ? {
-                    address,
-                    city,
-                    lat,
-                    lng
-                  } : preExisting.shippingData ?? undefined,
+                  shippingData: address
+                    ? {
+                        address,
+                        city,
+                        lat,
+                        lng,
+                      }
+                    : (preExisting.shippingData ?? undefined),
                   customerEmail: customerEmail || preExisting.customerEmail,
                   identification: identification || preExisting.identification,
                 },
@@ -708,12 +729,14 @@ export class PaymentsService {
                   customerEmail,
                   identification,
                   notes: '',
-                  shippingData: address ? {
-                    address,
-                    city,
-                    lat,
-                    lng
-                  } : undefined,
+                  shippingData: address
+                    ? {
+                        address,
+                        city,
+                        lat,
+                        lng,
+                      }
+                    : undefined,
                   items: {
                     create: orderItemsData,
                   },
@@ -806,7 +829,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
 
-    await this.prisma.subscription.upsert({
+    await this.prisma.secure.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -930,7 +953,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + days);
 
-    await this.prisma.subscription.upsert({
+    await this.prisma.secure.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -956,7 +979,7 @@ export class PaymentsService {
   // ==================== USER SUBSCRIPTION CHECK ====================
 
   async hasActiveSubscription(userId: string): Promise<boolean> {
-    const subscription = await this.prisma.subscription.findUnique({
+    const subscription = await this.prisma.secure.subscription.findUnique({
       where: { userId },
     });
     return subscription?.status === 'ACTIVE';
@@ -967,12 +990,12 @@ export class PaymentsService {
   async getPaymentStats() {
     const [activeSubscriptions, totalEbookPurchases, pendingSubscriptions] =
       await Promise.all([
-        this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
-        this.prisma.purchase.count({ where: { status: 'approved' } }),
-        this.prisma.subscription.count({ where: { status: 'PENDING' } }),
+        this.prisma.secure.subscription.count({ where: { status: 'ACTIVE' } }),
+        this.prisma.secure.purchase.count({ where: { status: 'approved' } }),
+        this.prisma.secure.subscription.count({ where: { status: 'PENDING' } }),
       ]);
 
-    const recentSubscriptions = await this.prisma.subscription.findMany({
+    const recentSubscriptions = await this.prisma.secure.subscription.findMany({
       where: { status: 'ACTIVE' },
       take: 10,
       orderBy: { startDate: 'desc' },

@@ -5,8 +5,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Decimal } from '@prisma/client/runtime/library';
 import { Prisma, MovementType } from '@alvarosky/database';
+import { ClsService } from 'nestjs-cls';
 import {
   CreateInventoryItemDto,
   UpdateInventoryItemDto,
@@ -20,69 +20,75 @@ import {
 export class InventoryService {
   private readonly logger = new Logger(InventoryService.name);
 
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private cls: ClsService,
+  ) {}
+
+  /** Lee el tenantId del contexto CLS (AsyncLocalStorage). */
+  private getTenantId(): string {
+    return this.cls.get<string>('tenantId') ?? '';
+  }
 
   // ================================================================
   // WAREHOUSES
   // ================================================================
 
-  async createWarehouse(tenantId: string, dto: CreateWarehouseDto) {
-    // If setting as default, unset other defaults first
+  // ✅ tenantId eliminado de todas las firmas públicas — .secure lo inyecta
+  async createWarehouse(dto: CreateWarehouseDto) {
     if (dto.isDefault) {
       await this.prisma.secure.warehouse.updateMany({
-        where: { tenantId, isDefault: true },
+        where: { isDefault: true },
         data: { isDefault: false },
       });
     }
 
     return this.prisma.secure.warehouse.create({
       data: {
-        tenantId,
+        tenantId: this.getTenantId(),
         name: dto.name,
         isDefault: dto.isDefault ?? false,
       },
     });
   }
 
-  async findAllWarehouses(tenantId: string) {
+  async findAllWarehouses() {
     return this.prisma.secure.warehouse.findMany({
-      where: { tenantId },
       orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
-      include: {
-        _count: { select: { stock: true } },
-      },
+      include: { _count: { select: { stock: true } } },
     });
   }
 
-  async getDefaultWarehouse(tenantId: string) {
+  async getDefaultWarehouse() {
     let warehouse = await this.prisma.secure.warehouse.findFirst({
-      where: { tenantId, isDefault: true },
+      where: { isDefault: true },
     });
 
-    // Auto-create default warehouse if none exists
     if (!warehouse) {
       warehouse = await this.prisma.secure.warehouse.create({
         data: {
-          tenantId,
+          tenantId: this.getTenantId(),
           name: 'Cocina Principal',
           isDefault: true,
         },
       });
-      this.logger.log(`Auto-created default warehouse for tenant ${tenantId}`);
+      this.logger.log(
+        `Auto-created default warehouse for tenant ${this.getTenantId()}`,
+      );
     }
 
     return warehouse;
   }
 
-  async updateWarehouse(id: string, tenantId: string, dto: CreateWarehouseDto) {
-    const warehouse = await this.prisma.secure.warehouse.findFirst({
-      where: { id, tenantId },
+  async updateWarehouse(id: string, dto: CreateWarehouseDto) {
+    const warehouse = await this.prisma.secure.warehouse.findUnique({
+      where: { id },
     });
     if (!warehouse) throw new NotFoundException('Almacén no encontrado');
 
     if (dto.isDefault) {
       await this.prisma.secure.warehouse.updateMany({
-        where: { tenantId, isDefault: true, id: { not: id } },
+        where: { isDefault: true, id: { not: id } },
         data: { isDefault: false },
       });
     }
@@ -93,9 +99,9 @@ export class InventoryService {
     });
   }
 
-  async deleteWarehouse(id: string, tenantId: string) {
-    const warehouse = await this.prisma.secure.warehouse.findFirst({
-      where: { id, tenantId },
+  async deleteWarehouse(id: string) {
+    const warehouse = await this.prisma.secure.warehouse.findUnique({
+      where: { id },
       include: { _count: { select: { stock: true, movements: true } } },
     });
     if (!warehouse) throw new NotFoundException('Almacén no encontrado');
@@ -117,10 +123,10 @@ export class InventoryService {
   // INVENTORY ITEMS (Ingredientes)
   // ================================================================
 
-  async createItem(tenantId: string, dto: CreateInventoryItemDto) {
+  async createItem(dto: CreateInventoryItemDto) {
     return this.prisma.secure.inventoryItem.create({
       data: {
-        tenantId,
+        tenantId: this.getTenantId(),
         name: dto.name,
         sku: dto.sku,
         unit: dto.unit ?? 'UN',
@@ -130,17 +136,9 @@ export class InventoryService {
     });
   }
 
-  async findAllItems(
-    tenantId: string,
-    includeInactive = false,
-    take = 100,
-    skip = 0,
-  ) {
+  async findAllItems(includeInactive = false, take = 100, skip = 0) {
     return this.prisma.secure.inventoryItem.findMany({
-      where: {
-        tenantId,
-        ...(includeInactive ? {} : { isActive: true }),
-      },
+      where: { ...(includeInactive ? {} : { isActive: true }) },
       include: {
         stock: {
           include: { warehouse: { select: { id: true, name: true } } },
@@ -152,9 +150,9 @@ export class InventoryService {
     });
   }
 
-  async findOneItem(id: string, tenantId: string) {
-    const item = await this.prisma.secure.inventoryItem.findFirst({
-      where: { id, tenantId },
+  async findOneItem(id: string) {
+    const item = await this.prisma.secure.inventoryItem.findUnique({
+      where: { id },
       include: {
         stock: {
           include: { warehouse: { select: { id: true, name: true } } },
@@ -170,9 +168,9 @@ export class InventoryService {
     return item;
   }
 
-  async updateItem(id: string, tenantId: string, dto: UpdateInventoryItemDto) {
-    const item = await this.prisma.secure.inventoryItem.findFirst({
-      where: { id, tenantId },
+  async updateItem(id: string, dto: UpdateInventoryItemDto) {
+    const item = await this.prisma.secure.inventoryItem.findUnique({
+      where: { id },
     });
     if (!item) throw new NotFoundException('Ingrediente no encontrado');
 
@@ -188,9 +186,9 @@ export class InventoryService {
     });
   }
 
-  async deleteItem(id: string, tenantId: string) {
-    const item = await this.prisma.secure.inventoryItem.findFirst({
-      where: { id, tenantId },
+  async deleteItem(id: string) {
+    const item = await this.prisma.secure.inventoryItem.findUnique({
+      where: { id },
       include: {
         stock: { where: { currentStock: { gt: 0 } } },
         ingredients: true,
@@ -203,7 +201,6 @@ export class InventoryService {
       );
     }
 
-    // Soft-delete by deactivating
     return this.prisma.secure.inventoryItem.update({
       where: { id },
       data: { isActive: false },
@@ -214,22 +211,23 @@ export class InventoryService {
   // STOCK MOVEMENTS
   // ================================================================
 
-  async addStockEntry(tenantId: string, userId: string, dto: StockEntryDto) {
-    return this.prisma.$transaction(async (tx) => {
-      const item = await tx.inventoryItem.findFirst({
-        where: { id: dto.inventoryItemId, tenantId },
+  async addStockEntry(userId: string, dto: StockEntryDto) {
+    // ✅ secure.$transaction — propaga tenant context al tx interno
+    return this.prisma.secure.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.findUnique({
+        where: { id: dto.inventoryItemId },
       });
       if (!item) throw new NotFoundException('Ingrediente no encontrado');
 
-      const warehouse = await tx.warehouse.findFirst({
-        where: { id: dto.warehouseId, tenantId },
+      const warehouse = await tx.warehouse.findUnique({
+        where: { id: dto.warehouseId },
       });
       if (!warehouse) throw new NotFoundException('Almacén no encontrado');
 
-      // 1. Create movement record
+      // 1. Crear registro de movimiento
       await tx.inventoryMovement.create({
         data: {
-          tenantId,
+          tenantId: this.getTenantId(),
           inventoryItemId: dto.inventoryItemId,
           warehouseId: dto.warehouseId,
           type: MovementType.ENTRY,
@@ -253,12 +251,10 @@ export class InventoryService {
           inventoryItemId: dto.inventoryItemId,
           currentStock: dto.quantity,
         },
-        update: {
-          currentStock: { increment: dto.quantity },
-        },
+        update: { currentStock: { increment: dto.quantity } },
       });
 
-      // 3. Recalculate weighted average cost
+      // 3. Recalcular costo promedio ponderado
       const updatedItem = await this.recalculateAvgCost(
         tx,
         dto.inventoryItemId,
@@ -274,14 +270,13 @@ export class InventoryService {
     });
   }
 
-  async addStockExit(tenantId: string, userId: string, dto: StockExitDto) {
-    return this.prisma.$transaction(async (tx) => {
-      const item = await tx.inventoryItem.findFirst({
-        where: { id: dto.inventoryItemId, tenantId },
+  async addStockExit(userId: string, dto: StockExitDto) {
+    return this.prisma.secure.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.findUnique({
+        where: { id: dto.inventoryItemId },
       });
       if (!item) throw new NotFoundException('Ingrediente no encontrado');
 
-      // Verify stock availability
       const warehouseStock = await tx.warehouseStock.findUnique({
         where: {
           warehouseId_inventoryItemId: {
@@ -300,20 +295,18 @@ export class InventoryService {
         );
       }
 
-      // 1. Create movement
       await tx.inventoryMovement.create({
         data: {
-          tenantId,
+          tenantId: this.getTenantId(),
           inventoryItemId: dto.inventoryItemId,
           warehouseId: dto.warehouseId,
           type: MovementType.EXIT,
-          quantity: -dto.quantity, // Negative for exits
+          quantity: -dto.quantity,
           reason: dto.reason || 'Salida manual',
           createdBy: userId,
         },
       });
 
-      // 2. Decrement warehouse stock
       await tx.warehouseStock.update({
         where: {
           warehouseId_inventoryItemId: {
@@ -321,33 +314,29 @@ export class InventoryService {
             inventoryItemId: dto.inventoryItemId,
           },
         },
-        data: {
-          currentStock: { decrement: dto.quantity },
-        },
+        data: { currentStock: { decrement: dto.quantity } },
       });
 
       this.logger.log(
         `Stock exit: -${dto.quantity} ${item.unit} of "${item.name}"`,
       );
-
       return { success: true };
     });
   }
 
-  async transferStock(tenantId: string, userId: string, dto: StockTransferDto) {
+  async transferStock(userId: string, dto: StockTransferDto) {
     if (dto.fromWarehouseId === dto.toWarehouseId) {
       throw new BadRequestException(
         'Los almacenes de origen y destino deben ser diferentes',
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const item = await tx.inventoryItem.findFirst({
-        where: { id: dto.inventoryItemId, tenantId },
+    return this.prisma.secure.$transaction(async (tx) => {
+      const item = await tx.inventoryItem.findUnique({
+        where: { id: dto.inventoryItemId },
       });
       if (!item) throw new NotFoundException('Ingrediente no encontrado');
 
-      // Verify source stock
       const sourceStock = await tx.warehouseStock.findUnique({
         where: {
           warehouseId_inventoryItemId: {
@@ -363,11 +352,10 @@ export class InventoryService {
         );
       }
 
-      // 1. Create movement records (EXIT from source, ENTRY to destination)
       await tx.inventoryMovement.createMany({
         data: [
           {
-            tenantId,
+            tenantId: this.getTenantId(),
             inventoryItemId: dto.inventoryItemId,
             warehouseId: dto.fromWarehouseId,
             type: MovementType.TRANSFER,
@@ -376,7 +364,7 @@ export class InventoryService {
             createdBy: userId,
           },
           {
-            tenantId,
+            tenantId: this.getTenantId(),
             inventoryItemId: dto.inventoryItemId,
             warehouseId: dto.toWarehouseId,
             type: MovementType.TRANSFER,
@@ -387,7 +375,6 @@ export class InventoryService {
         ],
       });
 
-      // 2. Decrement source
       await tx.warehouseStock.update({
         where: {
           warehouseId_inventoryItemId: {
@@ -398,7 +385,6 @@ export class InventoryService {
         data: { currentStock: { decrement: dto.quantity } },
       });
 
-      // 3. Upsert destination
       await tx.warehouseStock.upsert({
         where: {
           warehouseId_inventoryItemId: {
@@ -411,15 +397,12 @@ export class InventoryService {
           inventoryItemId: dto.inventoryItemId,
           currentStock: dto.quantity,
         },
-        update: {
-          currentStock: { increment: dto.quantity },
-        },
+        update: { currentStock: { increment: dto.quantity } },
       });
 
       this.logger.log(
         `Stock transfer: ${dto.quantity} ${item.unit} of "${item.name}"`,
       );
-
       return { success: true };
     });
   }
@@ -429,15 +412,15 @@ export class InventoryService {
   // ================================================================
 
   async deductByOrder(
-    tenantId: string,
+    tenantId: string, // ⚠️ Mantenido temporalmente: InventoryService es llamado desde OrdersService que lo pasa explícitamente
     orderId: string,
     items: Array<{ productId: string; quantity: number }>,
-    tx?: any, // Prisma transaction client
+    tx?: any,
   ) {
-    const prisma = tx || this.prisma;
-    const defaultWarehouse = await this.getDefaultWarehouseId(tenantId, prisma);
+    // Usar el tx seguro si viene de una transacción, o el cliente secure propio
+    const prismaClient = tx || this.prisma.secure;
+    const defaultWarehouse = await this.getDefaultWarehouseId(prismaClient);
 
-    // Batch: collect all productIds and fetch their recipes in one query
     const productIds = items.map((i) => i.productId);
 
     type RecipeWithIngredients = {
@@ -451,23 +434,23 @@ export class InventoryService {
       }>;
     };
 
-    const recipes: RecipeWithIngredients[] = await prisma.recipe.findMany({
-      where: { productId: { in: productIds } },
-      include: {
-        ingredients: {
-          include: {
-            inventoryItem: { select: { name: true, minStock: true } },
+    const recipes: RecipeWithIngredients[] = await prismaClient.recipe.findMany(
+      {
+        where: { productId: { in: productIds } },
+        include: {
+          ingredients: {
+            include: {
+              inventoryItem: { select: { name: true, minStock: true } },
+            },
           },
         },
       },
-    });
+    );
 
-    // Index recipes by productId for O(1) lookup
     const recipeMap = new Map<string, RecipeWithIngredients>(
       recipes.map((r) => [r.productId, r]),
     );
 
-    // Build flat array of deductions
     const deductions: Array<{
       inventoryItemId: string;
       deductQty: number;
@@ -477,7 +460,7 @@ export class InventoryService {
 
     for (const orderItem of items) {
       const recipe = recipeMap.get(orderItem.productId);
-      if (!recipe) continue; // No recipe — skip
+      if (!recipe) continue;
 
       const portionMultiplier = orderItem.quantity / recipe.yield;
 
@@ -494,8 +477,6 @@ export class InventoryService {
 
     if (deductions.length === 0) return { alerts: [] };
 
-    // Execute all movements + decrements atomically (already inside tx)
-    // Group movements by inventoryItemId to batch create
     const movementData = deductions.map((d) => ({
       tenantId,
       inventoryItemId: d.inventoryItemId,
@@ -506,10 +487,9 @@ export class InventoryService {
       reference: orderId,
     }));
 
-    await prisma.inventoryMovement.createMany({ data: movementData });
+    await prismaClient.inventoryMovement.createMany({ data: movementData });
 
-    // Batch upsert — single SQL statement replaces N sequential upserts
-    // Postgres INSERT...ON CONFLICT handles concurrency at row level
+    // Batch upsert — INSERT...ON CONFLICT no replicable en Prisma ORM (no existe upsertMany)
     const aggregated = new Map<string, number>();
     for (const d of deductions) {
       aggregated.set(
@@ -519,43 +499,46 @@ export class InventoryService {
     }
 
     const { randomUUID } = await import('crypto');
-
     const fragments = Array.from(aggregated.entries()).map(
       ([itemId, qty]) =>
         Prisma.sql`(${randomUUID()}, ${defaultWarehouse}, ${itemId}, ${-qty}, CURRENT_TIMESTAMP)`,
     );
 
-    await prisma.$executeRaw`
-            INSERT INTO "WarehouseStock" ("id", "warehouseId", "inventoryItemId", "currentStock", "updatedAt")
-            VALUES ${Prisma.join(fragments)}
-            ON CONFLICT ("warehouseId", "inventoryItemId")
-            DO UPDATE SET 
-                "currentStock" = "WarehouseStock"."currentStock" + EXCLUDED."currentStock", 
-                "updatedAt" = CURRENT_TIMESTAMP
-        `;
+    /* eslint-disable no-restricted-syntax */
+    await prismaClient.$executeRaw`
+      INSERT INTO "WarehouseStock" ("id", "warehouseId", "inventoryItemId", "currentStock", "updatedAt")
+      VALUES ${Prisma.join(fragments)}
+      ON CONFLICT ("warehouseId", "inventoryItemId")
+      DO UPDATE SET
+        "currentStock" = "WarehouseStock"."currentStock" + EXCLUDED."currentStock",
+        "updatedAt" = CURRENT_TIMESTAMP
+    `;
+    /* eslint-enable no-restricted-syntax */
 
-    // Low-stock check: delegated to Postgres in a single query
-    // instead of N SELECTs per ingredient
+    // Low-stock check — HAVING sobre MAX/SUM en JOIN no disponible en Prisma ORM
     const uniqueItemIds = [
       ...new Set(deductions.map((d) => d.inventoryItemId)),
     ];
+
+    /* eslint-disable no-restricted-syntax */
     const lowStockRows: Array<{
       id: string;
       name: string;
       total_stock: number;
       min_stock: number;
-    }> = await prisma.$queryRaw`
-                SELECT ii."id", ii."name",
-                       COALESCE(SUM(ws."currentStock"), 0)::float AS total_stock,
-                       ii."minStock"::float AS min_stock
-                FROM "InventoryItem" ii
-                LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
-                WHERE ii."id" = ANY(${uniqueItemIds})
-                  AND ii."minStock" > 0
-                  AND ii."tenantId" = ${tenantId}
-                GROUP BY ii."id", ii."name", ii."minStock"
-                HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
-            `;
+    }> = await prismaClient.$queryRaw`
+      SELECT ii."id", ii."name",
+             COALESCE(SUM(ws."currentStock"), 0)::float AS total_stock,
+             ii."minStock"::float AS min_stock
+      FROM "InventoryItem" ii
+      LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
+      WHERE ii."id" = ANY(${uniqueItemIds})
+        AND ii."minStock" > 0
+        AND ii."tenantId" = ${tenantId}
+      GROUP BY ii."id", ii."name", ii."minStock"
+      HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
+    `;
+    /* eslint-enable no-restricted-syntax */
 
     const alerts = lowStockRows.map((r) => ({
       itemName: r.name,
@@ -577,21 +560,15 @@ export class InventoryService {
   // ================================================================
 
   async restoreByOrder(tenantId: string, orderId: string, tx?: any) {
-    const prisma = tx || this.prisma;
+    const prismaClient = tx || this.prisma.secure;
 
-    // Find all SALE movements for this order
-    const movements = await prisma.inventoryMovement.findMany({
-      where: {
-        tenantId,
-        reference: orderId,
-        type: MovementType.SALE,
-      },
+    const movements = await prismaClient.inventoryMovement.findMany({
+      where: { reference: orderId, type: MovementType.SALE },
     });
 
     if (movements.length === 0) return;
 
-    // Batch: create all reverse movements in one call
-    await prisma.inventoryMovement.createMany({
+    await prismaClient.inventoryMovement.createMany({
       data: movements.map((m) => ({
         tenantId,
         inventoryItemId: m.inventoryItemId,
@@ -603,11 +580,10 @@ export class InventoryService {
       })),
     });
 
-    // Batch: restore stock in parallel (Prisma lacks upsertMany)
     await Promise.all(
       movements.map((m) => {
         const restoreQty = Math.abs(Number(m.quantity));
-        return prisma.warehouseStock.upsert({
+        return prismaClient.warehouseStock.upsert({
           where: {
             warehouseId_inventoryItemId: {
               warehouseId: m.warehouseId,
@@ -619,9 +595,7 @@ export class InventoryService {
             inventoryItemId: m.inventoryItemId,
             currentStock: restoreQty,
           },
-          update: {
-            currentStock: { increment: restoreQty },
-          },
+          update: { currentStock: { increment: restoreQty } },
         });
       }),
     );
@@ -633,9 +607,11 @@ export class InventoryService {
   // LOW STOCK ALERTS
   // ================================================================
 
-  async getLowStockItems(tenantId: string) {
-    // Delegated entirely to PostgreSQL — no .filter() in Node
-    return this.prisma.$queryRaw<
+  async getLowStockItems() {
+    const tenantId = this.getTenantId();
+    // SUM + LEFT JOIN + HAVING COALESCE — imposible en Prisma ORM (groupBy no soporta HAVING con aggregate)
+    /* eslint-disable no-restricted-syntax */
+    const result = await this.prisma.$queryRaw<
       Array<{
         id: string;
         name: string;
@@ -644,22 +620,24 @@ export class InventoryService {
         totalStock: number;
       }>
     >`
-            SELECT
-                ii."id",
-                ii."name",
-                ii."unit",
-                ii."minStock"::float AS "minStock",
-                COALESCE(SUM(ws."currentStock"), 0)::float AS "totalStock"
-            FROM "InventoryItem" ii
-            LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
-            WHERE ii."tenantId" = ${tenantId}
-              AND ii."isActive" = true
-              AND ii."minStock" > 0
-            GROUP BY ii."id", ii."name", ii."unit", ii."minStock"
-            HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
-            ORDER BY (COALESCE(SUM(ws."currentStock"), 0) / NULLIF(ii."minStock", 0)) ASC
-            LIMIT 50
-        `;
+      SELECT
+        ii."id",
+        ii."name",
+        ii."unit",
+        ii."minStock"::float AS "minStock",
+        COALESCE(SUM(ws."currentStock"), 0)::float AS "totalStock"
+      FROM "InventoryItem" ii
+      LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
+      WHERE ii."tenantId" = ${tenantId}
+        AND ii."isActive" = true
+        AND ii."minStock" > 0
+      GROUP BY ii."id", ii."name", ii."unit", ii."minStock"
+      HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
+      ORDER BY (COALESCE(SUM(ws."currentStock"), 0) / NULLIF(ii."minStock", 0)) ASC
+      LIMIT 50
+    `;
+    /* eslint-enable no-restricted-syntax */
+    return result;
   }
 
   // ================================================================
@@ -673,7 +651,8 @@ export class InventoryService {
     });
     if (!recipe) return null;
 
-    // Delegate cost calculation to Postgres — no JS loop
+    // JOIN de 3 tablas con cálculo de línea de costo — no replicable en Prisma ORM
+    /* eslint-disable no-restricted-syntax */
     const breakdown = await this.prisma.$queryRaw<
       Array<{
         ingredient: string;
@@ -683,16 +662,17 @@ export class InventoryService {
         lineCost: number;
       }>
     >`
-            SELECT
-                ii."name" AS "ingredient",
-                ri."quantity"::float AS "quantity",
-                ii."unit",
-                ii."avgCost"::float AS "unitCost",
-                (ri."quantity" * ri."wasteFactor" * ii."avgCost")::float AS "lineCost"
-            FROM "RecipeIngredient" ri
-            JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
-            WHERE ri."recipeId" = ${recipe.id}
-        `;
+      SELECT
+        ii."name" AS "ingredient",
+        ri."quantity"::float AS "quantity",
+        ii."unit",
+        ii."avgCost"::float AS "unitCost",
+        (ri."quantity" * ri."wasteFactor" * ii."avgCost")::float AS "lineCost"
+      FROM "RecipeIngredient" ri
+      JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
+      WHERE ri."recipeId" = ${recipe.id}
+    `;
+    /* eslint-enable no-restricted-syntax */
 
     const totalCost = breakdown.reduce((sum, b) => sum + b.lineCost, 0);
     const costPerPortion = totalCost / recipe.yield;
@@ -706,12 +686,11 @@ export class InventoryService {
     };
   }
 
-  /**
-   * Get costing for all products with recipes — single SQL query.
-   * Delegates SUM and margin calculation to Postgres.
-   */
-  async getAllProductsCostOptimized(tenantId: string) {
-    return this.prisma.$queryRaw<
+  async getAllProductsCostOptimized() {
+    const tenantId = this.getTenantId();
+    // SUM sobre JOIN + CASE + GROUP BY compuesto — requiere raw SQL
+    /* eslint-disable no-restricted-syntax */
+    const result = await this.prisma.$queryRaw<
       Array<{
         productId: string;
         productName: string;
@@ -722,69 +701,68 @@ export class InventoryService {
         recipeYield: number;
       }>
     >`
-            SELECT
-                p."id" AS "productId",
-                p."name" AS "productName",
-                p."basePrice"::float AS "salePrice",
-                SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost")::float AS "totalCost",
-                (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield")::float AS "costPerPortion",
-                CASE
-                    WHEN p."basePrice" > 0
-                    THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
-                          / p."basePrice" * 100)::float
-                    ELSE 0
-                END AS "margin",
-                r."yield"::int AS "recipeYield"
-            FROM "Recipe" r
-            JOIN "Product" p ON p."id" = r."productId"
-            JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
-            JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
-            WHERE p."tenantId" = ${tenantId}
-            GROUP BY p."id", p."name", p."basePrice", r."yield"
-            ORDER BY "margin" ASC
-        `;
+      SELECT
+        p."id" AS "productId",
+        p."name" AS "productName",
+        p."basePrice"::float AS "salePrice",
+        SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost")::float AS "totalCost",
+        (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield")::float AS "costPerPortion",
+        CASE
+          WHEN p."basePrice" > 0
+          THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
+                / p."basePrice" * 100)::float
+          ELSE 0
+        END AS "margin",
+        r."yield"::int AS "recipeYield"
+      FROM "Recipe" r
+      JOIN "Product" p ON p."id" = r."productId"
+      JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
+      JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
+      WHERE p."tenantId" = ${tenantId}
+      GROUP BY p."id", p."name", p."basePrice", r."yield"
+      ORDER BY "margin" ASC
+    `;
+    /* eslint-enable no-restricted-syntax */
+    return result;
   }
 
-  /**
-   * Dashboard metrics — all computed in Postgres
-   */
-  async getDashboardMetrics(tenantId: string) {
+  async getDashboardMetrics() {
+    const tenantId = this.getTenantId();
+    // Los tres queries usan CTE y HAVING que son irremplazables en Prisma ORM
     const [lowStockCount, avgMargin, topExpensiveIngredients] =
+      /* eslint-disable no-restricted-syntax */
       await Promise.all([
-        // Count of low-stock items (Postgres comparison)
         this.prisma.$queryRaw<[{ count: number }]>`
-                SELECT COUNT(*)::int AS "count"
-                FROM (
-                    SELECT ii."id"
-                    FROM "InventoryItem" ii
-                    LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
-                    WHERE ii."tenantId" = ${tenantId}
-                      AND ii."isActive" = true
-                      AND ii."minStock" > 0
-                    GROUP BY ii."id"
-                    HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
-                ) sub
-            `,
-        // Average margin across all products with recipes (CTE to avoid nested aggregates)
+        SELECT COUNT(*)::int AS "count"
+        FROM (
+          SELECT ii."id"
+          FROM "InventoryItem" ii
+          LEFT JOIN "WarehouseStock" ws ON ws."inventoryItemId" = ii."id"
+          WHERE ii."tenantId" = ${tenantId}
+            AND ii."isActive" = true
+            AND ii."minStock" > 0
+          GROUP BY ii."id"
+          HAVING COALESCE(SUM(ws."currentStock"), 0) <= ii."minStock"
+        ) sub
+      `,
         this.prisma.$queryRaw<[{ avg_margin: number | null }]>`
-                WITH product_margins AS (
-                    SELECT
-                        p."id",
-                        CASE WHEN p."basePrice" > 0
-                        THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
-                              / p."basePrice" * 100)
-                        ELSE 0 END AS margin
-                    FROM "Recipe" r
-                    JOIN "Product" p ON p."id" = r."productId"
-                    JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
-                    JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
-                    WHERE p."tenantId" = ${tenantId}
-                    GROUP BY p."id", p."basePrice", r."yield"
-                )
-                SELECT AVG(margin)::float AS "avg_margin"
-                FROM product_margins
-            `,
-        // Top 5 most consumed ingredients by $ value (last 30 days)
+        WITH product_margins AS (
+          SELECT
+            p."id",
+            CASE WHEN p."basePrice" > 0
+            THEN ((p."basePrice" - (SUM(ri."quantity" * ri."wasteFactor" * ii."avgCost") / r."yield"))
+                  / p."basePrice" * 100)
+            ELSE 0 END AS margin
+          FROM "Recipe" r
+          JOIN "Product" p ON p."id" = r."productId"
+          JOIN "RecipeIngredient" ri ON ri."recipeId" = r."id"
+          JOIN "InventoryItem" ii ON ii."id" = ri."inventoryItemId"
+          WHERE p."tenantId" = ${tenantId}
+          GROUP BY p."id", p."basePrice", r."yield"
+        )
+        SELECT AVG(margin)::float AS "avg_margin"
+        FROM product_margins
+      `,
         this.prisma.$queryRaw<
           Array<{
             name: string;
@@ -793,21 +771,22 @@ export class InventoryService {
             totalValue: number;
           }>
         >`
-                SELECT
-                    ii."name",
-                    ii."unit",
-                    ABS(SUM(im."quantity"))::float AS "totalConsumed",
-                    (ABS(SUM(im."quantity")) * ii."avgCost")::float AS "totalValue"
-                FROM "InventoryMovement" im
-                JOIN "InventoryItem" ii ON ii."id" = im."inventoryItemId"
-                WHERE im."tenantId" = ${tenantId}
-                  AND im."type" = 'SALE'
-                  AND im."createdAt" >= NOW() - INTERVAL '30 days'
-                GROUP BY ii."id", ii."name", ii."unit", ii."avgCost"
-                ORDER BY "totalValue" DESC
-                LIMIT 5
-            `,
+        SELECT
+          ii."name",
+          ii."unit",
+          ABS(SUM(im."quantity"))::float AS "totalConsumed",
+          (ABS(SUM(im."quantity")) * ii."avgCost")::float AS "totalValue"
+        FROM "InventoryMovement" im
+        JOIN "InventoryItem" ii ON ii."id" = im."inventoryItemId"
+        WHERE im."tenantId" = ${tenantId}
+          AND im."type" = 'SALE'
+          AND im."createdAt" >= NOW() - INTERVAL '30 days'
+        GROUP BY ii."id", ii."name", ii."unit", ii."avgCost"
+        ORDER BY "totalValue" DESC
+        LIMIT 5
+      `,
       ]);
+    /* eslint-enable no-restricted-syntax */
 
     return {
       lowStockCount: lowStockCount[0]?.count ?? 0,
@@ -854,19 +833,19 @@ export class InventoryService {
     });
   }
 
-  private async getDefaultWarehouseId(
-    tenantId: string,
-    prisma: any,
-  ): Promise<string> {
-    const warehouse = await prisma.warehouse.findFirst({
-      where: { tenantId, isDefault: true },
+  private async getDefaultWarehouseId(prismaClient: any): Promise<string> {
+    const warehouse = await prismaClient.warehouse.findFirst({
+      where: { isDefault: true },
       select: { id: true },
     });
 
     if (!warehouse) {
-      // Auto-create
-      const created = await prisma.warehouse.create({
-        data: { tenantId, name: 'Cocina Principal', isDefault: true },
+      const created = await prismaClient.warehouse.create({
+        data: {
+          tenantId: this.getTenantId(),
+          name: 'Cocina Principal',
+          isDefault: true,
+        },
       });
       return created.id;
     }

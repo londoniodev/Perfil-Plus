@@ -15,8 +15,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@alvarosky/database';
-import { CurrentTenant } from '../../common/decorators';
 
+// ✅ tenantId es inyectado automáticamente por la extensión Prisma vía nestjs-cls.
+// Los controllers NO deben extraerlo ni pasarlo a los servicios.
 @Controller('admin/products')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
@@ -24,49 +25,35 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  create(
-    @Body() createProductDto: CreateProductDto,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.productsService.create(createProductDto, tenantId);
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productsService.create(createProductDto);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateProductDto: CreateProductDto,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.productsService.update(id, updateProductDto, tenantId);
+  update(@Param('id') id: string, @Body() updateProductDto: CreateProductDto) {
+    return this.productsService.update(id, updateProductDto);
   }
 
   @Patch(':id/availability')
   updateAvailability(
     @Param('id') id: string,
     @Body('isAvailable') isAvailable: boolean,
-    @CurrentTenant() tenantId: string,
   ) {
-    return this.productsService.updateAvailability(id, isAvailable, tenantId);
+    return this.productsService.updateAvailability(id, isAvailable);
   }
 
   @Get()
-  findAll(@CurrentTenant() tenantId: string) {
-    return this.productsService.findAllAdmin(tenantId);
+  findAll() {
+    return this.productsService.findAllAdmin();
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.productsService.findOne(id, tenantId);
+  findOne(@Param('id') id: string) {
+    return this.productsService.findOne(id);
   }
 
   @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
-    return this.productsService.remove(id, tenantId);
+  remove(@Param('id') id: string) {
+    return this.productsService.remove(id);
   }
 }

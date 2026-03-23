@@ -87,7 +87,7 @@ export default function AdminBlogPage() {
 
             const res = await fetch(
                 `${API_BASE}/admin/blog/posts?page=${page}&limit=10${publishedParam}`,
-                { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
+                { headers: {}, credentials: "include" }
             );
 
             if (!res.ok) throw new Error("Error al cargar posts");
@@ -146,7 +146,7 @@ export default function AdminBlogPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${id}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
             if (!res.ok) throw new Error("Error al eliminar");
@@ -164,7 +164,7 @@ export default function AdminBlogPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/blog/posts/${post.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({ published: !post.published }),
             });

@@ -106,7 +106,7 @@ export default function CourseForm({
 
             const res = await fetch(url, {
                 method,
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(body),
             });

@@ -38,7 +38,7 @@ export default function EditarLeccionPage() {
     const fetchLesson = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${params.lessonId}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 
@@ -87,7 +87,7 @@ export default function EditarLeccionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/lessons/${params.lessonId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({
                     title,

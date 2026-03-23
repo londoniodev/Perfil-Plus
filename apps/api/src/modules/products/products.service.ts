@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { ClsService } from 'nestjs-cls';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductType } from '@alvarosky/database';
@@ -21,9 +22,13 @@ export class ProductsService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private prisma: PrismaService,
     private storage: StorageService,
-  ) { }
+    private cls: ClsService,
+  ) {}
 
-  private async invalidateMenuCache(tenantId: string) {
+  /** Helper para invalizar el caché del menú de forma segura sin tenantId manual. */
+  private async invalidateMenuCache() {
+    const tenantId = this.cls.get('tenantId');
+    if (!tenantId) return;
     const patterns = [
       `menu:${tenantId}:all:false`,
       `menu:${tenantId}:all:true`,
@@ -54,25 +59,25 @@ export class ProductsService {
   };
 
   // ============ CREAR PRODUCTO ============
-  async create(data: CreateProductDto, tenantId: string) {
-    // Extraemos properties transaccionales hijas
+  // ✅ tenantId es inyectado automáticamente por this.prisma.secure
+  async create(data: CreateProductDto) {
     const { sku, stock, modifierGroups, categories, variants, ...productData } =
       data;
 
-    // Validar slug único en este tenant
+    // Validar slug único en el contexto del tenant actual (inyectado automáticamente por .secure)
     const existing = await this.prisma.secure.product.findFirst({
-      where: { tenantId, slug: data.slug },
+      where: { slug: data.slug },
     });
 
     if (existing) {
       throw new BadRequestException('El slug del producto ya existe');
     }
 
-    // Transacción para crear producto + variantes + modifier groups + categorías
-    return await this.prisma.$transaction(async (tx) => {
+    // ✅ Usamos this.prisma.secure.$transaction para que el cliente `tx`
+    // interno propague el contexto de tenant automáticamente.
+    return await this.prisma.secure.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
-          tenantId,
           name: productData.name,
           slug: productData.slug,
           description: productData.description,
@@ -86,20 +91,18 @@ export class ProductsService {
           categories:
             categories && categories.length > 0
               ? {
-                create: categories.map((categoryId) => ({
-                  categoryId,
-                })),
-              }
+                  create: categories.map((categoryId) => ({
+                    categoryId,
+                  })),
+                }
               : undefined,
         },
       });
 
-      // Si envían array de variantes explícitas (e.g., producto físico con colores/tallas)
+      // Si envían array de variantes explícitas
       if (variants && variants.length > 0) {
-        // Crear variantes enviadas inyectando el tenantId explícito
         await tx.productVariant.createMany({
           data: variants.map((v, i) => ({
-            tenantId,
             productId: product.id,
             sku:
               v.sku ||
@@ -112,13 +115,12 @@ export class ProductsService {
           })),
         });
       } else {
-        // Crear variante default fallback si no se manda array
+        // Variante default
         const defaultSku =
           sku || `${product.slug}-${Math.random().toString(36).substring(7)}`;
 
         await tx.productVariant.create({
           data: {
-            tenantId,
             productId: product.id,
             sku: defaultSku,
             price: productData.basePrice,
@@ -135,14 +137,12 @@ export class ProductsService {
         for (const group of modifierGroups) {
           await tx.modifierGroup.create({
             data: {
-              tenantId,
               productId: product.id,
               name: group.name,
               minSelect: group.minSelect ?? 0,
               maxSelect: group.maxSelect ?? 1,
               modifiers: {
                 create: group.modifiers.map((mod) => ({
-                  tenantId,
                   name: mod.name,
                   priceAdjustment: mod.priceAdjustment ?? 0,
                   stock: mod.stock ?? null,
@@ -154,24 +154,21 @@ export class ProductsService {
         }
       }
 
-      // Retornar producto completo con relaciones
       const result = await tx.product.findFirst({
-        where: { id: product.id, tenantId },
+        where: { id: product.id },
         include: {
           variants: true,
           ...this.modifierGroupsInclude,
         },
       });
 
-      // Invalidar caché del menú
-      await this.invalidateMenuCache(tenantId);
-
+      await this.invalidateMenuCache();
       return result;
     });
   }
 
   // ============ ACTUALIZAR PRODUCTO ============
-  async update(id: string, data: CreateProductDto, tenantId: string) {
+  async update(id: string, data: CreateProductDto) {
     const existing = await this.prisma.secure.product.findUnique({
       where: { id },
     });
@@ -182,8 +179,7 @@ export class ProductsService {
 
     const { sku, stock, modifierGroups, categories, ...productData } = data;
 
-    return await this.prisma.$transaction(async (tx) => {
-      // Actualizar producto base
+    return await this.prisma.secure.$transaction(async (tx) => {
       await tx.product.update({
         where: { id },
         data: {
@@ -200,7 +196,7 @@ export class ProductsService {
         },
       });
 
-      // Sync Categories: borrar existentes y recrear (replace strategy)
+      // Sync Categories
       if (categories !== undefined) {
         await tx.categoriesOnProducts.deleteMany({
           where: { productId: id },
@@ -216,11 +212,8 @@ export class ProductsService {
         }
       }
 
-      // Sync modifier groups: borrar existentes y recrear (replace strategy)
+      // Sync modifier groups
       if (modifierGroups !== undefined) {
-        // Cascada manual: OrderItemModifier → Modifier → ModifierGroup
-        // La FK OrderItemModifier_modifierId_fkey es RESTRICT, así que
-        // primero debemos desconectar las referencias de pedidos existentes.
         const existingGroups = await tx.modifierGroup.findMany({
           where: { productId: id },
           select: { id: true, modifiers: { select: { id: true } } },
@@ -231,35 +224,28 @@ export class ProductsService {
         );
 
         if (modifierIds.length > 0) {
-          // 1. Eliminar OrderItemModifier que referencian estos modifiers
           await tx.orderItemModifier.deleteMany({
             where: { modifierId: { in: modifierIds } },
           });
-
-          // 2. Eliminar los Modifiers
           await tx.modifier.deleteMany({
             where: { id: { in: modifierIds } },
           });
         }
 
-        // 3. Eliminar los ModifierGroups (ya vacíos)
         await tx.modifierGroup.deleteMany({
           where: { productId: id },
         });
 
-        // Recrear si hay nuevos
         if (modifierGroups && modifierGroups.length > 0) {
           for (const group of modifierGroups) {
             await tx.modifierGroup.create({
               data: {
-                tenantId,
                 productId: id,
                 name: group.name,
                 minSelect: group.minSelect ?? 0,
                 maxSelect: group.maxSelect ?? 1,
                 modifiers: {
                   create: group.modifiers.map((mod) => ({
-                    tenantId,
                     name: mod.name,
                     priceAdjustment: mod.priceAdjustment ?? 0,
                     stock: mod.stock ?? null,
@@ -280,21 +266,18 @@ export class ProductsService {
         },
       });
 
-      // Invalidar caché del menú
-      await this.invalidateMenuCache(tenantId);
-
+      await this.invalidateMenuCache();
       return result;
     });
   }
 
   // ============ ACTUALIZAR DISPONIBILIDAD ============
-  async updateAvailability(id: string, isAvailable: boolean, tenantId: string) {
+  async updateAvailability(id: string, isAvailable: boolean) {
     const existing = await this.prisma.secure.product.findUnique({
       where: { id },
-      select: { tenantId: true },
     });
 
-    if (!existing || existing.tenantId !== tenantId) {
+    if (!existing) {
       throw new NotFoundException('Producto no encontrado en este tenant');
     }
 
@@ -303,24 +286,19 @@ export class ProductsService {
       data: { isAvailable },
     });
 
-    // Invalidar caché del menú
-    await this.invalidateMenuCache(tenantId);
-
+    await this.invalidateMenuCache();
     return result;
   }
 
   // ============ DESCARGAS DIGITALES ============
   async getProductDownloadUrl(productId: string, userId: string) {
-    // 1. Verify Active Subscription (Priority Access)
+    // 1. Verificar suscripción activa
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
-    // If active subscription, allow access to all digital products (or custom logic)
-    if (subscription?.status === 'ACTIVE') {
-      // Pass through to download
-    } else {
-      // 2. Verify Purchase (if no subscription)
+    if (subscription?.status !== 'ACTIVE') {
+      // 2. Verificar compra
       const hasPurchased = await this.prisma.secure.order.findFirst({
         where: {
           userId,
@@ -333,15 +311,11 @@ export class ProductsService {
         },
       });
 
-      // Check deprecated Purchase table as fallback (for migration compatibility)
+      // Fallback tabla Purchase deprecada
       const hasLegacyPurchase =
         !hasPurchased &&
         (await this.prisma.purchase.findFirst({
-          where: {
-            userId,
-            status: 'approved',
-            productId,
-          },
+          where: { userId, status: 'approved', productId },
         }));
 
       if (!hasPurchased && !hasLegacyPurchase) {
@@ -351,7 +325,7 @@ export class ProductsService {
       }
     }
 
-    // 3. Get Product File URL
+    // 3. Obtener URL del archivo
     const product = await this.prisma.secure.product.findUnique({
       where: { id: productId },
       select: { digitalFileUrl: true, productType: true },
@@ -367,7 +341,7 @@ export class ProductsService {
       );
     }
 
-    // 4. Generate Signed URL
+    // 4. Generar Signed URL
     const signedUrl = await this.storage.getSignedUrl(
       product.digitalFileUrl,
       3600,
@@ -376,41 +350,30 @@ export class ProductsService {
   }
 
   // ============ QUERIES ============
-  async getLiveStatus(tenantId: string) {
-    const products = await this.prisma.product.findMany({
-      where: {
-        tenantId,
-        published: true,
-      },
+  async getLiveStatus() {
+    const tenantId = this.cls.get('tenantId');
+    const products = await this.prisma.secure.product.findMany({
+      where: { published: true },
       select: {
         id: true,
         isAvailable: true,
-        variants: {
-          select: {
-            stock: true,
-          },
-        },
+        variants: { select: { stock: true } },
       },
     });
 
-    const statusMap: Record<string, { isAvailable: boolean; likes: number }> = {};
+    const statusMap: Record<string, { isAvailable: boolean; likes: number }> =
+      {};
     for (const p of products) {
-      // isAvailable base del producto Y evaluación de stock de sus variantes (si alguna tiene > 0 o infinito -1)
       const hasStock = p.variants.some((v) => v.stock === -1 || v.stock > 0);
       const currentlyAvailable = p.isAvailable && hasStock;
-
-      statusMap[p.id] = {
-        isAvailable: currentlyAvailable,
-        likes: 0, // Mock: implementar contador real de likes si el schema lo soporta después
-      };
+      statusMap[p.id] = { isAvailable: currentlyAvailable, likes: 0 };
     }
 
     return statusMap;
   }
 
-  async findAllAdmin(tenantId: string) {
-    return await this.prisma.product.findMany({
-      where: { tenantId },
+  async findAllAdmin() {
+    return await this.prisma.secure.product.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         variants: true,
@@ -420,30 +383,21 @@ export class ProductsService {
     });
   }
 
-  async findAllPublished(
-    type?: ProductType,
-    allVariants: boolean = false,
-    tenantId: string = 'default',
-  ) {
+  async findAllPublished(type?: ProductType, allVariants: boolean = false) {
+    const tenantId = this.cls.get('tenantId');
     const cacheKey = `menu:${tenantId}:${type || 'all'}:${allVariants}`;
 
-    // Servir desde caché si existe (TTL 5 min)
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
 
-    const result = await this.prisma.product.findMany({
+    const result = await this.prisma.secure.product.findMany({
       where: {
-        tenantId,
         published: true,
         ...(type ? { productType: type } : {}),
       },
       orderBy: { createdAt: 'desc' },
       include: {
-        variants: allVariants
-          ? true
-          : {
-            where: { isDefault: true },
-          },
+        variants: allVariants ? true : { where: { isDefault: true } },
         ...this.modifierGroupsInclude,
         categories: { include: { category: true } },
       },
@@ -453,9 +407,9 @@ export class ProductsService {
     return result;
   }
 
-  async findOnePublished(slug: string, tenantId: string) {
-    const product = await this.prisma.product.findFirst({
-      where: { tenantId, slug },
+  async findOnePublished(slug: string) {
+    const product = await this.prisma.secure.product.findFirst({
+      where: { slug },
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
@@ -469,9 +423,9 @@ export class ProductsService {
     return product;
   }
 
-  async findOne(id: string, tenantId?: string) {
-    const product = await this.prisma.product.findFirst({
-      where: { id, ...(tenantId ? { tenantId } : {}) },
+  async findOne(id: string) {
+    const product = await this.prisma.secure.product.findFirst({
+      where: { id },
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
@@ -482,26 +436,22 @@ export class ProductsService {
   }
 
   // ============ ELIMINAR PRODUCTO ============
-  async remove(id: string, tenantId: string) {
+  async remove(id: string) {
     const existing = await this.prisma.secure.product.findUnique({
       where: { id },
-      select: { tenantId: true },
     });
 
-    if (!existing || existing.tenantId !== tenantId) {
+    if (!existing) {
       throw new NotFoundException('Producto no encontrado en este tenant');
     }
 
-    return await this.prisma.$transaction(async (tx) => {
-      // 1. Obtener modifier groups y sus modifiers para limpiar OrderItemModifier
-      const modifierGroups = await tx.modifierGroup.findMany({
+    return await this.prisma.secure.$transaction(async (tx) => {
+      const mGroups = await tx.modifierGroup.findMany({
         where: { productId: id },
         select: { id: true, modifiers: { select: { id: true } } },
       });
 
-      const modifierIds = modifierGroups.flatMap((g) =>
-        g.modifiers.map((m) => m.id),
-      );
+      const modifierIds = mGroups.flatMap((g) => g.modifiers.map((m) => m.id));
 
       if (modifierIds.length > 0) {
         await tx.orderItemModifier.deleteMany({
@@ -509,17 +459,12 @@ export class ProductsService {
         });
       }
 
-      // 2. Eliminar relaciones que no tienen onDelete: Cascade desde Product
       await tx.categoriesOnProducts.deleteMany({ where: { productId: id } });
       await tx.modifierGroup.deleteMany({ where: { productId: id } });
       await tx.recipe.deleteMany({ where: { productId: id } });
-
-      // 3. Eliminar el producto (las relaciones con onDelete: Cascade se eliminan automáticamente)
       await tx.product.delete({ where: { id } });
 
-      // 4. Invalidar caché del menú
-      await this.invalidateMenuCache(tenantId);
-
+      await this.invalidateMenuCache();
       return { deleted: true };
     });
   }

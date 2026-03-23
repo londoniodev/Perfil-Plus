@@ -28,7 +28,7 @@ export function useOrder() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const createOrder = async (slug: string, orderData: OrderData) => {
+    const createOrder = async (orderData: OrderData) => {
         setIsSubmitting(true)
         setError(null)
         try {
@@ -61,7 +61,6 @@ export function useOrder() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-tenant-id': slug
                 },
                 body: JSON.stringify(payload)
             })
@@ -83,12 +82,10 @@ export function useOrder() {
         }
     }
 
-    const trackOrder = async (orderId: string, slug: string) => {
+    const trackOrder = async (orderId: string) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-            const response = await fetch(`${apiUrl}/orders/track/${orderId}`, {
-                headers: { "x-tenant-id": slug }
-            })
+            const response = await fetch(`${apiUrl}/orders/track/${orderId}`)
             if (!response.ok) return null
             return await response.json()
         } catch (err) {

@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -18,20 +19,22 @@ import { validateOrderTransition } from './domain/order-state-machine';
 import { InventoryService } from '../inventory/inventory.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { Inject, Scope } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
-import type { Request } from 'express';
-
+import { ClsService } from 'nestjs-cls';
 import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
-import { OrderCreatedEvent, OrderStatusChangedEvent } from './events/order.events';
+import {
+  OrderCreatedEvent,
+  OrderStatusChangedEvent,
+} from './events/order.events';
 
-@Injectable({ scope: Scope.REQUEST })
+// ✅ Scope.DEFAULT — nestjs-cls proporciona el tenantId por request context.
+// Ya no necesitamos inyectar REQUEST ni ser Scope.REQUEST.
+@Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
 
   constructor(
-    @Inject(REQUEST) private readonly request: Request,
+    private readonly cls: ClsService,
     private prisma: PrismaService,
     private storage: StorageService,
     private ordersGateway: OrdersGateway,
@@ -39,124 +42,152 @@ export class OrdersService {
     private eventEmitter: EventEmitter2,
     private pricingService: OrderPricingService,
     private validationService: OrderValidationService,
-  ) { }
+  ) {}
 
+  /** Lee el tenantId de CLS (AsyncLocalStorage), que es alimentado por el guard autenticado. */
   private getTenantId(): string {
-    const tenantId = this.request.headers['x-tenant-id'] as string;
-    if (!tenantId) {
-      // Fallback for some edge cases or throw?
-      // Ideally we should always have it if we used the guard/interceptor.
-      // But for safety in async contexts (if any) we might check.
-      // services are request scoped so it should be fine.
-      this.logger.warn('Tenant ID missing in OrdersService');
-      return 'default';
-    }
-    return tenantId;
+    return this.cls.get<string>('tenantId') ?? 'unknown';
   }
 
   // ============ CREAR ORDEN (con cálculo server-side) ============
   async createOrder(userId: string | undefined, dto: CreateOrderDto) {
     const tenantId = this.getTenantId();
-    this.logger.log(`[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`);
-    
-    // 1. Validar y Calcular Precíos y Modificadores (Síncrono)
-    const { totalAmount, orderItemsData } = await this.pricingService.calculate(tenantId, dto.items);
+    this.logger.log(
+      `[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`,
+    );
+
+    // 1. Calcular precios y modificadores (server-side, nunca del cliente)
+    const { totalAmount, orderItemsData } = await this.pricingService.calculate(
+      dto.items,
+    );
 
     let lastError: any;
     const MAX_RETRIES = 3;
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        const createdOrder = await this.prisma.$transaction(async (tx) => {
-          // 2. Generar número de orden
-          const orderCount = await tx.order.count();
-          const year = new Date().getFullYear();
-          const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
+        // ✅ this.prisma.secure.$transaction propaga el contexto de tenant al tx interno
+        const createdOrder = await this.prisma.secure.$transaction(
+          async (tx) => {
+            // 2. Generar número de orden
+            const orderCount = await tx.order.count();
+            const year = new Date().getFullYear();
+            const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
 
-          // Validación de inventario lógico y deductivas
-          await this.validationService.validateAndDeductStock(orderItemsData, tx);
+            // 3. Validar y deducir stock de variantes (delegado al sub-servicio)
+            await this.validationService.validateAndDeductStock(
+              orderItemsData,
+              tx,
+            );
 
-          // 3. Crear la orden atómica
-          const order = await tx.order.create({
-            data: {
-              tenantId,
-              userId: userId || null,
-              orderNumber,
-              totalAmount,
-              status: dto.status || 'PENDING',
-              orderType: dto.orderType || 'DINE_IN',
-              tableNumber: dto.tableNumber || null,
-              customerName: dto.customerName || null,
-              customerPhone: dto.customerPhone || null,
-              customerEmail: dto.customerEmail || null,
-              identification: dto.identification || null,
-              notes: (() => {
-                let methodLabel = dto.paymentMethod;
-                if (methodLabel === 'CASH') methodLabel = 'Efectivo';
-                if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
-                if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
-                const paymentNote = dto.paymentMethod ? `Forma de pago: ${methodLabel}` : null;
-                if (dto.notes && paymentNote) return `${dto.notes}\n\n${paymentNote}`;
-                return paymentNote || dto.notes || null;
-              })(),
-              shippingData: dto.shippingData || Prisma.DbNull,
-              items: {
-                create: orderItemsData.map((item) => ({
-                  variantId: item.variantId,
-                  quantity: item.quantity,
-                  price: item.price,
-                  productName: item.productName,
-                  variantName: item.variantName,
-                  notes: item.notes,
-                  modifiers: {
-                    create: item.modifiers.map((mod) => ({
-                      modifierId: mod.modifierId,
-                      modifierName: mod.modifierName,
-                      priceAdjustment: mod.priceAdjustment,
-                      quantity: mod.quantity,
-                    })),
-                  },
-                })),
+            // 4. Crear la orden — SIN tenantId manual, el secure context lo inyecta
+            const order = await tx.order.create({
+              data: {
+                userId: userId || null,
+                orderNumber,
+                totalAmount,
+                status: dto.status || 'PENDING',
+                orderType: dto.orderType || 'DINE_IN',
+                tableNumber: dto.tableNumber || null,
+                customerName: dto.customerName || null,
+                customerPhone: dto.customerPhone || null,
+                customerEmail: dto.customerEmail || null,
+                identification: dto.identification || null,
+                notes: (() => {
+                  let methodLabel = dto.paymentMethod;
+                  if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+                  if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
+                  if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
+                  const paymentNote = dto.paymentMethod
+                    ? `Forma de pago: ${methodLabel}`
+                    : null;
+                  if (dto.notes && paymentNote)
+                    return `${dto.notes}\n\n${paymentNote}`;
+                  return paymentNote || dto.notes || null;
+                })(),
+                shippingData: dto.shippingData || Prisma.DbNull,
+                items: {
+                  create: orderItemsData.map((item) => ({
+                    variantId: item.variantId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    productName: item.productName,
+                    variantName: item.variantName,
+                    notes: item.notes,
+                    modifiers: {
+                      create: item.modifiers.map((mod) => ({
+                        modifierId: mod.modifierId,
+                        modifierName: mod.modifierName,
+                        priceAdjustment: mod.priceAdjustment,
+                        quantity: mod.quantity,
+                      })),
+                    },
+                  })),
+                },
               },
-            },
-            include: {
-              items: { include: { modifiers: true, variant: { include: { product: true } } } },
-            },
-          });
+              include: {
+                items: {
+                  include: {
+                    modifiers: true,
+                    variant: { include: { product: true } },
+                  },
+                },
+              },
+            });
 
-          // DEDUCT INVENTORY RAW INGREDIENTS
-          const productItems = orderItemsData.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-          }));
+            // 5. Deducir ingredientes de inventario (recetas)
+            const productItems = orderItemsData.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+            }));
 
-          if (productItems.length > 0) {
-            const inventoryResult = await this.inventoryService.deductByOrder(tenantId, order.id, productItems, tx);
-            if (inventoryResult.alerts.length > 0) {
-              this.logger.warn(`Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`);
+            if (productItems.length > 0) {
+              const inventoryResult = await this.inventoryService.deductByOrder(
+                tenantId,
+                order.id,
+                productItems,
+                tx,
+              );
+              if (inventoryResult.alerts.length > 0) {
+                this.logger.warn(
+                  `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
+                );
+              }
             }
-          }
 
-          return order;
-        });
+            return order;
+          },
+        );
 
-        this.logger.log(`Orden ${createdOrder.orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`);
+        this.logger.log(
+          `Orden ${createdOrder.orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`,
+        );
 
-        // DISPATCH DOMAIN EVENT (Side Effects handled asíncronamente por los Listeners)
-        this.eventEmitter.emit('order.created', new OrderCreatedEvent(tenantId, createdOrder, dto));
+        this.eventEmitter.emit(
+          'order.created',
+          new OrderCreatedEvent(tenantId, createdOrder, dto),
+        );
 
         return createdOrder;
       } catch (error) {
         lastError = error;
-        this.logger.error(`[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`);
+        this.logger.error(
+          `[CREATE_ORDER] Fallo en intento ${i + 1}/${MAX_RETRIES}: ${error.message}`,
+        );
         if (i < MAX_RETRIES - 1) {
           await new Promise((resolve) => setTimeout(resolve, 100 * (i + 1)));
         }
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') continue;
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        )
+          continue;
         throw error;
       }
     }
-    this.logger.error(`[CREATE_ORDER] Todos los intentos fallaron. Error final: ${lastError.message}`);
+    this.logger.error(
+      `[CREATE_ORDER] Todos los intentos fallaron. Error final: ${lastError.message}`,
+    );
     throw lastError;
   }
 
@@ -174,51 +205,38 @@ export class OrdersService {
       throw new NotFoundException('Orden no encontrada');
     }
 
-    // Validate Transition
     validateOrderTransition(order.status, dto.status, userRole);
 
-    return await this.prisma.$transaction(async (tx) => {
-      // 0. Verificar estado actual para evitar doble cancelación/devolución
+    // ✅ secure.$transaction propaga contexto de tenant al tx interno
+    return await this.prisma.secure.$transaction(async (tx) => {
       if (order.status === 'CANCELLED') {
         throw new BadRequestException(
           'Esta orden ya fue cancelada anteriormente.',
         );
       }
 
-      // 1. Si el nuevo estado es CANCELLED, devolver stock
+      // Restaurar stock si se cancela
       if (dto.status === 'CANCELLED') {
         const orderWithItems = await tx.order.findUnique({
           where: { id: orderId },
           include: {
-            items: {
-              include: {
-                modifiers: true,
-                variant: true,
-              },
-            },
+            items: { include: { modifiers: true, variant: true } },
           },
         });
 
         if (orderWithItems) {
           for (const item of orderWithItems.items) {
-            // Devolver stock Variante
             if (item.variant.stock !== -1) {
-              // -1 = Infinito
               await tx.productVariant.update({
                 where: { id: item.variantId },
                 data: { stock: { increment: item.quantity } },
               });
             }
 
-            // Devolver stock Modificadores
             for (const mod of item.modifiers) {
-              // Necesitamos saber si el modifier tiene control de stock.
-              // En OrderItemModifier no tenemos el stock actual, solo el ID y nombre snapshot.
-              // Debemos buscar el modificador original en la DB.
               const originalModifier = await tx.modifier.findUnique({
                 where: { id: mod.modifierId },
               });
-
               if (originalModifier && originalModifier.stock !== null) {
                 await tx.modifier.update({
                   where: { id: mod.modifierId },
@@ -231,7 +249,6 @@ export class OrdersService {
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          // Restaurar stock de inventario (ingredientes)
           await this.inventoryService.restoreByOrder(
             this.getTenantId(),
             orderId,
@@ -240,23 +257,18 @@ export class OrdersService {
         }
       }
 
-      // 2. Actualizar estado
+      // Actualizar estado
       const updated = await tx.order.update({
         where: { id: orderId },
         data: { status: dto.status },
         include: {
-          items: {
-            include: {
-              modifiers: true,
-            },
-          },
+          items: { include: { modifiers: true } },
         },
       });
 
-      // 3. Analytics Updates
-      // Fetch analytics separately to avoid type issues with nested includes
+      // Analytics Updates
       const analytics = await tx.orderDeliveryAnalytics.findUnique({
-        where: { orderId: orderId },
+        where: { orderId },
       });
 
       if (analytics) {
@@ -268,14 +280,20 @@ export class OrdersService {
           analyticsUpdate.timeToPrepare = Math.floor(
             (now.getTime() - analytics.pendingAt.getTime()) / 1000,
           );
-        } else if ((dto.status === 'SHIPPED' || dto.status === 'READY') && !analytics.shippedAt) {
+        } else if (
+          (dto.status === 'SHIPPED' || dto.status === 'READY') &&
+          !analytics.shippedAt
+        ) {
           analyticsUpdate.shippedAt = now;
           if (analytics.preparingAt) {
             analyticsUpdate.timeToShip = Math.floor(
               (now.getTime() - analytics.preparingAt.getTime()) / 1000,
             );
           }
-        } else if ((dto.status === 'DELIVERED' || dto.status === 'SERVED') && !analytics.deliveredAt) {
+        } else if (
+          (dto.status === 'DELIVERED' || dto.status === 'SERVED') &&
+          !analytics.deliveredAt
+        ) {
           analyticsUpdate.deliveredAt = now;
           if (analytics.shippedAt) {
             analyticsUpdate.timeToDeliver = Math.floor(
@@ -295,8 +313,11 @@ export class OrdersService {
           });
         }
 
-        // Update pickedUpAt when IN_TRANSIT
-        if (dto.status === 'IN_TRANSIT' && analytics.assignedAt && !analytics.pickedUpAt) {
+        if (
+          dto.status === 'IN_TRANSIT' &&
+          analytics.assignedAt &&
+          !analytics.pickedUpAt
+        ) {
           const now2 = new Date();
           await tx.orderDeliveryAnalytics.update({
             where: { id: analytics.id },
@@ -310,7 +331,7 @@ export class OrdersService {
         }
       }
 
-      // 4. Liberar domiciliario cuando se completa o cancela la entrega
+      // Liberar domiciliario al completar o cancelar
       if (
         (dto.status === 'DELIVERED' || dto.status === 'CANCELLED') &&
         order.driverId
@@ -321,22 +342,21 @@ export class OrdersService {
 
         if (driver) {
           const newActiveOrders = Math.max(0, driver.currentActiveOrders - 1);
-          const newStatus = driver.status === 'OFFLINE' ? 'OFFLINE' : 'AVAILABLE';
-
+          const newStatus =
+            driver.status === 'OFFLINE' ? 'OFFLINE' : 'AVAILABLE';
           await tx.deliveryDriver.update({
             where: { id: order.driverId },
-            data: {
-              currentActiveOrders: newActiveOrders,
-              status: newStatus,
-            },
+            data: { currentActiveOrders: newActiveOrders, status: newStatus },
           });
           this.logger.log(
-            `Domiciliario ${order.driverId} liberado tras ${dto.status === 'DELIVERED' ? 'entrega' : 'cancelación'} (órdenes activas: ${newActiveOrders})`,
+            `Domiciliario ${order.driverId} liberado tras ${
+              dto.status === 'DELIVERED' ? 'entrega' : 'cancelación'
+            } (órdenes activas: ${newActiveOrders})`,
           );
         }
       }
 
-      // SSE: notificar cambio de estado con la orden actualizada completa
+      // SSE — notificar cambio de estado
       this.ordersGateway.emit(this.getTenantId(), {
         type: 'status_changed',
         orderId,
@@ -368,11 +388,7 @@ export class OrdersService {
         items: {
           include: {
             modifiers: true,
-            variant: {
-              include: {
-                product: true,
-              },
-            },
+            variant: { include: { product: true } },
           },
         },
       },
@@ -393,19 +409,11 @@ export class OrdersService {
         totalAmount: true,
         createdAt: true,
         customerName: true,
-        items: {
-          select: {
-            productName: true,
-            quantity: true,
-          },
-        },
+        items: { select: { productName: true, quantity: true } },
       },
     });
 
-    if (!order) {
-      throw new NotFoundException('Orden no encontrada');
-    }
-
+    if (!order) throw new NotFoundException('Orden no encontrada');
     return order;
   }
 
@@ -445,14 +453,10 @@ export class OrdersService {
       },
     });
 
-    if (!order) {
-      throw new NotFoundException('Orden no encontrada');
-    }
-
+    if (!order) throw new NotFoundException('Orden no encontrada');
     return order;
   }
 
-  // ============ ADMIN: LISTAR ÓRDENES ============
   // ============ ADMIN: LISTAR ÓRDENES ============
   async findAllAdmin(
     status?: OrderStatus,
@@ -460,8 +464,17 @@ export class OrdersService {
     take = 50,
     skip = 0,
   ) {
+    const fullInclude = {
+      user: { select: { id: true, name: true, email: true } },
+      items: {
+        include: {
+          modifiers: true,
+          variant: { include: { product: true } },
+        },
+      },
+    };
+
     if (activeOnly) {
-      // Fetch active orders + recent completed/delivered
       const activeStatuses: OrderStatus[] = [
         'PENDING',
         'APPROVED',
@@ -480,30 +493,14 @@ export class OrdersService {
       const [activeOrders, recentCompleted] = await Promise.all([
         this.prisma.secure.order.findMany({
           where: { status: { in: activeStatuses } },
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-            items: {
-              include: {
-                modifiers: true,
-                variant: { include: { product: true } },
-              },
-            },
-          },
+          include: fullInclude,
           orderBy: { createdAt: 'desc' },
         }),
         this.prisma.secure.order.findMany({
           where: { status: { in: completedStatuses } },
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-            items: {
-              include: {
-                modifiers: true,
-                variant: { include: { product: true } },
-              },
-            },
-          },
+          include: fullInclude,
           orderBy: { createdAt: 'desc' },
-          take, // Paginated historical items
+          take,
         }),
       ]);
 
@@ -515,17 +512,7 @@ export class OrdersService {
 
     return await this.prisma.secure.order.findMany({
       where: status ? { status } : undefined,
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        items: {
-          include: {
-            modifiers: true,
-            variant: {
-              include: { product: true },
-            },
-          },
-        },
-      },
+      include: fullInclude,
       orderBy: { createdAt: 'desc' },
       take,
       skip,
@@ -538,7 +525,7 @@ export class OrdersService {
     orderId: string | null,
     productId: string,
   ) {
-    let order;
+    let order: any;
 
     if (orderId) {
       order = await this.prisma.secure.order.findFirst({
@@ -547,32 +534,17 @@ export class OrdersService {
           userId,
           status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
         },
-        include: {
-          items: {
-            where: {
-              variant: {
-                productId: productId,
-              },
-            },
-          },
-        },
+        include: { items: { where: { variant: { productId } } } },
       });
     } else {
-      const validOrder = await this.prisma.secure.order.findFirst({
+      order = await this.prisma.secure.order.findFirst({
         where: {
           userId,
           status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
-          items: {
-            some: {
-              variant: {
-                productId: productId,
-              },
-            },
-          },
+          items: { some: { variant: { productId } } },
         },
         select: { id: true },
       });
-      order = validOrder;
     }
 
     if (!order) {
@@ -586,15 +558,7 @@ export class OrdersService {
       select: { digitalFileUrl: true, productType: true },
     });
 
-    if (!product) {
-      throw new NotFoundException('Producto no encontrado');
-    }
-
-    if (
-      product.productType !== ProductType.DIGITAL &&
-      product.productType !== 'SERVICE'
-    ) {
-    }
+    if (!product) throw new NotFoundException('Producto no encontrado');
 
     if (!product.digitalFileUrl) {
       throw new NotFoundException(
@@ -611,7 +575,8 @@ export class OrdersService {
 
   // ============ PAGOS (CAJA) ============
   async createPayment(orderId: string, dto: CreatePaymentDto) {
-    return await this.prisma.$transaction(async (tx) => {
+    // ✅ secure.$transaction propaga contexto de tenant a todo el tx
+    return await this.prisma.secure.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
         include: { items: true },
@@ -629,13 +594,10 @@ export class OrdersService {
         },
       });
 
-      // 2. Marcar items como pagados
+      // 2. Marcar ítems como pagados
       if (dto.itemIds && dto.itemIds.length > 0) {
         await tx.orderItem.updateMany({
-          where: {
-            id: { in: dto.itemIds },
-            orderId: orderId, // Seguridad extra
-          },
+          where: { id: { in: dto.itemIds }, orderId },
           data: { isPaid: true },
         });
       }
@@ -644,17 +606,10 @@ export class OrdersService {
       let shouldClose = dto.closeOrder;
 
       if (!shouldClose) {
-        // Verificar si quedan items sin pagar
         const unpaidItemsCount = await tx.orderItem.count({
-          where: {
-            orderId: orderId,
-            isPaid: false,
-          },
+          where: { orderId, isPaid: false },
         });
-
-        if (unpaidItemsCount === 0) {
-          shouldClose = true;
-        }
+        if (unpaidItemsCount === 0) shouldClose = true;
       }
 
       if (shouldClose) {
@@ -664,7 +619,7 @@ export class OrdersService {
         });
       }
 
-      // SSE: notificar pago recibido
+      // SSE — notificar pago recibido
       const updatedOrder = await tx.order.findUnique({
         where: { id: orderId },
         include: {
@@ -677,6 +632,7 @@ export class OrdersService {
           user: { select: { id: true, name: true, email: true } },
         },
       });
+
       this.ordersGateway.emit(this.getTenantId(), {
         type: 'payment_received',
         orderId,
@@ -698,17 +654,14 @@ export class OrdersService {
     itemId: string,
     isPrepared: boolean,
   ) {
-    // 1. Verificar que el item pertenece a la orden
-    const item = await this.prisma.orderItem.findFirst({
+    // ✅ Usar this.prisma.secure.orderItem en lugar del cliente crudo
+    const item = await this.prisma.secure.orderItem.findFirst({
       where: { id: itemId, orderId },
     });
 
-    if (!item) {
-      throw new NotFoundException('Item no encontrado en esta orden');
-    }
+    if (!item) throw new NotFoundException('Item no encontrado en esta orden');
 
-    // 2. Actualizar estado
-    const updatedItem = await this.prisma.orderItem.update({
+    const updatedItem = await this.prisma.secure.orderItem.update({
       where: { id: itemId },
       data: { isPrepared },
     });
@@ -717,24 +670,10 @@ export class OrdersService {
       `Item ${itemId} de orden ${orderId} marcado como ${isPrepared ? 'PREPARADO' : 'PENDIENTE'}`,
     );
 
-    // 3. Notificar SSE a todos (Cocina, Meseros)
-    // Podríamos enviar solo el update del item, pero para simplificar el frontend,
-    // ordenamos refrescar la orden o enviamos el evento específico.
-    // Vamos a enviar un 'order_update' genérico o 'item_update'.
-    // Para consistencia con el frontend actual que escucha 'status_changed',
-    // podemos reutilizar ese evento o crear uno nuevo.
-    // El frontend WaiterClient hace `fetchOrders` en `status_changed`.
-    // KitchenPage hace `fetchOrders` en `status_changed`.
-    // Así que 'status_changed' es seguro para forzar recarga.
-
     this.ordersGateway.emit(this.getTenantId(), {
       type: 'status_changed',
       orderId,
-      data: {
-        itemId,
-        isPrepared,
-        triggeredBy: 'kitchen_display',
-      },
+      data: { itemId, isPrepared, triggeredBy: 'kitchen_display' },
     });
 
     return updatedItem;
@@ -742,52 +681,39 @@ export class OrdersService {
 
   // ============ ASIGNACIÓN DE DOMICILIARIO ============
   async assignDriver(orderId: string, driverId: string, userRole: Role) {
-    return await this.prisma.$transaction(async (tx) => {
-      // 1. Verificar que la orden existe, es DELIVERY y está READY
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
-      });
+    // ✅ secure.$transaction — el tx interno propaga el tenant context
+    return await this.prisma.secure.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: orderId } });
 
-      if (!order) {
-        throw new NotFoundException('Orden no encontrada');
-      }
-
+      if (!order) throw new NotFoundException('Orden no encontrada');
       if (order.orderType !== 'DELIVERY') {
         throw new BadRequestException(
           'Solo se pueden asignar domiciliarios a órdenes de tipo DELIVERY',
         );
       }
-
       if (order.status !== 'READY') {
         throw new BadRequestException(
           `La orden debe estar en estado READY para asignar domiciliario. Estado actual: ${order.status}`,
         );
       }
 
-      // 2. Verificar que el driver existe y está disponible
       const driver = await tx.deliveryDriver.findUnique({
         where: { id: driverId },
         include: { user: { select: { name: true } } },
       });
 
-      if (!driver) {
-        throw new NotFoundException('Domiciliario no encontrado');
-      }
-
+      if (!driver) throw new NotFoundException('Domiciliario no encontrado');
       if (driver.status !== 'AVAILABLE') {
         throw new BadRequestException(
           `El domiciliario ${driver.user.name} no está disponible. Estado: ${driver.status}`,
         );
       }
 
-      // 3. Validate transition
       validateOrderTransition(order.status, 'ASSIGNED', userRole);
 
       const now = new Date();
-
-      // 4. Calcular secuencia y actualizar orden
       const deliverySequence = driver.currentActiveOrders + 1;
-      
+
       const updated = await tx.order.update({
         where: { id: orderId },
         data: {
@@ -806,20 +732,17 @@ export class OrdersService {
         },
       });
 
-      // 5. Actualizar capacidad del driver
+      // Actualizar capacidad del driver
       const newActiveOrders = driver.currentActiveOrders + 1;
       const newStatus =
         newActiveOrders >= driver.maxCapacity ? 'AT_CAPACITY' : driver.status;
 
       await tx.deliveryDriver.update({
         where: { id: driverId },
-        data: {
-          currentActiveOrders: newActiveOrders,
-          status: newStatus,
-        },
+        data: { currentActiveOrders: newActiveOrders, status: newStatus },
       });
 
-      // 6. Actualizar analytics
+      // Analytics
       const analytics = await tx.orderDeliveryAnalytics.findUnique({
         where: { orderId },
       });
@@ -835,15 +758,10 @@ export class OrdersService {
 
         await tx.orderDeliveryAnalytics.update({
           where: { id: analytics.id },
-          data: {
-            driverId,
-            assignedAt: now,
-            timeToAssign,
-          },
+          data: { driverId, assignedAt: now, timeToAssign },
         });
       }
 
-      // 7. Emitir SSE
       this.ordersGateway.emit(this.getTenantId(), {
         type: 'driver_assigned',
         orderId,
@@ -861,10 +779,7 @@ export class OrdersService {
   // ============ ÓRDENES DEL DOMICILIARIO ============
   async getDriverOrders(driverId: string) {
     return this.prisma.secure.order.findMany({
-      where: {
-        driverId,
-        status: { in: ['ASSIGNED', 'IN_TRANSIT'] },
-      },
+      where: { driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
       include: {
         items: {
           include: {
@@ -882,9 +797,8 @@ export class OrdersService {
       where: { userId },
     });
 
-    if (!driver) {
+    if (!driver)
       throw new NotFoundException('Perfil de domiciliario no encontrado');
-    }
 
     return this.getDriverOrders(driver.id);
   }

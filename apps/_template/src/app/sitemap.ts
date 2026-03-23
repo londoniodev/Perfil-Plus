@@ -20,8 +20,9 @@ interface Theme {
     courses?: { slug: string }[];
 }
 
-async function getPosts(tenantId: string): Promise<Post[]> {
+async function getPosts(): Promise<Post[]> {
     try {
+        const tenantId = await getTenantId();
         const res = await fetch(`${API_BASE}/posts?limit=100`, {
             headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
@@ -34,8 +35,9 @@ async function getPosts(tenantId: string): Promise<Post[]> {
     }
 }
 
-async function getProducts(tenantId: string): Promise<Product[]> {
+async function getProducts(): Promise<Product[]> {
     try {
+        const tenantId = await getTenantId();
         const res = await fetch(`${API_BASE}/store/products?allVariants=true`, {
             headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
@@ -48,8 +50,9 @@ async function getProducts(tenantId: string): Promise<Product[]> {
     }
 }
 
-async function getThemes(tenantId: string): Promise<Theme[]> {
+async function getThemes(): Promise<Theme[]> {
     try {
+        const tenantId = await getTenantId();
         const res = await fetch(`${API_BASE}/themes`, {
             headers: { 'x-tenant-id': tenantId },
             next: { revalidate: 3600 },
@@ -108,7 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.9,
         });
 
-        const posts = await getPosts(tenantId);
+        const posts = await getPosts();
         postPages = posts.map((post) => ({
             url: `${urlBase}/blog/${post.slug}`,
             lastModified: new Date(post.updatedAt || post.createdAt),
@@ -127,7 +130,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.9,
         });
 
-        const products = await getProducts(tenantId);
+        const products = await getProducts();
         productPages = products.map((product) => ({
             url: `${urlBase}/tienda/${product.slug}`,
             lastModified: new Date(product.updatedAt || product.createdAt),
@@ -146,7 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.8,
         });
 
-        const themes = await getThemes(tenantId);
+        const themes = await getThemes();
         themes.forEach((theme) => {
             coursePages.push({
                 url: `${urlBase}/cursos/${theme.slug}`,

@@ -25,10 +25,7 @@ export class DokployService {
    * Aprovisiona un dominio en Dokploy con certificado Let's Encrypt.
    * Los errores se loguean pero NO crashean la aplicación.
    */
-  async provisionDomain(
-    host: string,
-    applicationId: string,
-  ): Promise<boolean> {
+  async provisionDomain(host: string, applicationId: string): Promise<boolean> {
     if (!this.apiKey) {
       this.logger.warn(
         '[Dokploy] DOKPLOY_API_KEY no configurado. Saltando provisionamiento de dominio.',

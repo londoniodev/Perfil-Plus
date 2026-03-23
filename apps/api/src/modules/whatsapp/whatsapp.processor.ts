@@ -25,26 +25,33 @@ export class WhatsappProcessor {
   async handleWhatsappMessage(data: { phone_number_id: string; payload: any }) {
     const { phone_number_id, payload } = data;
 
-    this.logger.log(`Procesando mensaje de WhatsApp para PhoneNumberID: ${phone_number_id}`);
+    this.logger.log(
+      `Procesando mensaje de WhatsApp para PhoneNumberID: ${phone_number_id}`,
+    );
 
     try {
       // 1. Tenant Resolution: Buscar a qué tenant le pertenece este número
       // Usamos findFirst directamente sin seguridad de tenant, ya que aquí estamos
       // resolviendo el tenant justamente desde un contexto global
+      // SECURITY EXCEPTION: Global query to resolve tenantId from phone number before CLS context exists.
+      /* eslint-disable no-restricted-syntax */
       const storeSetting = await this.prisma.storeSettings.findFirst({
+      /* eslint-enable no-restricted-syntax */
         where: {
           waPhoneNumberId: phone_number_id,
         },
         select: {
           tenantId: true,
           tenant: {
-            select: { slug: true }
-          }
+            select: { slug: true },
+          },
         },
       });
 
       if (!storeSetting) {
-        this.logger.warn(`No se encontró tenant asociado al número de WhatsApp: ${phone_number_id} - Ignorando mensaje.`);
+        this.logger.warn(
+          `No se encontró tenant asociado al número de WhatsApp: ${phone_number_id} - Ignorando mensaje.`,
+        );
         return;
       }
 
@@ -59,7 +66,7 @@ export class WhatsappProcessor {
         const message = payload.messages[0];
         const from = message.from; // Número del cliente
         const messageId = message.id; // ID único del mensaje que da Meta
-        
+
         // ━━━ INTERCEPTOR DE UBICACIÓN GPS ━━━
         // Si el usuario comparte su ubicación vía WhatsApp, guardamos las coordenadas
         // y le damos a la IA un texto contextual en vez de "[Mensaje no es de texto]".
@@ -67,7 +74,9 @@ export class WhatsappProcessor {
 
         if (message.type === 'location' && message.location) {
           const { latitude, longitude } = message.location;
-          this.logger.log(`[Tenant: ${tenantId}] Ubicación GPS recibida de ${from}: lat=${latitude}, lng=${longitude}`);
+          this.logger.log(
+            `[Tenant: ${tenantId}] Ubicación GPS recibida de ${from}: lat=${latitude}, lng=${longitude}`,
+          );
 
           // Persistir coordenadas en WaCustomer (upsert para manejar cliente nuevo o existente)
           try {
@@ -76,23 +85,30 @@ export class WhatsappProcessor {
               update: { lat: latitude, lng: longitude },
               create: { tenantId, phone: from, lat: latitude, lng: longitude },
             });
-            this.logger.log(`[Tenant: ${tenantId}] Coordenadas GPS guardadas para ${from}`);
+            this.logger.log(
+              `[Tenant: ${tenantId}] Coordenadas GPS guardadas para ${from}`,
+            );
           } catch (gpsErr) {
-            this.logger.error(`[Tenant: ${tenantId}] Error guardando GPS para ${from}: ${gpsErr.message}`);
+            this.logger.error(
+              `[Tenant: ${tenantId}] Error guardando GPS para ${from}: ${gpsErr.message}`,
+            );
           }
 
           // Mensaje sintético para que la IA entienda qué pasó
-          textBody = '*[Sistema: El cliente acaba de compartir su ubicación GPS exacta mediante WhatsApp. El backend ya la ha guardado exitosamente. Agradécele amablemente de forma breve y continúa con la conversación o despídete si el pedido ya terminó.]*';
+          textBody =
+            '*[Sistema: El cliente acaba de compartir su ubicación GPS exacta mediante WhatsApp. El backend ya la ha guardado exitosamente. Agradécele amablemente de forma breve y continúa con la conversación o despídete si el pedido ya terminó.]*';
         } else if (message.type === 'text') {
           textBody = message.text?.body || '';
         } else {
           textBody = '[Mensaje no es de texto]';
         }
 
-        this.logger.log(`[Tenant: ${tenantId}] Nuevo mensaje de ${from}: ${textBody.substring(0, 80)}`);
-        
+        this.logger.log(
+          `[Tenant: ${tenantId}] Nuevo mensaje de ${from}: ${textBody.substring(0, 80)}`,
+        );
+
         // --- PERSISTENCIA DE MENSAJES ---
-        
+
         // 1. Upsert Conversación Activa
         // Buscar conversación abierta, o crear una si no existe
         let conversation = await this.prisma.secure.waConversation.findFirst({
@@ -103,7 +119,9 @@ export class WhatsappProcessor {
         });
 
         if (!conversation) {
-          this.logger.log(`[Tenant: ${tenantId}] Creando nueva conversación para el cliente ${from}`);
+          this.logger.log(
+            `[Tenant: ${tenantId}] Creando nueva conversación para el cliente ${from}`,
+          );
           conversation = await this.prisma.secure.waConversation.create({
             data: {
               tenantId,
@@ -120,7 +138,9 @@ export class WhatsappProcessor {
         });
 
         if (existingMessage) {
-          this.logger.log(`[Tenant: ${tenantId}] Mensaje duplicado de Meta ignorado (ID: ${messageId})`);
+          this.logger.log(
+            `[Tenant: ${tenantId}] Mensaje duplicado de Meta ignorado (ID: ${messageId})`,
+          );
           return; // Ya fue procesado
         }
 
@@ -138,7 +158,7 @@ export class WhatsappProcessor {
 
         // 3. Validar límites de IA mensuales
         const isAllowed = await this.usageGuard.checkAiLimit(tenantId);
-        
+
         if (!isAllowed) {
           await this.metaApiService.sendTextMessage(
             tenantId,
@@ -150,14 +170,19 @@ export class WhatsappProcessor {
         }
 
         // 4. Generar Contexto del Restaurante
-        const systemPrompt = await this.contextService.buildSystemPrompt(tenantId, from);
+        const systemPrompt = await this.contextService.buildSystemPrompt(
+          tenantId,
+          from,
+        );
 
         // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
-        const rawHistory = await (this.prisma.secure as any).waMessage.findMany({
-          where: { conversationId: conversation.id },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-        });
+        const rawHistory = await (this.prisma.secure as any).waMessage.findMany(
+          {
+            where: { conversationId: conversation.id },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
+        );
 
         const history = rawHistory.reverse().map((msg: any) => ({
           role: msg.role === 'USER' ? 'USER' : 'ASSISTANT',
@@ -165,8 +190,10 @@ export class WhatsappProcessor {
         })) as { role: 'USER' | 'ASSISTANT'; content: string }[];
 
         // 6. Consultar a la IA
-        this.logger.log(`[Tenant: ${tenantId}] Consultando IA para el cliente ${from}...`);
-        
+        this.logger.log(
+          `[Tenant: ${tenantId}] Consultando IA para el cliente ${from}...`,
+        );
+
         let aiResponse: AiResponse = { text: '' };
         try {
           aiResponse = await this.aiProvider.generateResponse(
@@ -178,8 +205,12 @@ export class WhatsappProcessor {
             tenantSlug,
           );
         } catch (error) {
-          this.logger.error(`[Tenant: ${tenantId}] Falló la IA, usando fallback: ${error.message}`);
-          aiResponse = { text: 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.' };
+          this.logger.error(
+            `[Tenant: ${tenantId}] Falló la IA, usando fallback: ${error.message}`,
+          );
+          aiResponse = {
+            text: 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.',
+          };
         }
 
         // 7. Guardar Mensaje del Asistente
@@ -196,8 +227,10 @@ export class WhatsappProcessor {
         // 8. Enviar Vía WhatsApp Meta API
         if (aiResponse.checkoutUrl) {
           // Limpiar el texto de cualquier URL para evitar redundancia con el botón CTA
-          const cleanText = aiResponse.text.replace(/https?:\/\/[^\s]+/g, '').trim();
-          
+          const cleanText = aiResponse.text
+            .replace(/https?:\/\/[^\s]+/g, '')
+            .trim();
+
           // Si hay un checkoutUrl, enviar con botón interactivo CTA
           await this.metaApiService.sendInteractiveCtaMessage(
             tenantId,
@@ -218,7 +251,10 @@ export class WhatsappProcessor {
         }
       });
     } catch (error) {
-      this.logger.error(`Error procesando webhook de WhatsApp: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error procesando webhook de WhatsApp: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

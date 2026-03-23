@@ -53,7 +53,6 @@ async function executeTokenRefresh(refreshToken: string) {
         method: "POST",
         credentials: 'include',
         headers: {
-            'x-tenant-id': TENANT_ID,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ refreshToken }),
@@ -112,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
 
-            const headers: HeadersInit = { 'x-tenant-id': TENANT_ID };
+            const headers: HeadersInit = {};
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
@@ -139,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     if (refreshRes.success) {
                         // Retry original request with NEW token
                         const newToken = localStorage.getItem("token");
-                        const newHeaders: HeadersInit = { 'x-tenant-id': TENANT_ID };
+                        const newHeaders: HeadersInit = {};
                         if (newToken) {
                             newHeaders['Authorization'] = `Bearer ${newToken}`;
                         }
@@ -189,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await fetch(`${API_BASE}/auth/logout`, {
                 method: "POST",
                 credentials: 'include',
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
             });
         } catch (error) {
             console.error("Logout API error:", error);

@@ -9,7 +9,6 @@ interface OrderTrackingModalProps {
     onClose: () => void
     orderId: string
     orderNumber: string
-    slug: string
 }
 
 const statusSteps = [
@@ -24,8 +23,7 @@ export function OrderTrackingModal({
     isOpen,
     onClose,
     orderId,
-    orderNumber,
-    slug
+    orderNumber
 }: OrderTrackingModalProps) {
     const { trackOrder } = useOrder()
     const [order, setOrder] = useState<any>(null)
@@ -34,10 +32,10 @@ export function OrderTrackingModal({
 
     const fetchOrder = useCallback(async () => {
         setLoading(true)
-        const data = await trackOrder(orderId, slug)
+        const data = await trackOrder(orderId)
         if (data) setOrder(data)
         setLoading(false)
-    }, [orderId, slug, trackOrder])
+    }, [orderId, trackOrder])
 
     useEffect(() => {
         if (isOpen && orderId) {

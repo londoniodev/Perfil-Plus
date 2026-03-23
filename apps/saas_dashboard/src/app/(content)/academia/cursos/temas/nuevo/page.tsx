@@ -59,7 +59,7 @@ export default function NuevoTemaPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(formData),
             });

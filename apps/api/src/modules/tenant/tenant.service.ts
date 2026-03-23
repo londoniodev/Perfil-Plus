@@ -60,19 +60,36 @@ export class TenantService {
    * y aprovisiona el usuario administrador inicial.
    */
   async create(createDto: CreateTenantDto) {
-    const { adminPassword, ownerEmail, slug, domain, name, primaryColor, secondaryColor, borderRadius, fontFamily, layoutType, ownerName, ownerRole, features } = createDto;
-    
+    const {
+      adminPassword,
+      ownerEmail,
+      slug,
+      domain,
+      name,
+      primaryColor,
+      secondaryColor,
+      borderRadius,
+      fontFamily,
+      layoutType,
+      ownerName,
+      ownerRole,
+      features,
+    } = createDto;
+
     // Si no se envían features desde el DTO, usar los por defecto, incluyendo DASHBOARD.
     // Si se envían, asegurar que DASHBOARD esté presente para no bloquear el acceso.
-    let finalFeatures = features && features.length > 0 ? features : [
-      'DASHBOARD',
-      'RESTAURANT',
-      'POS',
-      'INVENTORY',
-      'SHOP',
-      'ANALYTICS',
-      'SETTINGS',
-    ];
+    const finalFeatures =
+      features && features.length > 0
+        ? features
+        : [
+            'DASHBOARD',
+            'RESTAURANT',
+            'POS',
+            'INVENTORY',
+            'SHOP',
+            'ANALYTICS',
+            'SETTINGS',
+          ];
 
     if (!finalFeatures.includes('DASHBOARD')) {
       finalFeatures.push('DASHBOARD');
@@ -108,8 +125,8 @@ export class TenantService {
               role: ownerRole || 'ADMIN',
               emailVerified: true,
               avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${slug.toLowerCase()}`,
-            }
-          }
+            },
+          },
         },
       });
 
@@ -157,7 +174,7 @@ export class TenantService {
       this.logger.error(
         `Error aprovisionando buckets para: ${newTenant.slug}: ${error.message}`,
       );
-      // No fallamos el endpoint si el storage falla (ya la BD se guardó), 
+      // No fallamos el endpoint si el storage falla (ya la BD se guardó),
       // pero debería estar aprovisionado.
     }
 
@@ -173,21 +190,30 @@ export class TenantService {
     }
 
     // 8. Provisionar dominio en Dokploy (SSL + routing)
-    const storefrontAppId = this.configService.get<string>('STOREFRONT_DOKPLOY_APP_ID');
+    const storefrontAppId = this.configService.get<string>(
+      'STOREFRONT_DOKPLOY_APP_ID',
+    );
     if (storefrontAppId) {
       // Provisionar el subdominio del slug
       this.dokployService
         .provisionDomain(`${newTenant.slug}.${baseDomain}`, storefrontAppId)
         .catch((err) =>
-          this.logger.error(`Error provisionando dominio en Dokploy: ${err.message}`),
+          this.logger.error(
+            `Error provisionando dominio en Dokploy: ${err.message}`,
+          ),
         );
 
       // Si tiene dominio custom, provisionarlo también
-      if (newTenant.domain && newTenant.domain !== `${newTenant.slug}.${baseDomain}`) {
+      if (
+        newTenant.domain &&
+        newTenant.domain !== `${newTenant.slug}.${baseDomain}`
+      ) {
         this.dokployService
           .provisionDomain(newTenant.domain, storefrontAppId)
           .catch((err) =>
-            this.logger.error(`Error provisionando dominio custom en Dokploy: ${err.message}`),
+            this.logger.error(
+              `Error provisionando dominio custom en Dokploy: ${err.message}`,
+            ),
           );
       }
     } else {
@@ -204,8 +230,15 @@ export class TenantService {
    * Ahora también incluye el logo desde SystemSettings.
    */
   async getTenantBranding(tenantId: string) {
-    if (tenantId === 'default' || tenantId === 'default_tenant' || tenantId === 'admin_build' || tenantId === 'template') {
-      this.logger.log(`[BRANDING DEBUG] Ignorando búsqueda en BD para tenant '${tenantId}' (Next.js ISR Fallback)`);
+    if (
+      tenantId === 'default' ||
+      tenantId === 'default_tenant' ||
+      tenantId === 'admin_build' ||
+      tenantId === 'template'
+    ) {
+      this.logger.log(
+        `[BRANDING DEBUG] Ignorando búsqueda en BD para tenant '${tenantId}' (Next.js ISR Fallback)`,
+      );
       return {
         id: 'default',
         name: 'SaaS Platform',
@@ -219,7 +252,7 @@ export class TenantService {
         footerLinks: null,
         contactEmail: null,
         contactPhone: null,
-        tagline: 'Plataforma Profesional'
+        tagline: 'Plataforma Profesional',
       };
     }
 
@@ -229,32 +262,61 @@ export class TenantService {
     try {
       const tenantById = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
-        select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true, brandSettings: true },
+        select: {
+          id: true,
+          design: true,
+          name: true,
+          features: true,
+          ownerEmail: true,
+          notes: true,
+          brandSettings: true,
+        },
       });
       if (tenantById) {
         this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
         const menuSetting = await this.prisma.secure.systemSetting.findFirst({
           where: { tenantId: tenantById.id, key: 'menu' },
         });
-        const whatsappSetting = await this.prisma.secure.systemSetting.findFirst({
-          where: { tenantId: tenantById.id, key: 'whatsapp' },
-        });
+        const whatsappSetting =
+          await this.prisma.secure.systemSetting.findFirst({
+            where: { tenantId: tenantById.id, key: 'whatsapp' },
+          });
         const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
           where: { tenantId: tenantById.id, key: 'smtp' },
         });
-        
+
         const menuData = (menuSetting?.value as any) || {};
-        const bs = (tenantById.brandSettings as unknown as BrandSettingsWithAssets) || {};
+        const bs =
+          (tenantById.brandSettings as unknown as BrandSettingsWithAssets) ||
+          {};
         const logo = bs.logoUrl || menuData.logo || null;
         const headerLinks = menuData.headerLinks || null;
         const footerLinks = menuData.footerLinks || null;
-        const tagline = bs.tagline || menuData.tagline || tenantById.notes || 'Plataforma Profesional';
-        
-        const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
+        const tagline =
+          bs.tagline ||
+          menuData.tagline ||
+          tenantById.notes ||
+          'Plataforma Profesional';
+
+        const contactPhone =
+          (whatsappSetting?.value as string) || menuData.contactPhone || null;
         const smtpData = (smtpSetting?.value as any) || {};
-        const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantById.ownerEmail || null;
-        
-        return { ...tenantById, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline, brandSettings: tenantById.brandSettings || null };
+        const contactEmail =
+          smtpData?.auth?.user ||
+          menuData.contactEmail ||
+          tenantById.ownerEmail ||
+          null;
+
+        return {
+          ...tenantById,
+          logo,
+          headerLinks,
+          footerLinks,
+          contactEmail,
+          contactPhone,
+          tagline,
+          brandSettings: tenantById.brandSettings || null,
+        };
       }
     } catch (error) {
       this.logger.warn(
@@ -267,7 +329,15 @@ export class TenantService {
     );
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
-      select: { id: true, design: true, name: true, features: true, ownerEmail: true, notes: true, brandSettings: true },
+      select: {
+        id: true,
+        design: true,
+        name: true,
+        features: true,
+        ownerEmail: true,
+        notes: true,
+        brandSettings: true,
+      },
     });
 
     if (tenantBySlug) {
@@ -281,19 +351,39 @@ export class TenantService {
       const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
         where: { tenantId: tenantBySlug.id, key: 'smtp' },
       });
-      
+
       const menuData = (menuSetting?.value as any) || {};
-      const bs = (tenantBySlug.brandSettings as unknown as BrandSettingsWithAssets) || {};
+      const bs =
+        (tenantBySlug.brandSettings as unknown as BrandSettingsWithAssets) ||
+        {};
       const logo = bs.logoUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
-      const tagline = bs.tagline || menuData.tagline || tenantBySlug.notes || 'Plataforma Profesional';
-      
-      const contactPhone = (whatsappSetting?.value as string) || menuData.contactPhone || null;
+      const tagline =
+        bs.tagline ||
+        menuData.tagline ||
+        tenantBySlug.notes ||
+        'Plataforma Profesional';
+
+      const contactPhone =
+        (whatsappSetting?.value as string) || menuData.contactPhone || null;
       const smtpData = (smtpSetting?.value as any) || {};
-      const contactEmail = smtpData?.auth?.user || menuData.contactEmail || tenantBySlug.ownerEmail || null;
-      
-      return { ...tenantBySlug, logo, headerLinks, footerLinks, contactEmail, contactPhone, tagline, brandSettings: tenantBySlug.brandSettings || null };
+      const contactEmail =
+        smtpData?.auth?.user ||
+        menuData.contactEmail ||
+        tenantBySlug.ownerEmail ||
+        null;
+
+      return {
+        ...tenantBySlug,
+        logo,
+        headerLinks,
+        footerLinks,
+        contactEmail,
+        contactPhone,
+        tagline,
+        brandSettings: tenantBySlug.brandSettings || null,
+      };
     }
 
     this.logger.error(
@@ -366,19 +456,17 @@ export class TenantService {
     }
 
     let tenant: any = null;
-    const baseDomain = this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') || 'xn--alvarolondoo-khb.dev';
-    const slugFromDomain = domain.endsWith(`.${baseDomain}`) 
-      ? domain.replace(`.${baseDomain}`, '') 
+    const baseDomain =
+      this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
+      'xn--alvarolondoo-khb.dev';
+    const slugFromDomain = domain.endsWith(`.${baseDomain}`)
+      ? domain.replace(`.${baseDomain}`, '')
       : domain;
 
     try {
       tenant = await this.prisma.secure.tenant.findFirst({
         where: {
-          OR: [
-            { domain: domain },
-            { slug: domain },
-            { slug: slugFromDomain }
-          ]
+          OR: [{ domain: domain }, { slug: domain }, { slug: slugFromDomain }],
         },
         select: { id: true, name: true, status: true, features: true },
       });
@@ -421,10 +509,11 @@ export class TenantService {
 
   async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
     const design = updateDto.design || {};
-    
+
     const primaryColor = design.primary || design.primaryColor || '#09090b';
     const secondaryColor = design.secondaryColor || '#f4f4f5';
-    const borderRadius = design.radius !== undefined ? design.radius : (design.borderRadius || 0.5);
+    const borderRadius =
+      design.radius !== undefined ? design.radius : design.borderRadius || 0.5;
     const fontFamily = design.fontFamily || 'Inter, sans-serif';
     const layoutType = design.layoutType || 'CLASSIC';
     const logoUrl = design.logoUrl || null;
@@ -518,9 +607,7 @@ export class TenantService {
       },
     });
 
-    this.logger.log(
-      `BrandSettings actualizado para Tenant ID: ${tenantId}`,
-    );
+    this.logger.log(`BrandSettings actualizado para Tenant ID: ${tenantId}`);
 
     this.triggerFrontendRevalidation([
       `tenant-branding-${tenantId}`,
@@ -610,7 +697,9 @@ export class TenantService {
     });
 
     if (!tenant) {
-      throw new NotFoundException(`Tenant con identificador ${tenantIdOrSlug} no encontrado`);
+      throw new NotFoundException(
+        `Tenant con identificador ${tenantIdOrSlug} no encontrado`,
+      );
     }
 
     // 2. Actualizar features en la DB usando el ID real

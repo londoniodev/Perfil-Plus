@@ -53,8 +53,10 @@ export class JwtAuthGuard implements CanActivate {
         console.warn('[JwtAuthGuard] Payload has no tenantId');
       }
 
-      // Cargar usuario desde la base de datos
-      // PrismaService.client getter will not throw here because ClsService already has context.
+      // ✅ User es un modelo global (no scoped por tenant).
+      // Se busca por userId (sub del JWT), NO por tenantId.
+      // this.prisma.user (sin .secure) es CORRECTO aquí intencionalmente.
+      /* eslint-disable no-restricted-syntax */
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
         select: {

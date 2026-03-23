@@ -68,7 +68,7 @@ export default function LessonPage({
                 // Fetch Lesson
                 const lessonRes = await fetch(
                     `${API_BASE}/lms/courses/${paramsData.courseSlug}/lessons/${paramsData.lessonSlug}`,
-                    { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
+                    { headers: {}, credentials: "include" }
                 );
 
                 if (lessonRes.status === 403) {
@@ -87,7 +87,7 @@ export default function LessonPage({
                 if (!course || course.id !== lessonData.course.id) {
                     const courseRes = await fetch(
                         `${API_BASE}/lms/courses/${paramsData.courseSlug}`,
-                        { headers: { 'x-tenant-id': TENANT_ID }, credentials: "include" }
+                        { headers: {}, credentials: "include" }
                     );
                     if (courseRes.ok) {
                         const courseData = await courseRes.json();
@@ -112,7 +112,7 @@ export default function LessonPage({
         try {
             await fetch(`${API_BASE}/lms/progress/${lesson.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({ completed: true }),
             });

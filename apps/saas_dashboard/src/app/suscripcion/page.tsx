@@ -40,7 +40,7 @@ export default function SuscripcionPage() {
     const fetchSubscriptionStatus = async () => {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription/status`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include", // Enviar Cookies
             });
             if (res.ok) {
@@ -69,8 +69,7 @@ export default function SuscripcionPage() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-tenant-id": TENANT_ID,
-                },
+                    },
                 credentials: "include",
                 body: JSON.stringify({
                     frontUrl: window.location.origin,
@@ -104,7 +103,7 @@ export default function SuscripcionPage() {
         try {
             const res = await fetch(`${API_BASE}/payments/subscription`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 

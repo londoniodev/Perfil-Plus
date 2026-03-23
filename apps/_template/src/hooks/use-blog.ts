@@ -30,7 +30,6 @@ interface UseBlogResult {
  * Soporta paginación y filtro por categoría.
  */
 export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
-    const { tenantId } = useTenant();
     const { page = 1, limit = 9, category } = options;
 
     const [posts, setPosts] = useState<Post[]>([]);
@@ -45,8 +44,8 @@ export function useBlog(options: UseBlogOptions = {}): UseBlogResult {
             setError(null);
 
             const [postsData, categoriesData] = await Promise.all([
-                getPosts(tenantId, page, limit, category),
-                getCategories(tenantId),
+                getPosts(page, limit, category),
+                getCategories(),
             ]);
 
             setPosts(postsData.data);

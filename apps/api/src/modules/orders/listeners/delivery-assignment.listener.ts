@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 import { OrderStatusChangedEvent } from '../events/order.events';
 // import { DeliveryService } from '../../delivery/delivery.service'; // To be implemented or injected
 
@@ -10,6 +11,7 @@ export class DeliveryAssignmentListener {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly cls: ClsService,
     // private readonly deliveryService: DeliveryService,
   ) {}
 
@@ -21,19 +23,25 @@ export class DeliveryAssignmentListener {
       // Solo asignamos delivery si la orden pasa a READY
       if (newStatus !== 'READY') return;
 
-      const order = await this.prisma.order.findUnique({
-        where: { id: orderId },
+      await this.cls.runWith({ tenantId } as any, async () => {
+        const order = await this.prisma.secure.order.findUnique({
+          where: { id: orderId },
+        });
+
+        if (!order || order.orderType !== 'DELIVERY') return;
+
+        this.logger.log(
+          `[Delivery] Asignando conductor para orden DELIVERY ${order.orderNumber}`,
+        );
+
+        // Aquí el DeliveryService tomaría la responsabilidad
+        // await this.deliveryService.assignDriverToOrder(tenantId, orderId);
       });
-
-      if (!order || order.orderType !== 'DELIVERY') return;
-
-      this.logger.log(`[Delivery] Asignando conductor para orden DELIVERY ${order.orderNumber}`);
-      
-      // Aquí el DeliveryService tomaría la responsabilidad
-      // await this.deliveryService.assignDriverToOrder(tenantId, orderId);
-
     } catch (error) {
-      this.logger.error(`Error asignando conductor a orden ${event.orderId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error asignando conductor a orden ${event.orderId}: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

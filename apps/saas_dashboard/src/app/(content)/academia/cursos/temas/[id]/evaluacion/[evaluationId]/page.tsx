@@ -56,7 +56,7 @@ export default function EditarEvaluacionPage() {
     const fetchEvaluation = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
             if (!res.ok) throw new Error("Error al cargar evaluación");
@@ -85,7 +85,7 @@ export default function EditarEvaluacionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(basicInfo),
             });
@@ -105,7 +105,7 @@ export default function EditarEvaluacionPage() {
                 // Update existing
                 const res = await fetch(`${API_BASE}/admin/lms/questions/${q.id}`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                    headers: { "Content-Type": "application/json"},
                     credentials: "include",
                     body: JSON.stringify(q),
                 });
@@ -114,7 +114,7 @@ export default function EditarEvaluacionPage() {
                 // Create new
                 const res = await fetch(`${API_BASE}/admin/lms/evaluations/${params.evaluationId}/questions`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                    headers: { "Content-Type": "application/json"},
                     credentials: "include",
                     body: JSON.stringify(q),
                 });
@@ -135,7 +135,7 @@ export default function EditarEvaluacionPage() {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/questions/${id}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include"
             });
             if (!res.ok) throw new Error("Error al eliminar");

@@ -74,7 +74,7 @@ export class PaymentsController {
   ) {
     // 1. Validación de firma (Seguridad) - FAIL CLOSE
     const dataId = body?.data?.id || body?.id;
-    
+
     if (!tenantId) {
       return { status: 'error', reason: 'tenantId missing from query' };
     }
@@ -92,12 +92,12 @@ export class PaymentsController {
 
     // 2. Emitir evento para procesamiento asíncrono (Fast Acknowledgement)
     const type = body.type || body.topic;
-    
+
     if (type === 'payment') {
       this.eventEmitter.emit('payment.received', {
         tenantId,
         dataId: dataId.toString(),
-        body
+        body,
       });
     }
 

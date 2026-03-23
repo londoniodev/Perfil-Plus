@@ -113,8 +113,7 @@ export function ClientesClient({
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    "x-tenant-id": TENANT_ID,
-                },
+                    },
             })
             if (!res.ok) throw new Error("Error al eliminar")
             setLeads((prev) => prev.filter((l) => l.id !== deleteId))

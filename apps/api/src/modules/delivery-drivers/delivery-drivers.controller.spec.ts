@@ -25,7 +25,12 @@ const MOCK_DRIVER = {
   status: DriverStatus.OFFLINE,
   maxCapacity: 3,
   currentActiveOrders: 0,
-  user: { id: 'user-driver-1', name: 'Carlos', email: 'carlos@test.com', avatar: null },
+  user: {
+    id: 'user-driver-1',
+    name: 'Carlos',
+    email: 'carlos@test.com',
+    avatar: null,
+  },
 };
 
 const mockDriversService = {
@@ -68,7 +73,11 @@ describe('AdminDeliveryDriversController', () => {
 
   describe('create', () => {
     it('debería llamar driversService.create con dto y tenantId', async () => {
-      const dto = { userId: 'user-driver-1', phone: '3001234567', vehicle: 'Moto' };
+      const dto = {
+        userId: 'user-driver-1',
+        phone: '3001234567',
+        vehicle: 'Moto',
+      };
       mockDriversService.create.mockResolvedValue(MOCK_DRIVER);
 
       const result = await controller.create(dto, 'tenant-1');

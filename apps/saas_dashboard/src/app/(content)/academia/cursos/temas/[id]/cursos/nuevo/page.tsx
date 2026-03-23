@@ -70,7 +70,7 @@ export default function NuevoCursoPage({ params }: NuevoCursoPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({
                     ...formData,

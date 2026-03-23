@@ -24,27 +24,31 @@ export class UsageGuardService {
 
     // 3. Contar mensajes respondidos por el bot (ASSISTANT) este mes
     const usageCount = await (this.prisma.secure as any).waMessage.count({
-        where: {
-            role: 'ASSISTANT',
-            createdAt: {
-                gte: startOfMonth,
-                lt: endOfMonth,
-            },
-            // El relation filtering a nivel profundo puede ayudar,
-            // pero como esto corre bajo CLS y RLS, la bbdd ya filtra por el Tenant subyacente de WaConversation.
-            // Para ser explícitos:
-            conversation: {
-                tenantId: tenantId
-            }
-        }
+      where: {
+        role: 'ASSISTANT',
+        createdAt: {
+          gte: startOfMonth,
+          lt: endOfMonth,
+        },
+        // El relation filtering a nivel profundo puede ayudar,
+        // pero como esto corre bajo CLS y RLS, la bbdd ya filtra por el Tenant subyacente de WaConversation.
+        // Para ser explícitos:
+        conversation: {
+          tenantId: tenantId,
+        },
+      },
     });
 
     if (usageCount >= monthlyLimit) {
-        this.logger.warn(`[Tenant: ${tenantId}] Límite mensual de IA alcanzado (${usageCount}/${monthlyLimit})`);
-        return false; // NO permitir llamada a IA
+      this.logger.warn(
+        `[Tenant: ${tenantId}] Límite mensual de IA alcanzado (${usageCount}/${monthlyLimit})`,
+      );
+      return false; // NO permitir llamada a IA
     }
 
-    this.logger.debug(`[Tenant: ${tenantId}] Consumo IA: ${usageCount}/${monthlyLimit}`);
+    this.logger.debug(
+      `[Tenant: ${tenantId}] Consumo IA: ${usageCount}/${monthlyLimit}`,
+    );
     return true; // OK permitir
   }
 }

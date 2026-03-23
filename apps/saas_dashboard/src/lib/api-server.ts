@@ -32,11 +32,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
 
     const headers = new Headers(options?.headers);
 
-    // Inyectar headers obligatorios si no existen
-    if (!headers.has('Content-Type')) {
-        headers.set('Content-Type', 'application/json');
-    }
-    headers.set('x-tenant-id', tenantId);
+    // x-tenant-id is removed. Backend resolves from JWT (Authorization header).
     headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');
 
     if (token && !headers.has('Authorization')) {

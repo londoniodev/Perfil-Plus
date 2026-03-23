@@ -6,27 +6,7 @@ import { Clock, ArrowRight, BookOpen } from "lucide-react";
 
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 
-async function getBlogPosts(tenantId: string) {
-  try {
-    const res = await fetch(`${INTERNAL_API_URL}/blog/posts?limit=12`, {
-      headers: {
-        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
-        'x-tenant-id': tenantId
-      },
-      next: {
-        revalidate: 3600,
-        tags: ["tenant-blog", `tenant-blog-${tenantId}`],
-      },
-    });
-
-    if (!res.ok) return { data: [] };
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching blog posts for tenant ${tenantId}:`, error);
-    return { data: [] };
-  }
-}
-
+import { getPosts } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { TenantFeature } from "@alvarosky/types";
 import { getTenantFeatures } from "@alvarosky/shared";
@@ -50,7 +30,7 @@ export default async function BlogPage() {
     return notFound();
   }
 
-  const { data: posts } = await getBlogPosts(tenantId);
+  const { data: posts } = await getPosts(1, 12);
 
   return (
     <section className="relative min-h-screen bg-zinc-950 pb-20 pt-28 md:pb-32 md:pt-32">

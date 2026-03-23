@@ -96,8 +96,7 @@ export function EmployeesClient() {
             const token = localStorage.getItem("token");
             const res = await fetch(API_URL, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "x-tenant-id": TENANT_ID
+                    Authorization: `Bearer ${token}`
                 },
             });
             if (!res.ok) throw new Error("Error al cargar empleados");
@@ -123,8 +122,7 @@ export function EmployeesClient() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                    "x-tenant-id": TENANT_ID
+                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify(formData),
             });
@@ -155,8 +153,7 @@ export function EmployeesClient() {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                    "x-tenant-id": TENANT_ID
+                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     name: formData.name,
@@ -184,8 +181,7 @@ export function EmployeesClient() {
             const res = await fetch(`${API_URL}/${selectedEmployee.id}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "x-tenant-id": TENANT_ID
+                    Authorization: `Bearer ${token}`
                 },
             });
 

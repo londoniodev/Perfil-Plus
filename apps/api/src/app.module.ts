@@ -104,14 +104,14 @@ import { CoreModule } from './modules/core';
     }),
     ClsModule.forRoot({
       global: true,
-      middleware: { 
+      middleware: {
         mount: true,
         setup: (cls, req: any) => {
           const tenantId = req.headers['x-tenant-id'] as string;
           if (tenantId) {
             cls.set('tenantId', tenantId);
           }
-        }
+        },
       },
     }),
     EventEmitterModule.forRoot(),
@@ -168,11 +168,14 @@ import { CoreModule } from './modules/core';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const host = configService.get('REDIS_HOST') || 'localhost';
-        const port = parseInt(configService.get('REDIS_PORT') || '6379') || 6379;
+        const port =
+          parseInt(configService.get('REDIS_PORT') || '6379') || 6379;
         const hasPassword = !!configService.get('REDIS_PASSWORD');
-        
-        console.log(`🔌 [CACHE] Intentando conectar a Redis: ${host}:${port} (password: ${hasPassword ? 'sí' : 'no'})`);
-        
+
+        console.log(
+          `🔌 [CACHE] Intentando conectar a Redis: ${host}:${port} (password: ${hasPassword ? 'sí' : 'no'})`,
+        );
+
         try {
           const store = await redisStore({
             socket: {
@@ -183,13 +186,21 @@ import { CoreModule } from './modules/core';
             password: configService.get('REDIS_PASSWORD'),
             ttl: 3600 * 1000, // Default TTL: 1 hora en ms
           });
-          console.log(`✅ [CACHE] Redis cache conectado exitosamente (${host}:${port})`);
-          console.log(`✅ [CACHE] Backend: REDIS (datos persisten entre restarts)`);
+          console.log(
+            `✅ [CACHE] Redis cache conectado exitosamente (${host}:${port})`,
+          );
+          console.log(
+            `✅ [CACHE] Backend: REDIS (datos persisten entre restarts)`,
+          );
           (global as any).__CACHE_BACKEND__ = 'REDIS';
           return { store };
         } catch (error) {
-          console.error(`❌ [CACHE] Redis NO disponible (${host}:${port}): ${error.message}`);
-          console.warn(`⚠️ [CACHE] Backend: IN-MEMORY (¡los datos se pierden con cada restart/deploy!)`);
+          console.error(
+            `❌ [CACHE] Redis NO disponible (${host}:${port}): ${error.message}`,
+          );
+          console.warn(
+            `⚠️ [CACHE] Backend: IN-MEMORY (¡los datos se pierden con cada restart/deploy!)`,
+          );
           (global as any).__CACHE_BACKEND__ = 'IN-MEMORY';
           return { ttl: 3600 * 1000 };
         }

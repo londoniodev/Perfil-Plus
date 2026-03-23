@@ -53,7 +53,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
     const fetchTheme = async () => {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${themeId}`, {
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 
@@ -101,7 +101,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/themes/${themeId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(formData),
             });
@@ -126,7 +126,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/courses/${courseId}`, {
                 method: "DELETE",
-                headers: { 'x-tenant-id': TENANT_ID },
+                headers: {},
                 credentials: "include",
             });
 
@@ -144,7 +144,7 @@ export default function EditarTemaPage({ params }: EditarTemaPageProps) {
         try {
             const res = await fetch(`${API_BASE}/admin/lms/evaluations`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-tenant-id": TENANT_ID },
+                headers: { "Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({
                     themeId,

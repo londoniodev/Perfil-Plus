@@ -1,4 +1,11 @@
-import { Controller, Get, Param, NotFoundException, Logger, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  NotFoundException,
+  Logger,
+  Headers,
+} from '@nestjs/common';
 import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -7,9 +14,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class WaCartController {
   private readonly logger = new Logger(WaCartController.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * GET /api/wa-cart/:id
@@ -20,7 +25,9 @@ export class WaCartController {
     @Param('id') id: string,
     @Headers('x-tenant-id') tenantId?: string,
   ) {
-    this.logger.log(`[GET_CART] Consultando Postgres id=${id}, tenantId=${tenantId || 'NO_HEADER'}`);
+    this.logger.log(
+      `[GET_CART] Consultando Postgres id=${id}, tenantId=${tenantId || 'NO_HEADER'}`,
+    );
 
     let cart;
 
@@ -30,7 +37,9 @@ export class WaCartController {
         where: { id: id, tenantId: tenantId },
       });
       if (cart) {
-        this.logger.log(`[GET_CART] ✅ Carrito encontrado con tenantId: ${tenantId}`);
+        this.logger.log(
+          `[GET_CART] ✅ Carrito encontrado con tenantId: ${tenantId}`,
+        );
       }
     }
 
@@ -41,32 +50,47 @@ export class WaCartController {
         where: { id: id },
       });
       if (cart) {
-        this.logger.log(`[GET_CART] ✅ Carrito encontrado vía fallback de ID. Tenant asociado: ${cart.tenantId}`);
+        this.logger.log(
+          `[GET_CART] ✅ Carrito encontrado vía fallback de ID. Tenant asociado: ${cart.tenantId}`,
+        );
       }
     }
 
     if (!cart) {
-      this.logger.warn(`[GET_CART] ❌ Carrito NO encontrado en DB. ID=${id}, TenantID=${tenantId || 'N/A'}`);
+      this.logger.warn(
+        `[GET_CART] ❌ Carrito NO encontrado en DB. ID=${id}, TenantID=${tenantId || 'N/A'}`,
+      );
       throw new NotFoundException('El enlace de pago es inválido o ya expiró.');
     }
 
     // Comprobar expiración manualmente por seguridad
     if (new Date() > cart.expiresAt) {
       this.logger.warn(`[GET_CART] 🚨 Carrito expirado en DB. ID=${id}`);
-      throw new NotFoundException('El enlace de pago ya expiró (duración 24 horas).');
+      throw new NotFoundException(
+        'El enlace de pago ya expiró (duración 24 horas).',
+      );
     }
 
     try {
-      const cartData = typeof cart.cartData === 'string' ? JSON.parse(cart.cartData) : cart.cartData;
-      this.logger.log(`[GET_CART] Carrito servido exitosamente (items=${cartData.items?.length || 0})`);
+      const cartData =
+        typeof cart.cartData === 'string'
+          ? JSON.parse(cart.cartData)
+          : cart.cartData;
+      this.logger.log(
+        `[GET_CART] Carrito servido exitosamente (items=${cartData.items?.length || 0})`,
+      );
       return {
         items: cartData.items,
         customerData: cartData.customerData,
         source: 'database',
       };
     } catch (error) {
-      this.logger.error(`[GET_CART] Error parseando datos del carrito (${id}): ${error.message}`);
-      throw new NotFoundException('Error recuperando los datos de este pedido.');
+      this.logger.error(
+        `[GET_CART] Error parseando datos del carrito (${id}): ${error.message}`,
+      );
+      throw new NotFoundException(
+        'Error recuperando los datos de este pedido.',
+      );
     }
   }
 }

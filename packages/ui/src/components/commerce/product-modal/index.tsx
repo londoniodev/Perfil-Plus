@@ -16,7 +16,6 @@ import { ProductStickyFooter } from "./product-sticky-footer"
 import { PhoneAuthModal } from "./phone-auth-modal"
 
 export function ProductModal({
-    slug,
     product,
     apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
     suggestedProducts = [],
@@ -26,7 +25,6 @@ export function ProductModal({
     restaurantName,
     restaurantLogo
 }: {
-    slug: string
     product: PublicProduct
     apiUrl?: string
     suggestedProducts?: PublicProduct[]
@@ -41,7 +39,6 @@ export function ProductModal({
 
     // 2. Hook para Estado Social (Likes, Shares, Comments)
     const socialState = useProductSocial({
-        slug,
         product,
         apiUrl
     })

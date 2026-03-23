@@ -20,12 +20,14 @@ export class MetaApiService {
       const accessToken = (settings as any)?.waAccessToken;
 
       if (!accessToken) {
-        this.logger.error(`[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje.`);
+        this.logger.error(
+          `[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje.`,
+        );
         return false;
       }
 
       const url = `${this.apiUrl}/${phoneNumberId}/messages`;
-      
+
       await axios.post(
         url,
         {
@@ -46,17 +48,18 @@ export class MetaApiService {
         },
       );
 
-      this.logger.log(`[Tenant: ${tenantId}] Mensaje enviado exitosamente a ${to}`);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Mensaje enviado exitosamente a ${to}`,
+      );
       return true;
-
     } catch (error) {
-       this.logger.error(
-         `[Tenant: ${tenantId}] Error enviando mensaje a Meta: ${
-           error.response?.data?.error?.message || error.message
-         }`,
-         error.stack,
-       );
-       return false;
+      this.logger.error(
+        `[Tenant: ${tenantId}] Error enviando mensaje a Meta: ${
+          error.response?.data?.error?.message || error.message
+        }`,
+        error.stack,
+      );
+      return false;
     }
   }
 
@@ -77,7 +80,9 @@ export class MetaApiService {
       const accessToken = (settings as any)?.waAccessToken;
 
       if (!accessToken) {
-        this.logger.error(`[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje interactivo.`);
+        this.logger.error(
+          `[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje interactivo.`,
+        );
         return false;
       }
 
@@ -115,9 +120,10 @@ export class MetaApiService {
         },
       );
 
-      this.logger.log(`[Tenant: ${tenantId}] Mensaje interactivo CTA enviado a ${to}`);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Mensaje interactivo CTA enviado a ${to}`,
+      );
       return true;
-
     } catch (error) {
       this.logger.error(
         `[Tenant: ${tenantId}] Error enviando mensaje interactivo CTA a Meta: ${
@@ -126,8 +132,15 @@ export class MetaApiService {
         error.stack,
       );
       // Fallback: intentar enviar como texto plano
-      this.logger.warn(`[Tenant: ${tenantId}] Intentando fallback a texto plano...`);
-      return this.sendTextMessage(tenantId, phoneNumberId, to, `${bodyText}\n\n${ctaUrl}`);
+      this.logger.warn(
+        `[Tenant: ${tenantId}] Intentando fallback a texto plano...`,
+      );
+      return this.sendTextMessage(
+        tenantId,
+        phoneNumberId,
+        to,
+        `${bodyText}\n\n${ctaUrl}`,
+      );
     }
   }
 }

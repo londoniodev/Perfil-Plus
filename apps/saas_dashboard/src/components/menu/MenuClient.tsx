@@ -61,7 +61,7 @@ export default function MenuClient({
     slug: string,
     table?: string
 }) {
-    const { categories, products, restaurant, isLoading, isError } = useMenu(slug)
+    const { categories, products, restaurant, isLoading, isError } = useMenu()
 
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
     const { createOrder, isSubmitting } = useOrder()
@@ -153,7 +153,7 @@ export default function MenuClient({
             paymentMethod: paymentMethod
         }
 
-        const result = await createOrder(slug, orderData)
+        const result = await createOrder(orderData)
 
         if (result.success) {
             setIsNamePromptOpen(false)
@@ -164,7 +164,6 @@ export default function MenuClient({
                 try {
                     const response = await createMercadoPagoPreference(
                         result.orderId,
-                        slug,
                         window.location.origin
                     );
 
@@ -520,7 +519,6 @@ export default function MenuClient({
             <AnimatePresence>
                 {selectedProduct && (
                     <ProductModal
-                        slug={slug}
                         product={selectedProduct}
                         suggestedProducts={products.filter(p => p.id !== selectedProduct.id).slice(0, 5)}
                         onProductSelect={setSelectedProduct}

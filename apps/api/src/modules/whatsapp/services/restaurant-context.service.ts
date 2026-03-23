@@ -19,7 +19,7 @@ export class RestaurantContextService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) { }
+  ) {}
 
   /**
    * Retorna el catálogo completo de productos activos del tenant,
@@ -33,11 +33,15 @@ export class RestaurantContextService {
       try {
         return JSON.parse(cached);
       } catch {
-        this.logger.warn(`[Tenant: ${tenantId}] Catálogo corrupto en cache, regenerando...`);
+        this.logger.warn(
+          `[Tenant: ${tenantId}] Catálogo corrupto en cache, regenerando...`,
+        );
       }
     }
 
-    this.logger.log(`[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`);
+    this.logger.log(
+      `[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`,
+    );
 
     const products = await this.prisma.secure.product.findMany({
       where: {
@@ -66,28 +70,40 @@ export class RestaurantContextService {
 
     // Cache por 30 días (mismo TTL que el system prompt)
     await this.cacheManager.set(cacheKey, JSON.stringify(catalog), 2592000000);
-    this.logger.log(`[Tenant: ${tenantId}] Catálogo de ${catalog.length} productos cacheado.`);
+    this.logger.log(
+      `[Tenant: ${tenantId}] Catálogo de ${catalog.length} productos cacheado.`,
+    );
 
     return catalog;
   }
 
-  async buildSystemPrompt(tenantId: string, customerPhone?: string): Promise<string> {
+  async buildSystemPrompt(
+    tenantId: string,
+    customerPhone?: string,
+  ): Promise<string> {
     const cacheKey = `tenant:${tenantId}:menu_context`;
 
     // Intentar obtener del cache
     let menuContext = await this.cacheManager.get<string>(cacheKey);
 
     if (!menuContext) {
-      this.logger.log(`[Tenant: ${tenantId}] Cache miss para menú. Construyendo prompt...`);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Cache miss para menú. Construyendo prompt...`,
+      );
       menuContext = await this.generateMenuContext(tenantId);
 
       // Guardar en cache por 30 días (2592000000 ms)
       await this.cacheManager.set(cacheKey, menuContext, 2592000000);
-      this.logger.log(`[Tenant: ${tenantId}] Menú cacheado en Redis por 30 días.`);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Menú cacheado en Redis por 30 días.`,
+      );
     }
 
     // El contexto dinámico del cliente NO se cachea porque cambia por usuario/conversación
-    const customerContext = await this.buildCustomerContext(tenantId, customerPhone);
+    const customerContext = await this.buildCustomerContext(
+      tenantId,
+      customerPhone,
+    );
 
     return `${menuContext}\n${customerContext}`;
   }
@@ -95,7 +111,7 @@ export class RestaurantContextService {
   private async generateMenuContext(tenantId: string): Promise<string> {
     // Obtener configuración del restaurante
     const storeSettings = await this.prisma.secure.storeSettings.findFirst({
-      include: { tenant: { select: { slug: true } } }
+      include: { tenant: { select: { slug: true } } },
     });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
     const tenantSlug = storeSettings?.tenant?.slug || 'demo';
@@ -121,7 +137,8 @@ export class RestaurantContextService {
       for (const catProd of cat.products) {
         if (!catProd.product) continue;
         const p = catProd.product;
-        if (!p.published || !p.isAvailable || p.productType !== 'RESTAURANT') continue;
+        if (!p.published || !p.isAvailable || p.productType !== 'RESTAURANT')
+          continue;
         menuText += `- ${p.name}: $${p.basePrice} (${p.description || 'Sin descripción'})\n`;
       }
     }
@@ -156,14 +173,17 @@ ${menuText}
 - Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
   }
 
-  private async buildCustomerContext(tenantId: string, customerPhone?: string): Promise<string> {
+  private async buildCustomerContext(
+    tenantId: string,
+    customerPhone?: string,
+  ): Promise<string> {
     let customerContext = '';
     let needsProfile = true;
     let needsGps = true; // Rastrear si falta ubicación GPS
 
     if (customerPhone) {
       const customer = await this.prisma.secure.waCustomer.findUnique({
-        where: { tenantId_phone: { tenantId, phone: customerPhone } }
+        where: { tenantId_phone: { tenantId, phone: customerPhone } },
       });
       if (customer) {
         customerContext = `\nContexto del Cliente: Hablas con ${customer.name || 'un cliente'}. `;

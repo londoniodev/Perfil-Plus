@@ -38,7 +38,9 @@ export class CategoriesService {
       `tenant:${tenantId}:product_catalog`,
     ];
     await Promise.all(keys.map((k) => this.cacheManager.del(k)));
-    this.logger.log(`[Tenant: ${tenantId}] Caché de menú y catálogo de WhatsApp invalidado.`);
+    this.logger.log(
+      `[Tenant: ${tenantId}] Caché de menú y catálogo de WhatsApp invalidado.`,
+    );
   }
 
   async findAll(tenantId: string, type: CategoryType = 'PRODUCT') {
@@ -67,7 +69,7 @@ export class CategoriesService {
   ) {
     const slug = slugify(createDto.name);
     const ORConditions: any[] = [{ name: createDto.name }];
-    
+
     if (slug) {
       ORConditions.push({ slug });
     }
@@ -81,7 +83,12 @@ export class CategoriesService {
       },
     });
 
-    console.log('[DEBUG_CATEGORY] Payload:', { name: createDto.name, slug, tenantId, type });
+    console.log('[DEBUG_CATEGORY] Payload:', {
+      name: createDto.name,
+      slug,
+      tenantId,
+      type,
+    });
     console.log('[DEBUG_CATEGORY] Match found:', existing);
 
     if (existing) {
@@ -156,7 +163,7 @@ export class CategoriesService {
     }
 
     // Comprobar Productos Asociados en la tabla Pivot CategoriesOnProducts
-    const productCount = await this.prisma.categoriesOnProducts.count({
+    const productCount = await this.prisma.secure.categoriesOnProducts.count({
       where: { categoryId: id },
     });
 

@@ -1,4 +1,14 @@
-import { IsNotEmpty, IsOptional, IsString, IsEmail, Matches, IsNumber, IsEnum, NotEquals, IsArray } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsEmail,
+  Matches,
+  IsNumber,
+  IsEnum,
+  NotEquals,
+  IsArray,
+} from 'class-validator';
 import { Role } from '@prisma/client';
 
 export class CreateTenantDto {
@@ -28,7 +38,9 @@ export class CreateTenantDto {
 
   @IsOptional()
   @IsEnum(Role)
-  @NotEquals(Role.SUPERADMIN, { message: 'No se puede asignar el rol SUPERADMIN' })
+  @NotEquals(Role.SUPERADMIN, {
+    message: 'No se puede asignar el rol SUPERADMIN',
+  })
   ownerRole?: Role;
 
   @IsOptional()

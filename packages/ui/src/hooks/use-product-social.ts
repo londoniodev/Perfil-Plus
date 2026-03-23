@@ -4,11 +4,9 @@ import { useState, useEffect } from "react"
 import type { PublicProduct } from "@alvarosky/restaurant-sdk"
 
 export function useProductSocial({
-    slug,
     product,
     apiUrl
 }: {
-    slug: string
     product: PublicProduct
     apiUrl: string
 }) {
@@ -29,7 +27,7 @@ export function useProductSocial({
             const userPhone = localStorage.getItem('user_phone')
             if (userPhone) {
                 try {
-                    const res = await fetch(`${API_URL}/public/restaurant/${slug}/products/${product.id}/like-status/${userPhone}`)
+                    const res = await fetch(`${API_URL}/public/restaurant/products/${product.id}/like-status/${userPhone}`)
                     if (res.ok) {
                         const data = await res.json()
                         setIsLiked(data.isLiked)
@@ -40,7 +38,7 @@ export function useProductSocial({
             }
         }
         checkStatus()
-    }, [product.id, slug, API_URL])
+    }, [product.id, API_URL])
 
     const executeAction = async (action: "LIKE" | "COMMENT", phone: string) => {
         if (action === "LIKE") {
@@ -49,7 +47,7 @@ export function useProductSocial({
             setLikesCount(prev => newIsLiked ? prev + 1 : Math.max(0, prev - 1))
 
             try {
-                await fetch(`${API_URL}/public/restaurant/${slug}/products/${product.id}/like`, {
+                await fetch(`${API_URL}/public/restaurant/products/${product.id}/like`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userPhone: phone })
@@ -72,7 +70,7 @@ export function useProductSocial({
             setCommentText("")
 
             try {
-                await fetch(`${API_URL}/public/restaurant/${slug}/products/${product.id}/comment`, {
+                await fetch(`${API_URL}/public/restaurant/products/${product.id}/comment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userPhone: phone, content: newComment.content })

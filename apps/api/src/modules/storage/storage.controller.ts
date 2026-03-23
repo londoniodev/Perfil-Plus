@@ -123,7 +123,7 @@ export class StorageController {
     // Lógica de Enrutamiento Dinámica
     const isPrivate = fileIntent === 'PRIVATE_ASSET';
     const folder = isPrivate ? 'ebooks' : 'attachments';
-    
+
     return this.storageService.uploadFile(file, folder, isPrivate);
   }
 

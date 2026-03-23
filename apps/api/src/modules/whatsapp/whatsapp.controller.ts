@@ -7,7 +7,8 @@ import { Public } from '../../common/decorators/public.decorator';
 export class WhatsappController {
   // Token de verificación configurado en el panel de Meta.
   // En producción, esto DEBE venir de variables de entorno.
-  private readonly VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'alvaro_token_seguro_123';
+  private readonly VERIFY_TOKEN =
+    process.env.WHATSAPP_VERIFY_TOKEN || 'alvaro_token_seguro_123';
 
   constructor(private eventEmitter: EventEmitter2) {}
 
@@ -22,7 +23,7 @@ export class WhatsappController {
       console.log('¡Webhook verificado por Meta exitosamente!');
       return res.status(HttpStatus.OK).send(challenge);
     }
-    
+
     return res.sendStatus(HttpStatus.FORBIDDEN);
   }
 

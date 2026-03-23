@@ -28,7 +28,7 @@ export class AuthService {
     if (!tenantId.startsWith('c')) {
       const tenant = await this.prisma.secure.tenant.findUnique({
         where: { slug: tenantId },
-        select: { id: true }
+        select: { id: true },
       });
       if (tenant) {
         actualTenantId = tenant.id;
@@ -94,7 +94,7 @@ export class AuthService {
     if (!tenantId.startsWith('c')) {
       const tenant = await this.prisma.secure.tenant.findUnique({
         where: { slug: tenantId },
-        select: { id: true }
+        select: { id: true },
       });
       if (tenant) {
         actualTenantId = tenant.id;
@@ -268,7 +268,7 @@ export class AuthService {
     if (!tenantId.startsWith('c')) {
       const tenant = await this.prisma.secure.tenant.findUnique({
         where: { slug: tenantId },
-        select: { id: true }
+        select: { id: true },
       });
       if (tenant) {
         actualTenantId = tenant.id;
@@ -482,7 +482,7 @@ export class AuthService {
     if (!tenantId.startsWith('c')) {
       const tenant = await this.prisma.secure.tenant.findUnique({
         where: { slug: tenantId },
-        select: { id: true }
+        select: { id: true },
       });
       if (tenant) {
         actualTenantId = tenant.id;

@@ -15,8 +15,10 @@ export class WaCartCronService {
    */
   @Cron('0 3 * * *')
   async cleanExpiredCarts() {
-    this.logger.log('🧹 [CRON] Iniciando limpieza de carritos de WhatsApp antiguos...');
-    
+    this.logger.log(
+      '🧹 [CRON] Iniciando limpieza de carritos de WhatsApp antiguos...',
+    );
+
     try {
       // Calculamos la fecha límite (hace 48 horas exactas desde este momento)
       // Como el expiresAt ya se crea con +24h, restar 48h desde AHORA
@@ -30,14 +32,18 @@ export class WaCartCronService {
       const result = await (this.prisma.secure as any).waCart.deleteMany({
         where: {
           expiresAt: {
-            lt: cutOffDate
-          }
-        }
+            lt: cutOffDate,
+          },
+        },
       });
 
-      this.logger.log(`✅ [CRON] Limpieza completada. ${result.count} carritos antiguos eliminados.`);
+      this.logger.log(
+        `✅ [CRON] Limpieza completada. ${result.count} carritos antiguos eliminados.`,
+      );
     } catch (error) {
-      this.logger.error(`❌ [CRON] Fallo durante la limpieza de carritos: ${error.message}`);
+      this.logger.error(
+        `❌ [CRON] Fallo durante la limpieza de carritos: ${error.message}`,
+      );
     }
   }
 }

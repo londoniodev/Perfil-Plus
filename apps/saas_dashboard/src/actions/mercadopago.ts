@@ -2,17 +2,15 @@
 
 import { serverFetch } from "@/lib/api-server"
 
-export async function createMercadoPagoPreference(orderId: string, slug: string, baseUrl: string) {
+export async function createMercadoPagoPreference(orderId: string, baseUrl: string) {
     try {
-        if (!orderId || !slug) {
-            return { success: false, error: "orderId y slug son requeridos" }
+        if (!orderId) {
+            return { success: false, error: "orderId is required" }
         }
-
-        console.log(`[MP Server Action] Iniciando checkout para orden ${orderId} (Tenant: ${slug})`);
 
         // 1. Obtener la orden del backend para validar items y precios
         const order = await serverFetch<any>(`/orders/${orderId}`, {
-            headers: { 'x-tenant-id': slug }
+            headers: {}
         });
 
         if (!order) {
@@ -32,14 +30,14 @@ export async function createMercadoPagoPreference(orderId: string, slug: string,
                 identification: order.identification,
             },
             existingOrderId: orderId,
-            frontUrl: `${baseUrl}/menu/${slug}` // Redirección tras pago
+            frontUrl: `${baseUrl}/menu` // Redirección tras pago generic menu url or whatever
         };
 
         // 3. Delegar al endpoint central de la API en NestJS
         const result = await serverFetch<any>(`/payments/product/checkout`, {
             method: 'POST',
             body: JSON.stringify(checkoutPayload),
-            headers: { 'x-tenant-id': slug }
+            headers: {}
         });
 
         if (result && (result.initPoint || result.sandboxInitPoint)) {

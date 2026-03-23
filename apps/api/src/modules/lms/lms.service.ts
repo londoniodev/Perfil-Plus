@@ -20,7 +20,7 @@ import {
 export class LmsService {
   private readonly logger = new Logger(LmsService.name);
 
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   // ==================== THEMES ====================
 
@@ -64,26 +64,26 @@ export class LmsService {
         evaluation: { select: { id: true } },
         ...(includeCourses
           ? {
-            courses: {
-              where: { published: true },
-              orderBy: { order: 'asc' as const },
-              include: { 
-                _count: { select: { lessons: true } },
-                lessons: {
-                  where: { published: true },
-                  orderBy: { order: 'asc' },
-                  select: {
-                    id: true,
-                    title: true,
-                    duration: true,
-                    slug: true,
-                    order: true,
-                    videoUrl: true // Exponer videoUrl para que cargue el trailer (se sugiere validar si es gratis a futuro)
-                  }
-                }
+              courses: {
+                where: { published: true },
+                orderBy: { order: 'asc' as const },
+                include: {
+                  _count: { select: { lessons: true } },
+                  lessons: {
+                    where: { published: true },
+                    orderBy: { order: 'asc' },
+                    select: {
+                      id: true,
+                      title: true,
+                      duration: true,
+                      slug: true,
+                      order: true,
+                      videoUrl: true, // Exponer videoUrl para que cargue el trailer (se sugiere validar si es gratis a futuro)
+                    },
+                  },
+                },
               },
-            },
-          }
+            }
           : {}),
       },
     });
@@ -192,7 +192,7 @@ export class LmsService {
 
     // Si hay usuario, obtener su progreso
     if (userId) {
-      const progress = await this.prisma.userProgress.findMany({
+      const progress = await this.prisma.secure.userProgress.findMany({
         where: {
           userId,
           lesson: { courseId: course.id },
@@ -236,14 +236,14 @@ export class LmsService {
 
   async createLesson(dto: CreateLessonDto, tenantId: string) {
     const slug = this.generateSlug(dto.title);
-    return this.prisma.lesson.create({
+    return this.prisma.secure.lesson.create({
       data: { ...dto, slug },
       include: { course: { select: { id: true, title: true } } },
     });
   }
 
   async updateLesson(id: string, dto: UpdateLessonDto) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.prisma.secure.lesson.findUnique({
       where: { id },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
@@ -251,7 +251,7 @@ export class LmsService {
     const data: any = { ...dto };
     if (dto.title) data.slug = this.generateSlug(dto.title);
 
-    return this.prisma.lesson.update({
+    return this.prisma.secure.lesson.update({
       where: { id },
       data,
       include: { course: { select: { id: true, title: true } } },
@@ -259,12 +259,12 @@ export class LmsService {
   }
 
   async deleteLesson(id: string) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.prisma.secure.lesson.findUnique({
       where: { id },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
 
-    await this.prisma.lesson.delete({ where: { id } });
+    await this.prisma.secure.lesson.delete({ where: { id } });
     return { message: 'Lección eliminada correctamente' };
   }
 
@@ -276,7 +276,7 @@ export class LmsService {
   ) {
     // En lugar de buscar el curso primero, buscamos la lección directamente con el curso incluido
     // Esto optimiza la consulta y evita problemas si el lessonSlug es único
-    const lesson = await this.prisma.lesson.findFirst({
+    const lesson = await this.prisma.secure.lesson.findFirst({
       where: {
         slug: lessonSlug,
         course: { slug: courseSlug },
@@ -306,6 +306,7 @@ export class LmsService {
     if (!lesson.course.isFree && !hasSubscription && userId) {
       // Verificar compra directamente en Postgres — sin cargar órdenes a memoria
       try {
+        /* eslint-disable no-restricted-syntax */
         const result = await this.prisma.$queryRaw<[{ count: number }]>`
                   SELECT COUNT(*)::int AS "count"
                   FROM "Order" o
@@ -317,6 +318,7 @@ export class LmsService {
                     AND p."specs"::jsonb->>'courseId' = ${lesson.course.id}
                   LIMIT 1
               `;
+        /* eslint-enable no-restricted-syntax */
         hasPurchasedCourse = (result[0]?.count ?? 0) > 0;
       } catch (e) {
         hasPurchasedCourse = false;
@@ -331,7 +333,7 @@ export class LmsService {
 
     // Obtener lecciones anterior/siguiente usando el orden y el ID del curso
     const [prev, next] = await Promise.all([
-      this.prisma.lesson.findFirst({
+      this.prisma.secure.lesson.findFirst({
         where: {
           courseId: lesson.course.id,
           order: { lt: lesson.order },
@@ -340,7 +342,7 @@ export class LmsService {
         orderBy: { order: 'desc' },
         select: { slug: true, title: true },
       }),
-      this.prisma.lesson.findFirst({
+      this.prisma.secure.lesson.findFirst({
         where: {
           courseId: lesson.course.id,
           order: { gt: lesson.order },
@@ -354,7 +356,7 @@ export class LmsService {
     // Obtener progreso del usuario si existe
     let userProgress: { completed: boolean; watchedTime: number } | null = null;
     if (userId) {
-      const progress = await this.prisma.userProgress.findUnique({
+      const progress = await this.prisma.secure.userProgress.findUnique({
         where: { userId_lessonId: { userId, lessonId: lesson.id } },
       });
       if (progress) {
@@ -375,7 +377,7 @@ export class LmsService {
   // ============ ATTACHMENTS ============
 
   async addLessonAttachment(lessonId: string, dto: CreateLessonAttachmentDto) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.prisma.secure.lesson.findUnique({
       where: { id: lessonId },
     });
 
@@ -383,7 +385,7 @@ export class LmsService {
       throw new NotFoundException('Lección no encontrada');
     }
 
-    return this.prisma.lessonAttachment.create({
+    return this.prisma.secure.lessonAttachment.create({
       data: {
         lessonId,
         ...dto,
@@ -393,7 +395,7 @@ export class LmsService {
 
   async removeLessonAttachment(attachmentId: string) {
     // Verificar si existe
-    const attachment = await this.prisma.lessonAttachment.findUnique({
+    const attachment = await this.prisma.secure.lessonAttachment.findUnique({
       where: { id: attachmentId },
     });
 
@@ -401,13 +403,13 @@ export class LmsService {
       throw new NotFoundException('Adjunto no encontrado');
     }
 
-    return this.prisma.lessonAttachment.delete({
+    return this.prisma.secure.lessonAttachment.delete({
       where: { id: attachmentId },
     });
   }
 
   async findLessonById(id: string) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.prisma.secure.lesson.findUnique({
       where: { id },
       include: {
         attachments: true,
@@ -425,7 +427,7 @@ export class LmsService {
     lessonId: string,
     dto: UpdateProgressDto,
   ) {
-    const lesson = await this.prisma.lesson.findUnique({
+    const lesson = await this.prisma.secure.lesson.findUnique({
       where: { id: lessonId },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
@@ -439,7 +441,7 @@ export class LmsService {
       data.completedAt = new Date();
     }
 
-    return this.prisma.userProgress.upsert({
+    return this.prisma.secure.userProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       create: {
         userId,
@@ -452,7 +454,7 @@ export class LmsService {
   }
 
   async getUserProgress(userId: string) {
-    const progress = await this.prisma.userProgress.findMany({
+    const progress = await this.prisma.secure.userProgress.findMany({
       where: { userId },
       include: {
         lesson: {
@@ -484,7 +486,7 @@ export class LmsService {
 
     // Batch: obtener conteos de lecciones por curso en una sola query
     const courseIds = [...new Set(progress.map((p) => p.lesson.course.id))];
-    const lessonCounts = await this.prisma.lesson.groupBy({
+    const lessonCounts = await this.prisma.secure.lesson.groupBy({
       by: ['courseId'],
       where: { courseId: { in: courseIds }, published: true },
       _count: { id: true },
@@ -555,7 +557,9 @@ export class LmsService {
             specsStr = JSON.parse(specsStr);
           }
         } catch (e) {
-          this.logger.warn(`Failed to parse specs as JSON for LmsService order items: ${e.message}`);
+          this.logger.warn(
+            `Failed to parse specs as JSON for LmsService order items: ${e.message}`,
+          );
         }
 
         if (specsStr && specsStr.courseId) {

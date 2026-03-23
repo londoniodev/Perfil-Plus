@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { API_BASE, TENANT_ID, getApiHeaders } from "../lib/config"
+import { API_BASE, getApiHeaders } from "../lib/config"
 import { headers } from "next/headers"
 
 
@@ -39,13 +39,11 @@ const createPOSOrderSchema = z.object({
 
 export async function getPOSProducts() {
     try {
-        const resolvedHeaders = await headers();
-        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
-
+        // Tenant resolution is handled by the backend
         const res = await fetch(
             `${API_BASE}/store/products?type=RESTAURANT&allVariants=true`,
             {
-                headers: { "x-tenant-id": dynamicTenantId },
+                headers: {},
                 cache: "no-store",
             }
         )
@@ -102,22 +100,17 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
             })) || []
         }))
 
-        const resolvedHeaders = await headers();
-        const dynamicTenantId = resolvedHeaders.get("x-tenant-id") || TENANT_ID;
-
-        // Call API to create order (Ensures Tenant Context & Logic)
+        // Tenant resolution is handled by the backend
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "x-tenant-id": dynamicTenantId
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 orderType: "DINE_IN",
                 tableNumber: tableId,
                 items: orderItems,
                 status: "APPROVED" // Autosend to kitchen queue
-                // TODO: Pass waitstaff/user info if API supports it
             })
         })
 

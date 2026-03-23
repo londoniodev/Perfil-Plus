@@ -27,16 +27,17 @@ export class CorsCacheService implements OnModuleInit {
    */
   private async loadOriginsFromDb(): Promise<void> {
     try {
+      // SECURITY EXCEPTION: Global infrastructure query for CORS. Does not leak tenant data.
+      /* eslint-disable no-restricted-syntax */
       const tenants = await this.prisma.tenant.findMany({
         select: { slug: true, domain: true },
       });
+      /* eslint-enable no-restricted-syntax */
 
       for (const tenant of tenants) {
         // Subdomain origin: https://{slug}.{baseDomain}
         if (tenant.slug) {
-          this.allowedOrigins.add(
-            `https://${tenant.slug}.${this.baseDomain}`,
-          );
+          this.allowedOrigins.add(`https://${tenant.slug}.${this.baseDomain}`);
         }
 
         // Custom domain origin: https://{domain}

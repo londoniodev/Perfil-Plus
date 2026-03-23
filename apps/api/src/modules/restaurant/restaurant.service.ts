@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class RestaurantService {
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly cls: ClsService,
   ) {}
 
   private async getTenantIdBySlug(slug: string): Promise<string> {
@@ -21,29 +23,41 @@ export class RestaurantService {
     return tenant.id;
   }
 
-  async getPublicMenu(slugOrId: string) {
-    // 0. Check Cache
-    const cacheKey = `public_menu:${slugOrId}`;
+  async getPublicMenu(slugOrId?: string) {
+    const contextTenantId = this.cls.get('tenantId');
 
-    // 1. Find Tenant (Polymorphic: ID or Slug)
+    // 0. Check Cache
+    const cacheKey = `public_menu:${slugOrId || contextTenantId}`;
+
+    // 1. Find Tenant (Polymorphic: ID or Slug or Context)
     let tenant: any = null;
 
-    // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
-    try {
+    if (!slugOrId) {
+      if (!contextTenantId) {
+        throw new NotFoundException('Restaurant context not found');
+      }
       tenant = await this.prisma.secure.tenant.findUnique({
-        where: { id: slugOrId },
+        where: { id: contextTenantId },
         include: { brandSettings: true },
       });
-    } catch (e) {
-      // Probably not a valid UUID, ignore and try slug
-    }
+    } else {
+      // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
+      try {
+        tenant = await this.prisma.secure.tenant.findUnique({
+          where: { id: slugOrId },
+          include: { brandSettings: true },
+        });
+      } catch (e) {
+        // Probably not a valid UUID, ignore and try slug
+      }
 
-    // Fallback to Slug lookup
-    if (!tenant) {
-      tenant = await this.prisma.secure.tenant.findUnique({
-        where: { slug: slugOrId },
-        include: { brandSettings: true },
-      });
+      // Fallback to Slug lookup
+      if (!tenant) {
+        tenant = await this.prisma.secure.tenant.findUnique({
+          where: { slug: slugOrId },
+          include: { brandSettings: true },
+        });
+      }
     }
 
     if (!tenant) {
@@ -170,7 +184,8 @@ export class RestaurantService {
           tenantConfig.menu?.slogan ||
           tenant.design?.slogan ||
           'Bienvenido a nuestro menú digital',
-        coverVideo: tenant.brandSettings?.authBgUrl || tenant.design?.coverVideo || null,
+        coverVideo:
+          tenant.brandSettings?.authBgUrl || tenant.design?.coverVideo || null,
         social: {
           instagram: contact.instagram
             ? `https://instagram.com/${contact.instagram.replace('@', '')}`
@@ -205,10 +220,10 @@ export class RestaurantService {
     return response;
   }
 
-  async toggleLike(slug: string, productId: string, userPhone: string) {
+  async toggleLike(slug: string | undefined, productId: string, userPhone: string) {
     // slug is used for public API identification but we don't need tenantId here
     // since productLike is scoped by productId which already belongs to a tenant
-    const existingLike = await this.prisma.productLike.findUnique({
+    const existingLike = await this.prisma.secure.productLike.findUnique({
       where: {
         productId_userPhone: {
           productId,
@@ -218,12 +233,12 @@ export class RestaurantService {
     });
 
     if (existingLike) {
-      await this.prisma.productLike.delete({
+      await this.prisma.secure.productLike.delete({
         where: { id: existingLike.id },
       });
       return { liked: false };
     } else {
-      await this.prisma.productLike.create({
+      await this.prisma.secure.productLike.create({
         data: {
           productId,
           userPhone,
@@ -234,13 +249,13 @@ export class RestaurantService {
   }
 
   async addComment(
-    slug: string,
+    slug: string | undefined,
     productId: string,
     userPhone: string,
     content: string,
     userName?: string,
   ) {
-    const comment = await this.prisma.productComment.create({
+    const comment = await this.prisma.secure.productComment.create({
       data: {
         productId,
         userPhone,
@@ -258,11 +273,16 @@ export class RestaurantService {
     };
   }
 
-  async checkLikeStatus(slug: string, productId: string, userPhone: string) {
-    const count = await this.prisma.productLike.count({
+  async checkLikeStatus(
+    slug: string | undefined,
+    productId: string,
+    userPhone: string,
+  ) {
+    const count = await this.prisma.secure.productLike.count({
       where: {
         productId,
         userPhone,
+        // tenantId is handled by secure prisma
       },
     });
 

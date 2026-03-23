@@ -21,7 +21,6 @@ interface CreateOrderModalProps {
     onClose: () => void
     tables: Table[]
     onOrderCreated: () => void
-    tenantId: string
 }
 
 interface LocalCartItem {
@@ -331,7 +330,7 @@ function CartPanel({
 }
 
 // ─── Main Component ───
-export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tenantId }: CreateOrderModalProps) {
+export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: CreateOrderModalProps) {
     const [step, setStep] = useState<ModalStep>("tables")
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [cart, setCart] = useState<LocalCartItem[]>([])
@@ -344,7 +343,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
     const [modifierSelections, setModifierSelections] = useState<Record<string, Set<string>>>({})
     const [modifierQuantity, setModifierQuantity] = useState(1)
 
-    const { categories, products, isLoading } = useMenu(tenantId)
+    const { categories, products, isLoading } = useMenu()
     const { createOrder, isSubmitting } = useOrder()
 
     // Filter products
@@ -513,7 +512,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
                 })),
             }))
 
-            const result = await createOrder(tenantId, {
+            const result = await createOrder({
                 cart: sdkCart,
                 total: cartTotal,
                 status: "APPROVED", // Entra a cocina directo pero en espera de empezar

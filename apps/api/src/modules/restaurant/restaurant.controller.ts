@@ -9,10 +9,24 @@ export class RestaurantController {
 
   @Public()
   @Throttle({ public: { limit: 300, ttl: 60000 } })
+  @Get('menu')
+  async getGenericMenu() {
+    return this.restaurantService.getPublicMenu();
+  }
+
   @Public()
   @Get(':slug/menu')
   async getMenu(@Param('slug') slug: string) {
     return this.restaurantService.getPublicMenu(slug);
+  }
+
+  @Public()
+  @Post('products/:productId/like')
+  async toggleLikeGeneric(
+    @Param('productId') productId: string,
+    @Body('userPhone') userPhone: string,
+  ) {
+    return this.restaurantService.toggleLike(undefined, productId, userPhone);
   }
 
   @Public()
@@ -23,6 +37,21 @@ export class RestaurantController {
     @Body('userPhone') userPhone: string,
   ) {
     return this.restaurantService.toggleLike(slug, productId, userPhone);
+  }
+
+  @Public()
+  @Post('products/:productId/comment')
+  async addCommentGeneric(
+    @Param('productId') productId: string,
+    @Body() body: { userPhone: string; content: string; userName?: string },
+  ) {
+    return this.restaurantService.addComment(
+      undefined,
+      productId,
+      body.userPhone,
+      body.content,
+      body.userName,
+    );
   }
 
   @Public()
@@ -38,6 +67,19 @@ export class RestaurantController {
       body.userPhone,
       body.content,
       body.userName,
+    );
+  }
+
+  @Public()
+  @Get('products/:productId/like-status/:userPhone')
+  async checkLikeStatusGeneric(
+    @Param('productId') productId: string,
+    @Param('userPhone') userPhone: string,
+  ) {
+    return this.restaurantService.checkLikeStatus(
+      undefined,
+      productId,
+      userPhone,
     );
   }
 

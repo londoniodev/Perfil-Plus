@@ -54,15 +54,13 @@ const OrderTrackingModal = dynamic(() => import("./OrderTrackingModal").then(mod
 // Main Menu Client Component
 // ─────────────────────────────────────────────
 export default function MenuClient({
-    slug,
     table,
     layoutType = 'INSTAGRAM'
 }: {
-    slug: string,
     table?: string,
     layoutType?: 'CLASSIC' | 'INSTAGRAM' | 'MINIMAL'
 }) {
-    const { categories, products, restaurant, isLoading, isError } = useMenu(slug)
+    const { categories, products, restaurant, isLoading, isError } = useMenu()
 
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
     const { createOrder, isSubmitting } = useOrder()
@@ -165,7 +163,7 @@ export default function MenuClient({
             paymentMethod: data.paymentMethod
         }
 
-        const result = await createOrder(slug, orderData)
+        const result = await createOrder(orderData)
 
         if (result.success) {
             setIsNamePromptOpen(false)
@@ -178,8 +176,7 @@ export default function MenuClient({
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            orderId: result.orderId,
-                            slug: slug
+                            orderId: result.orderId
                         })
                     })
                     const data = await res.json()
@@ -536,7 +533,6 @@ export default function MenuClient({
             <AnimatePresence>
                 {selectedProduct && (
                     <ProductModal
-                        slug={slug}
                         product={selectedProduct}
                         suggestedProducts={products.filter(p => p.id !== selectedProduct.id).slice(0, 5)}
                         onProductSelect={setSelectedProduct}
@@ -636,7 +632,6 @@ export default function MenuClient({
                 onClose={() => setTrackingOrder(prev => ({ ...prev, isOpen: false }))}
                 orderId={trackingOrder.orderId}
                 orderNumber={trackingOrder.orderNumber}
-                slug={slug}
             />
         </div>
     )

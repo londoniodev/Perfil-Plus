@@ -9,7 +9,12 @@ import { CreateEmployeeDto, UpdateEmployeeDto } from './dto';
 import { Role } from '@alvarosky/database';
 import * as bcrypt from 'bcryptjs';
 
-const STAFF_ROLES: Role[] = [Role.WAITER, Role.KITCHEN, Role.CASHIER, Role.DRIVER];
+const STAFF_ROLES: Role[] = [
+  Role.WAITER,
+  Role.KITCHEN,
+  Role.CASHIER,
+  Role.DRIVER,
+];
 
 @Injectable()
 export class EmployeesService {

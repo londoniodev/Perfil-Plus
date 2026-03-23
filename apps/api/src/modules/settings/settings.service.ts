@@ -25,16 +25,21 @@ export class SettingsService {
     }, {});
 
     // Obtener StoreSettings para incluir campos específicos
-    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+    const storeSettings = await (
+      this.prisma.secure as any
+    ).storeSettings.findFirst({
       where: { tenantId },
     });
 
     if (storeSettings) {
       return {
         ...collapsed,
-        deliveryFee: storeSettings.deliveryFee !== null ? Number(storeSettings.deliveryFee) : 0,
+        deliveryFee:
+          storeSettings.deliveryFee !== null
+            ? Number(storeSettings.deliveryFee)
+            : 0,
         waPhoneNumberId: storeSettings.waPhoneNumberId,
-        // No devolvemos waAccessToken por seguridad si es público, 
+        // No devolvemos waAccessToken por seguridad si es público,
         // pero este endpoint es para el ADMIN (via controller guards)
       };
     }
@@ -73,7 +78,7 @@ export class SettingsService {
     if (operations.length > 0) {
       // Ejecutar upserts en lote para asegurar atomocidad o al menos rapidez
       await this.prisma.$transaction(operations);
-      
+
       // Actualizar StoreSettings si hay campos relevantes
       if (updateDto.deliveryFee !== undefined) {
         await (this.prisma.secure as any).storeSettings.updateMany({

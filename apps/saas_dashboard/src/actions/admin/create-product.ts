@@ -3,7 +3,7 @@
 import { getSessionUser } from "@/lib/auth-server"
 import { serverFetch } from "@/lib/api-server"
 import { redirect } from "next/navigation"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 import { revalidateStorefront } from "@/lib/revalidate-storefront"
 
@@ -74,9 +74,9 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
             body: JSON.stringify(payload)
         })
 
-        // 6. Revalidar rutas
-        revalidatePath("/tienda/productos")
-        revalidatePath("/tienda")
+        // 6. Revalidar por Tag para aislar por tenant
+        revalidateTag(`tenant-${user.tenantId}`, "default")
+        revalidateTag(`tenant-${user.tenantId}-products`, "default")
 
         // Disparar revalidación bajo demanda en la tienda pública
         await revalidateStorefront()

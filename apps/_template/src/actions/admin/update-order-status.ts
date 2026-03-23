@@ -3,7 +3,8 @@
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
+import { headers } from "next/headers"
 import { z } from "zod"
 
 // Schema de validación
@@ -59,8 +60,12 @@ export async function updateOrderStatus(
         })
 
         // 4. Revalidar rutas
-        revalidatePath("/admin/orders")
-        revalidatePath("/dashboard/compras")
+        const headersList = await headers();
+        const tenantId = headersList.get("x-tenant-id");
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default")
+            revalidateTag(`tenant-${tenantId}`, "default")
+        }
 
         return { success: true }
 

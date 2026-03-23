@@ -2,7 +2,7 @@
 
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 
 // --- TYPES ---
@@ -72,8 +72,7 @@ export async function upsertTable(data: z.infer<typeof tableSchema>) {
             })
         }
 
-        revalidatePath("/restaurante/mesas")
-        revalidatePath("/restaurante/pos")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         console.error("Upsert Table Error:", error)
@@ -89,8 +88,7 @@ export async function deleteTable(id: string) {
 
         await serverFetch(`/tables/${id}`, { method: 'DELETE' })
 
-        revalidatePath("/restaurante/mesas")
-        revalidatePath("/restaurante/pos")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error) {
         return { success: false, error: "Failed to delete table" }

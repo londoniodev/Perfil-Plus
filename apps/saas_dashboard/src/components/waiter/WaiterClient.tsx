@@ -309,6 +309,7 @@ function WaiterClientContent({ initialTables = EMPTY_TABLES }: { initialTables?:
                 onClose={() => setIsCreateOpen(false)}
                 tables={initialTables}
                 onOrderCreated={fetchOrders}
+                tenantId={user?.tenantId as string}
             />
         </AdminPageWrapper>
     )

@@ -17,8 +17,8 @@ export interface WaiterOrder extends Order {
 export function useWaiterOrders(tenantId: string) {
     // Poll every 5 seconds for new orders
     const { data, error, isLoading } = useSWR<WaiterOrder[]>(
-        tenantId ? `/api/${tenantId}/orders` : null,
-        fetcher,
+        tenantId ? [`/api/${tenantId}/orders`, tenantId] : null,
+        ([url]) => fetch(url).then(res => res.json()),
         { refreshInterval: 5000 }
     )
 

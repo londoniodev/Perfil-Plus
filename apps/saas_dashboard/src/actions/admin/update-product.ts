@@ -2,7 +2,7 @@
 
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 import { revalidateStorefront } from "@/lib/revalidate-storefront"
 
@@ -56,8 +56,8 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
             throw new Error("El servidor no retornó el producto modificado")
         }
 
-        revalidatePath("/tienda/productos")
-        revalidatePath("/restaurante/menu")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
+        revalidateTag(`tenant-${user.tenantId}-products`, "default")
 
         // Disparar revalidación bajo demanda en la tienda pública
         await revalidateStorefront()

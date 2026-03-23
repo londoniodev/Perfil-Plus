@@ -1,7 +1,8 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { serverFetch } from "@/lib/api-server"
+import { getSessionUser } from "@/lib/auth-server"
 
 export async function getAvailableDrivers() {
     try {
@@ -30,9 +31,10 @@ export async function assignDriverToOrder(orderId: string, driverId: string) {
             body: JSON.stringify({ driverId })
         });
 
-        revalidatePath('/restaurante/despachos');
-        revalidatePath('/restaurante/despachos/domiciliarios');
-        revalidatePath('/restaurante/comandas');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default");
+        }
 
         return { success: true };
     } catch (error: any) {
@@ -53,8 +55,10 @@ export async function updateDriver(driverId: string, data: {
             body: JSON.stringify(data),
         });
 
-        revalidatePath('/restaurante/despachos');
-        revalidatePath('/restaurante/despachos/domiciliarios');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default");
+        }
 
         return { success: true };
     } catch (error: any) {
@@ -69,7 +73,10 @@ export async function deleteDriver(driverId: string) {
             method: 'DELETE',
         });
 
-        revalidatePath('/restaurante/despachos/domiciliarios');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default");
+        }
 
         return { success: true };
     } catch (error: any) {
@@ -89,7 +96,10 @@ export async function createDriver(data: {
             body: JSON.stringify(data),
         });
 
-        revalidatePath('/restaurante/despachos/domiciliarios');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default");
+        }
 
         return { success: true };
     } catch (error: any) {

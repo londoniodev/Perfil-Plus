@@ -2,7 +2,8 @@
 
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
+import { headers } from "next/headers"
 
 export async function toggleProductAvailability(productId: string, isAvailable: boolean) {
     try {
@@ -17,8 +18,12 @@ export async function toggleProductAvailability(productId: string, isAvailable: 
             body: JSON.stringify({ isAvailable })
         })
 
-        revalidatePath("/admin/products")
-        revalidatePath("/admin/restaurant/menu")
+        const headersList = await headers();
+        const tenantId = headersList.get("x-tenant-id");
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default")
+            revalidateTag(`tenant-${tenantId}`, "default")
+        }
 
         return { success: true }
     } catch (error: any) {

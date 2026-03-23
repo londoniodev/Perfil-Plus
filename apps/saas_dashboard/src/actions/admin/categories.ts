@@ -2,7 +2,7 @@
 
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 
 export async function getCategories() {
@@ -37,7 +37,7 @@ export async function createCategory(name: string) {
                 body: JSON.stringify({ name: validated.name })
             })
 
-            revalidatePath("/tienda/productos")
+            revalidateTag(`tenant-${user.tenantId}`, "default")
             return { success: true, category }
         } catch (e: any) {
             console.error("Error creating category db:", e)
@@ -69,7 +69,7 @@ export async function updateCategory(id: string, name: string) {
             body: JSON.stringify({ name: validated.name })
         })
 
-        revalidatePath("/tienda/productos")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true, category }
     } catch (error: any) {
         console.error("Error updating category:", error)
@@ -88,7 +88,7 @@ export async function deleteCategory(id: string) {
             method: 'DELETE'
         })
 
-        revalidatePath("/tienda/productos")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         console.error("Error deleting category:", error)

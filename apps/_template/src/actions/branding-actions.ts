@@ -1,7 +1,8 @@
 "use server";
 
 import { serverFetch } from "@/lib/api-server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { headers } from "next/headers";
 
 export async function updateTenantBranding(data: any) {
     try {
@@ -14,9 +15,13 @@ export async function updateTenantBranding(data: any) {
             body: JSON.stringify({ design: data })
         });
 
-        revalidatePath("/", "layout"); // Revalidate everything to apply new theme everywhere
-        // @ts-ignore - Bypass Next.js 16 type restrictiveness
-        revalidateTag("tenant-branding", "max" as any); // Invalidar la caché the 5 mins
+        const headersList = await headers();
+        const tenantId = headersList.get("x-tenant-id");
+
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default");
+            revalidateTag(`tenant-${tenantId}-branding`, "default");
+        }
 
         return { success: true };
     } catch (e) {

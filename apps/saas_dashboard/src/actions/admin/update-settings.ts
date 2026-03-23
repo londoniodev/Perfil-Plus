@@ -3,7 +3,7 @@
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 import { revalidateStorefront } from "@/lib/revalidate-storefront"
 import { 
@@ -32,7 +32,7 @@ async function validateAdmin() {
  */
 export async function updateGeneralSettings(data: GeneralSettingsValues): Promise<UpdateSettingsResult> {
     try {
-        await validateAdmin()
+        const user = await validateAdmin()
         const validated = generalSettingsSchema.parse(data)
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
@@ -58,7 +58,7 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
-        revalidatePath("/admin/settings")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración general" }
@@ -70,7 +70,7 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
  */
 export async function updateFinanceSettings(data: FinanceSettingsValues): Promise<UpdateSettingsResult> {
     try {
-        await validateAdmin()
+        const user = await validateAdmin()
         const validated = financeSettingsSchema.parse(data)
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
@@ -89,7 +89,7 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
-        revalidatePath("/admin/settings")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración financiera" }
@@ -101,7 +101,7 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
  */
 export async function updateEmailSettings(data: EmailSettingsValues): Promise<UpdateSettingsResult> {
     try {
-        await validateAdmin()
+        const user = await validateAdmin()
         const validated = emailSettingsSchema.parse(data)
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
@@ -121,7 +121,7 @@ export async function updateEmailSettings(data: EmailSettingsValues): Promise<Up
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
-        revalidatePath("/admin/settings")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración de email" }
@@ -133,7 +133,7 @@ export async function updateEmailSettings(data: EmailSettingsValues): Promise<Up
  */
 export async function updateApiSettings(data: ApiSettingsValues): Promise<UpdateSettingsResult> {
     try {
-        await validateAdmin()
+        const user = await validateAdmin()
         const validated = apiSettingsSchema.parse(data)
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
@@ -143,7 +143,7 @@ export async function updateApiSettings(data: ApiSettingsValues): Promise<Update
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
-        revalidatePath("/admin/settings")
+        revalidateTag(`tenant-${user.tenantId}`, "default")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración de APIs" }

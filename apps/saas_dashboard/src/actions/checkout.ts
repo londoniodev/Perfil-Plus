@@ -3,7 +3,7 @@
 import { getSessionUser } from "@/lib/auth-server"
 import { serverFetch } from "@/lib/api-server"
 import { MercadoPagoConfig, Preference } from "mercadopago"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 
 // ========== SCHEMAS DE VALIDACIÓN FRONTEND ==========
@@ -139,9 +139,9 @@ export async function placeOrder(
         }).catch(e => console.error("Aviso: No se pudo enlazar mpPaymentId en BD:", e));
 
 
-        // 8. Revalidar rutas relevantes
-        revalidatePath("/tienda")
-        revalidatePath("/checkout")
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         // 9. Retornar URL de pago
         return {

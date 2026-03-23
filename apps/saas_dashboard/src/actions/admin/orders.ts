@@ -1,8 +1,9 @@
 "use server"
 
 import { OrderStatus } from "@alvarosky/database"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { serverFetch } from "@/lib/api-server"
+import { getSessionUser } from "@/lib/auth-server"
 
 export async function getOrders() {
     try {
@@ -30,10 +31,10 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderStatus)
             body: JSON.stringify({ status: newStatus })
         });
 
-        // Revalida la ruta donde se encuentra la tabla para ver cambios inmediatos
-        revalidatePath('/orders');
-        revalidatePath('/admin/orders'); // Previendo ambos scopes
-        revalidatePath('/restaurante/comandas');
+        const user = await getSessionUser()
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true };
     } catch (error: any) {

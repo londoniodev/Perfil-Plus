@@ -2,7 +2,8 @@
 
 import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
+import { headers } from "next/headers"
 import { z } from "zod"
 
 // Reusing schemas from create-product
@@ -71,8 +72,12 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
             throw new Error("El servidor no retornó el producto modificado")
         }
 
-        revalidatePath("/admin/products")
-        revalidatePath("/admin/restaurant/menu")
+        const headersList = await headers();
+        const tenantId = headersList.get("x-tenant-id");
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default")
+            revalidateTag(`tenant-${tenantId}`, "default")
+        }
 
         return { success: true, productId: product.id }
 

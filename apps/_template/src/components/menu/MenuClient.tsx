@@ -14,6 +14,7 @@ import {
 import { FaWhatsapp, FaInstagram, FaFacebook, FaXTwitter, FaYoutube, FaTiktok } from "react-icons/fa6"
 import { Button } from "@alvarosky/ui"
 import { useCart, useOrder, useMenu, type PublicProduct, type PublicCategory, type ProductVariant } from "@alvarosky/restaurant-sdk"
+import { useTenant } from "@/app/providers"
 import Image from "next/image"
 import dynamic from "next/dynamic"
 import { formatCurrency } from "@/lib/utils"
@@ -60,7 +61,8 @@ export default function MenuClient({
     table?: string,
     layoutType?: 'CLASSIC' | 'INSTAGRAM' | 'MINIMAL'
 }) {
-    const { categories, products, restaurant, isLoading, isError } = useMenu()
+    const { tenantId } = useTenant();
+    const { categories, products, restaurant, isLoading, isError } = useMenu(tenantId)
 
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
     const { createOrder, isSubmitting } = useOrder()

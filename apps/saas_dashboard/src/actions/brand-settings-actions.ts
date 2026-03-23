@@ -1,8 +1,9 @@
 "use server";
 
 import { serverFetch } from "@/lib/api-server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { revalidateStorefront } from "@/lib/revalidate-storefront";
+import { getSessionUser } from "@/lib/auth-server";
 import { BrandSettingsFormValues } from "@alvarosky/shared";
 
 /**
@@ -18,12 +19,11 @@ export async function updateBrandSettings(data: BrandSettingsFormValues) {
             body: JSON.stringify(data),
         });
 
-        // Invalidar cach\u00e9 en el storefront para que el layout recargue los estilos
-        await revalidateStorefront({ tag: "tenant-branding" });
-
-        revalidatePath("/", "layout");
-        // @ts-ignore - Bypass Next.js 16 type restrictiveness
-        revalidateTag("tenant-branding", "max" as any);
+        const user = await getSessionUser();
+        if (user) {
+            await revalidateStorefront({ tag: `tenant-${user.tenantId}-branding` });
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true };
     } catch (e: any) {

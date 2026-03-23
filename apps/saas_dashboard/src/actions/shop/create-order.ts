@@ -1,7 +1,7 @@
 "use server"
 
 import { API_BASE } from "@/lib/config"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { z } from "zod"
 import { headers } from "next/headers"
 
@@ -63,7 +63,11 @@ export async function createOrder(data: unknown, items: unknown, tableId: string
 
         const order = await res.json()
 
-        revalidatePath("/admin/orders")
+        const reqHeaders = await headers();
+        const tenantId = reqHeaders.get("x-tenant-id");
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default");
+        }
         return { success: true, orderId: order.id }
 
     } catch (error) {

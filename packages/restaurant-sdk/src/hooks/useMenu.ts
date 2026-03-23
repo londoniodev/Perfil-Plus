@@ -25,19 +25,19 @@ export interface PublicRestaurant {
 // We import PublicCategory now
 
 // Basic fetcher
-const fetcher = async (url: string) => {
+const fetcher = async ([url]: [string, string]) => {
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) throw new Error('Failed to fetch menu')
     return res.json()
 }
 
-export function useMenu() {
+export function useMenu(tenantId: string) {
     // Connect to real API running on port 3001
     // In production, this URL should be an env var
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
     const { data, error, isLoading } = useSWR(
-        `${apiUrl}/public/menu`,
+        tenantId ? [`${apiUrl}/public/menu`, tenantId] : null,
         fetcher
     )
 

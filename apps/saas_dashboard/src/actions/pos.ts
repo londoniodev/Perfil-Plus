@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
+import { getSessionUser } from "@/lib/auth-server"
 import { z } from "zod"
 import { API_BASE, getApiHeaders } from "../lib/config"
 import { headers } from "next/headers"
@@ -121,8 +122,10 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
 
         const order = await res.json()
 
-        revalidatePath("/restaurante/comandas")
-        revalidatePath("/restaurante/pos")
+        const user = await getSessionUser()
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true, orderId: order.id }
 

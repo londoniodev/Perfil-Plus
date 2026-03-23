@@ -3,7 +3,8 @@
 import { getSessionUser } from "@/lib/auth-server"
 import { serverFetch } from "@/lib/api-server"
 import { redirect } from "next/navigation"
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
+import { headers } from "next/headers"
 import { z } from "zod"
 
 // Schema de validación para variantes
@@ -114,8 +115,12 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
         })
 
         // 6. Revalidar rutas
-        revalidatePath("/admin/products")
-        revalidatePath("/tienda")
+        const headersList = await headers();
+        const tenantId = headersList.get("x-tenant-id");
+        if (tenantId) {
+            revalidateTag(`tenant-${tenantId}`, "default")
+            revalidateTag(`tenant-${tenantId}`, "default")
+        }
 
         return {
             success: true,

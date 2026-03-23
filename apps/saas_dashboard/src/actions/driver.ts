@@ -1,7 +1,8 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { serverFetch } from "@/lib/api-server"
+import { getSessionUser } from "@/lib/auth-server"
 
 export async function getMyActiveOrders() {
     try {
@@ -30,7 +31,10 @@ export async function updateDriverStatus(status: string) {
             body: JSON.stringify({ status }),
         });
 
-        revalidatePath('/driver/pedidos');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true };
     } catch (error: any) {
@@ -46,9 +50,10 @@ export async function markOrderAsDelivered(orderId: string) {
             body: JSON.stringify({ status: 'DELIVERED' })
         });
 
-        revalidatePath('/driver/pedidos');
-        revalidatePath('/restaurante/despachos');
-        revalidatePath('/restaurante/comandas');
+        const user = await getSessionUser();
+        if (user) {
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true };
     } catch (error: any) {

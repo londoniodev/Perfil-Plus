@@ -31,7 +31,7 @@ export async function getTenantDesign(tenantId: string) {
         'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key',
       },
       next: {
-        tags: ['tenant-branding', `tenant-branding-${tenantId}`, `tenant-brand-${tenantId}`, `tenant-${tenantId}-branding`],
+        tags: [`tenant-branding-${tenantId}`, `tenant-brand-${tenantId}`, `tenant-${tenantId}-branding`],
       }
     });
 

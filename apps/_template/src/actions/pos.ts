@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidateTag } from "next/cache"
 import { headers } from "next/headers"
 import { z } from "zod"
 import { API_BASE } from "../lib/config"
@@ -128,8 +128,7 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
 
         const order = await res.json()
 
-        revalidatePath("/admin/restaurant/orders")
-        revalidatePath("/admin/restaurant/pos")
+        revalidateTag(`tenant-${tenantId}`, "default")
 
         return { success: true, orderId: order.id }
 

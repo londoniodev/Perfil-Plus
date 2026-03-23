@@ -1,8 +1,9 @@
 "use server";
 
 import { serverFetch } from "@/lib/api-server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { revalidateStorefront } from "@/lib/revalidate-storefront";
+import { getSessionUser } from "@/lib/auth-server";
 
 export async function updateTenantBranding(data: any) {
     try {
@@ -15,12 +16,11 @@ export async function updateTenantBranding(data: any) {
             body: JSON.stringify({ design: data })
         });
 
-        // Revalidar el storefront para aplicar el cambio en el Layout
-        await revalidateStorefront({ tag: "tenant-branding" });
-
-        revalidatePath("/", "layout"); // Revalidate everything to apply new theme everywhere
-        // @ts-ignore - Bypass Next.js 16 type restrictiveness
-        revalidateTag("tenant-branding", "max" as any); // Invalidar la caché the 5 mins
+        const user = await getSessionUser();
+        if (user) {
+            await revalidateStorefront({ tag: `tenant-${user.tenantId}-branding` });
+            revalidateTag(`tenant-${user.tenantId}`, "default")
+        }
 
         return { success: true };
     } catch (e) {

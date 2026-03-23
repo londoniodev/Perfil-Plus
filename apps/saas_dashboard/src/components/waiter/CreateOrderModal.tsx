@@ -21,6 +21,7 @@ interface CreateOrderModalProps {
     onClose: () => void
     tables: Table[]
     onOrderCreated: () => void
+    tenantId: string
 }
 
 interface LocalCartItem {
@@ -330,7 +331,7 @@ function CartPanel({
 }
 
 // ─── Main Component ───
-export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: CreateOrderModalProps) {
+export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tenantId }: CreateOrderModalProps) {
     const [step, setStep] = useState<ModalStep>("tables")
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [cart, setCart] = useState<LocalCartItem[]>([])
@@ -343,7 +344,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
     const [modifierSelections, setModifierSelections] = useState<Record<string, Set<string>>>({})
     const [modifierQuantity, setModifierQuantity] = useState(1)
 
-    const { categories, products, isLoading } = useMenu()
+    const { categories, products, isLoading } = useMenu(tenantId)
     const { createOrder, isSubmitting } = useOrder()
 
     // Filter products

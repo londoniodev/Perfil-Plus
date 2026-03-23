@@ -61,7 +61,7 @@ export default function MenuClient({
     slug: string,
     table?: string
 }) {
-    const { categories, products, restaurant, isLoading, isError } = useMenu()
+    const { categories, products, restaurant, isLoading, isError } = useMenu(slug)
 
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
     const { createOrder, isSubmitting } = useOrder()

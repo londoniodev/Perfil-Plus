@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getTenantId } from "@/lib/config-server";
 import { TenantMarketingData } from "@/types/marketing";
+import { getBucketName } from "@alvarosky/shared";
 import { resolveLanding } from "@/lib/storefront-resolver";
 import { Metadata } from "next";
 import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront";
@@ -40,7 +41,7 @@ function createCachedLandingFetcher(tenantSlug: string) {
 
         // 1. Fetch Body
         const bodyResponse = await s3.send(new GetObjectCommand({
-          Bucket: `${tenantSlug}-public`,
+          Bucket: getBucketName(tenantSlug, false),
           Key: bodyKey,
         }));
         if (!bodyResponse.Body) return null;
@@ -48,7 +49,7 @@ function createCachedLandingFetcher(tenantSlug: string) {
 
         // 2. Fetch Meta
         const metaResponse = await s3.send(new GetObjectCommand({
-          Bucket: `${tenantSlug}-public`,
+          Bucket: getBucketName(tenantSlug, false),
           Key: metaKey,
         }));
         if (!metaResponse.Body) return null;

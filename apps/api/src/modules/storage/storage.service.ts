@@ -13,6 +13,7 @@ import * as fs from 'fs/promises';
 import { join } from 'path';
 import sharp from 'sharp';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getStorageSlug, getBucketName as resolveBucketName } from '@alvarosky/shared';
 
 /** Perfiles de optimización de imagen por carpeta */
 interface ImageProfile {
@@ -97,7 +98,7 @@ export class StorageService {
         });
 
         if (tenantInfo?.slug) {
-          return tenantInfo.slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+          return getStorageSlug(tenantInfo.slug);
         }
       } catch (error) {
         console.error(
@@ -107,24 +108,21 @@ export class StorageService {
       }
 
       // Si falla la búsqueda del slug, usamos el CUID como fallback
-      return (user.tenantId as string).toLowerCase().replace(/[^a-z0-9-]/g, '');
+      return getStorageSlug(user.tenantId);
     }
 
     // Prioridad 2: header x-tenant-id (SOLO para rutas públicas sin autenticación)
     const headerTenantId = this.request.headers['x-tenant-id'];
     if (headerTenantId) {
-      return (headerTenantId as string)
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, '');
+      return getStorageSlug(headerTenantId as string);
     }
 
     return 'default';
   }
 
   private async getBucketName(isPrivate: boolean): Promise<string> {
-    const tenantId = await this.getTenantId();
-    const suffix = isPrivate ? 'private' : 'public';
-    return `${tenantId}-${suffix}`;
+    const tenantSlug = await this.getTenantId();
+    return resolveBucketName(tenantSlug, isPrivate);
   }
 
   private async ensureBucketExists(
@@ -166,8 +164,8 @@ export class StorageService {
    * Aprovisiona preventivamente los buckets público y privado para un nuevo Tenant.
    */
   async provisionBuckets(tenantSlug: string): Promise<void> {
-    const publicBucket = `${tenantSlug}-public`;
-    const privateBucket = `${tenantSlug}-private`;
+    const publicBucket = resolveBucketName(tenantSlug, false);
+    const privateBucket = resolveBucketName(tenantSlug, true);
 
     this.logger.log(
       `[STORAGE] Aprovisionando buckets para Tenant: ${tenantSlug}`,

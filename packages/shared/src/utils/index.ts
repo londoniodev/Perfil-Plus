@@ -1,5 +1,6 @@
 export * from "./tenant";
 export * from "./product-transformers";
+export * from "./storage";
 
 export function formatCurrency(value: number | string) {
     const amount = typeof value === 'string' ? parseFloat(value) : value;

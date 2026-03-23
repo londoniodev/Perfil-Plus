@@ -21,7 +21,10 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@alvarosky/shared": ["../../packages/shared/src/index.ts"]
+    }
   },
   "exclude": [
     "node_modules",

@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, IsEmail, Matches, IsNumber, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsEmail, Matches, IsNumber, IsEnum, NotEquals, IsArray } from 'class-validator';
+import { Role } from '@prisma/client';
 
 export class CreateTenantDto {
   @IsString()
@@ -20,6 +21,20 @@ export class CreateTenantDto {
   @IsString()
   @IsNotEmpty()
   adminPassword: string;
+
+  @IsOptional()
+  @IsString()
+  ownerName?: string;
+
+  @IsOptional()
+  @IsEnum(Role)
+  @NotEquals(Role.SUPERADMIN, { message: 'No se puede asignar el rol SUPERADMIN' })
+  ownerRole?: Role;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  features?: string[];
 
   // --- Brand Settings (Opcionales, con defaults en DB) ---
 

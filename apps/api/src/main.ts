@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { CorsCacheService } from './modules/core/cors-cache.service';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
@@ -28,6 +29,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const isProduction = configService.get('NODE_ENV') === 'production';
 
+  // Resolver CorsCacheService desde el IoC Container de NestJS
+  const corsCacheService = app.get(CorsCacheService);
+
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
@@ -41,8 +45,10 @@ async function bootstrap() {
   );
 
   // CORS configuration - Multi-tenant DYNAMIC
-  // Automatically allows any subdomain of the base domains (*.alvarolondoño.dev, *.alvarolondoño.com)
-  // Plus any additional origins from CORS_ORIGINS env var
+  // Capas de validación (en orden de prioridad):
+  //   1. CorsCacheService (RAM cache con dominios de la DB)
+  //   2. Subdomain wildcard (*.alvarolondoño.dev, *.alvarolondoño.com)
+  //   3. Lista explícita (CORS_ORIGINS env + localhost en dev)
   const corsOriginsEnv = configService.get<string>('CORS_ORIGINS', '');
   const corsOriginsList = corsOriginsEnv
     .split(',')
@@ -71,18 +77,24 @@ async function bootstrap() {
     `CORS: Explicit origins (${explicitOrigins.length}): ${explicitOrigins.join(', ') || 'none'}`,
   );
   logger.log(`CORS: Dynamic base domains: ${allowedBaseDomains.join(', ')}`);
+  logger.log(`CORS: CorsCacheService activo (validación dinámica desde DB)`);
 
   app.enableCors({
     origin: (requestOrigin, callback) => {
       // Allow server-side requests (no origin) and Postman
       if (!requestOrigin) return callback(null, true);
 
-      // Check explicit list first
+      // 1. Check RAM cache (loaded from DB on startup + updated dynamically)
+      if (corsCacheService.checkOrigin(requestOrigin)) {
+        return callback(null, true);
+      }
+
+      // 2. Check explicit list
       if (explicitOrigins.includes(requestOrigin)) {
         return callback(null, true);
       }
 
-      // Check dynamic multi-tenant subdomains
+      // 3. Check dynamic multi-tenant subdomains (wildcard fallback)
       try {
         const originUrl = new URL(requestOrigin);
         const hostname = originUrl.hostname;

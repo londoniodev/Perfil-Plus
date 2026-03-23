@@ -43,6 +43,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { TablesModule } from './modules/tables/tables.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
+import { CoreModule } from './modules/core';
 
 // Interceptors
 // Interceptors removed
@@ -93,6 +94,12 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
         REDIS_HOST: Joi.string().default('redis'),
         REDIS_PORT: Joi.number().default(6379),
         REDIS_PASSWORD: Joi.string().optional().allow(''),
+
+        // CORS & Dokploy Provisioning
+        NEXT_PUBLIC_BASE_DOMAIN: Joi.string().optional(),
+        DOKPLOY_API_KEY: Joi.string().optional().allow(''),
+        DOKPLOY_API_URL: Joi.string().optional(),
+        STOREFRONT_DOKPLOY_APP_ID: Joi.string().optional().allow(''),
       }),
     }),
     ClsModule.forRoot({
@@ -109,6 +116,9 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+
+    // Core infrastructure (CORS cache, Dokploy)
+    CoreModule,
 
     // Core modules
     PrismaModule,

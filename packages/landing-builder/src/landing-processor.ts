@@ -409,6 +409,11 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   log("📝", `Metadata written → meta.json`);
 
   // ── Step 7: Extract <body> inner HTML (THE DECAPITATION) ──
+  // First, remove <nav> and <footer> tags to rely on the app's native components
+  $("nav").remove();
+  $("footer").remove();
+  log("🗑️", "Removed <nav> and <footer> tags from HTML");
+
   // CRITICAL: Capture the body's own classes (e.g., bg-background-light, text-text-light)
   // and transfer them to a wrapper <div> so the design is preserved after decapitation.
   const bodyClasses = $("body").attr("class") || "";

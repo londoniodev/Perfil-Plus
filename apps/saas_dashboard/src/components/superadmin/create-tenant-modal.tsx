@@ -21,10 +21,26 @@ import {
     FormLabel,
     FormControl,
     FormMessage,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Checkbox,
 } from "@alvarosky/ui"
 import { PlusCircle, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { API_BASE } from "@/lib/config"
+import { Role } from "@prisma/client"
+
+const FEATURES_LIST = [
+    { id: "DASHBOARD", label: "Dashboard (Panel Admin)" },
+    { id: "RESTAURANT", label: "Restaurante" },
+    { id: "POS", label: "Punto de Venta" },
+    { id: "INVENTORY", label: "Inventarios" },
+    { id: "SHOP", label: "Tienda Online" },
+    { id: "ANALYTICS", label: "Analíticas" },
+];
 
 // ============================================================================
 // SCHEMA
@@ -36,6 +52,9 @@ const createTenantSchema = z.object({
     slug: z.string().min(3, "El slug debe tener al menos 3 caracteres")
         .regex(/^[a-z0-str0-9-]+$/, "Solo letras minúsculas, números y guiones"),
     ownerEmail: z.string().email("Ingresa un correo electrónico válido"),
+    ownerName: z.string().optional(),
+    ownerRole: z.nativeEnum(Role).optional(),
+    features: z.array(z.string()).optional(),
     adminPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 })
 
@@ -57,6 +76,9 @@ export function CreateTenantModal() {
             domain: "",
             slug: "",
             ownerEmail: "",
+            ownerName: "",
+            ownerRole: Role.ADMIN,
+            features: ["DASHBOARD"],
             adminPassword: "",
         },
     })
@@ -153,29 +175,121 @@ export function CreateTenantModal() {
                             />
                         </div>
 
-                        <FormField
-                            control={form.control}
-                            name="ownerEmail"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email del Propietario</FormLabel>
-                                    <FormControl>
-                                        <Input type="email" placeholder="admin@elbuensabor.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="ownerName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nombre del Administrador (Opcional)</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Ej: Juan Pérez" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="ownerEmail"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email del Propietario</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="admin@elbuensabor.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="ownerRole"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Rol Inicial</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Seleccione un rol" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {Object.values(Role)
+                                                    .filter((role) => role !== Role.SUPERADMIN)
+                                                    .map((role) => (
+                                                        <SelectItem key={role} value={role}>
+                                                            {role}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="adminPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Contraseña Inicial</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" placeholder="••••••••" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
                         <FormField
                             control={form.control}
-                            name="adminPassword"
-                            render={({ field }) => (
+                            name="features"
+                            render={() => (
                                 <FormItem>
-                                    <FormLabel>Contraseña Inicial</FormLabel>
-                                    <FormControl>
-                                        <Input type="password" placeholder="••••••••" {...field} />
-                                    </FormControl>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Módulos Habilitados</FormLabel>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {FEATURES_LIST.map((feature) => (
+                                            <FormField
+                                                key={feature.id}
+                                                control={form.control}
+                                                name="features"
+                                                render={({ field }) => {
+                                                    return (
+                                                        <FormItem key={feature.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    // DASHBOARD could be forced natively or disabled:
+                                                                    // disabled={feature.id === 'DASHBOARD'}
+                                                                    checked={field.value?.includes(feature.id)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...(field.value || []), feature.id])
+                                                                            : field.onChange(
+                                                                                field.value?.filter(
+                                                                                    (value) => value !== feature.id
+                                                                                )
+                                                                            )
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal cursor-pointer">
+                                                                {feature.label}
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    )
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -13,6 +13,9 @@ import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateBrandSettingsDto } from './dto/update-brand-settings.dto';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { StorageService } from '../storage/storage.service';
+import { CorsCacheService } from '../core/cors-cache.service';
+import { DokployService } from '../core/dokploy.service';
+import { ConfigService } from '@nestjs/config';
 
 import * as bcrypt from 'bcryptjs';
 
@@ -47,6 +50,9 @@ export class TenantService {
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly storageService: StorageService,
+    private readonly corsCacheService: CorsCacheService,
+    private readonly dokployService: DokployService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -54,8 +60,12 @@ export class TenantService {
    * y aprovisiona el usuario administrador inicial.
    */
   async create(createDto: CreateTenantDto) {
-    const { adminPassword, ownerEmail, slug, domain, name, primaryColor, secondaryColor, borderRadius, fontFamily, layoutType } = createDto;
-    const defaultFeatures = [
+    const { adminPassword, ownerEmail, slug, domain, name, primaryColor, secondaryColor, borderRadius, fontFamily, layoutType, ownerName, ownerRole, features } = createDto;
+    
+    // Si no se envían features desde el DTO, usar los por defecto, incluyendo DASHBOARD.
+    // Si se envían, asegurar que DASHBOARD esté presente para no bloquear el acceso.
+    let finalFeatures = features && features.length > 0 ? features : [
+      'DASHBOARD',
       'RESTAURANT',
       'POS',
       'INVENTORY',
@@ -63,6 +73,11 @@ export class TenantService {
       'ANALYTICS',
       'SETTINGS',
     ];
+
+    if (!finalFeatures.includes('DASHBOARD')) {
+      finalFeatures.push('DASHBOARD');
+    }
+
     const defaultDesign = {
       colors: { primary: '#000000', secondary: '#ffffff' },
       radius: 0.5,
@@ -73,6 +88,7 @@ export class TenantService {
     // Transacción Atómica para asegurar consistencia
     const newTenant = await this.prisma.$transaction(async (tx) => {
       // 1. Crear Tenant (Usando this.prisma regular, bypass .secure)
+      // Se crea el usuario inicial de forma atómica usando un 'nested write'
       const tenant = await tx.tenant.create({
         data: {
           slug: slug.toLowerCase(),
@@ -81,22 +97,19 @@ export class TenantService {
           dbName: 'web-projects', // Estandarizado
           status: 'ACTIVE',
           plan: 'free',
-          features: defaultFeatures,
+          features: finalFeatures,
           design: defaultDesign,
           ownerEmail: ownerEmail.toLowerCase(),
-        },
-      });
-
-      // 2. Crear Usuario Administrador
-      await tx.user.create({
-        data: {
-          tenantId: tenant.id,
-          email: ownerEmail.toLowerCase(),
-          name: 'Administrador Inicial',
-          password: hashedPassword,
-          role: 'ADMIN',
-          emailVerified: true,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${tenant.slug}`,
+          users: {
+            create: {
+              email: ownerEmail.toLowerCase(),
+              name: ownerName || 'Administrador Inicial',
+              password: hashedPassword,
+              role: ownerRole || 'ADMIN',
+              emailVerified: true,
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${slug.toLowerCase()}`,
+            }
+          }
         },
       });
 
@@ -150,6 +163,38 @@ export class TenantService {
 
     // 6. Invalidar caché en Redis (slug + dominio completo)
     await this.invalidateTenantCache(slug, domain);
+
+    // 7. Actualizar caché CORS en RAM
+    const baseDomain = this.corsCacheService.getBaseDomain();
+    const subdomainOrigin = `https://${newTenant.slug}.${baseDomain}`;
+    this.corsCacheService.addOrigin(subdomainOrigin);
+    if (newTenant.domain) {
+      this.corsCacheService.addOrigin(`https://${newTenant.domain}`);
+    }
+
+    // 8. Provisionar dominio en Dokploy (SSL + routing)
+    const storefrontAppId = this.configService.get<string>('STOREFRONT_DOKPLOY_APP_ID');
+    if (storefrontAppId) {
+      // Provisionar el subdominio del slug
+      this.dokployService
+        .provisionDomain(`${newTenant.slug}.${baseDomain}`, storefrontAppId)
+        .catch((err) =>
+          this.logger.error(`Error provisionando dominio en Dokploy: ${err.message}`),
+        );
+
+      // Si tiene dominio custom, provisionarlo también
+      if (newTenant.domain && newTenant.domain !== `${newTenant.slug}.${baseDomain}`) {
+        this.dokployService
+          .provisionDomain(newTenant.domain, storefrontAppId)
+          .catch((err) =>
+            this.logger.error(`Error provisionando dominio custom en Dokploy: ${err.message}`),
+          );
+      }
+    } else {
+      this.logger.warn(
+        'STOREFRONT_DOKPLOY_APP_ID no configurado. Saltando provisionamiento de dominio en Dokploy.',
+      );
+    }
 
     return newTenant;
   }
@@ -321,16 +366,28 @@ export class TenantService {
     }
 
     let tenant: any = null;
+    const baseDomain = this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') || 'xn--alvarolondoo-khb.dev';
+    const slugFromDomain = domain.endsWith(`.${baseDomain}`) 
+      ? domain.replace(`.${baseDomain}`, '') 
+      : domain;
+
     try {
       tenant = await this.prisma.secure.tenant.findFirst({
-        where: { slug: domain },
+        where: {
+          OR: [
+            { domain: domain },
+            { slug: domain },
+            { slug: slugFromDomain }
+          ]
+        },
         select: { id: true, name: true, status: true, features: true },
       });
     } catch (error) {
-      // Ignorar
+      this.logger.error(`Error en identifyTenant: ${error.message}`);
     }
 
     if (!tenant) {
+      // Fallback a regex like search as requested in existing code
       try {
         tenant = await this.prisma.secure.tenant.findFirst({
           where: {

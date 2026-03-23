@@ -12,15 +12,12 @@ export async function middleware(request: NextRequest) {
     const cleanHostname = hostname.split(':')[0];
     console.log(`[DOKPLOY DEBUG] Raw Hostname: ${hostname} | Clean: ${cleanHostname}`);
 
-    // Convert domain.com to domain (removes TLD for DB slug matching)
-    let tenantSlugToQuery = cleanHostname;
-    if (tenantSlugToQuery.startsWith('www.')) {
-        tenantSlugToQuery = tenantSlugToQuery.substring(4);
+    let domainToQuery = cleanHostname;
+    if (domainToQuery.startsWith('www.')) {
+        domainToQuery = domainToQuery.substring(4);
     }
-    // Remove everything after the first dot (matches 'mauromera.com' -> 'mauromera')
-    tenantSlugToQuery = tenantSlugToQuery.split('.')[0];
 
-    const isBaseDomain = ['localhost', '127'].includes(tenantSlugToQuery);
+    const isBaseDomain = ['localhost', '127.0.0.1'].some(d => domainToQuery.includes(d));
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantFeatures: string[] = [];
@@ -33,7 +30,7 @@ export async function middleware(request: NextRequest) {
             return NextResponse.rewrite(url);
         }
 
-        const fetchUrl = `${INTERNAL_API_URL}/tenant/identify?domain=${tenantSlugToQuery}`;
+        const fetchUrl = `${INTERNAL_API_URL}/tenant/identify?domain=${domainToQuery}`;
         try {
             // Petición al backend en Docker (misma red) para resolver host
             const res = await fetch(fetchUrl, {
@@ -48,12 +45,12 @@ export async function middleware(request: NextRequest) {
                 tenantFeatures = tenantData.features || [];
                 console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, features: ${JSON.stringify(tenantFeatures)}`);
             } else if (res.status === 404) {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${tenantSlugToQuery} at ${fetchUrl}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${domainToQuery} at ${fetchUrl}`);
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
             } else {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${tenantSlugToQuery} at ${fetchUrl}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${domainToQuery} at ${fetchUrl}`);
             }
         } catch (error: any) {
             console.error(`[DOKPLOY ERROR] Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}. URL: ${fetchUrl}. Error: ${error?.message || error}`);
@@ -105,7 +102,7 @@ export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     // Inyectar TENANT ID, SLUG y FEATURES dinámico
     requestHeaders.set('x-tenant-id', tenantId);
-    requestHeaders.set('x-tenant-slug', tenantSlugToQuery);
+    requestHeaders.set('x-tenant-slug', domainToQuery);
     requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
 
     if (shouldRewrite) {

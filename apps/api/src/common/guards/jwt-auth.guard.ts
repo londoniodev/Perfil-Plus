@@ -30,6 +30,12 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
+    // Whitelist paths explícitos si el Metadata no es suficiente (por ej. controladores de librerías)
+    const whitelistedPaths = ['/api/metrics', '/metrics'];
+    if (whitelistedPaths.includes(request.path) || whitelistedPaths.some(p => request.path.startsWith(p))) {
+      return true;
+    }
+
     if (isPublic && !token) {
       return true;
     }

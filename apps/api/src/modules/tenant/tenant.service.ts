@@ -468,7 +468,7 @@ export class TenantService {
         where: {
           OR: [{ domain: domain }, { slug: domain }, { slug: slugFromDomain }],
         },
-        select: { id: true, name: true, status: true, features: true },
+        select: { id: true, slug: true, name: true, status: true, features: true },
       });
     } catch (error) {
       this.logger.error(`Error en identifyTenant: ${error.message}`);
@@ -485,7 +485,7 @@ export class TenantService {
               { domain: { contains: domain, mode: 'insensitive' } },
             ],
           },
-          select: { id: true, name: true, status: true, features: true },
+          select: { id: true, slug: true, name: true, status: true, features: true },
         });
       } catch (error) {
         // Ignorar
@@ -499,7 +499,11 @@ export class TenantService {
       );
     }
 
-    const resolvedTenant = { id: tenant.id, features: tenant.features || [] };
+    const resolvedTenant = {
+      id: tenant.id,
+      slug: tenant.slug,
+      features: tenant.features || [],
+    };
     this.logger.log(
       `[IDENTIFY DEBUG] Resolved tenant for domain "${domain}": id=${tenant.id}, features=${JSON.stringify(resolvedTenant.features)}`,
     );

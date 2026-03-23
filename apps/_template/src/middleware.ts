@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
     const isBaseDomain = ['localhost', '127.0.0.1'].some(d => domainToQuery.includes(d));
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
+    let tenantSlug = process.env.NEXT_PUBLIC_TENANT_ID || domainToQuery; // Fallback al dominio
     let tenantFeatures: string[] = [];
 
     if (!isBaseDomain) {
@@ -42,8 +43,9 @@ export async function middleware(request: NextRequest) {
             if (res.ok) {
                 const tenantData = await res.json();
                 tenantId = tenantData.id;
+                tenantSlug = tenantData.slug || domainToQuery;
                 tenantFeatures = tenantData.features || [];
-                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, features: ${JSON.stringify(tenantFeatures)}`);
+                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, slug: ${tenantSlug}, features: ${JSON.stringify(tenantFeatures)}`);
             } else if (res.status === 404) {
                 console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${domainToQuery} at ${fetchUrl}`);
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado
@@ -102,7 +104,7 @@ export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     // Inyectar TENANT ID, SLUG y FEATURES dinámico
     requestHeaders.set('x-tenant-id', tenantId);
-    requestHeaders.set('x-tenant-slug', domainToQuery);
+    requestHeaders.set('x-tenant-slug', tenantSlug);
     requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
 
     if (shouldRewrite) {

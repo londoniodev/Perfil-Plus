@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     const protocol = isLocal ? "http" : "https";
     const dynamicSiteUrl = `${protocol}://${host}`;
 
-    const post = await getPostBySlug(tenantId, slug);
+    const post = await getPostBySlug(slug, tenantId);
     const title = post.metaTitle || post.title;
     const description = post.metaDescription || post.excerpt;
 
@@ -98,7 +98,7 @@ export default async function PostPage({ params }: PostPageProps) {
     const protocol = isLocal ? "http" : "https";
     dynamicSiteUrl = `${protocol}://${host}`;
 
-    post = await getPostBySlug(tenantId, slug);
+    post = await getPostBySlug(slug, tenantId);
   } catch {
     notFound();
   }

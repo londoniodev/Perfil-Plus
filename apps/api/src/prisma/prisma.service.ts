@@ -59,6 +59,23 @@ export class PrismaService
               'PasswordResetToken',
               'SystemSetting',
               'Tenant',
+              'OrderItem',
+              'OrderItemModifier',
+              'Payment',
+              'WarehouseStock',
+              'RecipeIngredient',
+              'InventoryCountLine',
+              'CategoriesOnPosts',
+              'CategoriesOnProducts',
+              'TagsOnPosts',
+              'Lesson',
+              'LessonAttachment',
+              'PostAttachment',
+              'Evaluation',
+              'Question',
+              'EvaluationResult',
+              'UserProgress',
+              'Purchase',
             ];
 
             if (globalModels.includes(model)) {

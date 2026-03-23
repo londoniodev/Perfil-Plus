@@ -30,7 +30,7 @@ export default async function BlogPage() {
     return notFound();
   }
 
-  const { data: posts } = await getPosts(1, 12);
+  const { data: posts } = await getPosts(1, 12, undefined, tenantId);
 
   return (
     <section className="relative min-h-screen bg-zinc-950 pb-20 pt-28 md:pb-32 md:pt-32">

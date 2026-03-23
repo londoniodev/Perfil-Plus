@@ -1,25 +1,15 @@
 import { Post, Category, Tag } from '@/types/blog';
 import { PaginatedResponse } from '@/types/common';
 import { API_BASE as API_BASE_URL } from './config';
-import { headers } from 'next/headers';
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTenantId?: string): Promise<T> {
     const isClient = typeof window !== 'undefined';
     let token = isClient ? localStorage.getItem('token') : null;
 
-    // Resolve tenantId: explicit > headers (server) > next_public (fallback)
-    let tenantId = explicitTenantId;
-    if (!tenantId && !isClient) {
-        try {
-            const h = await headers();
-            tenantId = h.get('x-tenant-id') || undefined;
-        } catch (e) {
-            // Not in a request context
-        }
-    }
-    
-    // If still no tenantId, the backend will resolve via Host header anyway.
-    // However, we need it for cache tagging.
+    // Resolve tenantId: explicit > next_public (fallback)
+    // NOTE: On server (SSR/ISR), explicitTenantId must be provided by the caller.
+    // On client, backend resolves via Host header.
+    const tenantId = explicitTenantId;
     const effectiveTenantId = tenantId || process.env.NEXT_PUBLIC_TENANT_ID || 'default';
 
     const getHeaders = (authToken: string | null) => ({
@@ -94,82 +84,83 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTena
 export async function getPosts(
     page = 1,
     limit = 10,
-    category?: string
+    category?: string,
+    tenantId?: string
 ): Promise<PaginatedResponse<Post>> {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (category) params.append('category', category);
-    return fetchAPI<PaginatedResponse<Post>>(`/blog/posts?${params}`);
+    return fetchAPI<PaginatedResponse<Post>>(`/blog/posts?${params}`, undefined, tenantId);
 }
 
-export async function getPostBySlug(slug: string): Promise<Post> {
-    return fetchAPI<Post>(`/blog/posts/${slug}`);
+export async function getPostBySlug(slug: string, tenantId?: string): Promise<Post> {
+    return fetchAPI<Post>(`/blog/posts/${slug}`, undefined, tenantId);
 }
 
 // Categories
-export async function getCategories(): Promise<Category[]> {
-    return fetchAPI<Category[]>('/blog/categories');
+export async function getCategories(tenantId?: string): Promise<Category[]> {
+    return fetchAPI<Category[]>('/blog/categories', undefined, tenantId);
 }
 
 // Tags
-export async function getTags(): Promise<Tag[]> {
-    return fetchAPI<Tag[]>('/blog/tags');
+export async function getTags(tenantId?: string): Promise<Tag[]> {
+    return fetchAPI<Tag[]>('/blog/tags', undefined, tenantId);
 }
 
 // ============ LMS ============
 import { Theme, Course, Lesson } from '@/types/lms';
 
-export async function getThemes(): Promise<Theme[]> {
-    return fetchAPI<Theme[]>('/lms/themes');
+export async function getThemes(tenantId?: string): Promise<Theme[]> {
+    return fetchAPI<Theme[]>('/lms/themes', undefined, tenantId);
 }
 
-export async function getThemeBySlug(slug: string): Promise<Theme> {
-    return fetchAPI<Theme>(`/lms/themes/${slug}`);
+export async function getThemeBySlug(slug: string, tenantId?: string): Promise<Theme> {
+    return fetchAPI<Theme>(`/lms/themes/${slug}`, undefined, tenantId);
 }
 
-export async function getCourseBySlug(slug: string): Promise<Course> {
-    return fetchAPI<Course>(`/lms/courses/${slug}`);
+export async function getCourseBySlug(slug: string, tenantId?: string): Promise<Course> {
+    return fetchAPI<Course>(`/lms/courses/${slug}`, undefined, tenantId);
 }
 
-export async function getLessonBySlug(courseSlug: string, lessonSlug: string, token?: string): Promise<Lesson> {
+export async function getLessonBySlug(courseSlug: string, lessonSlug: string, token?: string, tenantId?: string): Promise<Lesson> {
     const headers: any = {};
     if (token) headers.Authorization = `Bearer ${token}`;
-    return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers });
+    return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers }, tenantId);
 }
 
 // ============ SHOP & RESTAURANT ============
 import { Order, OrderStatus } from '@/types/restaurant';
 
-export async function createOrder(data: any): Promise<any> {
+export async function createOrder(data: any, tenantId?: string): Promise<any> {
     return fetchAPI('/orders', {
         method: 'POST',
         body: JSON.stringify(data),
-    });
+    }, tenantId);
 }
 
-export async function getAdminOrders(status?: OrderStatus, activeOnly: boolean = false): Promise<Order[]> {
+export async function getAdminOrders(status?: OrderStatus, activeOnly: boolean = false, tenantId?: string): Promise<Order[]> {
     const queryParams = new URLSearchParams();
     if (status) queryParams.append('status', status);
     if (activeOnly) queryParams.append('activeOnly', 'true');
-    return fetchAPI<Order[]>(`/admin/orders?${queryParams.toString()}`);
+    return fetchAPI<Order[]>(`/admin/orders?${queryParams.toString()}`, undefined, tenantId);
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
+export async function updateOrderStatus(orderId: string, status: OrderStatus, tenantId?: string): Promise<Order> {
     return fetchAPI<Order>(`/admin/orders/${orderId}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status }),
-    });
+    }, tenantId);
 }
 
-export async function toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean): Promise<any> {
+export async function toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean, tenantId?: string): Promise<any> {
     return fetchAPI(`/admin/orders/${orderId}/items/${itemId}/prepared`, {
         method: 'PATCH',
         body: JSON.stringify({ isPrepared }),
-    });
+    }, tenantId);
 }
 
-export async function payOrder(orderId: string, data: { amount: number, method: string, itemIds?: string[], closeOrder?: boolean, reference?: string }): Promise<any> {
+export async function payOrder(orderId: string, data: { amount: number, method: string, itemIds?: string[], closeOrder?: boolean, reference?: string }, tenantId?: string): Promise<any> {
     return fetchAPI(`/admin/orders/${orderId}/pay`, {
         method: 'POST',
         body: JSON.stringify(data),
-    });
+    }, tenantId);
 }

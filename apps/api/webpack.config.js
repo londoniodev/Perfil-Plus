@@ -1,15 +1,24 @@
 const webpack = require('webpack');
 
 module.exports = function (options) {
-  const externals = Array.isArray(options.externals)
+  const originalExternals = Array.isArray(options.externals)
     ? options.externals
     : [options.externals].filter(Boolean);
 
   return {
     ...options,
     externals: [
-      ...externals,
-      { sharp: 'commonjs sharp' }
+      ...originalExternals.map((external) => {
+        if (typeof external !== 'function') return external;
+        return (data, callback) => {
+          const request = data.request;
+          if (request && request.startsWith('@alvarosky/')) {
+            return callback();
+          }
+          return external(data, callback);
+        };
+      }),
+      { sharp: 'commonjs sharp' },
     ],
     plugins: [
       ...options.plugins,

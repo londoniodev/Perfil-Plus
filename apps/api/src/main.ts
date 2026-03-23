@@ -1,7 +1,4 @@
 import 'reflect-metadata';
-if (!Reflect || !Reflect.defineMetadata) {
-  throw new Error('Reflect.defineMetadata is not defined. Ensure reflect-metadata is imported correctly.');
-}
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

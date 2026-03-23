@@ -38,7 +38,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
     const [searchQuery, setSearchQuery] = useState("")
     const [activeCategory, setActiveCategory] = useState("ALL")
 
-    const { categories, products, isLoading } = useMenu(tenantId)
+    const { categories, products, isLoading } = useMenu()
     const { createOrder, isSubmitting } = useOrder()
 
     // Filter products using safe casting to match SDK definitions
@@ -106,7 +106,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated }: Cr
                 modifiers: []
             }))
 
-            const result = await createOrder(tenantId, {
+            const result = await createOrder({
                 cart: sdkCart,
                 total: cartTotal,
                 customer: {

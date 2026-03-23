@@ -125,7 +125,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(tenantId, undefined, true);
+            const data = await getAdminOrders(undefined, true, tenantId);
             // Cocina solo ve APPROVED, PREPARING
             const kitchenOrders = data.filter((o: any) => ["APPROVED", "PREPARING"].includes(o.status));
             // Sort por antigüedad
@@ -183,7 +183,7 @@ export function KitchenClient({ initialTables = [] }: { initialTables?: Table[] 
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(tenantId, orderId, status as any);
+            await updateOrderStatus(orderId, status as any, tenantId);
             await fetchOrders()
         } catch (e: any) {
             console.error(e)

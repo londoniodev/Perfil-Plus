@@ -140,7 +140,7 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
 
     const fetchOrders = useCallback(async () => {
         try {
-            const data = await getAdminOrders(tenantId, undefined, true);
+            const data = await getAdminOrders(undefined, true, tenantId);
             setOrders(data as any) // Type update might be needed if WaiterOrder != Order
         } catch (e) {
             // Optional: toast error
@@ -184,7 +184,7 @@ export function WaiterClient({ initialTables = [] }: { initialTables?: Table[] }
     const handleAction = async (orderId: string, status: string) => {
         setBusy(true)
         try {
-            await updateOrderStatus(tenantId, orderId, status as any);
+            await updateOrderStatus(orderId, status as any, tenantId);
             await fetchOrders()
         } catch (e: any) {
             alert(`Error: ${e.message}`)

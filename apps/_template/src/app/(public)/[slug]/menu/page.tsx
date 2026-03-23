@@ -30,5 +30,5 @@ export default async function MenuPage({
     const design = await getTenantDesign(slug)
     const layoutType = design?.brandSettings?.layoutType || 'INSTAGRAM'
 
-    return <MenuClient slug={slug} table={table} layoutType={layoutType} />
+    return <MenuClient table={table} layoutType={layoutType} />
 }

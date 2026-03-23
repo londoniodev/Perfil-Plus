@@ -53,38 +53,21 @@ export class JwtAuthGuard implements CanActivate {
         console.warn('[JwtAuthGuard] Payload has no tenantId');
       }
 
-      // ✅ User es un modelo global (no scoped por tenant).
-      // Se busca por userId (sub del JWT), NO por tenantId.
-      // this.prisma.user (sin .secure) es CORRECTO aquí intencionalmente.
-      /* eslint-disable no-restricted-syntax */
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          tenantId: true,
-          subscription: {
-            select: {
-              status: true,
-              endDate: true,
-            },
-          },
-        },
-      });
+      // ✅ Zero-Trust Optimization: No consultamos la DB para el contexto básico.
+      // Extraemos tenantId, role y sub (userId) directamente del JWT.
+      const hasActiveSubscription =
+        payload.subscriptionStatus === 'ACTIVE' &&
+        (!payload.subscriptionEndDate ||
+          new Date(payload.subscriptionEndDate) > new Date());
 
-      if (!user) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      // Añadir usuario al request
+      // Añadir usuario al request desde el payload del JWT
       request.user = {
-        ...user,
-        hasActiveSubscription:
-          user.subscription?.status === 'ACTIVE' &&
-          (!user.subscription?.endDate ||
-            new Date(user.subscription.endDate) > new Date()),
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+        name: payload.name,
+        tenantId: payload.tenantId,
+        hasActiveSubscription,
       };
     } catch (error) {
       const isExpired =

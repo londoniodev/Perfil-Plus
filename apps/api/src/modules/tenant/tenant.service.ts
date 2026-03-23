@@ -674,7 +674,7 @@ export class TenantService {
   }
 
   async findAll() {
-    return this.prisma.tenant.findMany({
+    return this.prisma.raw.tenant.findMany({
       orderBy: {
         createdAt: 'desc',
       },
@@ -688,8 +688,8 @@ export class TenantService {
    * - Dispara revalidación ISR del storefront.
    */
   async updateFeatures(tenantIdOrSlug: string, features: string[]) {
-    // 1. Verificar que el tenant existe buscando por ID o Slug
-    const tenant = await this.prisma.tenant.findFirst({
+    // 1. Verificar que el tenant existe buscando por ID o Slug (Contexto Global)
+    const tenant = await this.prisma.raw.tenant.findFirst({
       where: {
         OR: [{ id: tenantIdOrSlug }, { slug: tenantIdOrSlug }],
       },
@@ -702,8 +702,8 @@ export class TenantService {
       );
     }
 
-    // 2. Actualizar features en la DB usando el ID real
-    const updated = await this.prisma.tenant.update({
+    // 2. Actualizar features en la DB usando el ID real (Contexto Global)
+    const updated = await this.prisma.raw.tenant.update({
       where: { id: tenant.id },
       data: { features },
       select: { id: true, slug: true, features: true },

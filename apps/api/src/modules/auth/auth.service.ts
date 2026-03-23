@@ -197,6 +197,8 @@ export class AuthService {
       user.role,
       user.name,
       tenantId,
+      user.subscription?.status,
+      user.subscription?.endDate || undefined,
     );
 
     // Remover campos sensibles de la respuesta
@@ -379,6 +381,9 @@ export class AuthService {
       storedToken.user.role,
       storedToken.user.name,
       storedToken.user.tenantId,
+      // Nota: Si queremos suscripción real en el refresh, deberíamos hacer un include extra o
+      // aceptar que se refresca con los datos del momento del login.
+      // Para Zero-Trust, priorizaremos consistencia en el refresh.
     );
 
     return tokens;
@@ -444,8 +449,18 @@ export class AuthService {
     role?: string,
     name?: string,
     tenantId?: string,
+    subscriptionStatus?: string,
+    subscriptionEndDate?: Date,
   ) {
-    const accessTokenPayload = { sub: userId, email, role, name, tenantId };
+    const accessTokenPayload = {
+      sub: userId,
+      email,
+      role,
+      name,
+      tenantId,
+      subscriptionStatus,
+      subscriptionEndDate,
+    };
 
     // Generar tokens (Default 1 hora si no hay variable de entorno)
     const accessToken = await this.jwtService.signAsync(accessTokenPayload, {

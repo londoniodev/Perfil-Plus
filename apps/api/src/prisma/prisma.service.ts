@@ -16,11 +16,21 @@ export class PrismaService
 
   public readonly secure: ReturnType<typeof this.createExtendedClient>;
 
+  /**
+   * ⚠️ MANDAMIENTO #3 (Seguridad Primero) - REGLAS DE USO PARA RAW:
+   * 1. Solo en módulos de infraestructura: TenantService (SuperAdmin), WaCartCronService (Limpieza Global).
+   * 2. Prohibido en Controladores/Servicios de Negocio: Ningún Administrador de restaurante
+   *    debe invocar lógica que use .raw.
+   * 3. El uso de .raw anula el aislamiento Zero-Trust. Debe auditarse con extrema precaución.
+   */
+  public readonly raw: PrismaClient;
+
   constructor(private readonly cls: ClsService) {
     super({
       log:
         process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
+    this.raw = this; // El cliente base sin la extensión de seguridad
     this.secure = this.createExtendedClient();
   }
 

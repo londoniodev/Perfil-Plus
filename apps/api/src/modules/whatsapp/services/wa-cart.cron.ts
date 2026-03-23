@@ -28,14 +28,17 @@ export class WaCartCronService {
       const cutOffDate = new Date();
       cutOffDate.setHours(cutOffDate.getHours() - 24); // Expirados hace al menos 24 horas
 
-      // No podemos usar this.prisma.secure aquí porque es un CRON global sin contexto de tenant
-      const result = await (this.prisma.secure as any).waCart.deleteMany({
+      // SECURITY BYPASS: Este es un CRON global de mantenimiento del sistema.
+      // Debe limpiar carritos expirados de TODOS los inquilinos, por lo que usamos el cliente 'raw'.
+      /* eslint-disable no-restricted-syntax */
+      const result = await this.prisma.raw.waCart.deleteMany({
         where: {
           expiresAt: {
             lt: cutOffDate,
           },
         },
       });
+      /* eslint-enable no-restricted-syntax */
 
       this.logger.log(
         `✅ [CRON] Limpieza completada. ${result.count} carritos antiguos eliminados.`,

@@ -52,9 +52,26 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         // Las Server Actions suelen requerir no cachear las mutaciones
         if (!options?.cache && !options?.next) {
             fetchOptions.cache = 'no-store';
+        } else if (options?.next) {
+            // Aseguramos que cualquier cacheo tenga el tag del tenant
+            fetchOptions.next = {
+                ...options.next,
+                tags: [...(options.next.tags || []), `tenant-${tenantId}`, `tenant-${tenantId}-server-api`]
+            };
+        } else if (options?.cache !== 'no-store') {
+            // Si hay cacheo implícito (force-cache), inyectamos tags
+            fetchOptions.next = {
+                tags: [`tenant-${tenantId}`, `tenant-${tenantId}-server-api`]
+            };
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+        let currentEndpoint = endpoint;
+        if (!options?.method || options.method === 'GET') {
+            const separator = currentEndpoint.includes('?') ? '&' : '?';
+            currentEndpoint = `${currentEndpoint}${separator}_tenantCacheId=${tenantId}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}${currentEndpoint}`, fetchOptions);
         clearTimeout(timeoutId);
 
         if (!response.ok) {

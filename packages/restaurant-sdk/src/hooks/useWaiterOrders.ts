@@ -31,7 +31,7 @@ export function useWaiterOrders(tenantId: string) {
                 method: 'PATCH',
                 body: JSON.stringify({ status })
             })
-            mutate(`/api/${tenantId}/orders`)
+            mutate([`/api/${tenantId}/orders`, tenantId])
             return { success: true }
         } catch (e) {
             console.error(e)
@@ -47,7 +47,7 @@ export function useWaiterOrders(tenantId: string) {
             await fetch(`/api/${tenantId}/orders/${orderId}`, {
                 method: 'DELETE'
             })
-            mutate(`/api/${tenantId}/orders`)
+            mutate([`/api/${tenantId}/orders`, tenantId])
             return { success: true }
         } catch (e) {
             console.error(e)

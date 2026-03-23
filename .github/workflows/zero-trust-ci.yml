@@ -1,0 +1,66 @@
+name: 🛡️ Zero-Trust Security Gate
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  infiltration-and-linting:
+    name: Multi-tenant Isolation Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: saas_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://test_user:test_password@localhost:5432/saas_test_db?schema=public"
+      JWT_SECRET: "dummy-secret-for-ci-tests-only"
+      NODE_ENV: "test"
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: ⚙️ Setup Node with pnpm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: 📦 Install Dependencies
+        run: pnpm install
+
+      - name: 🧱 Prisma Push (Schema Initialization)
+        run: |
+          pnpm exec prisma generate --schema ./packages/database/prisma/schema.prisma
+          pnpm exec prisma db push --accept-data-loss --schema ./packages/database/prisma/schema.prisma
+
+      - name: 🚨 AST Security Check (Linter)
+        run: pnpm --filter @alvarosky/api run lint
+
+      - name: 🕵️‍♂️ Execute E2E Infiltration Suite
+        run: pnpm --filter @alvarosky/api run test:e2e

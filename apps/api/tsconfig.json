@@ -14,6 +14,7 @@
     "jsx": "react-jsx",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "src",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -21,15 +22,15 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@alvarosky/shared": ["../../packages/shared/src/index.ts"]
-    }
+    "noFallthroughCasesInSwitch": false
   },
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",
-    "scripts",
-    "prisma"
+    "test",
+    "**/*spec.ts",
+    "prisma",
+    "scripts"
   ]
 }

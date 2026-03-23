@@ -275,16 +275,6 @@ import { MetricsModule } from './modules/metrics';
     //   provide: APP_INTERCEPTOR,
     //   useClass: PrismaInitInterceptor,
     // },
-
-    // Providers manuales de Prometheus para evitar .register()
-    {
-      provide: 'PROM_CLIENT_REGISTRY',
-      useValue: require('prom-client').register,
-    },
-    {
-      provide: 'PROM_CLIENT_OPTIONS',
-      useValue: { defaultMetrics: { enabled: true } },
-    },
   ],
 })
 export class AppModule implements NestModule {

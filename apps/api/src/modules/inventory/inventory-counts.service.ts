@@ -11,22 +11,32 @@ import {
   CompleteInventoryCountDto,
 } from './dto/inventory-count.dto';
 
+import { ClsService } from 'nestjs-cls';
+
 @Injectable()
 export class InventoryCountsService {
   private readonly logger = new Logger(InventoryCountsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cls: ClsService,
+  ) {}
 
-  async create(tenantId: string, userId: string, dto: CreateInventoryCountDto) {
+  private getTenantId(): string {
+    return this.cls.get<string>('tenantId') ?? '';
+  }
+
+  async create(userId: string, dto: CreateInventoryCountDto) {
+    const tenantId = this.getTenantId();
     // Verify warehouse
     const warehouse = await this.prisma.secure.warehouse.findFirst({
-      where: { id: dto.warehouseId, tenantId },
+      where: { id: dto.warehouseId },
     });
     if (!warehouse) throw new NotFoundException('Almacén no encontrado');
 
     // Get all active inventory items and their current stock in this warehouse
     const items = await this.prisma.secure.inventoryItem.findMany({
-      where: { tenantId, isActive: true },
+      where: { isActive: true },
       include: {
         stock: {
           where: { warehouseId: dto.warehouseId },
@@ -38,7 +48,7 @@ export class InventoryCountsService {
     // Create count with pre-populated lines (system stock snapshot)
     return this.prisma.secure.inventoryCount.create({
       data: {
-        tenantId,
+        tenantId: this.getTenantId(),
         warehouseId: dto.warehouseId,
         countedBy: userId,
         notes: dto.notes,
@@ -62,9 +72,8 @@ export class InventoryCountsService {
     });
   }
 
-  async findAll(tenantId: string) {
+  async findAll() {
     return this.prisma.secure.inventoryCount.findMany({
-      where: { tenantId },
       include: {
         warehouse: { select: { id: true, name: true } },
         _count: { select: { lines: true } },
@@ -73,9 +82,9 @@ export class InventoryCountsService {
     });
   }
 
-  async findOne(id: string, tenantId: string) {
+  async findOne(id: string) {
     const count = await this.prisma.secure.inventoryCount.findFirst({
-      where: { id, tenantId },
+      where: { id },
       include: {
         warehouse: { select: { id: true, name: true } },
         lines: {
@@ -90,14 +99,10 @@ export class InventoryCountsService {
     return count;
   }
 
-  async complete(
-    id: string,
-    tenantId: string,
-    userId: string,
-    dto: CompleteInventoryCountDto,
-  ) {
+  async complete(id: string, userId: string, dto: CompleteInventoryCountDto) {
+    const tenantId = this.getTenantId();
     const count = await this.prisma.secure.inventoryCount.findFirst({
-      where: { id, tenantId, status: CountStatus.DRAFT },
+      where: { id, status: CountStatus.DRAFT },
       include: { lines: true },
     });
     if (!count) {
@@ -212,9 +217,9 @@ export class InventoryCountsService {
     });
   }
 
-  async delete(id: string, tenantId: string) {
+  async delete(id: string) {
     const count = await this.prisma.secure.inventoryCount.findFirst({
-      where: { id, tenantId, status: CountStatus.DRAFT },
+      where: { id, status: CountStatus.DRAFT },
     });
     if (!count) {
       throw new NotFoundException('Conteo no encontrado o ya fue completado');

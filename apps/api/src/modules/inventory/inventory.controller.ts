@@ -48,30 +48,23 @@ export class InventoryController {
   // ================================================================
 
   @Get('warehouses')
-  findAllWarehouses(@CurrentTenant() tenantId: string) {
-    return this.inventoryService.findAllWarehouses(tenantId);
+  findAllWarehouses() {
+    return this.inventoryService.findAllWarehouses();
   }
 
   @Post('warehouses')
-  createWarehouse(
-    @CurrentTenant() tenantId: string,
-    @Body() dto: CreateWarehouseDto,
-  ) {
-    return this.inventoryService.createWarehouse(tenantId, dto);
+  createWarehouse(@Body() dto: CreateWarehouseDto) {
+    return this.inventoryService.createWarehouse(dto);
   }
 
   @Put('warehouses/:id')
-  updateWarehouse(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-    @Body() dto: CreateWarehouseDto,
-  ) {
-    return this.inventoryService.updateWarehouse(id, tenantId, dto);
+  updateWarehouse(@Param('id') id: string, @Body() dto: CreateWarehouseDto) {
+    return this.inventoryService.updateWarehouse(id, dto);
   }
 
   @Delete('warehouses/:id')
-  deleteWarehouse(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.inventoryService.deleteWarehouse(id, tenantId);
+  deleteWarehouse(@Param('id') id: string) {
+    return this.inventoryService.deleteWarehouse(id);
   }
 
   // ================================================================
@@ -80,13 +73,11 @@ export class InventoryController {
 
   @Get('items')
   findAllItems(
-    @CurrentTenant() tenantId: string,
     @Query('includeInactive') includeInactive?: string,
     @Query('take') take?: string,
     @Query('skip') skip?: string,
   ) {
     return this.inventoryService.findAllItems(
-      tenantId,
       includeInactive === 'true',
       take ? parseInt(take) : 100,
       skip ? parseInt(skip) : 0,
@@ -94,30 +85,23 @@ export class InventoryController {
   }
 
   @Get('items/:id')
-  findOneItem(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.inventoryService.findOneItem(id, tenantId);
+  findOneItem(@Param('id') id: string) {
+    return this.inventoryService.findOneItem(id);
   }
 
   @Post('items')
-  createItem(
-    @CurrentTenant() tenantId: string,
-    @Body() dto: CreateInventoryItemDto,
-  ) {
-    return this.inventoryService.createItem(tenantId, dto);
+  createItem(@Body() dto: CreateInventoryItemDto) {
+    return this.inventoryService.createItem(dto);
   }
 
   @Put('items/:id')
-  updateItem(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-    @Body() dto: UpdateInventoryItemDto,
-  ) {
-    return this.inventoryService.updateItem(id, tenantId, dto);
+  updateItem(@Param('id') id: string, @Body() dto: UpdateInventoryItemDto) {
+    return this.inventoryService.updateItem(id, dto);
   }
 
   @Delete('items/:id')
-  deleteItem(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.inventoryService.deleteItem(id, tenantId);
+  deleteItem(@Param('id') id: string) {
+    return this.inventoryService.deleteItem(id);
   }
 
   // ================================================================
@@ -126,29 +110,26 @@ export class InventoryController {
 
   @Post('stock/entry')
   addStockEntry(
-    @CurrentTenant() tenantId: string,
     @CurrentUser('sub') userId: string,
     @Body() dto: StockEntryDto,
   ) {
-    return this.inventoryService.addStockEntry(tenantId, userId, dto);
+    return this.inventoryService.addStockEntry(userId, dto);
   }
 
   @Post('stock/exit')
   addStockExit(
-    @CurrentTenant() tenantId: string,
     @CurrentUser('sub') userId: string,
     @Body() dto: StockExitDto,
   ) {
-    return this.inventoryService.addStockExit(tenantId, userId, dto);
+    return this.inventoryService.addStockExit(userId, dto);
   }
 
   @Post('stock/transfer')
   transferStock(
-    @CurrentTenant() tenantId: string,
     @CurrentUser('sub') userId: string,
     @Body() dto: StockTransferDto,
   ) {
-    return this.inventoryService.transferStock(tenantId, userId, dto);
+    return this.inventoryService.transferStock(userId, dto);
   }
 
   // ================================================================
@@ -156,8 +137,8 @@ export class InventoryController {
   // ================================================================
 
   @Get('alerts/low-stock')
-  getLowStockItems(@CurrentTenant() tenantId: string) {
-    return this.inventoryService.getLowStockItems(tenantId);
+  getLowStockItems() {
+    return this.inventoryService.getLowStockItems();
   }
 
   // ================================================================
@@ -165,40 +146,33 @@ export class InventoryController {
   // ================================================================
 
   @Get('recipes')
-  findAllRecipes(@CurrentTenant() tenantId: string) {
-    return this.recipesService.findAll(tenantId);
+  findAllRecipes() {
+    return this.recipesService.findAll();
   }
 
   @Get('recipes/products-without-recipe')
-  getProductsWithoutRecipe(@CurrentTenant() tenantId: string) {
-    return this.recipesService.getProductsWithoutRecipe(tenantId);
+  getProductsWithoutRecipe() {
+    return this.recipesService.getProductsWithoutRecipe();
   }
 
   @Get('recipes/:id')
-  findOneRecipe(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.recipesService.findOne(id, tenantId);
+  findOneRecipe(@Param('id') id: string) {
+    return this.recipesService.findOne(id);
   }
 
   @Post('recipes')
-  createRecipe(
-    @CurrentTenant() tenantId: string,
-    @Body() dto: CreateRecipeDto,
-  ) {
-    return this.recipesService.create(tenantId, dto);
+  createRecipe(@Body() dto: CreateRecipeDto) {
+    return this.recipesService.create(dto);
   }
 
   @Put('recipes/:id')
-  updateRecipe(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-    @Body() dto: UpdateRecipeDto,
-  ) {
-    return this.recipesService.update(id, tenantId, dto);
+  updateRecipe(@Param('id') id: string, @Body() dto: UpdateRecipeDto) {
+    return this.recipesService.update(id, dto);
   }
 
   @Delete('recipes/:id')
-  deleteRecipe(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.recipesService.delete(id, tenantId);
+  deleteRecipe(@Param('id') id: string) {
+    return this.recipesService.delete(id);
   }
 
   // ================================================================
@@ -211,9 +185,9 @@ export class InventoryController {
   }
 
   @Get('costing')
-  getAllProductsCost(@CurrentTenant() tenantId: string) {
+  getAllProductsCost() {
     // Single SQL query — no N+1, no JS loops
-    return this.inventoryService.getAllProductsCostOptimized(tenantId);
+    return this.inventoryService.getAllProductsCostOptimized();
   }
 
   // ================================================================
@@ -221,8 +195,8 @@ export class InventoryController {
   // ================================================================
 
   @Get('dashboard/metrics')
-  getDashboardMetrics(@CurrentTenant() tenantId: string) {
-    return this.inventoryService.getDashboardMetrics(tenantId);
+  getDashboardMetrics() {
+    return this.inventoryService.getDashboardMetrics();
   }
 
   // ================================================================
@@ -230,36 +204,34 @@ export class InventoryController {
   // ================================================================
 
   @Get('counts')
-  findAllCounts(@CurrentTenant() tenantId: string) {
-    return this.countsService.findAll(tenantId);
+  findAllCounts() {
+    return this.countsService.findAll();
   }
 
   @Get('counts/:id')
-  findOneCount(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.countsService.findOne(id, tenantId);
+  findOneCount(@Param('id') id: string) {
+    return this.countsService.findOne(id);
   }
 
   @Post('counts')
   createCount(
-    @CurrentTenant() tenantId: string,
     @CurrentUser('sub') userId: string,
     @Body() dto: CreateInventoryCountDto,
   ) {
-    return this.countsService.create(tenantId, userId, dto);
+    return this.countsService.create(userId, dto);
   }
 
   @Patch('counts/:id/complete')
   completeCount(
     @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
     @CurrentUser('sub') userId: string,
     @Body() dto: CompleteInventoryCountDto,
   ) {
-    return this.countsService.complete(id, tenantId, userId, dto);
+    return this.countsService.complete(id, userId, dto);
   }
 
   @Delete('counts/:id')
-  deleteCount(@Param('id') id: string, @CurrentTenant() tenantId: string) {
-    return this.countsService.delete(id, tenantId);
+  deleteCount(@Param('id') id: string) {
+    return this.countsService.delete(id);
   }
 }

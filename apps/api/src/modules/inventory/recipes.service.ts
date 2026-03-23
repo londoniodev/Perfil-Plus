@@ -7,13 +7,23 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRecipeDto, UpdateRecipeDto } from './dto/recipe.dto';
 
+import { ClsService } from 'nestjs-cls';
+
 @Injectable()
 export class RecipesService {
   private readonly logger = new Logger(RecipesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cls: ClsService,
+  ) {}
 
-  async create(tenantId: string, dto: CreateRecipeDto) {
+  private getTenantId(): string {
+    return this.cls.get<string>('tenantId') ?? '';
+  }
+
+  async create(dto: CreateRecipeDto) {
+    const tenantId = this.getTenantId();
     // Verify product exists and belongs to tenant
     const product = await this.prisma.secure.product.findFirst({
       where: { id: dto.productId, tenantId },
@@ -69,9 +79,8 @@ export class RecipesService {
     });
   }
 
-  async findAll(tenantId: string) {
+  async findAll() {
     return this.prisma.secure.recipe.findMany({
-      where: { tenantId },
       include: {
         product: {
           select: { id: true, name: true, basePrice: true, images: true },
@@ -88,9 +97,9 @@ export class RecipesService {
     });
   }
 
-  async findOne(id: string, tenantId: string) {
+  async findOne(id: string) {
     const recipe = await this.prisma.secure.recipe.findFirst({
-      where: { id, tenantId },
+      where: { id },
       include: {
         product: {
           select: { id: true, name: true, basePrice: true, images: true },
@@ -108,9 +117,9 @@ export class RecipesService {
     return recipe;
   }
 
-  async findByProduct(productId: string, tenantId: string) {
+  async findByProduct(productId: string) {
     return this.prisma.secure.recipe.findFirst({
-      where: { productId, tenantId },
+      where: { productId },
       include: {
         product: { select: { id: true, name: true, basePrice: true } },
         ingredients: {
@@ -124,9 +133,9 @@ export class RecipesService {
     });
   }
 
-  async update(id: string, tenantId: string, dto: UpdateRecipeDto) {
+  async update(id: string, dto: UpdateRecipeDto) {
     const recipe = await this.prisma.secure.recipe.findFirst({
-      where: { id, tenantId },
+      where: { id },
     });
     if (!recipe) throw new NotFoundException('Receta no encontrada');
 
@@ -152,7 +161,7 @@ export class RecipesService {
         await tx.recipeIngredient.deleteMany({ where: { recipeId: id } });
         await tx.recipeIngredient.createMany({
           data: dto.ingredients.map((ing) => ({
-            tenantId,
+            tenantId: this.getTenantId(),
             recipeId: id,
             inventoryItemId: ing.inventoryItemId,
             quantity: ing.quantity,
@@ -177,9 +186,9 @@ export class RecipesService {
     });
   }
 
-  async delete(id: string, tenantId: string) {
+  async delete(id: string) {
     const recipe = await this.prisma.secure.recipe.findFirst({
-      where: { id, tenantId },
+      where: { id },
     });
     if (!recipe) throw new NotFoundException('Receta no encontrada');
 
@@ -187,10 +196,9 @@ export class RecipesService {
   }
 
   // Products without a recipe (for UI selection)
-  async getProductsWithoutRecipe(tenantId: string) {
+  async getProductsWithoutRecipe() {
     return this.prisma.secure.product.findMany({
       where: {
-        tenantId,
         productType: 'RESTAURANT',
         recipe: null,
         deletedAt: null,

@@ -83,6 +83,7 @@ export class OrdersService {
             // 4. Crear la orden — SIN tenantId manual, el secure context lo inyecta
             const order = await tx.order.create({
               data: {
+                tenantId: this.getTenantId(),
                 userId: userId || null,
                 orderNumber,
                 totalAmount,
@@ -143,7 +144,6 @@ export class OrdersService {
 
             if (productItems.length > 0) {
               const inventoryResult = await this.inventoryService.deductByOrder(
-                tenantId,
                 order.id,
                 productItems,
                 tx,
@@ -250,7 +250,6 @@ export class OrdersService {
           );
 
           await this.inventoryService.restoreByOrder(
-            this.getTenantId(),
             orderId,
             tx,
           );

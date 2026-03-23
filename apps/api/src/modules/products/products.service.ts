@@ -78,6 +78,7 @@ export class ProductsService {
     return await this.prisma.secure.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
+          tenantId: this.cls.get('tenantId'),
           name: productData.name,
           slug: productData.slug,
           description: productData.description,
@@ -103,6 +104,7 @@ export class ProductsService {
       if (variants && variants.length > 0) {
         await tx.productVariant.createMany({
           data: variants.map((v, i) => ({
+            tenantId: this.cls.get('tenantId'),
             productId: product.id,
             sku:
               v.sku ||
@@ -121,6 +123,7 @@ export class ProductsService {
 
         await tx.productVariant.create({
           data: {
+            tenantId: this.cls.get('tenantId'),
             productId: product.id,
             sku: defaultSku,
             price: productData.basePrice,
@@ -137,12 +140,14 @@ export class ProductsService {
         for (const group of modifierGroups) {
           await tx.modifierGroup.create({
             data: {
+              tenantId: this.cls.get('tenantId'),
               productId: product.id,
               name: group.name,
               minSelect: group.minSelect ?? 0,
               maxSelect: group.maxSelect ?? 1,
               modifiers: {
                 create: group.modifiers.map((mod) => ({
+                  tenantId: this.cls.get('tenantId'),
                   name: mod.name,
                   priceAdjustment: mod.priceAdjustment ?? 0,
                   stock: mod.stock ?? null,
@@ -240,12 +245,14 @@ export class ProductsService {
           for (const group of modifierGroups) {
             await tx.modifierGroup.create({
               data: {
+                tenantId: this.cls.get('tenantId'),
                 productId: id,
                 name: group.name,
                 minSelect: group.minSelect ?? 0,
                 maxSelect: group.maxSelect ?? 1,
                 modifiers: {
                   create: group.modifiers.map((mod) => ({
+                    tenantId: this.cls.get('tenantId'),
                     name: mod.name,
                     priceAdjustment: mod.priceAdjustment ?? 0,
                     stock: mod.stock ?? null,

@@ -23,8 +23,8 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
   process.env.DOKPLOY_API_URL = 'http://localhost:3000';
 
   // Fixtures IDs
-  const TENANT_ALPHA_ID = 'tenant-alpha-' + randomBytes(4).toString('hex');
-  const TENANT_BETA_ID = 'tenant-beta-' + randomBytes(4).toString('hex');
+  const TENANT_ALPHA_ID = 'e2e-alpha-' + randomBytes(4).toString('hex');
+  const TENANT_BETA_ID = 'e2e-beta-' + randomBytes(4).toString('hex');
   
   let USER_ALPHA_ID: string;
   let USER_BETA_ID: string;
@@ -38,7 +38,7 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
 
   beforeAll(async () => {
     try {
-      console.log('--- STARTING E2E BOOTSTRAP ---');
+      process.stdout.write('--- STARTING E2E BOOTSTRAP ---\n');
       const moduleFixture: TestingModule = await Test.createTestingModule({
         imports: [AppModule],
       }).compile();
@@ -49,19 +49,22 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
       prisma = app.get<PrismaService>(PrismaService);
       jwtService = app.get<JwtService>(JwtService);
 
-      console.log('--- SETTING UP FIXTURES ---');
-      // 1. SETUP FIXTURES (Usando prisma.raw para bypassar filtros durante o setup)
+      process.stdout.write('--- SETTING UP FIXTURES ---\n');
       
-      // Crear Tenants
-      await prisma.raw.tenant.createMany({
-        data: [
-          { id: TENANT_ALPHA_ID, name: 'Tenant Alpha', slug: TENANT_ALPHA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
-          { id: TENANT_BETA_ID, name: 'Tenant Beta', slug: TENANT_BETA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
-        ],
+      // Crear Tenants de forma individual para asegurar consistencia
+      process.stdout.write(`Creating Tenant ALPHA: ${TENANT_ALPHA_ID}\n`);
+      await prisma.tenant.create({
+        data: { id: TENANT_ALPHA_ID, name: 'Tenant Alpha', slug: TENANT_ALPHA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
+      });
+
+      process.stdout.write(`Creating Tenant BETA: ${TENANT_BETA_ID}\n`);
+      await prisma.tenant.create({
+        data: { id: TENANT_BETA_ID, name: 'Tenant Beta', slug: TENANT_BETA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
       });
 
       // Crear Users
-      const userAlpha = await prisma.raw.user.create({
+      process.stdout.write('Creating User Alpha...\n');
+      const userAlpha = await prisma.user.create({
         data: {
           email: `admin-${TENANT_ALPHA_ID}@alpha.com`,
           name: 'Admin Alpha',
@@ -72,7 +75,8 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
       });
       USER_ALPHA_ID = userAlpha.id;
 
-      const userBeta = await prisma.raw.user.create({
+      process.stdout.write('Creating User Beta...\n');
+      const userBeta = await prisma.user.create({
         data: {
           email: `admin-${TENANT_BETA_ID}@beta.com`,
           name: 'Admin Beta',
@@ -83,39 +87,42 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
       });
       USER_BETA_ID = userBeta.id;
 
-      const superAdmin = await prisma.raw.user.create({
-        data: {
-          email: `super-${TENANT_ALPHA_ID}@system.com`,
-          name: 'Super Admin',
-          password: 'password',
-          role: 'SUPERADMIN',
-          tenantId: TENANT_ALPHA_ID,
-        },
-      });
+      process.stdout.write('Creating Super Admin...\n');
+      const superAdminData = {
+        email: `super-${TENANT_ALPHA_ID}@system.com`,
+        name: 'Super Admin',
+        password: 'password',
+        role: 'SUPERADMIN' as any,
+        tenantId: TENANT_ALPHA_ID,
+      };
+      const superAdmin = await prisma.user.create({ data: superAdminData });
 
-      // Crear Producto y Orden para ALPHA
-      const productAlpha = await prisma.raw.product.create({
+      process.stdout.write('Creating Product Alpha...\n');
+      const productAlpha = await prisma.product.create({
         data: {
+          tenantId: TENANT_ALPHA_ID,
           name: 'Product Alpha',
           slug: 'product-alpha-' + randomBytes(2).toString('hex'),
           description: 'Description Alpha',
           basePrice: 100,
-          tenantId: TENANT_ALPHA_ID,
           productType: 'PHYSICAL',
         },
       });
       PRODUCT_ALPHA_ID = productAlpha.id;
 
-      const variantAlpha = await prisma.raw.productVariant.create({
+      process.stdout.write('Creating Variant Alpha...\n');
+      const variantAlpha = await prisma.productVariant.create({
         data: {
+          tenantId: TENANT_ALPHA_ID,
           productId: PRODUCT_ALPHA_ID,
           sku: 'SKU-ALPHA-' + randomBytes(2).toString('hex'),
           price: 100,
-          tenantId: TENANT_ALPHA_ID,
+          name: 'Standard',
         }
       });
 
-      const orderAlpha = await prisma.raw.order.create({
+      process.stdout.write('Creating Order Alpha...\n');
+      const orderAlpha = await prisma.order.create({
         data: {
           tenantId: TENANT_ALPHA_ID,
           orderNumber: 'ORD-ALPHA-' + randomBytes(2).toString('hex'),
@@ -161,9 +168,10 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
         subscriptionStatus: 'ACTIVE',
         subscriptionEndDate: null
       });
-      console.log('--- E2E SETUP COMPLETE ---');
+      process.stdout.write('--- E2E SETUP COMPLETE ---\n');
     } catch (err) {
-      console.error('CRITICAL BOOTSTRAP ERROR:', err);
+      process.stdout.write(`--- E2E SETUP FAILED --- ${err.message}\n`);
+      console.error(err);
       throw err;
     }
   });
@@ -171,12 +179,17 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
   afterAll(async () => {
     // Cleanup
     if (prisma) {
-      await prisma.raw.orderItem.deleteMany({ where: { order: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } } });
-      await prisma.raw.order.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-      await prisma.raw.productVariant.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-      await prisma.raw.product.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-      await prisma.raw.user.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-      await prisma.raw.tenant.deleteMany({ where: { id: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+      try {
+        await prisma.orderItem.deleteMany({ where: { order: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } } });
+        await prisma.order.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+        await prisma.productVariant.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+        await prisma.product.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+        await prisma.user.deleteMany({ where: { email: { contains: TENANT_ALPHA_ID } } });
+        await prisma.user.deleteMany({ where: { email: { contains: TENANT_BETA_ID } } });
+        await prisma.tenant.deleteMany({ where: { id: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+      } catch (e) {
+        process.stdout.write(`CLEANUP ERROR: ${e.message}\n`);
+      }
     }
     if (app) {
       await app.close();
@@ -225,7 +238,7 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
         .send({ status: 'CANCELLED' })
         .expect(HttpStatus.NOT_FOUND);
 
-      const order = await prisma.raw.order.findUnique({ where: { id: ORDER_ALPHA_ID } });
+      const order = await prisma.order.findUnique({ where: { id: ORDER_ALPHA_ID } });
       expect(order?.status).toBe('PENDING');
     });
 
@@ -245,7 +258,7 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
 
       expect(response.body.tenantId).toBe(TENANT_BETA_ID);
       
-      const dbProduct = await prisma.raw.product.findUnique({ where: { id: response.body.id } });
+      const dbProduct = await prisma.product.findUnique({ where: { id: response.body.id } });
       expect(dbProduct?.tenantId).toBe(TENANT_BETA_ID);
     });
 

@@ -412,11 +412,11 @@ export class InventoryService {
   // ================================================================
 
   async deductByOrder(
-    tenantId: string, // ⚠️ Mantenido temporalmente: InventoryService es llamado desde OrdersService que lo pasa explícitamente
     orderId: string,
     items: Array<{ productId: string; quantity: number }>,
     tx?: any,
   ) {
+    const tenantId = this.getTenantId();
     // Usar el tx seguro si viene de una transacción, o el cliente secure propio
     const prismaClient = tx || this.prisma.secure;
     const defaultWarehouse = await this.getDefaultWarehouseId(prismaClient);
@@ -559,7 +559,8 @@ export class InventoryService {
   // RESTORE STOCK (on order cancellation)
   // ================================================================
 
-  async restoreByOrder(tenantId: string, orderId: string, tx?: any) {
+  async restoreByOrder(orderId: string, tx?: any) {
+    const tenantId = this.getTenantId();
     const prismaClient = tx || this.prisma.secure;
 
     const movements = await prismaClient.inventoryMovement.findMany({

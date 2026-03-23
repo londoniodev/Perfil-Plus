@@ -104,7 +104,7 @@ export class PrismaService
                 args.where = { ...args.where, tenantId: safeTenantId };
               }
 
-              if (['create', 'createMany'].includes(operation)) {
+              if (['create', 'createMany'].includes(operation) && safeTenantId) {
                 // @ts-ignore
                 args.data = { ...args.data, tenantId: safeTenantId };
               }

@@ -8,6 +8,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 
+import { ClsService } from 'nestjs-cls';
+
 // ============ MOCK FACTORIES ============
 
 const mockProduct = {
@@ -123,6 +125,12 @@ describe('ProductsService', () => {
               .mockResolvedValue('https://signed-url.com/file'),
           },
         },
+        {
+          provide: ClsService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test-tenant'),
+          },
+        },
       ],
     }).compile();
 
@@ -175,7 +183,7 @@ describe('ProductsService', () => {
       mockClient.productVariant.create.mockResolvedValue(mockVariant);
       mockClient.modifierGroup.create.mockResolvedValue(mockModifierGroup);
 
-      const result = await service.create(createDto, 'test-tenant');
+      const result = await service.create(createDto);
 
       // Verifica que se buscó slug duplicado
       expect(mockClient.product.findUnique).toHaveBeenCalledWith({
@@ -226,7 +234,7 @@ describe('ProductsService', () => {
     it('debería lanzar BadRequestException si el slug ya existe', async () => {
       mockClient.product.findUnique.mockResolvedValue(mockProduct);
 
-      await expect(service.create(createDto, 'test-tenant')).rejects.toThrow(
+      await expect(service.create(createDto)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -234,7 +242,7 @@ describe('ProductsService', () => {
     it('debería incluir mensaje descriptivo en error de slug duplicado', async () => {
       mockClient.product.findUnique.mockResolvedValue(mockProduct);
 
-      await expect(service.create(createDto, 'test-tenant')).rejects.toThrow(
+      await expect(service.create(createDto)).rejects.toThrow(
         'El slug del producto ya existe',
       );
     });
@@ -252,7 +260,7 @@ describe('ProductsService', () => {
       mockClient.product.create.mockResolvedValue(mockProduct);
       mockClient.productVariant.create.mockResolvedValue(mockVariant);
 
-      const result = await service.create(dtoSinModifiers, 'test-tenant');
+      const result = await service.create(dtoSinModifiers);
 
       expect(mockClient.modifierGroup.create).not.toHaveBeenCalled();
       expect(result!.modifierGroups).toEqual([]);
@@ -276,7 +284,7 @@ describe('ProductsService', () => {
       mockClient.productVariant.create.mockResolvedValue(mockVariant);
       mockClient.modifierGroup.create.mockResolvedValue({});
 
-      await service.create(dtoDefaults, 'test-tenant');
+      await service.create(dtoDefaults);
 
       expect(mockClient.modifierGroup.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -333,7 +341,7 @@ describe('ProductsService', () => {
       mockClient.modifierGroup.deleteMany.mockResolvedValue({ count: 1 });
       mockClient.modifierGroup.create.mockResolvedValue({});
 
-      const result = await service.update('prod-1', updateDto, 'test-tenant');
+      const result = await service.update('prod-1', updateDto);
 
       // Verifica que se borraron los modifier groups existentes
       expect(mockClient.modifierGroup.deleteMany).toHaveBeenCalledWith({
@@ -355,10 +363,10 @@ describe('ProductsService', () => {
       mockClient.product.findUnique.mockResolvedValueOnce(null);
 
       await expect(
-        service.update('no-existe', updateDto, 'test-tenant'),
+        service.update('no-existe', updateDto),
       ).rejects.toThrow(NotFoundException);
       await expect(
-        service.update('no-existe', updateDto, 'test-tenant'),
+        service.update('no-existe', updateDto),
       ).rejects.toThrow('Producto no encontrado');
     });
   });
@@ -373,7 +381,7 @@ describe('ProductsService', () => {
       ];
       mockClient.product.findMany.mockResolvedValue(products);
 
-      const result = await service.findAllAdmin('test-tenant');
+      const result = await service.findAllAdmin();
 
       expect(result).toEqual(products);
       expect(mockClient.product.findMany).toHaveBeenCalledWith(
@@ -390,7 +398,7 @@ describe('ProductsService', () => {
     it('debería retornar array vacío cuando no hay productos', async () => {
       mockClient.product.findMany.mockResolvedValue([]);
 
-      const result = await service.findAllAdmin('test-tenant');
+      const result = await service.findAllAdmin();
 
       expect(result).toEqual([]);
     });
@@ -456,7 +464,6 @@ describe('ProductsService', () => {
 
       const result = await service.findOnePublished(
         'hamburguesa-clasica',
-        'test-tenant',
       );
 
       expect(result).toEqual(mockProductComplete);
@@ -471,7 +478,7 @@ describe('ProductsService', () => {
       mockClient.product.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.findOnePublished('no-existe', 'test-tenant'),
+        service.findOnePublished('no-existe'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -482,7 +489,7 @@ describe('ProductsService', () => {
       });
 
       await expect(
-        service.findOnePublished('hamburguesa-clasica', 'test-tenant'),
+        service.findOnePublished('hamburguesa-clasica'),
       ).rejects.toThrow(NotFoundException);
     });
   });

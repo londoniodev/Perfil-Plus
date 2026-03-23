@@ -120,19 +120,9 @@ import { MetricsModule } from './modules/metrics';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
 
-    // Prometheus metrics collection (Node.js internals: heap, GC, event loop)
-    // Usamos una función autoejecutada para asegurar que Reflect existe antes de inicializar
-    (() => {
-      if (typeof Reflect === 'undefined' || !Reflect.defineMetadata) {
-        console.warn('⚠️ [METRICS] Reflect.defineMetadata NOT FOUND during AppModule load. Retrying polyfill...');
-        require('reflect-metadata');
-      }
-      return PrometheusModule.register({
-        controller: undefined as any,
-        defaultMetrics: { enabled: true },
-      });
-    })(),
-
+    // Configuración manual de Prometheus para evitar el bug de Reflect.defineMetadata en .register()
+    PrometheusModule,
+    
     // Custom metrics endpoint (/metrics) — unifica prom-client + Prisma
     MetricsModule,
 
@@ -285,6 +275,12 @@ import { MetricsModule } from './modules/metrics';
     //   provide: APP_INTERCEPTOR,
     //   useClass: PrismaInitInterceptor,
     // },
+
+    // Providers manuales de Prometheus para evitar .register()
+    {
+      provide: 'PROM_CLIENT_REGISTRY',
+      useValue: require('prom-client').register,
+    },
   ],
 })
 export class AppModule implements NestModule {

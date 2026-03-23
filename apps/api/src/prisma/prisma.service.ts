@@ -44,6 +44,15 @@ export class PrismaService
     this.logger.log('Disconnected from database');
   }
 
+  /**
+   * Expone métricas internas de Prisma en formato Prometheus.
+   * Incluye: pool connections activas/idle, query durations, wait times.
+   * Requiere `previewFeatures = ["metrics"]` en schema.prisma.
+   */
+  async getPrometheusMetrics(): Promise<string> {
+    return (this as any).$metrics.prometheus();
+  }
+
   private createExtendedClient() {
     // CRÍTICO: Capturamos cls en una variable de closure porque
     // dentro de $extends, 'this' ya NO se refiere a PrismaService.

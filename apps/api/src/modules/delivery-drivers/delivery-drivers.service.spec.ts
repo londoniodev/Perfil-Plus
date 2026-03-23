@@ -54,26 +54,30 @@ const MOCK_DRIVER = {
 // ─────────── MOCK PRISMA ───────────
 
 function createMockPrisma() {
-  return {
-    secure: {
-      user: {
-        findFirst: jest.fn(),
-      },
-      deliveryDriver: {
-        findUnique: jest.fn(),
-        findFirst: jest.fn(),
-        findMany: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
-      },
+  const models = {
+    user: {
+      findFirst: jest.fn(),
     },
+    deliveryDriver: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+  };
+  return {
+    secure: models,
+    raw: models,
+    ...models, // Fallback for any direct calls
+    getPrometheusMetrics: jest.fn().mockResolvedValue(''),
   };
 }
 
 describe('DeliveryDriversService', () => {
   let service: DeliveryDriversService;
-  let mockPrisma: ReturnType<typeof createMockPrisma>;
+  let mockPrisma: any;
 
   beforeEach(async () => {
     mockPrisma = createMockPrisma();

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RestaurantController } from './restaurant.controller';
 import { RestaurantService } from './restaurant.service';
 import { NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 // ============ MOCK DATA ============
 
@@ -32,6 +33,8 @@ const mockMenuResponse = {
 
 const mockRestaurantService = {
   getPublicMenu: jest.fn(),
+  updateRestaurant: jest.fn(),
+  findOne: jest.fn(),
 };
 
 // ============ TESTS ============
@@ -44,6 +47,13 @@ describe('RestaurantController', () => {
       controllers: [RestaurantController],
       providers: [
         { provide: RestaurantService, useValue: mockRestaurantService },
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

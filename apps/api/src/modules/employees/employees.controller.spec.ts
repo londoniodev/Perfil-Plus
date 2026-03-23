@@ -12,6 +12,7 @@ describe('EmployeesController', () => {
   const mockService = {
     create: jest.fn(),
     findAll: jest.fn(),
+    findMany: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
@@ -55,7 +56,7 @@ describe('EmployeesController', () => {
       const result = await controller.create(dto, 'test-tenant');
 
       expect(result).toEqual(expected);
-      expect(mockService.create).toHaveBeenCalledWith(dto);
+      expect(mockService.create).toHaveBeenCalledWith(dto, 'test-tenant');
     });
   });
 
@@ -70,7 +71,7 @@ describe('EmployeesController', () => {
       const result = await controller.findAll('test-tenant');
 
       expect(result).toEqual(employees);
-      expect(mockService.findAll).toHaveBeenCalled();
+      expect(mockService.findAll).toHaveBeenCalledWith('test-tenant');
     });
   });
 
@@ -82,7 +83,7 @@ describe('EmployeesController', () => {
       const result = await controller.findOne('1', 'test-tenant');
 
       expect(result).toEqual(employee);
-      expect(mockService.findOne).toHaveBeenCalledWith('1');
+      expect(mockService.findOne).toHaveBeenCalledWith('1', 'test-tenant');
     });
   });
 
@@ -95,7 +96,7 @@ describe('EmployeesController', () => {
       const result = await controller.update('1', dto, 'test-tenant');
 
       expect(result).toEqual(expected);
-      expect(mockService.update).toHaveBeenCalledWith('1', dto);
+      expect(mockService.update).toHaveBeenCalledWith('1', dto, 'test-tenant');
     });
   });
 
@@ -107,7 +108,7 @@ describe('EmployeesController', () => {
       const result = await controller.remove('1', 'test-tenant');
 
       expect(result).toEqual(expected);
-      expect(mockService.remove).toHaveBeenCalledWith('1');
+      expect(mockService.remove).toHaveBeenCalledWith('1', 'test-tenant');
     });
   });
 });

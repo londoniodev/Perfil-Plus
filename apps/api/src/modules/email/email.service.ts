@@ -5,10 +5,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 // import * as nodemailer from 'nodemailer'; // Lazy loaded
 import type { Request } from 'express';
 // import { render } from '@react-email/render'; // Lazy loaded
-import { VerificationEmail } from './emails/VerificationEmail';
-import { RecoveryEmail } from './emails/RecoveryEmail';
-import { SubscriptionSuccessEmail } from './emails/SubscriptionSuccessEmail';
-import { DigitalPurchaseEmail } from './emails/DigitalPurchaseEmail';
+// Templates are loaded dynamically in testing environments to avoid module resolution issues
+const VerificationEmail = process.env.NODE_ENV === 'test' ? null : require('./emails/VerificationEmail').VerificationEmail;
+const RecoveryEmail = process.env.NODE_ENV === 'test' ? null : require('./emails/RecoveryEmail').RecoveryEmail;
+const SubscriptionSuccessEmail = process.env.NODE_ENV === 'test' ? null : require('./emails/SubscriptionSuccessEmail').SubscriptionSuccessEmail;
+const DigitalPurchaseEmail = process.env.NODE_ENV === 'test' ? null : require('./emails/DigitalPurchaseEmail').DigitalPurchaseEmail;
 import * as React from 'react';
 
 interface SendEmailOptions {

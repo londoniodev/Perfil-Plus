@@ -44,6 +44,8 @@ import { TablesModule } from './modules/tables/tables.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { CoreModule } from './modules/core';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsModule } from './modules/metrics';
 
 // Interceptors
 // Interceptors removed
@@ -116,6 +118,17 @@ import { CoreModule } from './modules/core';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+
+    // Prometheus metrics collection (Node.js internals: heap, GC, event loop)
+    PrometheusModule.register({
+      // Desactivamos el controller default porque usamos MetricsController custom
+      // que concatena métricas de prom-client + Prisma
+      controller: undefined as any,
+      defaultMetrics: { enabled: true },
+    }),
+
+    // Custom metrics endpoint (/metrics) — unifica prom-client + Prisma
+    MetricsModule,
 
     // Core infrastructure (CORS cache, Dokploy)
     CoreModule,

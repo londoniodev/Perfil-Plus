@@ -61,10 +61,9 @@ const NextFontGoogleMock = () => {
     dismiss: () => {},
 });
 
-// Mock useTenant
 (global as any).useTenant = () => ({
     tenantId: '6786a344714f3ead406981ee', // Dummy ID for rendering
-    slug: 'mauro',
+    slug: (global as any).currentTenantSlug ?? 'cocinasiete',
 });
 
 // We also need to mock lucide-react if the components use it and it's not installed in this package,
@@ -80,8 +79,8 @@ const NextFontGoogleMock = () => {
  */
 const STOREFRONT_MAP: Record<string, string> = {
   'cocinasiete': '../../../apps/_template/src/components/storefronts/cocinasiete/Landing.tsx',
-  'deborah': '../../../apps/_template/src/components/storefronts/deborahmoscoso/Landing.tsx',
-  'mauro': '../../../apps/_template/src/components/storefronts/mauromera/Landing.tsx',
+  'soydeborasoysaludable': '../../../apps/_template/src/components/storefronts/deborahmoscoso/Landing.tsx',
+  'mauromera': '../../../apps/_template/src/components/storefronts/mauromera/Landing.tsx',
 };
 
 // ─────────────────────────────────────────────
@@ -93,6 +92,8 @@ export async function renderLegacyLanding(tenantSlug: string): Promise<string> {
   if (!componentPath) {
     throw new Error(`No legacy component found for tenant: ${tenantSlug}`);
   }
+
+  (global as any).currentTenantSlug = tenantSlug;
 
   // Use dynamic import to bring in the component
   const absolutePath = path.resolve(__dirname, componentPath);

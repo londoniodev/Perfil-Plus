@@ -146,6 +146,19 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
   const bucket = `${tenantSlug}-public`;
   log("🪣", `Target bucket: ${bucket}`);
 
+  // 3.5 Ensure bucket exists (best effort)
+  try {
+    const { CreateBucketCommand, HeadBucketCommand } = await import("@aws-sdk/client-s3");
+    try {
+        await s3.send(new HeadBucketCommand({ Bucket: bucket }));
+    } catch {
+        log("🆕", `Creating missing bucket: ${bucket}`);
+        await s3.send(new CreateBucketCommand({ Bucket: bucket }));
+    }
+  } catch (err) {
+    log("⚠️", `Could not verify/create bucket ${bucket}. Proceeding anyway.`);
+  }
+
   let filesUploaded = 0;
 
   // 4. Read and mutate body.html for production

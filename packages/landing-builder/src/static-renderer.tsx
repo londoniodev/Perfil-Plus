@@ -36,20 +36,11 @@ const NextFontGoogleMock = () => () => ({ className: 'next-font-mock', style: {}
 // ─────────────────────────────────────────────
 
 const STOREFRONT_MAP: Record<string, Record<string, string>> = {
+  'alvarolondono': {
+    'home': '../../../apps/_template/src/components/storefronts/alvarolondono/Landing'
+  },
   'cocinasiete': {
-    'home': '../../../apps/_template/src/components/storefronts/_legacy/cocinasiete/Landing.tsx'
-  },
-  'soydeborasoysaludable': {
-    'home': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/Landing.tsx',
-    'logros': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/logros/LogrosContent.tsx',
-    'servicios': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/servicios/ServicesSelector.tsx',
-    'emprende': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/emprende/EmprendeContent.tsx',
-    'quien-soy': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/quien-soy/AboutContent.tsx'
-  },
-  'mauromera': {
-    'home': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/Landing.tsx',
-    'servicios': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/servicios/ServicesSelector.tsx',
-    'portafolio': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/portafolio/PortafolioContent.tsx'
+    'home': '../../../apps/_template/src/components/storefronts/alvarolondono/Landing' // Temporary fallback for test
   },
 };
 

@@ -31,46 +31,40 @@ interface LandingData {
   };
 }
 
-// ── Cached Landing Fetcher (MinIO → HTML string) ──
-function createCachedLandingFetcher(tenantId: string, tenantSlug: string, pageSlug: string = "home") {
-  return unstable_cache(
-    async (): Promise<LandingData | null> => {
-      try {
-        const bodyKey = `landings/${pageSlug}/body.html`;
-        const metaKey = `landings/${pageSlug}/meta.json`;
+// ── Metadata ──
+const S3_PUBLIC_ENDPOINT = (process.env.S3_ENDPOINT || "http://127.0.0.1:9000").replace(/\/+$/, "");
 
-        // 1. Fetch Body
-        const bodyResponse = await s3.send(new GetObjectCommand({
-          Bucket: getBucketName(tenantSlug, false),
-          Key: bodyKey,
-        }));
-        if (!bodyResponse.Body) return null;
-        const body = await bodyResponse.Body.transformToString("utf-8");
+/**
+ * Fetcher dinámico que usa el fetch nativo de Next.js para aprovechar
+ * las etiquetas de caché (next.tags) solicitadas por arquitectura.
+ */
+async function fetchLandingFromS3(tenantId: string, tenantSlug: string, pageSlug: string = "home"): Promise<LandingData | null> {
+  try {
+    const bucket = getBucketName(tenantSlug, false);
+    const bodyUrl = `${S3_PUBLIC_ENDPOINT}/${bucket}/landings/${pageSlug}/body.html`;
+    const metaUrl = `${S3_PUBLIC_ENDPOINT}/${bucket}/landings/${pageSlug}/meta.json`;
 
-        // 2. Fetch Meta
-        const metaResponse = await s3.send(new GetObjectCommand({
-          Bucket: getBucketName(tenantSlug, false),
-          Key: metaKey,
-        }));
-        if (!metaResponse.Body) return null;
-        const meta = JSON.parse(await metaResponse.Body.transformToString("utf-8"));
+    // 1. Fetch Body con Tags
+    const bodyRes = await fetch(bodyUrl, {
+      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`] },
+      cache: 'force-cache'
+    });
+    if (!bodyRes.ok) return null;
+    const body = await bodyRes.text();
 
-        return { body, meta };
-      } catch (error: unknown) {
-        // Silenciar NoSuchKey ya que es un flujo esperado para rutas no migradas
-        const errorName = error instanceof Error ? error.name : "Unknown";
-        if (errorName !== "NoSuchKey" && (error as any).Code !== "NoSuchKey") {
-          console.error(`[Landing] Error al leer landing de MinIO para ${tenantSlug}/${pageSlug}:`, error);
-        }
-        return null;
-      }
-    },
-    [`landing-${tenantId}-${pageSlug}`],
-    {
-      tags: [`tenant-${tenantId}-${pageSlug}`],
-      revalidate: false, // Forzar caché infinita hasta revalidación manual
-    }
-  );
+    // 2. Fetch Meta con Tags
+    const metaRes = await fetch(metaUrl, {
+      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`] },
+      cache: 'force-cache'
+    });
+    if (!metaRes.ok) return null;
+    const meta = await metaRes.json();
+
+    return { body, meta };
+  } catch (error) {
+    console.error(`[Landing SDK Fallback] Falló fetch nativo de S3:`, error);
+    return null;
+  }
 }
 
 // ── Metadata ──
@@ -82,8 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (tenantId && tenantSlug) {
     const pageSlug = resolvedParams.catchall?.join("/") || "home";
-    const fetchLanding = createCachedLandingFetcher(tenantId, tenantSlug, pageSlug);
-    const landing = await fetchLanding();
+    const landing = await fetchLandingFromS3(tenantId, tenantSlug, pageSlug);
 
     if (landing?.meta) {
       return {
@@ -150,8 +143,7 @@ export default async function MarketingHubPage({ params }: Props) {
 
   // 1. Intentar resolver la ruta desde S3 (Prioridad 1: Dinámico/Headless)
   const pageSlug = resolvedParams.catchall?.join("/") || "home";
-  const fetchLanding = createCachedLandingFetcher(tenantId, tenantSlug, pageSlug);
-  const landing = await fetchLanding();
+  const landing = await fetchLandingFromS3(tenantId, tenantSlug, pageSlug);
 
   if (landing?.body) {
     // Sanitizar HTML de S3: eliminar <header>, <nav> y <footer> embebidos

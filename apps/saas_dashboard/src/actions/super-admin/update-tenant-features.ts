@@ -65,6 +65,11 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
     try {
         await validateSuperAdmin()
 
+        if (!settings || Object.keys(settings).length === 0) {
+            console.warn("[updateTenantSettingsAction] No settings to update, skipping API call.");
+            return { success: true };
+        }
+
         await serverFetch(`/tenant/${tenantSlug}/settings`, {
             method: "PATCH",
             body: JSON.stringify(settings),

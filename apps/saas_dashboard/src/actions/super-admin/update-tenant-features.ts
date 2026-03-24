@@ -9,7 +9,7 @@ import { VALID_FEATURE_VALUES } from "@alvarosky/types"
 // --- Schema Zod (derivado del SSOT) ---
 const updateFeaturesSchema = z.object({
     tenantSlug: z.string().min(1, "Tenant Slug requerido"),
-    features: z.array(z.enum(VALID_FEATURE_VALUES)),
+    features: z.array(z.string()),
 })
 
 type UpdateFeaturesInput = z.infer<typeof updateFeaturesSchema>

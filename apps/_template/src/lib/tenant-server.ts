@@ -78,11 +78,12 @@ export async function getTenantDesign(tenantId: string) {
  * Use this when x-tenant-id header is missing to re-identify via host
  */
 export async function identifyTenantByHost(host: string): Promise<{ id: string, slug: string, features: string[] } | null> {
-  const internalUrl = process.env.INTERNAL_API_URL || 'http://localhost:3001/api';
+  const _baseUrl = (process.env.INTERNAL_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+  const API_URL = _baseUrl.endsWith('/api') ? _baseUrl : `${_baseUrl}/api`;
   const cleanHost = host.split(':')[0].replace(/^(www\.)/, "");
   
   try {
-    const res = await fetch(`${internalUrl}/tenant/identify?domain=${cleanHost}`, {
+    const res = await fetch(`${API_URL}/tenant/identify?domain=${cleanHost}`, {
       headers: {
         'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key'
       },

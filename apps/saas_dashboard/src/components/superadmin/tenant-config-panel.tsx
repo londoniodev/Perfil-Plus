@@ -72,14 +72,25 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
         setMessage(null);
 
         try {
-            const res = await updateTenantSettingsAction(tenantSlug, settings);
-
-            if (!res.success) {
-                throw new Error(res.error || "Error al guardar");
+            // 1. Guardar Configuración General
+            const resSettings = await updateTenantSettingsAction(tenantSlug, settings);
+            if (!resSettings.success) {
+                throw new Error(resSettings.error || "Error al guardar configuración");
             }
 
-            setMessage({ type: "success", text: "Configuración guardada correctamente" });
-            toast.success("Configuración guardada correctamente");
+            // 2. Guardar Features (Módulos)
+            const resFeatures = await updateTenantFeatures({
+                tenantSlug,
+                features,
+            });
+            if (!resFeatures.success) {
+                throw new Error(resFeatures.error || "Error al guardar features");
+            }
+
+            setMessage({ type: "success", text: "Toda la configuración y features guardados correctamente" });
+            toast.success("Todo guardado correctamente");
+            // Refrescar features para asegurar consistencia
+            await fetchFeatures();
             setTimeout(() => setMessage(null), 3000);
         } catch (err) {
             setMessage({ type: "error", text: err instanceof Error ? err.message : "Error desconocido" });

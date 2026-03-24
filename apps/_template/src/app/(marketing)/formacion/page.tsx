@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { getTenantId } from "@/lib/config-server";
-import { resolveFormacion } from "@/lib/storefront-resolver";
+import TrainingCatalog from "@/components/marketing/TrainingCatalog";
 import { notFound } from "next/navigation";
 import { TenantFeature } from "@alvarosky/types";
 import { getTenantFeatures } from "@alvarosky/shared";
@@ -12,7 +12,6 @@ export const metadata = {
 
 export default async function FormacionPage() {
     const headersList = await headers();
-    const tenantSlug = headersList.get("x-tenant-slug") || "";
     const tenantId = await getTenantId();
 
     // 1. Verificar si el Tenant tiene la característica de LMS / Academia dictada por SSOT
@@ -55,17 +54,24 @@ export default async function FormacionPage() {
                 description: theme.description,
                 imageUrl: theme.coverImage,
                 teaserVideo, 
-                price: firstCourse?.isFree ? 0 : null, // Mapeo básico si no hay consulta de productos directa
+                price: firstCourse?.isFree ? 0 : null, 
                 firstCourseId: firstCourse?.id,
-                courses: theme.courses || [] // Para renderizar el árbol jerárgico
+                courses: theme.courses || [] 
             };
         });
     } catch (error: any) {
         console.error("Error fetching themes for public catalog:", error);
-        return <div className="pt-40 text-center text-red-500 font-bold">Error del Servidor: {error.message}</div>
+        // Error más amigable con el diseño oscuro
+        return (
+            <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 pt-32">
+                 <div className="text-center p-8 border border-red-500/20 rounded-3xl bg-red-500/5 max-w-md">
+                    <p className="text-red-500 font-bold mb-2">Error de Conexión</p>
+                    <p className="text-zinc-400">No pudimos cargar el catálogo en este momento. Por favor, intenta de nuevo más tarde.</p>
+                 </div>
+            </div>
+        );
     }
 
-    const FormacionComponent = resolveFormacion(tenantSlug);
-
-    return <FormacionComponent themes={themes} />;
+    return <TrainingCatalog themes={themes} />;
 }
+

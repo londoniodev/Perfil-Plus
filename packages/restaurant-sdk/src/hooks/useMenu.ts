@@ -34,7 +34,8 @@ const fetcher = async ([url]: [string, string]) => {
 export function useMenu(tenantId: string) {
     // Connect to real API running on port 3001
     // In production, this URL should be an env var
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const _rawUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, "");
+    const apiUrl = _rawUrl.endsWith('/api') ? _rawUrl : `${_rawUrl}/api`;
 
     const { data, error, isLoading } = useSWR(
         tenantId ? [`${apiUrl}/public/restaurant/${tenantId}/menu`, tenantId] : null,

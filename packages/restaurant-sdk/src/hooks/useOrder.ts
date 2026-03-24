@@ -32,7 +32,8 @@ export function useOrder(tenantId?: string) {
         setIsSubmitting(true)
         setError(null)
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+            const _rawUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, "");
+            const apiUrl = _rawUrl.endsWith('/api') ? _rawUrl : `${_rawUrl}/api`;
 
             // Map Cart to CreateOrderDto
             const items = orderData.cart.map(item => ({
@@ -90,7 +91,8 @@ export function useOrder(tenantId?: string) {
 
     const trackOrder = async (orderId: string) => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+            const _rawUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, "");
+            const apiUrl = _rawUrl.endsWith('/api') ? _rawUrl : `${_rawUrl}/api`;
             const headers: Record<string, string> = {}
             if (tenantId) {
                 headers['x-tenant-id'] = tenantId

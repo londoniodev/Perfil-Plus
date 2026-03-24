@@ -131,4 +131,46 @@ export class UpdateTenantConfigDto {
   @IsBoolean()
   @IsOptional()
   enableLMS?: boolean;
+
+  // Social
+  @IsString()
+  @IsOptional()
+  social_whatsapp?: string;
+
+  @IsString()
+  @IsOptional()
+  social_instagram?: string;
+
+  @IsString()
+  @IsOptional()
+  social_facebook?: string;
+
+  @IsString()
+  @IsOptional()
+  social_twitter?: string;
+
+  @IsString()
+  @IsOptional()
+  social_tiktok?: string;
+
+  @IsString()
+  @IsOptional()
+  social_youtube?: string;
+
+  // SMTP
+  @IsString()
+  @IsOptional()
+  smtp_host?: string;
+
+  @IsString()
+  @IsOptional()
+  smtp_port?: string;
+
+  @IsString()
+  @IsOptional()
+  smtp_user?: string;
+
+  @IsString()
+  @IsOptional()
+  smtp_pass?: string;
 }

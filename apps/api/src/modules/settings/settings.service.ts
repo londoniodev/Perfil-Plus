@@ -41,20 +41,28 @@ export class SettingsService {
       where: { tenantId },
     });
 
+    // Combinar todo. Los campos de tablas específicas sobrescriben los genéricos si coinciden.
     const finalConfig = {
+      // 1. Valores genéricos de SystemSetting
       ...collapsed,
+
+      // 2. Información del Tenant
       tenant_name: tenant?.name || '',
       tenant_slug: tenant?.slug || '',
-      // Mapeo de BrandSettings
+
+      // 3. BrandSettings (Mapeo explícito a snake_case para el frontend)
       primary_color: brandSettings?.primaryColor || '#6366f1',
       secondary_color: brandSettings?.secondaryColor || '#a5a6f6',
-      theme: brandSettings?.layoutType || '',
+      // 'theme' en la UI es light/dark/auto, se saca de SystemSetting (collapsed)
+      theme: collapsed['theme'] || '', 
+      // Si el frontend llegara a usar layoutType, se expone como layout_type
+      layout_type: brandSettings?.layoutType || 'CLASSIC',
       
-      // Mapeo de StoreSettings (MercadoPago y WhatsApp)
-      mp_public_key: storeSettings?.mpPublicKey || '',
-      mp_access_token: storeSettings?.mpAccessToken || '',
-      waPhoneNumberId: storeSettings?.waPhoneNumberId || '',
-      deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : 0,
+      // 4. StoreSettings (Mapeo explícito)
+      mp_public_key: storeSettings?.mpPublicKey || collapsed['mp_public_key'] || '',
+      mp_access_token: storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
+      waPhoneNumberId: storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
+      deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : (Number(collapsed['deliveryFee']) || 0),
     };
 
     return finalConfig;
@@ -65,11 +73,12 @@ export class SettingsService {
    */
   async updateTenantConfig(tenantId: string, updateDto: UpdateTenantConfigDto) {
     // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
-    const systemSettingsKeys = [
+    // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
+    const storeAndBrandKeys = [
       'tenant_name',
       'primary_color',
       'secondary_color',
-      'theme',
+      // 'theme' NO va aquí, va a SystemSetting porque es light/dark
       'mp_public_key',
       'mp_access_token',
       'deliveryFee',
@@ -77,7 +86,14 @@ export class SettingsService {
     ];
 
     const operations = Object.entries(updateDto)
-      .filter(([key, value]) => value !== undefined && !systemSettingsKeys.includes(key))
+      .filter(([key, value]) => {
+        // Solo guardamos en SystemSetting si:
+        // 1. El valor no es undefined
+        // 2. NO es una de las llaves que van a tablas específicas
+        // 3. No es un objeto complejo que el frontend envía por error
+        const isComplex = typeof value === 'object' && value !== null;
+        return value !== undefined && !storeAndBrandKeys.includes(key) && !isComplex;
+      })
       .map(([key, value]) => {
         return this.prisma.secure.systemSetting.upsert({
           where: {
@@ -112,6 +128,7 @@ export class SettingsService {
     }
 
     // 3. Actualizar BrandSettings si hay cambios de apariencia
+    // Aquí solo manejamos colores por ahora, theme va a SystemSetting
     if (updateDto.primary_color || updateDto.secondary_color) {
       await this.prisma.secure.brandSettings.upsert({
         where: { tenantId },
@@ -121,13 +138,14 @@ export class SettingsService {
         },
         create: {
           tenantId,
-          primaryColor: updateDto.primary_color || '#6366f1',
-          secondaryColor: updateDto.secondary_color || '#a5a6f6',
+          primaryColor: updateDto.primary_color || '#09090b',
+          secondaryColor: updateDto.secondary_color || '#f4f4f5',
+          layoutType: 'CLASSIC',
         },
       });
     }
 
-    // 3. Actualizar StoreSettings (MercadoPago y Delivery)
+    // 4. Actualizar StoreSettings (MercadoPago y Delivery)
     if (
       updateDto.mp_public_key !== undefined ||
       updateDto.mp_access_token !== undefined ||

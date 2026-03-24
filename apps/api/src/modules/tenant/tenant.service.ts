@@ -40,8 +40,8 @@ interface BrandSettingsWithAssets {
 @Injectable()
 export class TenantService {
   private readonly logger = new Logger(TenantService.name);
-  private readonly nextjsRevalidationUrl = process.env.FRONTEND_APP_URL 
-    ? `${process.env.FRONTEND_APP_URL}/api/revalidate` 
+  private readonly nextjsRevalidationUrl = process.env.STOREFRONT_URL 
+    ? `${process.env.STOREFRONT_URL}/api/revalidate` 
     : 'http://127.0.0.1:3000/api/revalidate';
   private readonly internalApiKey =
     process.env.INTERNAL_API_KEY || 'default_dev_secret_key';

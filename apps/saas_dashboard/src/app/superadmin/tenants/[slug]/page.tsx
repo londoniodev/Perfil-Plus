@@ -1,6 +1,6 @@
 import { getSessionUser } from "@/lib/auth-server";
-import { redirect } from "next/navigation";
-import { prisma } from "@alvarosky/database";
+import { redirect, notFound } from "next/navigation";
+import { serverFetch } from "@/lib/api-server";
 import { Card } from "@alvarosky/ui";
 
 interface Props {
@@ -14,9 +14,11 @@ export default async function TenantDetailsPage({ params }: Props) {
     const resolvedParams = await params;
     const slug = resolvedParams.slug;
 
-    const tenant = await prisma.tenant.findUnique({ where: { slug } });
+    // Fetch via API to avoid direct DB dependency in the Dashboard app
+    const allTenants = await serverFetch<any[]>('/tenant');
+    const tenant = allTenants.find(t => t.slug === slug);
 
-    if (!tenant) return <div className="p-8 text-white">Tenant no encontrado (Error 404)</div>;
+    if (!tenant) notFound();
 
     return (
         <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -41,6 +43,12 @@ export default async function TenantDetailsPage({ params }: Props) {
                         <dt className="text-sm font-medium text-slate-400">Nombre de Base de Datos</dt>
                         <dd className="mt-1 text-sm text-white font-mono">{tenant.dbName}</dd>
                     </div>
+                    {tenant.domain && (
+                        <div>
+                            <dt className="text-sm font-medium text-slate-400">Dominio Personalizado</dt>
+                            <dd className="mt-1 text-sm text-blue-400 font-mono">{tenant.domain}</dd>
+                        </div>
+                    )}
                 </dl>
             </Card>
         </div>

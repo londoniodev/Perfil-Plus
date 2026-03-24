@@ -1,7 +1,7 @@
 import { TenantConfigPanel } from "@/components/superadmin/tenant-config-panel";
 import { getSessionUser } from "@/lib/auth-server";
-import { redirect } from "next/navigation";
-import { prisma } from "@alvarosky/database";
+import { redirect, notFound } from "next/navigation";
+import { serverFetch } from "@/lib/api-server";
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -14,11 +14,11 @@ export default async function TenantSettingsPage({ params }: Props) {
     const resolvedParams = await params;
     const slug = resolvedParams.slug;
 
-    const tenant = await prisma.tenant.findUnique({
-        where: { slug }
-    });
+    // Fetch via API to avoid direct DB dependency in the Dashboard app
+    const allTenants = await serverFetch<any[]>('/tenant');
+    const tenant = allTenants.find(t => t.slug === slug);
 
-    if (!tenant) return <div className="p-8 text-white">Tenant no encontrado (Error 404)</div>;
+    if (!tenant) notFound();
 
     return (
         <div className="p-4 sm:p-6 w-full">

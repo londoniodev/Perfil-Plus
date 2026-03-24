@@ -105,4 +105,20 @@ export class TenantController {
   ) {
     return this.tenantService.updateFeatures(tenantId, dto.features);
   }
+
+  // GET Settings for SuperAdmin (management)
+  @Get(':id/settings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async getSettings(@Param('id') tenantId: string) {
+    return this.tenantService.getSettings(tenantId);
+  }
+
+  // PATCH Settings for SuperAdmin (management)
+  @Patch(':id/settings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async updateSettings(@Param('id') tenantId: string, @Body() dto: any) {
+    return this.tenantService.updateSettings(tenantId, dto);
+  }
 }

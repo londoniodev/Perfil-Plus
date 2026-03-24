@@ -16,6 +16,7 @@ import { StorageService } from '../storage/storage.service';
 import { CorsCacheService } from '../core/cors-cache.service';
 import { DokployService } from '../core/dokploy.service';
 import { ConfigService } from '@nestjs/config';
+import { SettingsService } from '../settings/settings.service';
 
 import * as bcrypt from 'bcryptjs';
 
@@ -53,6 +54,7 @@ export class TenantService {
     private readonly corsCacheService: CorsCacheService,
     private readonly dokployService: DokployService,
     private readonly configService: ConfigService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   /**
@@ -683,6 +685,62 @@ export class TenantService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async getSettings(idOrSlug: string) {
+    const tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Inquilino no encontrado');
+    }
+
+    return this.settingsService.getTenantConfig(tenant.id);
+  }
+
+  async updateSettings(idOrSlug: string, dto: any) {
+    const tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Inquilino no encontrado');
+    }
+
+    return this.settingsService.updateTenantConfig(tenant.id, dto);
+  }
+
+  async getSettings(idOrSlug: string) {
+    const tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Inquilino no encontrado');
+    }
+
+    return this.settingsService.getTenantConfig(tenant.id);
+  }
+
+  async updateSettings(idOrSlug: string, dto: any) {
+    const tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Inquilino no encontrado');
+    }
+
+    return this.settingsService.updateTenantConfig(tenant.id, dto);
   }
 
   /**

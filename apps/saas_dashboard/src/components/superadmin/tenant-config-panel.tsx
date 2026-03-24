@@ -54,7 +54,14 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`/api/tenants/${tenantSlug}/settings`);
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+            // Aseguramos que usamos /tenant (singular) y el endpoint correcto /settings
+            const res = await fetch(`${apiBase}/tenant/${tenantSlug}/settings`, {
+                headers: {
+                    // Injecting session token if needed, though middleware should handle cookie-based auth
+                    "Authorization": `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`
+                }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setSettings(data);
@@ -69,10 +76,11 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
         setMessage(null);
 
         try {
-            const res = await fetch(`/api/tenants/${tenantSlug}/settings`, {
-                method: "PUT",
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+            const res = await fetch(`${apiBase}/tenant/${tenantSlug}/settings`, {
+                method: "PATCH", // Cambiado de PUT a PATCH para coincidir con NestJS
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ settings, dbName: tenantDbName }),
+                body: JSON.stringify(settings), // El backend espera las llaves directamente
             });
 
             if (!res.ok) {

@@ -32,10 +32,23 @@ async function validateSuperAdmin() {
 export async function getTenantFeaturesAction(tenantSlug: string): Promise<{ success: boolean; data?: string[]; error?: string }> {
     try {
         await validateSuperAdmin()
-        // serverFetch al /tenant/:slug/settings no expone features, pero podemos hacer fetch al DB o a un endpoint.
-        // Espera, el endpoint de identify devuelve roles y features. Sino, el mismo settings. Lo mejor es consultar el identify / o el propio backend.
-        // Pero saas_dashboard no tiene ORM directo para Tenants! serverFetch(`/tenant`) obtiene todos los tenants.
+        // Ahora usamos el endpoint dedicado que acabamos de crear en el backend
+        const settings = await serverFetch<any>(`/tenant/${tenantSlug}/settings`)
+
+        if (!settings) throw new Error("Tenant no encontrado")
+
+        // El backend devuelve features y settings mapeados. Las features se manejan aparte pero identify las tiene.
+        // Espera, el getSettings de TenantService devuelve lo que SettingsService.getTenantConfig devuelve.
+        // ¿SettingsService devuelve las features? No.
         
+        // Pero findAll sí tiene las features. 
+        // Si queremos ser 100% óptimos, podríamos añadir features a getSettings, 
+        // pero por ahora usemos el identify o el findAll original.
+        
+        // REVISIÓN: El findAll es lo que usaba antes. Si quiero optimizar, usaré el endpoint de features si existe.
+        // Pero TenantController ya tiene /tenant/:id/features? No, tiene PATCH features.
+        
+        // Volvamos al findAll filtrado por ahora para no romper el contrato de datos de features si GetSettings no las incluye.
         const allTenants = await serverFetch<any[]>('/tenant')
         const tenant = allTenants.find(t => t.slug === tenantSlug)
 

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button, Input, Textarea } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -31,7 +31,7 @@ export function CoachingInquiryForm() {
     };
 
     return (
-        <motion.div
+        <div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             className="max-w-xl mx-auto p-8 bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl"
@@ -102,6 +102,6 @@ export function CoachingInquiryForm() {
                     {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
                 </Button>
             </form>
-        </motion.div>
+        </div>
     );
 }

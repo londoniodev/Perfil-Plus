@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
 const benefits = [
@@ -22,7 +22,7 @@ export function CoachingSection() {
 
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                    <motion.div
+                    <div
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -48,9 +48,9 @@ export function CoachingSection() {
                         </div>
                         {/* Dramatic Lighting Overlay */}
                         <div className="absolute -top-20 -left-20 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[120px]" />
-                    </motion.div>
+                    </div>
 
-                    <motion.div
+                    <div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
@@ -94,7 +94,7 @@ export function CoachingSection() {
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </section>

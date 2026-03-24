@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { ChevronRight, ShoppingBag } from "lucide-react";
 
 const categories = [
@@ -56,7 +56,7 @@ export function ProductHighlight() {
                     </Button>
                 </div>
 
-                <motion.div
+                <div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
@@ -72,7 +72,7 @@ export function ProductHighlight() {
                     className="grid grid-cols-1 md:grid-cols-3 gap-8"
                 >
                     {categories.map((category) => (
-                        <motion.div
+                        <div
                             key={category.title}
                             variants={{
                                 hidden: { opacity: 0, y: 30 },
@@ -102,9 +102,9 @@ export function ProductHighlight() {
                                     Explorar Colección
                                 </Link>
                             </Button>
-                        </motion.div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
             </div>
         </section>
     );

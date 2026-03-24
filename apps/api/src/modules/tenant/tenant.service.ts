@@ -507,10 +507,27 @@ export class TenantService {
       );
     }
 
+    const resolvedFeatures = (tenant.features || []).map((f: string) => f.toUpperCase());
+
+    // Leer custom links del tenant desde SystemSetting(key='menu')
+    let customLinks: { label: string; href: string }[] = [];
+    try {
+      const menuSetting = await this.prisma.secure.systemSetting.findFirst({
+        where: { tenantId: tenant.id, key: 'menu' },
+      });
+      const menuData = (menuSetting?.value as any) || {};
+      if (Array.isArray(menuData.headerLinks)) {
+        customLinks = menuData.headerLinks;
+      }
+    } catch {
+      // Si falla, customLinks queda vacío — no es crítico
+    }
+
     const resolvedTenant = {
       id: tenant.id,
       slug: tenant.slug,
-      features: tenant.features || [],
+      features: resolvedFeatures,
+      customLinks,
     };
     this.logger.log(
       `[IDENTIFY DEBUG] Resolved tenant for domain "${domain}": id=${tenant.id}, features=${JSON.stringify(resolvedTenant.features)}`,
@@ -744,19 +761,19 @@ export class TenantService {
 
     // 2. Actualizar features en la DB usando el ID real (Contexto Global)
     // 2. Actualizar features en la base de datos (Contexto Global)
-    // Forzamos que DASHBOARD siempre esté presente para evitar bloqueos accidentales
-    if (!features.includes('DASHBOARD')) {
-      features.push('DASHBOARD');
-    }
+    // Normalizamos a MAYÚSCULAS para evitar duplicados por casing (ej: dashboard vs DASHBOARD)
+    const normalizedFeatures = Array.from(
+      new Set([...features.map((f) => f.toUpperCase()), 'DASHBOARD']),
+    );
 
     const updated = await this.prisma.raw.tenant.update({
       where: { id: tenant.id },
-      data: { features },
+      data: { features: normalizedFeatures },
       select: { id: true, slug: true, features: true },
     });
 
     this.logger.log(
-      `Features actualizadas para Tenant "${tenant.slug}" (${tenant.id}): [${features.join(', ')}]`,
+      `Features actualizadas para Tenant "${tenant.slug}" (${tenant.id}): [${normalizedFeatures.join(', ')}]`,
     );
 
     // 3. Invalidar caché Redis (el middleware cachea la resolución del tenant)

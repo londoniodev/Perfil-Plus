@@ -1,9 +1,10 @@
 import React from 'react';
 
 export function useTenant() {
+  const slug = (global as any).currentTenantSlug ?? 'cocinasiete';
   return {
     tenantId: '6786a344714f3ead406981ee',
-    slug: 'mauro', // This can be dynamic if we want but static is fine for now
+    slug,
     features: ['RESTAURANT', 'MARKETING']
   };
 }

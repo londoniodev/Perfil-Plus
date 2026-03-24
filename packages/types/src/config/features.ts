@@ -14,6 +14,7 @@ export const AVAILABLE_FEATURES = [
     { value: 'SETTINGS',    label: 'Configuración',         description: 'Ajustes avanzados del tenant' },
     { value: 'PORTFOLIO',   label: 'Portafolio',            description: 'Galería de trabajos y proyectos' },
     { value: 'BOT_WHATSAPP',label: 'Bot WhatsApp (CRM)',    description: 'Automatización de mensajes por WhatsApp' },
+    { value: 'LANDING',     label: 'Landing / Sitio Web',   description: 'Sitio web público con páginas dinámicas desde S3' },
 ] as const;
 
 /** Tipo literal union de todos los features válidos (ej. 'SHOP' | 'BLOG' | ...) */
@@ -40,4 +41,5 @@ export const FEATURE_ROUTES = {
     BLOG:       { label: 'Blog',    href: '/blog' },
     LMS:        { label: 'Cursos',  href: '/formacion' },
     RESTAURANT: { label: 'Menú',    href: '/menu' },
+    LANDING:    { label: 'Inicio',  href: '/' },
 } satisfies Record<string, FeatureRoute>;

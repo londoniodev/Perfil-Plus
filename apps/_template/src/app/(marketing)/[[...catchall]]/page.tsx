@@ -154,10 +154,17 @@ export default async function MarketingHubPage({ params }: Props) {
   const landing = await fetchLanding();
 
   if (landing?.body) {
+    // Sanitizar HTML de S3: eliminar <header>, <nav> y <footer> embebidos
+    // para evitar duplicación visual con el layout nativo de la app.
+    const sanitizedBody = landing.body
+      .replace(/<header[\s\S]*?<\/header>/gi, '')
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+      .replace(/<footer[\s\S]*?<\/footer>/gi, '');
+
     return (
       <div
         className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0"
-        dangerouslySetInnerHTML={{ __html: landing.body }}
+        dangerouslySetInnerHTML={{ __html: sanitizedBody }}
       />
     );
   }

@@ -23,7 +23,8 @@ export default async function MarketingLayout({
     const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
 
     const headersList = await headers();
-    const tenantFeaturesRaw = headersList.get('x-tenant-feature-list') || headersList.get('x-tenant-features');
+    const tenantFeaturesRaw = headersList.get('x-tenant-features');
+    const tenantCustomLinksRaw = headersList.get('x-tenant-custom-links');
     const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId;
 
     let featureArray: string[] = [];
@@ -66,7 +67,24 @@ export default async function MarketingLayout({
         return upperFeatures.has(restrictedRoute[0]);
     });
 
-    const hasDashboardFeature = featureArray.includes('dashboard') || featureArray.length > 0;
+    // 3. Integrar custom links inyectados desde el backend (vía middleware x-tenant-custom-links)
+    let customLinks: { label: string; href: string }[] = [];
+    if (tenantCustomLinksRaw) {
+        try {
+            customLinks = JSON.parse(tenantCustomLinksRaw);
+        } catch {
+            customLinks = [];
+        }
+    }
+
+    for (const cl of customLinks) {
+        const alreadyExists = navLinks.some(link => link.href === cl.href);
+        if (!alreadyExists) {
+            navLinks.push(cl);
+        }
+    }
+
+    const hasDashboardFeature = upperFeatures.has('DASHBOARD');
 
     return (
         <NavigationWrapper

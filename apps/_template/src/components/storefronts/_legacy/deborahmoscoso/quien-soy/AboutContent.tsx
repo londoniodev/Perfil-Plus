@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, Card, CardContent } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { Heart, Compass, Shield, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/constants/styles";
@@ -30,43 +30,43 @@ export function AboutContent() {
             <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="container mx-auto relative z-10 px-4">
-                <motion.div
+                <div
                     initial="hidden"
                     animate="visible"
                     variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <motion.div variants={fadeIn} className="mb-6">
+                    <div variants={fadeIn} className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 uppercase tracking-wider inline-block">
                             Mi Historia
                         </span>
-                    </motion.div>
+                    </div>
 
-                    <motion.h1
+                    <h1
                         variants={fadeIn}
                         className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 tracking-tight leading-tight"
                     >
                         Resiliencia con <span className="text-fuchsia-500 italic">Propósito</span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.div variants={fadeIn} className="prose prose-zinc prose-invert max-w-3xl mx-auto text-lg md:text-xl text-zinc-300 leading-relaxed mb-16 opacity-90 space-y-6">
+                    <div variants={fadeIn} className="prose prose-zinc prose-invert max-w-3xl mx-auto text-lg md:text-xl text-zinc-300 leading-relaxed mb-16 opacity-90 space-y-6">
                         <p>
                             Soy Deborah, una mujer que cree firmemente que las oportunidades no llegan, <strong>se crean</strong>. Mi vida ha sido un viaje de contrastes: desde la disciplina de un hogar con raíces militares y principios bíblicos, hasta los retos de ser el único sostén de mis hijos.
                         </p>
                         <p>
                             He pasado por el éxito bancario, la adrenalina del comercio internacional en Ecuador y la dureza de enfrentar deudas y extorsiones.
                         </p>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
 
-                <motion.div
+                <div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20"
                 >
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -78,9 +78,9 @@ export function AboutContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-indigo-500/10 hover:border-indigo-500/30 transition-colors relative overflow-hidden")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full relative z-10">
@@ -93,9 +93,9 @@ export function AboutContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -107,18 +107,18 @@ export function AboutContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
 
                 {/* --- NUEVA SECCIÓN: Mamá Luchadora --- */}
-                <motion.div
+                <div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={stagger}
                     className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto mb-24 mt-8"
                 >
-                    <motion.div variants={fadeIn} className="relative order-2 lg:order-1 flex flex-col gap-6">
+                    <div variants={fadeIn} className="relative order-2 lg:order-1 flex flex-col gap-6">
                         <Card className={cn(GLASS_CARD_STYLES, "h-full bg-white/[0.02] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="p-8">
                                 <h3 className="font-bold text-xl mb-4 text-white flex items-center gap-3">
@@ -146,9 +146,9 @@ export function AboutContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn} className="relative order-1 lg:order-2">
+                    <div variants={fadeIn} className="relative order-1 lg:order-2">
                         <div className="absolute -inset-4 bg-gradient-to-tr from-fuchsia-500/10 to-indigo-500/20 blur-2xl rounded-full opacity-60 pointer-events-none" />
                         <div className="relative bg-zinc-900/40 border border-zinc-800/50 p-8 md:p-10 rounded-3xl backdrop-blur-md">
                             <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider inline-block mb-6">
@@ -166,11 +166,11 @@ export function AboutContent() {
                                 </p>
                             </div>
                         </div>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
                 {/* ------------------------------------- */}
 
-                <motion.div
+                <div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -194,7 +194,7 @@ export function AboutContent() {
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </Button>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

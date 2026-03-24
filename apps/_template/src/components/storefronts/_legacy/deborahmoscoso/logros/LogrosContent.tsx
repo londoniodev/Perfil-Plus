@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { Award, Star, Plane, Crown, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/constants/styles";
@@ -38,46 +38,46 @@ export function LogrosContent() {
             <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[150px] pointer-events-none" />
 
             <div className="container mx-auto relative z-10 px-4">
-                <motion.div
+                <div
                     initial="hidden"
                     animate="visible"
                     variants={stagger}
                     className="max-w-4xl mx-auto text-center mb-20"
                 >
-                    <motion.div variants={fadeIn} className="mb-6">
+                    <div variants={fadeIn} className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider inline-block">
                             Trayectoria de Éxito
                         </span>
-                    </motion.div>
+                    </div>
 
-                    <motion.h1
+                    <h1
                         variants={fadeIn}
                         className="text-4xl md:text-5xl lg:text-7xl font-black text-white mb-6 tracking-tight leading-tight"
                     >
                         Mis <span className="text-amber-500">Logros</span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.p
+                    <p
                         variants={fadeIn}
                         className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed"
                     >
                         Cada reconocimiento es el reflejo de vidas impactadas, líderes desarrollados y una promesa de libertad cumplida a través de la disciplina.
-                    </motion.p>
-                </motion.div>
+                    </p>
+                </div>
 
                 <div className="max-w-6xl mx-auto space-y-24">
                     {/* Logro 1: Círculos de Oro */}
-                    <motion.div
+                    <div
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, margin: "-100px" }}
                         variants={stagger}
                         className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
                     >
-                        <motion.div variants={fadeIn} className="order-2 lg:order-1">
+                        <div variants={fadeIn} className="order-2 lg:order-1">
                             <ImagePlaceholder label="Imagen: 2 Círculos de Oro" />
-                        </motion.div>
-                        <motion.div variants={fadeIn} className="order-1 lg:order-2 flex flex-col justify-center">
+                        </div>
+                        <div variants={fadeIn} className="order-1 lg:order-2 flex flex-col justify-center">
                             <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 mb-6 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
                                 <Award className="w-8 h-8" />
                             </div>
@@ -85,18 +85,18 @@ export function LogrosContent() {
                             <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                                 El Círculo de Oro no es solo un galardón, es el símbolo de haber construido una organización masiva, sólida y altamente productiva. Es la recompensa al trabajo incansable, la duplicación exponencial y el compromiso inquebrantable con el equipo.
                             </p>
-                        </motion.div>
-                    </motion.div>
+                        </div>
+                    </div>
 
                     {/* Logro 2: Life Platino */}
-                    <motion.div
+                    <div
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, margin: "-100px" }}
                         variants={stagger}
                         className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
                     >
-                        <motion.div variants={fadeIn} className="order-1 flex flex-col justify-center">
+                        <div variants={fadeIn} className="order-1 flex flex-col justify-center">
                             <div className="w-16 h-16 rounded-full bg-slate-200/20 flex items-center justify-center text-slate-300 mb-6 shadow-[0_0_30px_rgba(203,213,225,0.1)]">
                                 <Crown className="w-8 h-8" />
                             </div>
@@ -104,24 +104,24 @@ export function LogrosContent() {
                             <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                                 Alcanzar el rango de Platino representa llegar a las grandes ligas del liderazgo empresarial en Lifehuni. Significa llevar a cientos de personas hacia su propia independencia, demostrando que con una visión clara, los resultados extraordinarios son inevitables.
                             </p>
-                        </motion.div>
-                        <motion.div variants={fadeIn} className="order-2">
+                        </div>
+                        <div variants={fadeIn} className="order-2">
                             <ImagePlaceholder label="Imagen: Life Platino / Rango" />
-                        </motion.div>
-                    </motion.div>
+                        </div>
+                    </div>
 
                     {/* Logro 3: Extravaganzas */}
-                    <motion.div
+                    <div
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, margin: "-100px" }}
                         variants={stagger}
                         className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
                     >
-                        <motion.div variants={fadeIn} className="order-2 lg:order-1">
+                        <div variants={fadeIn} className="order-2 lg:order-1">
                             <ImagePlaceholder label="Imagen: Extravaganzas (Eventos masivos)" />
-                        </motion.div>
-                        <motion.div variants={fadeIn} className="order-1 lg:order-2 flex flex-col justify-center">
+                        </div>
+                        <div variants={fadeIn} className="order-1 lg:order-2 flex flex-col justify-center">
                             <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
                                 <Star className="w-8 h-8" />
                             </div>
@@ -129,18 +129,18 @@ export function LogrosContent() {
                             <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                                 Las Extravaganzas son el corazón de nuestra cultura. Estar calificada a dos de estos magnos eventos valida la consistencia en el cumplimiento de metas supremas. Es la celebración dorada del crecimiento continuo junto a miles de líderes en los mejores escenarios y convenciones globales.
                             </p>
-                        </motion.div>
-                    </motion.div>
+                        </div>
+                    </div>
 
                     {/* Logro 4: Turquía */}
-                    <motion.div
+                    <div
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, margin: "-100px" }}
                         variants={stagger}
                         className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
                     >
-                        <motion.div variants={fadeIn} className="order-1 flex flex-col justify-center">
+                        <div variants={fadeIn} className="order-1 flex flex-col justify-center">
                             <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                                 <Plane className="w-8 h-8" />
                             </div>
@@ -148,11 +148,11 @@ export function LogrosContent() {
                             <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                                 Más que un viaje, Turquía simboliza la expansión de fronteras. Ganar el incentivo internacional de mayor prestigio materializa la promesa de que el empoderamiento y el trabajo duro te recompensan conociendo el mundo en condiciones de absoluta abundancia.
                             </p>
-                        </motion.div>
-                        <motion.div variants={fadeIn} className="order-2">
+                        </div>
+                        <div variants={fadeIn} className="order-2">
                             <ImagePlaceholder label="Imagen: Viaje a Turquía" />
-                        </motion.div>
-                    </motion.div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

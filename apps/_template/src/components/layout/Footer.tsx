@@ -29,7 +29,7 @@ export function Footer({
             { label: "Términos", href: "/terminos-y-condiciones" },
             { label: "Privacidad", href: "/politica-de-privacidad" }
         ];
-        if (features.includes("ECOMMERCE")) finalFooterLinks.push({ label: "Tienda", href: "/tienda" });
+        if (features.includes("SHOP")) finalFooterLinks.push({ label: "Tienda", href: "/tienda" });
         if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });
         if (features.includes("RESTAURANT")) finalFooterLinks.push({ label: "Menú", href: "/menu" });
     }

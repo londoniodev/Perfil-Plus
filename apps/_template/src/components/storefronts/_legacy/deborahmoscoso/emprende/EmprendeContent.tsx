@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, Card, CardContent } from "@alvarosky/ui";
-import { motion } from "framer-motion";
+
 import { IconHeart, IconUsers } from "@alvarosky/ui";
 import { TrendingUp, Target, Award, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,41 +31,41 @@ export function EmprendeContent() {
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="container mx-auto relative z-10 px-4">
-                <motion.div
+                <div
                     initial="hidden"
                     animate="visible"
                     variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <motion.div variants={fadeIn} className="mb-6">
+                    <div variants={fadeIn} className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 uppercase tracking-wider inline-block">
                             Oportunidad de Negocio
                         </span>
-                    </motion.div>
+                    </div>
 
-                    <motion.h1
+                    <h1
                         variants={fadeIn}
                         className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight"
                     >
                         Lifehuni: Tu Vehículo hacia la <span className="text-fuchsia-500 italic">Libertad</span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.p
+                    <p
                         variants={fadeIn}
                         className="text-lg md:text-xl text-zinc-300 mb-10 leading-relaxed max-w-3xl mx-auto opacity-90"
                     >
                         ¿Te imaginas construir un patrimonio mientras recuperas tu salud? En Lifehuni no solo vendemos suplementos naturales con respaldo científico; creamos puentes hacia la independencia financiera.
-                    </motion.p>
-                </motion.div>
+                    </p>
+                </div>
 
-                <motion.div
+                <div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-16 mb-20"
                 >
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -77,9 +77,9 @@ export function EmprendeContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full relative z-10">
@@ -92,9 +92,9 @@ export function EmprendeContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6">
@@ -106,10 +106,10 @@ export function EmprendeContent() {
                                 </p>
                             </CardContent>
                         </Card>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
 
-                <motion.div
+                <div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -134,7 +134,7 @@ export function EmprendeContent() {
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </Button>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

@@ -12,7 +12,7 @@ import {
 } from "@alvarosky/ui";
 import { cn } from "@/lib/utils";
 import { GLASS_CARD_STYLES } from "@/constants/styles";
-import { motion } from "framer-motion";
+
 import { Activity, ArrowRight, ShieldCheck, Dumbbell } from "lucide-react";
 
 const FeatureList = ({ items, iconColor = "var(--primary)" }: { items: string[], iconColor?: string }) => (
@@ -51,41 +51,41 @@ export function ServicesSelector() {
             <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="container mx-auto relative z-10 px-4">
-                <motion.div
+                <div
                     initial="hidden"
                     animate="visible"
                     variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <motion.div variants={fadeIn} className="mb-6">
+                    <div variants={fadeIn} className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider inline-block">
                             Respaldo Profesional
                         </span>
-                    </motion.div>
+                    </div>
 
-                    <motion.h1
+                    <h1
                         variants={fadeIn}
                         className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight"
                     >
                         Bienestar 360° con <span className="text-blue-500">Ciencia Real</span>
-                    </motion.h1>
+                    </h1>
 
-                    <motion.p
+                    <p
                         variants={fadeIn}
                         className="text-lg md:text-xl text-zinc-300 mb-10 leading-relaxed max-w-3xl mx-auto opacity-90"
                     >
                         No solo tengo las ganas, tengo el conocimiento para acompañarte. Mi asesoría no se basa en modas, sino en ciencia y experiencia clínica demostrable.
-                    </motion.p>
-                </motion.div>
+                    </p>
+                </div>
 
-                <motion.div
+                <div
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-100px" }}
                     variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-12 mb-20"
                 >
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-blue-500/10 hover:border-blue-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:bg-blue-500/10 transition-colors" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -101,9 +101,9 @@ export function ServicesSelector() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -119,9 +119,9 @@ export function ServicesSelector() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </motion.div>
+                    </div>
 
-                    <motion.div variants={fadeIn}>
+                    <div variants={fadeIn}>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/5 rounded-bl-full pointer-events-none group-hover:bg-fuchsia-500/10 transition-colors" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -137,10 +137,10 @@ export function ServicesSelector() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
 
-                <motion.div
+                <div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -164,7 +164,7 @@ export function ServicesSelector() {
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </Button>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

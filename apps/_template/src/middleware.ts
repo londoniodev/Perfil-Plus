@@ -22,6 +22,7 @@ export async function middleware(request: NextRequest) {
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantSlug = process.env.NEXT_PUBLIC_TENANT_ID || domainToQuery; // Fallback al dominio
     let tenantFeatures: string[] = [];
+    let tenantCustomLinks: { label: string; href: string }[] = [];
 
     if (!isBaseDomain) {
         // Validación Fail-fast: INTERNAL_API_URL es obligatorio en producción
@@ -44,7 +45,8 @@ export async function middleware(request: NextRequest) {
                 const tenantData = await res.json();
                 tenantId = tenantData.id;
                 tenantSlug = tenantData.slug || domainToQuery;
-                tenantFeatures = tenantData.features || [];
+                tenantFeatures = (tenantData.features || []).map((f: string) => f.toUpperCase());
+                tenantCustomLinks = tenantData.customLinks || [];
                 console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, slug: ${tenantSlug}, features: ${JSON.stringify(tenantFeatures)}`);
             } else if (res.status === 404) {
                 console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${domainToQuery} at ${fetchUrl}`);
@@ -91,13 +93,22 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Restringir rutas del menú de restaurante exclusivamente a tenants con RESTAURANT habilitado
-    if (url.pathname === '/menu' || url.pathname.startsWith('/menu/')) {
-        const hasRestaurantFeature = tenantFeatures.some(f => f.toUpperCase() === 'RESTAURANT' || f.toUpperCase() === 'RESTAURANTE');
-        if (!hasRestaurantFeature && !isBaseDomain) {
-            console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a /menu sin el feature RESTAURANT. Redirigiendo a 404.`);
-            url.pathname = '/404-tenant';
-            return NextResponse.rewrite(url);
+    // ── Protección de rutas públicas por feature ──
+    const featureRouteGuards: { path: string; feature: string }[] = [
+        { path: '/menu', feature: 'RESTAURANT' },
+        { path: '/tienda', feature: 'SHOP' },
+        { path: '/blog', feature: 'BLOG' },
+        { path: '/formacion', feature: 'LMS' },
+    ];
+
+    for (const guard of featureRouteGuards) {
+        if (url.pathname === guard.path || url.pathname.startsWith(`${guard.path}/`)) {
+            const hasFeature = tenantFeatures.includes(guard.feature);
+            if (!hasFeature && !isBaseDomain) {
+                console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a ${guard.path} sin el feature ${guard.feature}. Redirigiendo a 404.`);
+                url.pathname = '/404-tenant';
+                return NextResponse.rewrite(url);
+            }
         }
     }
 
@@ -106,6 +117,7 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-tenant-id', tenantId);
     requestHeaders.set('x-tenant-slug', tenantSlug);
     requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
+    requestHeaders.set('x-tenant-custom-links', JSON.stringify(tenantCustomLinks));
 
     if (shouldRewrite) {
         const dashboardHost = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';

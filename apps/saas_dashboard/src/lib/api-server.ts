@@ -81,10 +81,13 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         if (!response.ok) {
             let errorMessage = `API Error: ${response.status} ${response.statusText}`;
             try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || JSON.stringify(errorData) || errorMessage;
+                const text = await response.clone().text();
+                if (text) {
+                    const errorData = JSON.parse(text);
+                    errorMessage = errorData.message || JSON.stringify(errorData) || errorMessage;
+                }
             } catch (e) {
-                // Ignore JSON parse error on non-JSON response
+                // Ignore parsing errors on error bodies
             }
             throw new Error(errorMessage);
         }
@@ -94,7 +97,18 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
             return undefined as any;
         }
 
-        return await response.json() as T;
+        const text = await response.text();
+        if (!text) {
+            return { success: true } as any;
+        }
+
+        try {
+            return JSON.parse(text) as T;
+        } catch (e: any) {
+            console.warn(`[Server API] Error parsing JSON response from ${endpoint}:`, e.message);
+            // Fallback for non-JSON or malformed but successful responses
+            return { success: true } as any;
+        }
     } catch (error) {
         console.error(`[Server API Error] ${endpoint}:`, error);
         throw error;

@@ -52,6 +52,13 @@ export class TenantController {
     return this.tenantService.findAll();
   }
 
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async findOne(@Param('id') id: string) {
+    return this.tenantService.getTenantByIdOrSlug(id);
+  }
+
   // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.
   @Public()
   @SkipThrottle()

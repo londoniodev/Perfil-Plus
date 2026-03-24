@@ -329,6 +329,7 @@ export class TenantService {
     this.logger.log(
       `[BRANDING DEBUG] ID lookup failed, trying slug lookup for: "${tenantId}"`,
     );
+
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
       select: {
@@ -447,7 +448,8 @@ export class TenantService {
       );
     }
 
-    const cacheKey = `tenant_resolve_${domain}`;
+    const lowercaseDomain = domain.toLowerCase();
+    const cacheKey = `tenant_resolve_${lowercaseDomain}`;
 
     const cachedResolution = await this.cacheManager.get(cacheKey);
 
@@ -461,14 +463,18 @@ export class TenantService {
     const baseDomain =
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
       'xn--alvarolondoo-khb.dev';
-    const slugFromDomain = domain.endsWith(`.${baseDomain}`)
-      ? domain.replace(`.${baseDomain}`, '')
-      : domain;
+    const slugFromDomain = lowercaseDomain.endsWith(`.${baseDomain}`)
+      ? lowercaseDomain.replace(`.${baseDomain}`, '')
+      : lowercaseDomain;
 
     try {
       tenant = await this.prisma.secure.tenant.findFirst({
         where: {
-          OR: [{ domain: domain }, { slug: domain }, { slug: slugFromDomain }],
+          OR: [
+            { domain: lowercaseDomain },
+            { slug: lowercaseDomain },
+            { slug: slugFromDomain },
+          ],
         },
         select: { id: true, slug: true, name: true, status: true, features: true },
       });
@@ -737,6 +743,12 @@ export class TenantService {
     }
 
     // 2. Actualizar features en la DB usando el ID real (Contexto Global)
+    // 2. Actualizar features en la base de datos (Contexto Global)
+    // Forzamos que DASHBOARD siempre esté presente para evitar bloqueos accidentales
+    if (!features.includes('DASHBOARD')) {
+      features.push('DASHBOARD');
+    }
+
     const updated = await this.prisma.raw.tenant.update({
       where: { id: tenant.id },
       data: { features },
@@ -777,5 +789,21 @@ export class TenantService {
       await this.cacheManager.del(key);
       this.logger.log(`Caché de tenant invalidado: ${key}`);
     }
+  }
+
+  async getTenantByIdOrSlug(idOrSlug: string) {
+    const tenant = await this.prisma.raw.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(
+        `Tenant con ID o Slug "${idOrSlug}" no encontrado`,
+      );
+    }
+
+    return tenant;
   }
 }

@@ -45,9 +45,9 @@ export async function getTenantSettingsAction(tenantSlug: string): Promise<{ suc
 export async function getTenantFeaturesAction(tenantSlug: string): Promise<{ success: boolean; data?: string[]; error?: string }> {
     try {
         await validateSuperAdmin()
-        // Recuperamos el tenant completo para obtener sus features
-        const allTenants = await serverFetch<any[]>('/tenant')
-        const tenant = allTenants.find(t => t.slug === tenantSlug)
+
+        // Usamos el nuevo endpoint discriminado por ID/Slug para evitar cacheo de la lista completa
+        const tenant = await serverFetch<any>(`/tenant/${tenantSlug}`, { cache: 'no-store' })
 
         if (!tenant) throw new Error("Tenant no encontrado")
 

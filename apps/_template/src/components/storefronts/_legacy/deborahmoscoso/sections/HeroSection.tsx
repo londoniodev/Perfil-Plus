@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@alvarosky/ui";
-import { motion } from "framer-motion";
 
 export function HeroSection() {
     return (
@@ -24,47 +23,15 @@ export function HeroSection() {
             </div>
 
             <div className="container mx-auto relative z-20 px-4 pt-20 text-center">
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                            opacity: 1,
-                            transition: {
-                                staggerChildren: 0.2,
-                                delayChildren: 0.3
-                            }
-                        }
-                    }}
-                    className="max-w-4xl mx-auto"
-                >
-                    <motion.h1
-                        variants={{
-                            hidden: { opacity: 0, y: 40 },
-                            visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.22, 1, 0.36, 1] } }
-                        }}
-                        className="text-5xl md:text-7xl lg:text-[8rem] font-black tracking-tighter text-white mb-8 leading-[0.9]"
-                    >
+                <div className="max-w-4xl mx-auto">
+                    <h1 className="text-5xl md:text-7xl lg:text-[8rem] font-black tracking-tighter text-white mb-8 leading-[0.9]">
                         COACHING & <br />
                         <span className="text-fuchsia-500 italic">SUPLEMENTACIÓN</span>
-                    </motion.h1>
-                    <motion.p
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 0.8, y: 0, transition: { duration: 0.8 } }
-                        }}
-                        className="text-xl md:text-2xl text-zinc-300 mb-12 max-w-2xl mx-auto leading-relaxed opacity-80"
-                    >
+                    </h1>
+                    <p className="text-xl md:text-2xl text-zinc-300 mb-12 max-w-2xl mx-auto leading-relaxed opacity-80">
                         Programas de coaching de alto rendimiento, planes de nutrición personalizados y tienda oficial de suplementación premium.
-                    </motion.p>
-                    <motion.div
-                        variants={{
-                            hidden: { opacity: 0, scale: 0.9 },
-                            visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } }
-                        }}
-                        className="flex flex-col sm:flex-row items-center justify-center gap-4"
-                    >
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Button asChild size="lg" className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white min-w-[200px] h-14 text-lg rounded-full">
                             <Link href="/servicios">
                                 Comienza Tu Transformación
@@ -75,16 +42,11 @@ export function HeroSection() {
                                 Explorar Tienda
                             </Link>
                         </Button>
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
 
                 {/* Trusted By / Social Proof placeholder */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 1 }}
-                    className="mt-20 pt-10 border-t border-zinc-900"
-                >
+                <div className="mt-20 pt-10 border-t border-zinc-900">
                     <p className="text-sm font-medium text-zinc-500 uppercase tracking-widest mb-6">
                         Confiado por más de 500+ clientes en su camino al éxito
                     </p>
@@ -94,7 +56,7 @@ export function HeroSection() {
                         <div className="h-8 w-32 bg-zinc-800 rounded animate-pulse" />
                         <div className="h-8 w-32 bg-zinc-800 rounded animate-pulse" />
                     </div>
-                </motion.div>
+                </div>
             </div>
         </section>
     );

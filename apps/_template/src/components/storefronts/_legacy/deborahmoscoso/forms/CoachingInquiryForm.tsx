@@ -32,8 +32,6 @@ export function CoachingInquiryForm() {
 
     return (
         <div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
             className="max-w-xl mx-auto p-8 bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl"
         >
             <h3 className="text-2xl font-bold text-white mb-2">Aplica al Programa</h3>

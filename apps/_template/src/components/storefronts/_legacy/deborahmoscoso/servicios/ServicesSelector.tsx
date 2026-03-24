@@ -52,26 +52,21 @@ export function ServicesSelector() {
 
             <div className="container mx-auto relative z-10 px-4">
                 <div
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <div variants={fadeIn} className="mb-6">
+                    <div className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider inline-block">
                             Respaldo Profesional
                         </span>
                     </div>
 
                     <h1
-                        variants={fadeIn}
                         className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight"
                     >
                         Bienestar 360° con <span className="text-blue-500">Ciencia Real</span>
                     </h1>
 
                     <p
-                        variants={fadeIn}
                         className="text-lg md:text-xl text-zinc-300 mb-10 leading-relaxed max-w-3xl mx-auto opacity-90"
                     >
                         No solo tengo las ganas, tengo el conocimiento para acompañarte. Mi asesoría no se basa en modas, sino en ciencia y experiencia clínica demostrable.
@@ -79,13 +74,9 @@ export function ServicesSelector() {
                 </div>
 
                 <div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-12 mb-20"
                 >
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-blue-500/10 hover:border-blue-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:bg-blue-500/10 transition-colors" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -103,7 +94,7 @@ export function ServicesSelector() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -121,7 +112,7 @@ export function ServicesSelector() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden group")}>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/5 rounded-bl-full pointer-events-none group-hover:bg-fuchsia-500/10 transition-colors" />
                             <CardContent className="pt-8 px-8 pb-8 flex flex-col h-full relative z-10">
@@ -141,10 +132,6 @@ export function ServicesSelector() {
                 </div>
 
                 <div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
                     className="max-w-3xl mx-auto rounded-3xl bg-zinc-900 border border-zinc-800 p-8 md:p-12 text-center shadow-2xl relative overflow-hidden"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />

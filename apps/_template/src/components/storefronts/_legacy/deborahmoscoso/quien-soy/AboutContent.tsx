@@ -31,25 +31,21 @@ export function AboutContent() {
 
             <div className="container mx-auto relative z-10 px-4">
                 <div
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <div variants={fadeIn} className="mb-6">
+                    <div className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 uppercase tracking-wider inline-block">
                             Mi Historia
                         </span>
                     </div>
 
                     <h1
-                        variants={fadeIn}
                         className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8 tracking-tight leading-tight"
                     >
                         Resiliencia con <span className="text-fuchsia-500 italic">Propósito</span>
                     </h1>
 
-                    <div variants={fadeIn} className="prose prose-zinc prose-invert max-w-3xl mx-auto text-lg md:text-xl text-zinc-300 leading-relaxed mb-16 opacity-90 space-y-6">
+                    <div className="prose prose-zinc prose-invert max-w-3xl mx-auto text-lg md:text-xl text-zinc-300 leading-relaxed mb-16 opacity-90 space-y-6">
                         <p>
                             Soy Deborah, una mujer que cree firmemente que las oportunidades no llegan, <strong>se crean</strong>. Mi vida ha sido un viaje de contrastes: desde la disciplina de un hogar con raíces militares y principios bíblicos, hasta los retos de ser el único sostén de mis hijos.
                         </p>
@@ -60,13 +56,9 @@ export function AboutContent() {
                 </div>
 
                 <div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20"
                 >
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -80,7 +72,7 @@ export function AboutContent() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-indigo-500/10 hover:border-indigo-500/30 transition-colors relative overflow-hidden")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full relative z-10">
@@ -95,7 +87,7 @@ export function AboutContent() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -112,13 +104,9 @@ export function AboutContent() {
 
                 {/* --- NUEVA SECCIÓN: Mamá Luchadora --- */}
                 <div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={stagger}
                     className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto mb-24 mt-8"
                 >
-                    <div variants={fadeIn} className="relative order-2 lg:order-1 flex flex-col gap-6">
+                    <div className="relative order-2 lg:order-1 flex flex-col gap-6">
                         <Card className={cn(GLASS_CARD_STYLES, "h-full bg-white/[0.02] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="p-8">
                                 <h3 className="font-bold text-xl mb-4 text-white flex items-center gap-3">
@@ -148,7 +136,7 @@ export function AboutContent() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn} className="relative order-1 lg:order-2">
+                    <div className="relative order-1 lg:order-2">
                         <div className="absolute -inset-4 bg-gradient-to-tr from-fuchsia-500/10 to-indigo-500/20 blur-2xl rounded-full opacity-60 pointer-events-none" />
                         <div className="relative bg-zinc-900/40 border border-zinc-800/50 p-8 md:p-10 rounded-3xl backdrop-blur-md">
                             <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider inline-block mb-6">
@@ -171,10 +159,6 @@ export function AboutContent() {
                 {/* ------------------------------------- */}
 
                 <div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
                     className="max-w-4xl mx-auto rounded-3xl bg-zinc-900 border border-zinc-800 p-8 md:p-12 text-center shadow-2xl relative overflow-hidden"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />

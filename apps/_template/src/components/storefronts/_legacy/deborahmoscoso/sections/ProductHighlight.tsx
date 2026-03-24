@@ -57,31 +57,11 @@ export function ProductHighlight() {
                 </div>
 
                 <div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                            opacity: 1,
-                            transition: {
-                                staggerChildren: 0.15
-                            }
-                        }
-                    }}
                     className="grid grid-cols-1 md:grid-cols-3 gap-8"
                 >
                     {categories.map((category) => (
                         <div
                             key={category.title}
-                            variants={{
-                                hidden: { opacity: 0, y: 30 },
-                                visible: {
-                                    opacity: 1,
-                                    y: 0,
-                                    transition: { duration: 0.8, ease: "easeOut" }
-                                }
-                            }}
                             className={`group relative overflow-hidden rounded-3xl border ${category.borderColor} ${category.color} p-8 flex flex-col h-[450px] transition-all hover:shadow-2xl hover:shadow-fuchsia-500/5`}
                         >
                             <div className="flex-1">

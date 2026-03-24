@@ -37,7 +37,7 @@ export function useMenu(tenantId: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
     const { data, error, isLoading } = useSWR(
-        tenantId ? [`${apiUrl}/public/menu`, tenantId] : null,
+        tenantId ? [`${apiUrl}/public/restaurant/${tenantId}/menu`, tenantId] : null,
         fetcher
     )
 

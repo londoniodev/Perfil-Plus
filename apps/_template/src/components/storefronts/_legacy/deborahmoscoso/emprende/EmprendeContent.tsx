@@ -32,26 +32,21 @@ export function EmprendeContent() {
 
             <div className="container mx-auto relative z-10 px-4">
                 <div
-                    initial="hidden"
-                    animate="visible"
-                    variants={stagger}
                     className="max-w-4xl mx-auto text-center"
                 >
-                    <div variants={fadeIn} className="mb-6">
+                    <div className="mb-6">
                         <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 uppercase tracking-wider inline-block">
                             Oportunidad de Negocio
                         </span>
                     </div>
 
                     <h1
-                        variants={fadeIn}
                         className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight"
                     >
                         Lifehuni: Tu Vehículo hacia la <span className="text-fuchsia-500 italic">Libertad</span>
                     </h1>
 
                     <p
-                        variants={fadeIn}
                         className="text-lg md:text-xl text-zinc-300 mb-10 leading-relaxed max-w-3xl mx-auto opacity-90"
                     >
                         ¿Te imaginas construir un patrimonio mientras recuperas tu salud? En Lifehuni no solo vendemos suplementos naturales con respaldo científico; creamos puentes hacia la independencia financiera.
@@ -59,13 +54,9 @@ export function EmprendeContent() {
                 </div>
 
                 <div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                    variants={stagger}
                     className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mt-16 mb-20"
                 >
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6 group-hover:scale-110 transition-transform">
@@ -79,7 +70,7 @@ export function EmprendeContent() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors relative overflow-hidden")}>
                             <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 to-transparent pointer-events-none" />
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full relative z-10">
@@ -94,7 +85,7 @@ export function EmprendeContent() {
                         </Card>
                     </div>
 
-                    <div variants={fadeIn}>
+                    <div>
                         <Card className={cn(GLASS_CARD_STYLES, "h-full hover:bg-white/[0.06] border-fuchsia-500/10 hover:border-fuchsia-500/30 transition-colors")}>
                             <CardContent className="pt-8 px-6 pb-6 text-center flex flex-col items-center h-full">
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-fuchsia-500/10 text-fuchsia-500 mb-6">
@@ -110,10 +101,6 @@ export function EmprendeContent() {
                 </div>
 
                 <div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
                     className="max-w-3xl mx-auto rounded-3xl bg-zinc-900 border border-zinc-800 p-8 md:p-12 text-center shadow-2xl relative overflow-hidden"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-fuchsia-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />

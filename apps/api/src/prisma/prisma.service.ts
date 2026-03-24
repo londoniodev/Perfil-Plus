@@ -76,6 +76,7 @@ export class PrismaService
               'EvaluationResult',
               'UserProgress',
               'Purchase',
+              'OrderDeliveryAnalytics',
             ];
 
             if (globalModels.includes(model)) {

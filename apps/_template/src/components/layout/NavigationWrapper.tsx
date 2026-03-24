@@ -52,7 +52,7 @@ export function NavigationWrapper({
                 logo={logo} 
                 links={links}
             />
-            <main className="pt-24 lg:pt-28">{children}</main>
+            <main>{children}</main>
             {footer}
         </>
     );

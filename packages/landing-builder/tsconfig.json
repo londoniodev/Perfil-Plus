@@ -15,7 +15,17 @@
     "rootDir": "./src",
     "declaration": true,
     "sourceMap": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@alvarosky/ui/*": ["../../packages/ui/src/*"],
+      "@alvarosky/shared/*": ["../../packages/shared/src/*"],
+      "@alvarosky/features/*": ["../../packages/features/src/*"],
+      "@/*": ["../../apps/_template/src/*"],
+      "next/image": ["src/mocks/next-image.tsx"],
+      "next/link": ["src/mocks/next-link.tsx"],
+      "next/font/google": ["src/mocks/next-font-google.tsx"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

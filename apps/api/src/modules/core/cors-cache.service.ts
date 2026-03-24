@@ -29,7 +29,7 @@ export class CorsCacheService implements OnModuleInit {
     const store = (this.cacheManager as any).store;
     // v5 style: store.client
     // Algunos wrappers pueden tenerlo en store.md.client (multi-store)
-    return store?.client || store?._client || (store as any).md?.client || null;
+    return store?.client || store?._client || store?.md?.client || null;
   }
 
   /**

@@ -33,12 +33,27 @@ const NextLinkMock = ({ href, children, className, ...props }: any) => {
   );
 };
 
+/** Mock for next/font/google. Returns a function that returns a dummy class object. */
+const NextFontGoogleMock = () => {
+    return () => ({
+        className: 'next-font-mock',
+        style: {}
+    });
+};
+
 // Apply mocks globally to the process so that imported components use them.
 // Note: This is a bit hacky for a script, but effective for static rendering.
 // Alternative: use a bundler or specialized transform.
 (global as any).React = React;
 (global as any).NextImage = NextImageMock;
 (global as any).NextLink = NextLinkMock;
+
+// Mock next/font/google for various common fonts
+(global as any).Poppins = NextFontGoogleMock();
+(global as any).Inter = NextFontGoogleMock();
+(global as any).Outfit = NextFontGoogleMock();
+(global as any).Geist = NextFontGoogleMock();
+(global as any).GeistMono = NextFontGoogleMock();
 
 // We also need to mock lucide-react if the components use it and it's not installed in this package,
 // but since landing-builder sits in the monorepo, it might resolve correctly if we use tsx.

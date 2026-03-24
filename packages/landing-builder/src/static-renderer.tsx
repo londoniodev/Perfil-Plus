@@ -55,6 +55,18 @@ const NextFontGoogleMock = () => {
 (global as any).Geist = NextFontGoogleMock();
 (global as any).GeistMono = NextFontGoogleMock();
 
+// Mock useToast from @alvarosky/ui or similar
+(global as any).useToast = () => ({
+    toast: () => {},
+    dismiss: () => {},
+});
+
+// Mock useTenant
+(global as any).useTenant = () => ({
+    tenantId: '6786a344714f3ead406981ee', // Dummy ID for rendering
+    slug: 'mauro',
+});
+
 // We also need to mock lucide-react if the components use it and it's not installed in this package,
 // but since landing-builder sits in the monorepo, it might resolve correctly if we use tsx.
 
@@ -97,27 +109,38 @@ export async function renderLegacyLanding(tenantSlug: string): Promise<string> {
     features: [],
   };
 
+  // Import mocks for wrapping
+  const { ToastProvider: ToastMockProvider } = await import('./mocks/ui-toast');
+  const { TenantProvider: TenantMockProvider } = await import('./mocks/app-providers');
+
+  // Perform the actual rendering
   console.log(`🎨 Rendering legacy component for: [${tenantSlug}]`);
   
-  const markup = ReactDOMServer.renderToStaticMarkup(
-    <LandingComponent data={mockData} />
+  const content = ReactDOMServer.renderToStaticMarkup(
+    <TenantMockProvider>
+        <ToastMockProvider>
+            <LandingComponent data={mockData} />
+        </ToastMockProvider>
+    </TenantMockProvider>
   );
 
   // Wrap in a minimal HTML shell for the processor
   // The shell includes the required meta tags and structure for Tailwind scanning
-  return `
+  const html = `
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>${tenantSlug.charAt(0).toUpperCase() + tenantSlug.slice(1)} Landing</title>
+    <title>Landing - ${tenantSlug}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    ${markup}
+    <div id="root">${content}</div>
 </body>
 </html>
   `.trim();
+
+  return html;
 }
 
 // ─────────────────────────────────────────────

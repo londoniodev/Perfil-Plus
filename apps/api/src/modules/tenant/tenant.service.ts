@@ -40,9 +40,9 @@ interface BrandSettingsWithAssets {
 @Injectable()
 export class TenantService {
   private readonly logger = new Logger(TenantService.name);
-  // Asume INTERNAL_FRONTEND_URL = "http://localhost:3000/api/revalidate"
-  private readonly nextjsRevalidationUrl =
-    process.env.INTERNAL_FRONTEND_URL || 'http://127.0.0.1:3000/api/revalidate';
+  private readonly nextjsRevalidationUrl = process.env.FRONTEND_APP_URL 
+    ? `${process.env.FRONTEND_APP_URL}/api/revalidate` 
+    : 'http://127.0.0.1:3000/api/revalidate';
   private readonly internalApiKey =
     process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
@@ -181,12 +181,12 @@ export class TenantService {
     // 6. Invalidar caché en Redis (slug + dominio completo)
     await this.invalidateTenantCache(slug, domain);
 
-    // 7. Actualizar caché CORS en RAM
+    // 7. Actualizar caché CORS en Redis dinámicamente
     const baseDomain = this.corsCacheService.getBaseDomain();
     const subdomainOrigin = `https://${newTenant.slug}.${baseDomain}`;
-    this.corsCacheService.addOrigin(subdomainOrigin);
+    await this.corsCacheService.addOrigin(subdomainOrigin);
     if (newTenant.domain) {
-      this.corsCacheService.addOrigin(`https://${newTenant.domain}`);
+      await this.corsCacheService.addOrigin(`https://${newTenant.domain}`);
     }
 
     // 8. Provisionar dominio en Dokploy (SSL + routing)

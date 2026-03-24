@@ -15,9 +15,10 @@ export class DokployService {
   private readonly apiKey: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.apiBaseUrl =
-      this.configService.get<string>('DOKPLOY_API_URL') ||
-      'https://panel.xn--alvarolondoo-khb.dev/api';
+    this.apiBaseUrl = this.configService.get<string>('DOKPLOY_API_URL') || '';
+    if (!this.apiBaseUrl) {
+      this.logger.warn('[Dokploy] DOKPLOY_API_URL no configurado.');
+    }
     this.apiKey = this.configService.get<string>('DOKPLOY_API_KEY') || '';
   }
 
@@ -26,9 +27,9 @@ export class DokployService {
    * Los errores se loguean pero NO crashean la aplicación.
    */
   async provisionDomain(host: string, applicationId: string): Promise<boolean> {
-    if (!this.apiKey) {
+    if (!this.apiKey || !this.apiBaseUrl) {
       this.logger.warn(
-        '[Dokploy] DOKPLOY_API_KEY no configurado. Saltando provisionamiento de dominio.',
+        '[Dokploy] DOKPLOY_API_KEY o DOKPLOY_API_URL no configurados. Saltando provisionamiento de dominio.',
       );
       return false;
     }

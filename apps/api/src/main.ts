@@ -55,16 +55,14 @@ async function bootstrap() {
     .map((o) => o.trim())
     .filter(Boolean);
 
-  // Base domains for multi-tenant (IDN-encoded versions of alvarolondoño)
-  const allowedBaseDomains = [
-    '.xn--alvarolondoo-khb.dev', // *.alvarolondoño.dev
-    '.xn--alvarolondoo-khb.com', // *.alvarolondoño.com
-  ];
+  // Base domains for multi-tenant (Dynamic from env)
+  const baseDomain = configService.get<string>('MAIN_DOMAIN') || configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN');
 
   // In development, always allow localhost
   const devOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
     'http://localhost:3003',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:3003',
@@ -76,41 +74,33 @@ async function bootstrap() {
   logger.log(
     `CORS: Explicit origins (${explicitOrigins.length}): ${explicitOrigins.join(', ') || 'none'}`,
   );
-  logger.log(`CORS: Dynamic base domains: ${allowedBaseDomains.join(', ')}`);
-  logger.log(`CORS: CorsCacheService activo (validación dinámica desde DB)`);
+  if (baseDomain) {
+    logger.log(`CORS: Dynamic base domain: ${baseDomain}`);
+  }
+  logger.log(`CORS: CorsCacheService activo (validación dinámica desde Redis / DB)`);
 
   app.enableCors({
-    origin: (requestOrigin, callback) => {
+    origin: async (requestOrigin, callback) => {
       // Allow server-side requests (no origin) and Postman
       if (!requestOrigin) return callback(null, true);
 
-      // 1. Check RAM cache (loaded from DB on startup + updated dynamically)
-      if (corsCacheService.checkOrigin(requestOrigin)) {
-        return callback(null, true);
-      }
-
-      // 2. Check explicit list
+      // 1. Check explicit list
       if (explicitOrigins.includes(requestOrigin)) {
         return callback(null, true);
       }
 
-      // 3. Check dynamic multi-tenant subdomains (wildcard fallback)
+      // 2. Check Redis / DB cache dynamically
       try {
-        const originUrl = new URL(requestOrigin);
-        const hostname = originUrl.hostname;
-        const isAllowedSubdomain = allowedBaseDomains.some((base) =>
-          hostname.endsWith(base),
-        );
-
-        if (isAllowedSubdomain) {
+        const isAllowed = await corsCacheService.checkOrigin(requestOrigin);
+        if (isAllowed) {
           return callback(null, true);
         }
-      } catch {
-        // Invalid URL, reject
+      } catch (error: any) {
+        logger.error(`Error verifying CORS dynamically: ${error.message}`);
       }
 
       logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
-      callback(new Error(`Not allowed by CORS: ${requestOrigin}`));
+      callback(new Error(`Not allowed by CORS: ${requestOrigin}`), false as any);
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: [

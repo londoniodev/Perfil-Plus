@@ -110,6 +110,41 @@ export default async function MarketingLayout({
                 />
             }
         >
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        (function() {
+                            const currentTenant = "${tenantId}";
+                            const savedTenant = localStorage.getItem('last_tenant_v1');
+                            
+                            if (savedTenant && savedTenant !== currentTenant) {
+                                console.warn('[PWA Shield] Tenant change detected: ' + savedTenant + ' -> ' + currentTenant + '. Clearing cache...');
+                                
+                                // 1. Desregistrar todos los Service Workers
+                                if ('serviceWorker' in navigator) {
+                                    navigator.serviceWorker.getRegistrations().then(registrations => {
+                                        for(let registration of registrations) {
+                                            registration.unregister();
+                                        }
+                                    });
+                                }
+                                
+                                // 2. Limpiar Cache Storage
+                                if ('caches' in window) {
+                                    caches.keys().then(names => {
+                                        for (let name of names) caches.delete(name);
+                                    });
+                                }
+                                
+                                // 3. Forzar recarga limpia si es necesario (opcional)
+                                // window.location.reload(true);
+                            }
+                            
+                            localStorage.setItem('last_tenant_v1', currentTenant);
+                        })();
+                    `
+                }}
+            />
             {children}
         </NavigationWrapper>
     );

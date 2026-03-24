@@ -67,7 +67,37 @@ export async function getTenantDesign(tenantId: string) {
       tagline: null,
       colors: { primary: "#000000" },
       fonts: { heading: "Inter", body: "Inter" },
-      radius: 0.5
+      radius: 0.5,
+      features: [], // <--- Añadir esto para evitar navLinks vacíos por crash
     };
+  }
+}
+
+/**
+ * Identify tenant by host (Server Components fallback)
+ * Use this when x-tenant-id header is missing to re-identify via host
+ */
+export async function identifyTenantByHost(host: string): Promise<{ id: string, slug: string, features: string[] } | null> {
+  const internalUrl = process.env.INTERNAL_API_URL || 'http://localhost:3001/api';
+  const cleanHost = host.split(':')[0].replace(/^(www\.)/, "");
+  
+  try {
+    const res = await fetch(`${internalUrl}/tenant/identify?domain=${cleanHost}`, {
+      headers: {
+        'x-internal-token': process.env.INTERNAL_API_KEY || 'default_dev_secret_key'
+      },
+      next: { revalidate: 3600 } // Cache detection results for 1 hour
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      id: data.id,
+      slug: data.slug || cleanHost,
+      features: (data.features || []).map((f: string) => f.toUpperCase())
+    };
+  } catch (error) {
+    console.error(`[Identify Fallback] Error for host ${cleanHost}:`, error);
+    return null;
   }
 }

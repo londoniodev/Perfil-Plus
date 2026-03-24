@@ -1,7 +1,7 @@
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { getTenantId } from "@/lib/config-server";
-import { getTenantDesign } from "@/lib/tenant-server";
+import { getTenantDesign, identifyTenantByHost } from "@/lib/tenant-server";
 import { FEATURE_ROUTES } from "@alvarosky/types";
 import { headers } from "next/headers";
 import React from "react";
@@ -11,8 +11,26 @@ export default async function MarketingLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const tenantId = await getTenantId();
-    const design = await getTenantDesign(tenantId);
+    const headersList = await headers();
+    const host = headersList.get('host') || '';
+    
+    let tenantId = await getTenantId();
+    let design = await getTenantDesign(tenantId);
+    
+    // Fallback Robust: Si no logramos identificar al tenant por headers (Next.js context bug),
+    // intentamos identificarlo por el Host (dominio) directamente.
+    if ((!tenantId || tenantId === 'default' || tenantId === 'default_tenant') && host) {
+        const identified = await identifyTenantByHost(host);
+        if (identified) {
+            tenantId = identified.id;
+            // Re-fetch design con el ID real
+            design = await getTenantDesign(tenantId);
+            // Inyectar los features identificados si el design de la BD no los trae
+            if (design && (!design.features || design.features.length === 0)) {
+                design.features = identified.features;
+            }
+        }
+    }
 
     const headerLinksFromDb = design?.headerLinks || null;
     const footerLinks = design?.footerLinks || null;
@@ -22,7 +40,6 @@ export default async function MarketingLayout({
     const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
     const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
 
-    const headersList = await headers();
     const tenantFeaturesRaw = headersList.get('x-tenant-features');
     const tenantCustomLinksRaw = headersList.get('x-tenant-custom-links');
     const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId;
@@ -49,12 +66,18 @@ export default async function MarketingLayout({
     // 1. Base: enlaces automáticos según Features activos
     let navLinks: { label: string; href: string }[] = [];
 
-    // Mapeo Automático de Features Base
-    if (upperFeatures.has('LANDING')) navLinks.push(FEATURE_ROUTES.LANDING);
-    if (upperFeatures.has('SHOP'))    navLinks.push(FEATURE_ROUTES.SHOP);
-    if (upperFeatures.has('BLOG'))    navLinks.push(FEATURE_ROUTES.BLOG);
-    if (upperFeatures.has('LMS'))     navLinks.push(FEATURE_ROUTES.LMS);
-    if (upperFeatures.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
+    // Mapeo Automático de Features Base (Normalización agresiva)
+    const hasLanding    = upperFeatures.has('LANDING')    || upperFeatures.has('WEBSITE') || !!design?.headerLinks;
+    const hasShop       = upperFeatures.has('SHOP')       || upperFeatures.has('ECOMMERCE');
+    const hasBlog       = upperFeatures.has('BLOG');
+    const hasLMS        = upperFeatures.has('LMS')        || upperFeatures.has('ACADEMY');
+    const hasRestaurant = upperFeatures.has('RESTAURANT') || upperFeatures.has('FOOD');
+
+    if (hasLanding)     navLinks.push(FEATURE_ROUTES.LANDING);
+    if (hasShop)        navLinks.push(FEATURE_ROUTES.SHOP);
+    if (hasBlog)        navLinks.push(FEATURE_ROUTES.BLOG);
+    if (hasLMS)         navLinks.push(FEATURE_ROUTES.LMS);
+    if (hasRestaurant)  navLinks.push(FEATURE_ROUTES.RESTAURANT);
 
     // 2. Integrar enlaces personalizados desde la DB (Branding API)
     if (headerLinksFromDb?.length) {

@@ -157,9 +157,9 @@ export default async function MarketingHubPage({ params }: Props) {
     // Sanitizar HTML de S3: eliminar <header>, <nav> y <footer> embebidos
     // para evitar duplicación visual con el layout nativo de la app.
     const sanitizedBody = landing.body
-      .replace(/<header[\s\S]*?<\/header>/gi, '')
-      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
-      .replace(/<footer[\s\S]*?<\/footer>/gi, '');
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '') // Eliminar <nav> (siempre es navegación)
+      .replace(/<header[^>]*?class="[^"]*?(?:navbar|nav-container|menu)[^"]*"[\s\S]*?<\/header>/gi, '') // Solo headers de navegación
+      .replace(/<footer[\s\S]*?<\/footer>/gi, ''); // Eliminar <footer> (siempre estructural duplicado)
 
     return (
       <div

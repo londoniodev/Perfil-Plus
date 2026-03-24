@@ -53,6 +53,7 @@ export async function getTenantDesign(tenantId: string) {
       tagline: data?.tagline || null,
       ...design,
       logo: data?.logo || null,
+      features: data?.features || [], // <--- Añadir features aquí
       headerLinks: data?.headerLinks || null,
       footerLinks: data?.footerLinks || null,
       contactEmail: data?.contactEmail || null,

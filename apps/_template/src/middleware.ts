@@ -101,9 +101,16 @@ export async function middleware(request: NextRequest) {
         { path: '/formacion', feature: 'LMS' },
     ];
 
+    // Normalización defensiva de Features (ECOMMERCE -> SHOP)
+    const normalizedFeatures = tenantFeatures.map(f => {
+        const up = f.toUpperCase();
+        if (up === 'ECOMMERCE') return 'SHOP';
+        return up;
+    });
+
     for (const guard of featureRouteGuards) {
         if (url.pathname === guard.path || url.pathname.startsWith(`${guard.path}/`)) {
-            const hasFeature = tenantFeatures.includes(guard.feature);
+            const hasFeature = normalizedFeatures.includes(guard.feature);
             if (!hasFeature && !isBaseDomain) {
                 console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a ${guard.path} sin el feature ${guard.feature}. Redirigiendo a 404.`);
                 url.pathname = '/404-tenant';
@@ -116,7 +123,7 @@ export async function middleware(request: NextRequest) {
     // Inyectar TENANT ID, SLUG y FEATURES dinámico
     requestHeaders.set('x-tenant-id', tenantId);
     requestHeaders.set('x-tenant-slug', tenantSlug);
-    requestHeaders.set('x-tenant-features', JSON.stringify(tenantFeatures));
+    requestHeaders.set('x-tenant-features', JSON.stringify(normalizedFeatures));
     requestHeaders.set('x-tenant-custom-links', JSON.stringify(tenantCustomLinks));
 
     if (shouldRewrite) {

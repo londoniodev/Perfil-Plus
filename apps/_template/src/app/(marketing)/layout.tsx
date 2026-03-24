@@ -38,51 +38,54 @@ export default async function MarketingLayout({
     }
 
 
-    // --- LÓGICA DE NAVEGACIÓN UNIFICADA ---
-    const upperFeatures = new Set(featureArray.map(f => f.toUpperCase()));
+    // --- LÓGICA DE NAVEGACIÓN UNIFICADA (REGLA DE NEGOCIO ESTRICTA) ---
+    // Combinar features de headers y de BD (design.features) para robustez
+    const allFeatures = Array.from(new Set([
+        ...featureArray,
+        ...(design?.features || [])
+    ]));
+    const upperFeatures = new Set(allFeatures.map(f => f.toUpperCase()));
 
-    // 1. Base: enlaces personalizados del tenant, o fallback con "Inicio"
-    let navLinks = headerLinksFromDb?.length
-        ? [...headerLinksFromDb]
-        : [{ label: "Inicio", href: "/" }];
+    // 1. Base: enlaces automáticos según Features activos
+    let navLinks: { label: string; href: string }[] = [];
 
-    // 2. Auto-inyectar enlaces de features activas que no existan aún (Merge declarativo)
-    for (const [feature, route] of Object.entries(FEATURE_ROUTES)) {
-        const isActive = upperFeatures.has(feature);
-        const alreadyExists = navLinks.some(link => link.href === route.href);
+    // Mapeo Automático de Features Base
+    if (upperFeatures.has('LANDING')) navLinks.push(FEATURE_ROUTES.LANDING);
+    if (upperFeatures.has('SHOP'))    navLinks.push(FEATURE_ROUTES.SHOP);
+    if (upperFeatures.has('BLOG'))    navLinks.push(FEATURE_ROUTES.BLOG);
+    if (upperFeatures.has('LMS'))     navLinks.push(FEATURE_ROUTES.LMS);
+    if (upperFeatures.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
 
-        if (isActive && !alreadyExists) {
-            navLinks.push(route);
-        }
+    // 2. Integrar enlaces personalizados desde la DB (Branding API)
+    if (headerLinksFromDb?.length) {
+        headerLinksFromDb.forEach((link: any) => {
+            const alreadyExists = navLinks.some(nl => nl.href === link.href);
+            if (!alreadyExists) navLinks.push(link);
+        });
     }
 
-    // 3. Seguridad: filtrar enlaces de features NO activas (ej. /menu sin RESTAURANT)
-    navLinks = navLinks.filter(link => {
-        const restrictedRoute = Object.entries(FEATURE_ROUTES).find(
-            ([, route]) => route.href === link.href
-        );
-        // Si el enlace no pertenece a ninguna feature restringida, se mantiene siempre
-        if (!restrictedRoute) return true;
-        // Si pertenece a una feature, solo se mantiene si la feature está activa
-        return upperFeatures.has(restrictedRoute[0]);
-    });
-
-    // 3. Integrar custom links inyectados desde el backend (vía middleware x-tenant-custom-links)
-    let customLinks: { label: string; href: string }[] = [];
+    // 3. Integrar custom links inyectados desde el middleware (x-tenant-custom-links)
+    let middlewareCustomLinks: { label: string; href: string }[] = [];
     if (tenantCustomLinksRaw) {
         try {
-            customLinks = JSON.parse(tenantCustomLinksRaw);
+            middlewareCustomLinks = JSON.parse(tenantCustomLinksRaw);
         } catch {
-            customLinks = [];
+            middlewareCustomLinks = [];
         }
+    }
+    for (const cl of middlewareCustomLinks) {
+        const alreadyExists = navLinks.some(link => link.href === cl.href);
+        if (!alreadyExists) navLinks.push(cl);
     }
 
-    for (const cl of customLinks) {
-        const alreadyExists = navLinks.some(link => link.href === cl.href);
-        if (!alreadyExists) {
-            navLinks.push(cl);
-        }
-    }
+    // 4. Seguridad final: Filtrar enlaces de features NO activas (en caso de que vengan en customLinks)
+    navLinks = navLinks.filter(link => {
+        const routeDefinition = Object.entries(FEATURE_ROUTES).find(
+            ([, route]) => route.href === link.href
+        );
+        if (!routeDefinition) return true; // Enlaces libres
+        return upperFeatures.has(routeDefinition[0].toUpperCase());
+    });
 
     const hasDashboardFeature = upperFeatures.has('DASHBOARD');
 
@@ -99,7 +102,7 @@ export default async function MarketingLayout({
                     businessEmail={contactEmail || undefined}
                     businessPhone={contactPhone || undefined}
                     tagline={tenantTagline || undefined}
-                    features={featureArray}
+                    features={allFeatures}
                 />
             }
         >

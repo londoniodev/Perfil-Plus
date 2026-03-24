@@ -23,7 +23,12 @@ import {
     Save
 } from "lucide-react";
 import { AVAILABLE_FEATURES, TenantFeature } from "@alvarosky/types";
-import { getTenantFeaturesAction, updateTenantFeatures } from "@/actions/super-admin/update-tenant-features";
+import { 
+    getTenantFeaturesAction, 
+    updateTenantFeatures, 
+    getTenantSettingsAction, 
+    updateTenantSettingsAction 
+} from "@/actions/super-admin/update-tenant-features";
 import { toast } from "sonner";
 
 interface Props {
@@ -53,21 +58,12 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
     };
 
     const fetchSettings = async () => {
-        try {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-            // Aseguramos que usamos /tenant (singular) y el endpoint correcto /settings
-            const res = await fetch(`${apiBase}/tenant/${tenantSlug}/settings`, {
-                headers: {
-                    // Injecting session token if needed, though middleware should handle cookie-based auth
-                    "Authorization": `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('accessToken') : ''}`
-                }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setSettings(data);
-            }
-        } catch (err) {
-            console.error("Error fetching settings:", err);
+        const res = await getTenantSettingsAction(tenantSlug);
+        if (res.success && res.data) {
+            setSettings(res.data);
+        } else {
+            console.error("Error fetching settings:", res.error);
+            setMessage({ type: "error", text: res.error || "Error al cargar configuración" });
         }
     };
 
@@ -76,22 +72,18 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
         setMessage(null);
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-            const res = await fetch(`${apiBase}/tenant/${tenantSlug}/settings`, {
-                method: "PATCH", // Cambiado de PUT a PATCH para coincidir con NestJS
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(settings), // El backend espera las llaves directamente
-            });
+            const res = await updateTenantSettingsAction(tenantSlug, settings);
 
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Error al guardar");
+            if (!res.success) {
+                throw new Error(res.error || "Error al guardar");
             }
 
             setMessage({ type: "success", text: "Configuración guardada correctamente" });
+            toast.success("Configuración guardada correctamente");
             setTimeout(() => setMessage(null), 3000);
         } catch (err) {
             setMessage({ type: "error", text: err instanceof Error ? err.message : "Error desconocido" });
+            toast.error(err instanceof Error ? err.message : "Error al guardar");
         } finally {
             setSaving(false);
         }

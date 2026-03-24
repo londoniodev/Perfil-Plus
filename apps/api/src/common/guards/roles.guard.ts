@@ -28,6 +28,11 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Usuario no autenticado');
     }
 
+    // Hierarchy: SUPERADMIN has access to ALL protected routes
+    if (user.role === 'SUPERADMIN') {
+      return true;
+    }
+
     const hasRole = requiredRoles.includes(user.role);
 
     if (!hasRole) {

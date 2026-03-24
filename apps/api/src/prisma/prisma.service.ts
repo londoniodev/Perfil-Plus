@@ -83,6 +83,13 @@ export class PrismaService
             }
 
             const safeTenantId = cls.get('tenantId');
+            const role = cls.get('role');
+
+            // ✅ SUPERADMIN Bypass: Los administradores globales pueden ver/editar cualquier registro
+            // sin que el middleware les inyecte forzosamente su propio tenantId (si tuvieran uno).
+            if (role === 'SUPERADMIN') {
+              return query(args);
+            }
 
             if (safeTenantId) {
               if (

@@ -108,6 +108,7 @@ async function bootstrap() {
       'Accept',
       'Authorization',
       'x-tenant-id',
+      'x-internal-token',
       'Cache-Control',
     ],
     credentials: true,

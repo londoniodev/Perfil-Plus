@@ -19,8 +19,15 @@ export class StoreController {
   async findAll(
     @Query('type') type?: ProductType,
     @Query('allVariants') allVariants?: string,
+    @Query('search') search?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.productsService.findAllPublished(type, allVariants === 'true');
+    return this.productsService.findAllPublished(
+      type, 
+      allVariants === 'true',
+      search,
+      limit ? parseInt(limit, 10) : undefined,
+    );
   }
 
   @Public()

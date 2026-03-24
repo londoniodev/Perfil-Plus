@@ -20,8 +20,10 @@ import {
     Mail,
     Code,
     Share2,
-    Save
+    Save,
+    Globe
 } from "lucide-react";
+import { S3Uploader } from "./S3Uploader";
 import { AVAILABLE_FEATURES, TenantFeature } from "@alvarosky/types";
 import { 
     getTenantFeaturesAction, 
@@ -163,6 +165,9 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                             </TabsTrigger>
                             <TabsTrigger value="social">
                                 <Share2 className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Redes</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="landings">
+                                <Globe className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Landings S3</span>
                             </TabsTrigger>
                         </TabsList>
                     </div>
@@ -458,6 +463,10 @@ export function TenantConfigPanel({ tenantSlug, tenantDbName }: Props) {
                                     />
                                 </div>
                             </div>
+                        </TabsContent>
+
+                        <TabsContent value="landings" className="mt-0 space-y-4">
+                            <S3Uploader tenantSlug={tenantSlug} />
                         </TabsContent>
 
                         <div className="mt-6 pt-6 border-t border-slate-800/50 flex justify-end">

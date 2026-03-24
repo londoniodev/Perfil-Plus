@@ -440,4 +440,79 @@ export class StorageService {
     const bucket = await this.getBucketName(false);
     return `${this.publicUrl}/${bucket}/${key}`;
   }
+
+  /**
+   * Sube un archivo HTML de landing directamente a la carpeta landings/ del bucket público.
+   * Si el slug no es "home", intenta añadir el link a SystemSettings.customLinks.
+   */
+  async uploadLandingHtml(
+    tenantSlug: string,
+    pageSlug: string,
+    buffer: Buffer,
+  ): Promise<UploadResult> {
+    const bucket = resolveBucketName(tenantSlug, false);
+    await this.ensureBucketExists(bucket, false);
+
+    const client = await this.getS3Client();
+    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+
+    const key = `landings/${pageSlug}/body.html`;
+
+    try {
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: buffer,
+          ContentType: 'text/html; charset=utf-8',
+          CacheControl: 'public, max-age=3600',
+        }),
+      );
+
+      // Si no es home, intentar registrar en customLinks para el Header dinamico
+      if (pageSlug !== 'home') {
+        await this.syncCustomLink(tenantSlug, pageSlug);
+      }
+
+      const url = `${this.publicUrl}/${bucket}/${key}`;
+      return { key, url, bucket };
+    } catch (error) {
+      this.logger.error('Landing Upload Error:', error);
+      throw new BadRequestException('Error al subir el HTML de la landing');
+    }
+  }
+
+  private async syncCustomLink(tenantSlug: string, pageSlug: string): Promise<void> {
+    try {
+      this.logger.log(`[Landing Sync] Registrando customLink: ${pageSlug} para ${tenantSlug}`);
+      
+      const settings = await this.prisma.secure.systemSettings.findFirst({
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!settings) return;
+
+      const currentLinks = (settings.customLinks as any[]) || [];
+      const exists = currentLinks.some((l: any) => l.href === `/${pageSlug}` || l.label.toLowerCase() === pageSlug.toLowerCase());
+
+      if (!exists) {
+        const newLink = {
+          label: pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1),
+          href: `/${pageSlug}`,
+          icon: 'Layout',
+        };
+
+        await this.prisma.secure.systemSettings.update({
+          where: { id: settings.id },
+          data: {
+            customLinks: [...currentLinks, newLink],
+          },
+        });
+        this.logger.log(`[Landing Sync] Enlace añadido con éxito: /${pageSlug}`);
+      }
+    } catch (error) {
+      this.logger.error(`[Landing Sync] No se pudo sincronizar el customLink:`, error);
+    }
+  }
 }
+

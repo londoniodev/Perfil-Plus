@@ -127,9 +127,32 @@ export class StorageController {
     return this.storageService.uploadFile(file, folder, isPrivate);
   }
 
+  @Post('landing')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadLanding(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new FileTypeValidator({ fileType: 'text/html' }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    file: Express.Multer.File,
+    @Body('tenantSlug') tenantSlug: string,
+    @Body('pageSlug') pageSlug: string,
+  ) {
+    if (!tenantSlug || !pageSlug) {
+      throw new BadRequestException('tenantSlug and pageSlug are required');
+    }
+    return this.storageService.uploadLandingHtml(tenantSlug, pageSlug, file.buffer);
+  }
+
   @Delete(':key')
   async deleteFile(@Param('key') key: string) {
     await this.storageService.deleteFile(key);
     return { message: 'Archivo eliminado correctamente' };
   }
 }
+

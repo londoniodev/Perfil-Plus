@@ -1,84 +1,92 @@
 "use server";
 
-import { headers } from "next/headers";
-import { TENANT_ID } from "./config";
+import { getTenantId } from "./config-server";
+import { serverFetch } from "./api-server";
 
-export async function revalidateStorefront(options: { tag?: string, path?: string, host?: string } = {}) {
+/**
+ * Revalida el storefront del tenant bajo demanda (ISR).
+ * SIGUE REGLAS ESTRICTAS DE RED EN PRODUCCIÓN:
+ * 1. Fuente única de verdad: process.env.STOREFRONT_URL (Ej: http://web-storefront:3000)
+ * 2. Fallback: URL pública basada en slug: https://${slug}.${MAIN_DOMAIN}
+ * 3. Ejecución limpia y secuencial (sin cascadas de promesas).
+ */
+export async function revalidateStorefront(options: { tag?: string, path?: string, tenant?: { id: string, slug: string } } = {}) {
     try {
-        const { tag, path, host } = options;
-        const headersList = await headers();
-        const fallbackHost = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-        const publicHost = host || fallbackHost;
-        
-        // Resolve tenant from JWT (session) to know which storefront to revalidate
-        const { getTenantId } = await import("./config-server");
-        const tenantId = await getTenantId();
+        const { tag, path } = options;
+        let { tenant } = options;
 
-        // El secreto DEBE ser REVALIDATION_SECRET para coincidir con el webhook de _template
+        const storefrontUrl = process.env.STOREFRONT_URL; 
         const revalidationSecret = process.env.REVALIDATION_SECRET;
+        const mainDomain = process.env.MAIN_DOMAIN || "alvarolondono.dev";
 
         if (!revalidationSecret) {
-            console.warn(`[Revalidate] REVALIDATION_SECRET is not configured in Saas Dashboard. ISR update skipped.`);
+            console.error(`[Revalidate] ❌ REVALIDATION_SECRET no configurado. Se omite actualización ISR.`);
             return;
         }
 
-        // Construir URL del storefront
-        const hasPort = publicHost.includes(":") && !publicHost.includes(":443");
-        const isInternalDocker = publicHost.includes("web-projects") || publicHost.includes("api-") || publicHost.includes("dashboard-");
-        const protocol = publicHost.includes("127.0.0.1") || publicHost.includes("localhost") || hasPort || isInternalDocker ? "http" : "https";
-        // Candidates for revalidation (Public URL, Localhost, internal Docker)
-        const candidates = [
-            `${protocol}://${publicHost}/api/revalidate`,
-            `http://localhost:3000/api/revalidate`,
-            `http://template:3000/api/revalidate`
-        ];
+        let url = "";
 
-        let success = false;
-        let lastError = "";
+        // 1. Single Source of Truth: URL interna de Docker
+        if (storefrontUrl) {
+            url = `${storefrontUrl.replace(/\/+$/, "")}/api/revalidate`;
+        } 
+        // 2. Fallback: URL pública del tenant
+        else {
+            if (!tenant) {
+                try {
+                    const tenantId = await getTenantId();
+                    if (tenantId && tenantId !== 'default') {
+                        // Obtener el slug del tenant desde el API central para el fallback
+                        tenant = await serverFetch<any>(`/tenant/${tenantId}`);
+                    }
+                } catch (e) {
+                    console.error(`[Revalidate] ⚠️ No se pudo obtener el tenant para URL de fallback:`, e);
+                }
+            }
+
+            if (tenant?.slug) {
+                url = `https://${tenant.slug}.${mainDomain}/api/revalidate`;
+            }
+        }
+
+        if (!url) {
+            console.error(`[Revalidate] ❌ No se pudo determinar una URL de revalidación (STOREFRONT_URL ausente y fallback falló).`);
+            return;
+        }
 
         const payload: { tag?: string, path?: string } = {};
         if (tag) payload.tag = tag;
         if (path) payload.path = path;
 
+        // Tag de seguridad por tenant si no se especifica nada
         if (!tag && !path) {
-            payload.tag = `tenant-${tenantId}-store`; 
+            const tenantId = await getTenantId();
+            payload.tag = `tenant-${tenantId || 'global'}-store`;
         }
 
-        // Usar Set para evitar duplicaciones si publicHost es localhost
-        for (const url of Array.from(new Set(candidates))) {
-            try {
-                console.log(`[Revalidate] Attempting ISR: ${url} | Tag: ${payload.tag || 'none'}`);
-                
-                const res = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-revalidate-secret": revalidationSecret
-                    },
-                    body: JSON.stringify(payload),
-                    // Crucial: Timeout corto para los fallbacks
-                    signal: AbortSignal.timeout(3000) 
-                });
+        console.log(`[Revalidate] 🔄 Intentando ISR: ${url} | Tag: ${payload.tag || 'path only'}`);
 
-                if (res.ok) {
-                    console.log(`✅ Storefront ISR triggered successfully via ${url}`);
-                    success = true;
-                    break;
-                } else {
-                    const errBody = await res.text();
-                    lastError = `Status ${res.status}: ${errBody}`;
-                    console.warn(`⚠️ Revalidate via ${url} failed: ${lastError}`);
-                }
-            } catch (e: any) {
-                lastError = e?.message || String(e);
-                console.warn(`⚠️ Revalidate via ${url} error: ${lastError}`);
-            }
+        // Ejecución ÚNICA, limpia y secuencial (Anti Memory Leak)
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-revalidate-secret": revalidationSecret
+            },
+            body: JSON.stringify(payload),
+            // Timeout preventivo para evitar bloqueos en el backend
+            signal: AbortSignal.timeout(5000)
+        });
+
+        if (res.ok) {
+            console.log(`✅ Storefront ISR ejecutado con éxito vía ${url}`);
+        } else {
+            const errBody = await res.text();
+            console.error(`❌ Revalidation falló en ${url}: Status ${res.status} - ${errBody}`);
         }
 
-        if (!success) {
-            console.error(`❌ ALL revalidation attempts failed. Last error: ${lastError}`);
-        }
-    } catch (e) {
-        console.error(`❌ Error triggering revalidate webhook:`, e);
+    } catch (e: any) {
+        // Captura silenciosa con error descriptivo según la regla
+        console.error(`❌ Error crítico disparando webhook de revalidación en ${process.env.STOREFRONT_URL || 'fallback'}:`, e?.message || e);
     }
 }

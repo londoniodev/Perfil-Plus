@@ -88,7 +88,7 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
         
         await revalidateStorefront({ 
             tag: `tenant-branding-${tenant.id}`,
-            host: tenantDomain
+            tenant: { id: tenant.id, slug: tenant.slug }
         });
 
         return { success: true }
@@ -126,7 +126,7 @@ export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<
 
         await revalidateStorefront({ 
             tag: `tenant-branding-${tenant.id}`,
-            host: tenantDomain
+            tenant: { id: tenant.id, slug: tenant.slug }
         });
 
         return { success: true }

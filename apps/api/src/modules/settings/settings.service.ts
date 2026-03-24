@@ -159,6 +159,14 @@ export class SettingsService {
         where: { tenantId }
       });
 
+      // Normalizar campos únicos para evitar conflictos P2002 (PostgreSQL UNIQUE permite múltiples NULL pero solo un "")
+      const waPhoneNumberId = updateDto.waPhoneNumberId !== undefined 
+        ? (updateDto.waPhoneNumberId?.trim() || null) 
+        : undefined;
+      const wabaId = updateDto.wabaId !== undefined 
+        ? (updateDto.wabaId?.trim() || null) 
+        : undefined;
+
       if (storeSettings) {
         await (this.prisma.secure as any).storeSettings.update({
           where: { id: storeSettings.id },
@@ -166,7 +174,8 @@ export class SettingsService {
             mpPublicKey: updateDto.mp_public_key,
             mpAccessToken: updateDto.mp_access_token,
             deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : undefined,
-            waPhoneNumberId: updateDto.waPhoneNumberId,
+            waPhoneNumberId,
+            wabaId,
           },
         });
       } else {
@@ -176,7 +185,8 @@ export class SettingsService {
             mpPublicKey: updateDto.mp_public_key,
             mpAccessToken: updateDto.mp_access_token,
             deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : 0,
-            waPhoneNumberId: updateDto.waPhoneNumberId,
+            waPhoneNumberId,
+            wabaId,
           },
         });
       }

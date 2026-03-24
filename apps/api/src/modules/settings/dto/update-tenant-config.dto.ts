@@ -120,6 +120,10 @@ export class UpdateTenantConfigDto {
   @IsOptional()
   waPhoneNumberId?: string;
 
+  @IsString()
+  @IsOptional()
+  wabaId?: string;
+
   @IsBoolean()
   @IsOptional()
   enableBlog?: boolean;

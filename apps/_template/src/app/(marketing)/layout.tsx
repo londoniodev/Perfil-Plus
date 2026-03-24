@@ -17,17 +17,18 @@ export default async function MarketingLayout({
     let tenantId = await getTenantId();
     let design = await getTenantDesign(tenantId);
     
-    // Fallback Robust: Si no logramos identificar al tenant por headers (Next.js context bug),
-    // intentamos identificarlo por el Host (dominio) directamente.
-    if ((!tenantId || tenantId === 'default' || tenantId === 'default_tenant') && host) {
+    // Identificación Ultra-Robusta (Fallbacks en cascada)
+    // 1. Si no hay ID o es uno genérico, intentamos resolver por Host
+    if ((!tenantId || tenantId === 'default' || tenantId === 'default_tenant' || tenantId === 'template') && host) {
         const identified = await identifyTenantByHost(host);
         if (identified) {
             tenantId = identified.id;
-            // Re-fetch design con el ID real
+            // Refetch design con el ID real resuelto del dominio
             design = await getTenantDesign(tenantId);
-            // Inyectar los features identificados si el design de la BD no los trae
-            if (design && (!design.features || design.features.length === 0)) {
-                design.features = identified.features;
+            // Si el diseño de la BD viene sin features, forzamos los que identificamos del dominio
+            if (design) {
+                const apiFeatures = Array.isArray(design.features) ? design.features : [];
+                design.features = Array.from(new Set([...apiFeatures, ...identified.features]));
             }
         }
     }

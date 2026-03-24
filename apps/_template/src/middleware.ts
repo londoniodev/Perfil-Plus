@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const INTERNAL_API_URL = process.env.INTERNAL_API_URL || 'http://localhost:3001/api';
+const _rawInternalUrl = (process.env.INTERNAL_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+const INTERNAL_API_URL = _rawInternalUrl.endsWith('/api') ? _rawInternalUrl : `${_rawInternalUrl}/api`;
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
 export async function middleware(request: NextRequest) {

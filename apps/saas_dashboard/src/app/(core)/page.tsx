@@ -35,7 +35,16 @@ import Link from "next/link";
 async function getTenantData() {
     try {
         const tenant = await serverFetch<any>('/tenant/branding');
-        return tenant || { features: [], design: null, name: null };
+        if (!tenant) return { features: [], design: null, name: null };
+
+        // Normalizar features para que las comprobaciones hasRestaurant, etc funcionen (DB devuelve UPPERCASE)
+        const normalizedFeatures = (tenant.features || []).map((f: string) => {
+            const lower = f.toLowerCase();
+            if (lower === 'ecommerce') return 'shop';
+            return lower;
+        });
+
+        return { ...tenant, features: normalizedFeatures };
     } catch (e) {
         console.error("Error fetching tenant config:", e);
         return { features: [], design: null, name: null };

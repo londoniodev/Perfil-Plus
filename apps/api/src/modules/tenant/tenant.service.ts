@@ -509,18 +509,28 @@ export class TenantService {
 
     const resolvedFeatures = (tenant.features || []).map((f: string) => f.toUpperCase());
 
-    // Leer custom links del tenant desde SystemSetting(key='menu')
+    // Leer custom links del tenant desde SystemSetting(key='menu') — Usamos .raw para bypass inicial
     let customLinks: { label: string; href: string }[] = [];
     try {
-      const menuSetting = await this.prisma.secure.systemSetting.findFirst({
+      const menuSetting = await this.prisma.raw.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'menu' },
       });
       const menuData = (menuSetting?.value as any) || {};
+
+      // Priorizar headerLinks del objeto menu (SSOT Unificado)
       if (Array.isArray(menuData.headerLinks)) {
         customLinks = menuData.headerLinks;
+      } else {
+        // Fallback defensivo a la clave legacy customLinks si no existe el objeto menu estructurado
+        const legacyLinksSetting = await this.prisma.raw.systemSetting.findFirst({
+          where: { tenantId: tenant.id, key: 'customLinks' },
+        });
+        if (legacyLinksSetting && Array.isArray(legacyLinksSetting.value)) {
+          customLinks = legacyLinksSetting.value as any[];
+        }
       }
-    } catch {
-      // Si falla, customLinks queda vacío — no es crítico
+    } catch (error) {
+       this.logger.error(`[IDENTIFY] Error obteniendo links de navegación: ${error.message}`);
     }
 
     const resolvedTenant = {
@@ -790,21 +800,44 @@ export class TenantService {
 
   /**
    * Invalida todas las claves de caché Redis asociadas a un tenant.
-   * Borra tanto la clave por slug (lo que envía el middleware) como la de dominio completo.
+   * Borra tanto la clave por slug como todas las variaciones de dominio conocidas.
    */
   private async invalidateTenantCache(slug?: string, domain?: string) {
     const keys = new Set<string>();
-    if (slug) keys.add(`tenant_resolve_${slug.toLowerCase()}`);
-    if (domain) {
-      keys.add(`tenant_resolve_${domain.toLowerCase()}`);
-      // El middleware quita el TLD, así que también invalidamos sin él
-      const withoutTld = domain.toLowerCase().split('.')[0];
-      if (withoutTld) keys.add(`tenant_resolve_${withoutTld}`);
+    const baseDomain = this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') || 'alvarolondono.dev';
+
+    if (slug) {
+      const lowerSlug = slug.toLowerCase();
+      keys.add(`tenant_resolve_${lowerSlug}`);
+      keys.add(`tenant_resolve_${lowerSlug}.${baseDomain}`);
     }
 
-    for (const key of keys) {
-      await this.cacheManager.del(key);
-      this.logger.log(`Caché de tenant invalidado: ${key}`);
+    if (domain) {
+      const lowerDomain = domain.toLowerCase();
+      keys.add(`tenant_resolve_${lowerDomain}`);
+      // También variaciones comunes
+      if (lowerDomain.startsWith('www.')) {
+        keys.add(`tenant_resolve_${lowerDomain.substring(4)}`);
+      } else {
+        keys.add(`tenant_resolve_www.${lowerDomain}`);
+      }
+    }
+
+    this.logger.log(`[Cache Invalidation] Purgando ${keys.size} claves de Redis para el tenant ${slug}...`);
+    
+    const results = await Promise.all(
+      Array.from(keys).map(key => 
+        this.cacheManager.del(key)
+          .then(() => ({ key, success: true }))
+          .catch(err => ({ key, success: false, error: err.message }))
+      )
+    );
+
+    const failed = results.filter(r => !r.success);
+    if (failed.length > 0) {
+      this.logger.error(`[Cache Invalidation] Erre al purgar algunas claves: ${JSON.stringify(failed)}`);
+    } else {
+      this.logger.log(`[Cache Invalidation] Purga completa exitosa.`);
     }
   }
 

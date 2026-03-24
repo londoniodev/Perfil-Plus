@@ -143,11 +143,12 @@ export class StorageController {
     file: Express.Multer.File,
     @Body('tenantSlug') tenantSlug: string,
     @Body('pageSlug') pageSlug: string,
+    @Body('label') label?: string,
   ) {
     if (!tenantSlug || !pageSlug) {
       throw new BadRequestException('tenantSlug and pageSlug are required');
     }
-    return this.storageService.uploadLandingHtml(tenantSlug, pageSlug, file.buffer);
+    return this.storageService.uploadLandingHtml(tenantSlug, pageSlug, file.buffer, label);
   }
 
   @Delete(':key')

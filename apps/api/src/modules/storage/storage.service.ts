@@ -449,6 +449,7 @@ export class StorageService {
     tenantSlug: string,
     pageSlug: string,
     buffer: Buffer,
+    label?: string,
   ): Promise<UploadResult> {
     const bucket = resolveBucketName(tenantSlug, false);
     await this.ensureBucketExists(bucket, false);
@@ -469,9 +470,10 @@ export class StorageService {
         }),
       );
 
-      // Si no es home, intentar registrar en customLinks para el Header dinamico
-      if (pageSlug !== 'home') {
-        await this.syncCustomLink(tenantSlug, pageSlug);
+      // Si no es home o inicio, intentar registrar en menu.headerLinks para el Header dinamico
+      const isHome = pageSlug === 'home' || pageSlug === 'inicio';
+      if (!isHome) {
+        await this.syncCustomLink(tenantSlug, pageSlug, label);
       }
 
       const url = `${this.publicUrl}/${bucket}/${key}`;
@@ -482,7 +484,7 @@ export class StorageService {
     }
   }
 
-  private async syncCustomLink(tenantSlug: string, pageSlug: string): Promise<void> {
+  private async syncCustomLink(tenantSlug: string, pageSlug: string, label?: string): Promise<void> {
     try {
       this.logger.log(`[Landing Sync] Registrando customLink: ${pageSlug} para ${tenantSlug}`);
       
@@ -497,45 +499,48 @@ export class StorageService {
         return;
       }
 
-      // 2. Buscar si ya existe la configuración de customLinks
+      // 2. Buscar si ya existe la configuración de menú (clave 'menu')
       const setting = await this.prisma.raw.systemSetting.findFirst({
         where: {
           tenantId: tenant.id,
-          key: 'customLinks',
+          key: 'menu',
         },
       });
 
-      const currentLinks = (setting?.value as any[]) || [];
+      const menuData = (setting?.value as Record<string, any>) || {};
+      const currentLinks = Array.isArray(menuData.headerLinks) ? menuData.headerLinks : [];
+      
       const exists = currentLinks.some((l: any) => l.href === `/${pageSlug}` || l.label.toLowerCase() === pageSlug.toLowerCase());
 
       if (!exists) {
         const newLink = {
-          label: pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1),
+          label: label || (pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1)),
           href: `/${pageSlug}`,
-          icon: 'Layout',
+          // icon: 'Layout', // Mantener coherencia con el frontal si es necesario
         };
 
         const updatedLinks = [...currentLinks, newLink];
+        const updatedMenu = { ...menuData, headerLinks: updatedLinks };
 
-        // 3. Upsert de la configuración
+        // 3. Upsert de la configuración de menú
         await this.prisma.raw.systemSetting.upsert({
           where: {
             tenantId_key: {
               tenantId: tenant.id,
-              key: 'customLinks',
+              key: 'menu',
             },
           },
           update: {
-            value: updatedLinks,
+            value: updatedMenu,
           },
           create: {
             tenantId: tenant.id,
-            key: 'customLinks',
-            value: updatedLinks,
+            key: 'menu',
+            value: updatedMenu,
             isPublic: true,
           },
         });
-        this.logger.log(`[Landing Sync] Enlace añadido con éxito: /${pageSlug}`);
+        this.logger.log(`[Landing Sync] Enlace '${pageSlug}' añadido a menu.headerLinks con éxito.`);
       }
     } catch (error) {
       this.logger.error(`[Landing Sync] No se pudo sincronizar el customLink:`, error);

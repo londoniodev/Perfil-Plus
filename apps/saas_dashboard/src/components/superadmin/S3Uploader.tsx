@@ -22,9 +22,35 @@ interface Props {
 
 export function S3Uploader({ tenantSlug }: Props) {
     const [file, setFile] = useState<File | null>(null);
+    const [pageTitle, setPageTitle] = useState("Inicio");
     const [pageSlug, setPageSlug] = useState("home");
     const [uploading, setUploading] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+
+    const slugify = (text: string) => {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .normalize("NFD") // Descomponer caracteres con acento
+            .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+            .replace(/\s+/g, "-") // Reemplazar espacios por guiones
+            .replace(/[^\w-]+/g, "") // Eliminar caracteres no deseados
+            .replace(/--+/g, "-") // Eliminar guiones dobles
+            .replace(/^-+/, "") // Eliminar guiones al inicio
+            .replace(/-+$/, ""); // Eliminar guiones al final
+    };
+
+    const handleTitleChange = (val: string) => {
+        setPageTitle(val);
+        const slug = slugify(val);
+        // Si el usuario escribe "Inicio" o "Home", forzamos slug "home"
+        if (slug === "inicio" || slug === "home") {
+            setPageSlug("home");
+        } else {
+            setPageSlug(slug);
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
@@ -47,13 +73,14 @@ export function S3Uploader({ tenantSlug }: Props) {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("tenantSlug", tenantSlug);
-        formData.append("pageSlug", pageSlug.toLowerCase().trim());
+        formData.append("pageSlug", pageSlug);
+        formData.append("label", pageTitle); // Enviamos el label original para el menú
 
         try {
             const res = await uploadLandingHtmlAction(formData);
 
             if (res.success) {
-                setResult({ success: true, message: `Página "${pageSlug}" subida y revalidada correctamente.` });
+                setResult({ success: true, message: `Página "${pageTitle}" subida y revalidada correctamente.` });
                 toast.success("¡Subida exitosa!");
                 setFile(null);
                 // Reset file input
@@ -78,26 +105,26 @@ export function S3Uploader({ tenantSlug }: Props) {
                     <Globe className="w-5 h-5" /> Landing / S3 Manager
                 </CardTitle>
                 <CardDescription>
-                    Sube archivos HTML directamente a MinIO. Si el slug no es "home", se añadirá automáticamente al Header del tenant.
+                    Sube archivos HTML directamente a MinIO. Define el nombre que aparecerá en el menú del Header.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="page-slug" className="text-slate-300">Slug de la Página</Label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-2.5 text-slate-500 text-sm">/</span>
-                            <Input
-                                id="page-slug"
-                                value={pageSlug}
-                                onChange={(e) => setPageSlug(e.target.value)}
-                                placeholder="home, promociones, nosotros..."
-                                className="bg-slate-800/50 border-slate-700 pl-6 font-mono text-sm"
-                            />
+                        <Label htmlFor="page-title" className="text-slate-300">Título de la Página (Menú)</Label>
+                        <Input
+                            id="page-title"
+                            value={pageTitle}
+                            onChange={(e) => handleTitleChange(e.target.value)}
+                            placeholder="Ej: Sobre Nosotros, Servicios..."
+                            className="bg-slate-800/50 border-slate-700 font-medium"
+                        />
+                        <div className="flex items-center gap-1.5 px-2 mt-1">
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Ruta final:</span>
+                            <code className="text-[11px] text-indigo-400 font-mono bg-indigo-500/10 px-1.5 py-0.5 rounded">
+                                /{pageSlug}
+                            </code>
                         </div>
-                        <p className="text-[10px] text-slate-500">
-                            "home" sobreescribe la raíz. Otros crearán subrutas.
-                        </p>
                     </div>
 
                     <div className="space-y-2">

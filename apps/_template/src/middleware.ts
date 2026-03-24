@@ -37,6 +37,7 @@ export async function middleware(request: NextRequest) {
         try {
             // Petición al backend en Docker (misma red) para resolver host
             const res = await fetch(fetchUrl, {
+                cache: 'no-store', // CRÍTICO: Evitar que el middleware lea identificación cacheada
                 headers: {
                     'x-internal-token': INTERNAL_API_KEY
                 }

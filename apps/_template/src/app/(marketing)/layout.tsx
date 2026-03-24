@@ -59,26 +59,11 @@ export default async function MarketingLayout({
 
     // --- LÓGICA DE NAVEGACIÓN UNIFICADA (REGLA DE NEGOCIO ESTRICTA) ---
     // Combinar features de headers y de BD (design.features) para robustez
-    // Identificación del slug para fallbacks específicos
-    const currentSlug = identified?.slug || "";
-
-    // Emergency Fallback: Asegurar que los tenants principales tengan sus features críticos
-    // incluso si la API o la DB fallan temporalmente en devolverlos.
-    const emergencyFeatures: string[] = [];
-    if (currentSlug === 'cocinasiete' || host?.includes('xn--alvarolondoo') || host?.includes('cocinasiete')) {
-        emergencyFeatures.push('RESTAURANT', 'LANDING', 'SHOP', 'ANALYTICS');
-    } else if (currentSlug === 'bocata-artesanal' || host?.includes('bocata-artesanal')) {
-        emergencyFeatures.push('RESTAURANT', 'LANDING', 'INVENTORY');
-    } else if (currentSlug === 'mauro-mera' || host?.includes('mauromera')) {
-        emergencyFeatures.push('LANDING', 'BLOG', 'PORTFOLIO');
-    }
-
     const allFeatures = Array.from(new Set([
         ...featureArray,
-        ...(design?.features || []),
-        ...emergencyFeatures
+        ...(design?.features || [])
     ])).map(f => f.toUpperCase());
-    const upperFeatures = new Set(allFeatures.map(f => f.toUpperCase()));
+    const upperFeatures = new Set(allFeatures);
 
     // 1. Construcción del menú basado en FEATURES (SSOT)
     // El enlace de inicio siempre es el primero para landings

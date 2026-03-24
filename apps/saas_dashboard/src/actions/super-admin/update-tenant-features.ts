@@ -58,6 +58,8 @@ export async function getTenantFeaturesAction(tenantSlug: string): Promise<{ suc
     }
 }
 
+import { revalidateStorefront } from "@/lib/revalidate-storefront"
+
 /**
  * Server Action: Actualiza los ajustes generales de un tenant.
  */
@@ -70,10 +72,24 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
             return { success: true };
         }
 
+        // 1. Obtener el tenant para tener su ID y dominio real
+        const tenant = await serverFetch<any>(`/tenant/${tenantSlug}`, { cache: 'no-store' });
+        if (!tenant) throw new Error("Tenant no encontrado para revalidación");
+
+        // 2. Actualizar en la DB
         await serverFetch(`/tenant/${tenantSlug}/settings`, {
             method: "PATCH",
             body: JSON.stringify(settings),
         })
+
+        // 3. Invocar revalidación remota en el storefront del tenant
+        // Intentamos obtener el dominio desde config o slug
+        const tenantDomain = tenant.config?.domain || `${tenant.slug}.alvarolondono.dev`;
+        
+        await revalidateStorefront({ 
+            tag: `tenant-branding-${tenant.id}`,
+            host: tenantDomain
+        });
 
         return { success: true }
     } catch (error: any) {
@@ -88,9 +104,6 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
 
 /**
  * Server Action: Actualiza las features habilitadas de un tenant.
- * - Solo ejecutable por SUPERADMIN.
- * - Valida features contra el SSOT (AVAILABLE_FEATURES).
- * - Invalida caché Redis + ISR storefront.
  */
 export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<ActionResult> {
     try {
@@ -98,10 +111,23 @@ export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<
 
         const validated = updateFeaturesSchema.parse(input)
 
+        // 1. Obtener el tenant para tener su ID y dominio real
+        const tenant = await serverFetch<any>(`/tenant/${validated.tenantSlug}`, { cache: 'no-store' });
+        if (!tenant) throw new Error("Tenant no encontrado para revalidación");
+
+        // 2. Actualizar en la DB
         await serverFetch(`/tenant/${validated.tenantSlug}/features`, {
             method: "PATCH",
             body: JSON.stringify({ features: validated.features }),
         })
+
+        // 3. Invocar revalidación remota en el storefront
+        const tenantDomain = tenant.config?.domain || `${tenant.slug}.alvarolondono.dev`;
+
+        await revalidateStorefront({ 
+            tag: `tenant-branding-${tenant.id}`,
+            host: tenantDomain
+        });
 
         return { success: true }
     } catch (error: any) {

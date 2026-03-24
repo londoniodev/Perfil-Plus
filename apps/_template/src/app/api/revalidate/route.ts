@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
         if (path) {
             revalidatePath(path);
             console.log(`[Revalidate Webhook] Path invalidado: ${path}`);
+        } else {
+            // Por defecto, si hay tag, también revalidamos el path raíz para asegurar que el layout se refresque
+            revalidatePath('/', 'layout');
+            console.log(`[Revalidate Webhook] Path raíz (layout) invalidado por defecto.`);
         }
 
         return NextResponse.json({ 

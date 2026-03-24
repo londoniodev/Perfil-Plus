@@ -3,11 +3,12 @@
 import { headers } from "next/headers";
 import { TENANT_ID } from "./config";
 
-export async function revalidateStorefront(options: { tag?: string, path?: string } = {}) {
+export async function revalidateStorefront(options: { tag?: string, path?: string, host?: string } = {}) {
     try {
-        const { tag, path } = options;
+        const { tag, path, host } = options;
         const headersList = await headers();
-        const publicHost = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+        const fallbackHost = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+        const publicHost = host || fallbackHost;
         
         // Resolve tenant from JWT (session) to know which storefront to revalidate
         const { getTenantId } = await import("./config-server");

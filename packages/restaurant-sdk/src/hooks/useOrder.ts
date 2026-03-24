@@ -24,7 +24,7 @@ interface OrderData {
     status?: string
 }
 
-export function useOrder() {
+export function useOrder(tenantId?: string) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -57,11 +57,17 @@ export function useOrder() {
                 shippingData: orderData.shippingData
             }
 
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            }
+
+            if (tenantId) {
+                headers['x-tenant-id'] = tenantId
+            }
+
             const response = await fetch(`${apiUrl}/orders`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers,
                 body: JSON.stringify(payload)
             })
 
@@ -85,7 +91,14 @@ export function useOrder() {
     const trackOrder = async (orderId: string) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-            const response = await fetch(`${apiUrl}/orders/track/${orderId}`)
+            const headers: Record<string, string> = {}
+            if (tenantId) {
+                headers['x-tenant-id'] = tenantId
+            }
+
+            const response = await fetch(`${apiUrl}/orders/track/${orderId}`, {
+                headers
+            })
             if (!response.ok) return null
             return await response.json()
         } catch (err) {

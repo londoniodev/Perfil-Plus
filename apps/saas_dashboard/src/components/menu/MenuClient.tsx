@@ -62,9 +62,8 @@ export default function MenuClient({
     table?: string
 }) {
     const { categories, products, restaurant, isLoading, isError } = useMenu(slug)
-
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
-    const { createOrder, isSubmitting } = useOrder()
+    const { createOrder, isSubmitting } = useOrder(slug)
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL")
     const [searchQuery, setSearchQuery] = useState("")

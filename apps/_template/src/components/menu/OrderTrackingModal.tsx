@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { CheckCircle2, Copy, ArrowRight, Loader2, Package, ChefHat, Check, RefreshCw } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
+import { useTenant } from "@/app/providers"
 import { useOrder } from "@alvarosky/restaurant-sdk"
 import { formatCurrency } from "@/lib/utils"
 
@@ -25,7 +26,8 @@ export function OrderTrackingModal({
     orderId,
     orderNumber
 }: OrderTrackingModalProps) {
-    const { trackOrder } = useOrder()
+    const { tenantId } = useTenant()
+    const { trackOrder } = useOrder(tenantId)
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [copied, setCopied] = useState(false)

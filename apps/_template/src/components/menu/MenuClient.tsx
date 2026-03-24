@@ -65,7 +65,7 @@ export default function MenuClient({
     const { categories, products, restaurant, isLoading, isError } = useMenu(tenantId)
 
     const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
-    const { createOrder, isSubmitting } = useOrder()
+    const { createOrder, isSubmitting } = useOrder(tenantId)
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL")
     const [searchQuery, setSearchQuery] = useState("")

@@ -345,7 +345,7 @@ export function CreateOrderModal({ isOpen, onClose, tables, onOrderCreated, tena
     const [modifierQuantity, setModifierQuantity] = useState(1)
 
     const { categories, products, isLoading } = useMenu(tenantId)
-    const { createOrder, isSubmitting } = useOrder()
+    const { createOrder, isSubmitting } = useOrder(tenantId)
 
     // Filter products
     const filteredProducts = useMemo(() => {

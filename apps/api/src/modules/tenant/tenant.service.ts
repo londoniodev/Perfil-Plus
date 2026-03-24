@@ -715,34 +715,6 @@ export class TenantService {
     return this.settingsService.updateTenantConfig(tenant.id, dto);
   }
 
-  async getSettings(idOrSlug: string) {
-    const tenant = await this.prisma.secure.tenant.findFirst({
-      where: {
-        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
-      },
-    });
-
-    if (!tenant) {
-      throw new NotFoundException('Inquilino no encontrado');
-    }
-
-    return this.settingsService.getTenantConfig(tenant.id);
-  }
-
-  async updateSettings(idOrSlug: string, dto: any) {
-    const tenant = await this.prisma.secure.tenant.findFirst({
-      where: {
-        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
-      },
-    });
-
-    if (!tenant) {
-      throw new NotFoundException('Inquilino no encontrado');
-    }
-
-    return this.settingsService.updateTenantConfig(tenant.id, dto);
-  }
-
   /**
    * Actualiza las features habilitadas de un tenant (Provisioning de módulos).
    * - Actualiza Tenant.features[] en la DB.

@@ -72,7 +72,11 @@ export class SettingsService {
    * Actualiza masivamente los ajustes enviados protegiendo que solo se graben para el tenant y llaves permitidas.
    */
   async updateTenantConfig(tenantId: string, updateDto: UpdateTenantConfigDto) {
-    // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
+    if (!updateDto) {
+      this.logger.warn(`updateTenantConfig called with null/undefined updateDto for tenant ${tenantId}`);
+      return; 
+    }
+
     // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
     const storeAndBrandKeys = [
       'tenant_name',

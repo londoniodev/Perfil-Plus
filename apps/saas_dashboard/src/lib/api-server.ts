@@ -32,7 +32,11 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
 
     const headers = new Headers(options?.headers);
 
-    // x-tenant-id is removed. Backend resolves from JWT (Authorization header).
+    // Inyectar tenantId para rutas públicas y auditoría
+    if (tenantId) {
+        headers.set('x-tenant-id', tenantId);
+    }
+
     headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');
 
     if (token && !headers.has('Authorization')) {

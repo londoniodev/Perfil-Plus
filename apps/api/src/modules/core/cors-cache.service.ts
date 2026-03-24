@@ -26,7 +26,10 @@ export class CorsCacheService implements OnModuleInit {
   }
 
   private getRedisClient() {
-    return (this.cacheManager as any).store?.client || null;
+    const store = (this.cacheManager as any).store;
+    // v5 style: store.client
+    // Algunos wrappers pueden tenerlo en store.md.client (multi-store)
+    return store?.client || store?._client || (store as any).md?.client || null;
   }
 
   /**

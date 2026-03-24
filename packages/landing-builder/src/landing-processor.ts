@@ -37,6 +37,7 @@ interface ProcessingResult {
   totalImagesProcessed: number;
   base64ImagesConverted: number;
   externalImagesDownloaded: number;
+  localImagesProcessed: number;
   originalSizeBytes: number;
   finalBodySizeBytes: number;
 }
@@ -144,6 +145,62 @@ async function downloadExternalImages(
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       log("❌", `Failed to download external image #${i + 1} (${src.slice(0, 60)}): ${message}`);
+    }
+  }
+
+  return count;
+}
+
+// ─────────────────────────────────────────────
+//  Step 2.5 — Local Image Processing
+// ─────────────────────────────────────────────
+
+async function processLocalImages(
+  $: cheerio.CheerioAPI,
+  assetsDir: string,
+  quality: number,
+): Promise<number> {
+  const localImgs = $("img").filter((_i, el) => {
+    const src = $(el).attr("src") || "";
+    return src.startsWith("/");
+  });
+
+  const PUBLIC_DIR = path.resolve(__dirname, "../../apps/_template/public");
+  let count = 0;
+
+  for (let i = 0; i < localImgs.length; i++) {
+    const el = localImgs[i];
+    if (!el) continue;
+
+    const src = $(el).attr("src");
+    if (!src) continue;
+
+    try {
+      const sourcePath = path.join(PUBLIC_DIR, src);
+      const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
+      
+      if (!exists) {
+        log("⚠️", `Local asset not found: ${sourcePath} — skipping optimization`);
+        continue;
+      }
+
+      const buffer = await fs.readFile(sourcePath);
+      const originalExt = path.extname(src).replace(".", "");
+      const baseName = path.basename(src, path.extname(src));
+      const filename = `${baseName}-${originalExt}.webp`;
+      const outputPath = path.join(assetsDir, filename);
+
+      log("🖼️  (Local)", `Optimizing: ${src} → ${filename}`);
+
+      await sharp(buffer)
+        .webp({ quality })
+        .toFile(outputPath);
+
+      $(el).attr("src", `./assets/${filename}`);
+      count++;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      log("❌", `Failed to process local image ${src}: ${message}`);
     }
   }
 
@@ -275,8 +332,32 @@ async function compileTailwindCss(
     content: [intermediateHtmlPath],
     theme: {
       extend: {
-        colors: extractedConfig.colors,
-        fontFamily: extractedConfig.fontFamily,
+        colors: {
+          ...extractedConfig.colors,
+          // Legacy Hardcoded Defaults (for storefronts)
+          "cs-primary": "#047857",
+          "cs-secondary": "#10b981",
+          "cs-dark": "#022c22",
+          // Add standard colors that might be used as strings
+          emerald: {
+            50: "#ecfdf5",
+            100: "#d1fae5",
+            200: "#a7f3d0",
+            300: "#6ee7b7",
+            400: "#34d399",
+            500: "#10b981",
+            600: "#059669",
+            700: "#047857",
+            800: "#065f46",
+            900: "#064e3b",
+            950: "#022c22",
+          },
+        },
+        fontFamily: {
+          ...extractedConfig.fontFamily,
+          sans: ["Inter", "system-ui", "sans-serif"],
+          display: ["Outfit", "Inter", "sans-serif"],
+        },
         ...(Object.keys(extractedConfig.borderRadius).length > 0 && {
           borderRadius: extractedConfig.borderRadius,
         }),
@@ -389,6 +470,9 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   // ── Step 2: Download external images ──
   const externalCount = await downloadExternalImages($, assetsDir, webpQuality);
 
+  // ── Step 2.5: Process local images ──
+  const localCount = await processLocalImages($, assetsDir, webpQuality);
+
   // ── Step 3a: Extract Tailwind config from inline script (BEFORE removing it) ──
   const extractedConfig = extractTailwindConfig($);
 
@@ -452,7 +536,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   log("", "─────────────────────────────────────");
   log("🎉", "Processing complete!");
   log("📊", `Original: ${(originalSizeBytes / 1024).toFixed(1)} KB → Body: ${(finalBodySizeBytes / 1024).toFixed(1)} KB`);
-  log("🖼️", `Images: ${base64Count} base64 + ${externalCount} external = ${base64Count + externalCount} total`);
+  log("🖼️", `Images: ${base64Count} base64 + ${externalCount} external + ${localCount} local = ${base64Count + externalCount + localCount} total`);
   log("📄", `Body: ${bodyHtmlPath}`);
   log("📋", `Meta: ${metaJsonPath}`);
   log("🎨", `CSS: ${cssPath}`);
@@ -462,9 +546,10 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
     outputBodyPath: bodyHtmlPath,
     outputMetaPath: metaJsonPath,
     outputCssPath: cssPath,
-    totalImagesProcessed: base64Count + externalCount,
+    totalImagesProcessed: base64Count + externalCount + localCount,
     base64ImagesConverted: base64Count,
     externalImagesDownloaded: externalCount,
+    localImagesProcessed: localCount,
     originalSizeBytes,
     finalBodySizeBytes,
   };

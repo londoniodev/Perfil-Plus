@@ -32,12 +32,12 @@ interface LandingData {
 }
 
 // ── Cached Landing Fetcher (MinIO → HTML string) ──
-function createCachedLandingFetcher(tenantSlug: string) {
+function createCachedLandingFetcher(tenantId: string, tenantSlug: string, pageSlug: string = "home") {
   return unstable_cache(
     async (): Promise<LandingData | null> => {
       try {
-        const bodyKey = `landings/home/body.html`;
-        const metaKey = `landings/home/meta.json`;
+        const bodyKey = `landings/${pageSlug}/body.html`;
+        const metaKey = `landings/${pageSlug}/meta.json`;
 
         // 1. Fetch Body
         const bodyResponse = await s3.send(new GetObjectCommand({
@@ -57,16 +57,18 @@ function createCachedLandingFetcher(tenantSlug: string) {
 
         return { body, meta };
       } catch (error: unknown) {
+        // Silenciar NoSuchKey ya que es un flujo esperado para rutas no migradas
         const errorName = error instanceof Error ? error.name : "Unknown";
-        if (errorName !== "NoSuchKey") {
-          console.error(`[Landing] Error al leer landing de MinIO para ${tenantSlug}:`, error);
+        if (errorName !== "NoSuchKey" && (error as any).Code !== "NoSuchKey") {
+          console.error(`[Landing] Error al leer landing de MinIO para ${tenantSlug}/${pageSlug}:`, error);
         }
         return null;
       }
     },
-    [`landings-${tenantSlug}`],
+    [`landing-${tenantId}-${pageSlug}`],
     {
-      tags: [`landings-${tenantSlug}`],
+      tags: [`tenant-${tenantId}-${pageSlug}`],
+      revalidate: false, // Forzar caché infinita hasta revalidación manual
     }
   );
 }
@@ -74,12 +76,13 @@ function createCachedLandingFetcher(tenantSlug: string) {
 // ── Metadata ──
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const headersList = await headers();
+  const tenantId = headersList.get("x-tenant-id");
   const tenantSlug = headersList.get("x-tenant-slug");
   const resolvedParams = await params;
 
-  // Only for the home page (landing)
-  if (tenantSlug && (!resolvedParams.catchall || resolvedParams.catchall.length === 0)) {
-    const fetchLanding = createCachedLandingFetcher(tenantSlug);
+  if (tenantId && tenantSlug) {
+    const pageSlug = resolvedParams.catchall?.join("/") || "home";
+    const fetchLanding = createCachedLandingFetcher(tenantId, tenantSlug, pageSlug);
     const landing = await fetchLanding();
 
     if (landing?.meta) {
@@ -89,14 +92,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title: landing.meta.og["og:title"] || landing.meta.title,
           description: landing.meta.og["og:description"] || landing.meta.description,
+          url: landing.meta.og["og:url"],
+          type: "website",
         },
       };
     }
   }
 
-  const tenantId = headersList.get("x-tenant-id") || await getTenantId();
-  if (tenantId === "alvarolondono" || tenantId === "xn--alvarolondoo-khb.dev") {
+  // Fallback metadata for hardcoded segments or default
+  if (tenantSlug === "alvarolondono" || tenantSlug === "xn--alvarolondoo-khb.dev") {
     return {
+      title: "Álvaro Londoño | Consultoría Tech & SaaS",
       other: {
         "facebook-domain-verification": "wa9miawih97u6xsx1yhc1ub3w9dy0a",
       },
@@ -142,46 +148,45 @@ export default async function MarketingHubPage({ params }: Props) {
     return notFound();
   }
 
-  // ── MinIO Landing (reemplaza Plasmic) ──
-  // Solo intentamos en la raíz del tenant (sin subrutas)
-  if (!resolvedParams.catchall || resolvedParams.catchall.length === 0) {
-    const fetchLanding = createCachedLandingFetcher(tenantSlug);
-    const landing = await fetchLanding();
+  // 1. Intentar resolver la ruta desde S3 (Prioridad 1: Dinámico/Headless)
+  const pageSlug = resolvedParams.catchall?.join("/") || "home";
+  const fetchLanding = createCachedLandingFetcher(tenantId, tenantSlug, pageSlug);
+  const landing = await fetchLanding();
 
-    if (landing?.body) {
-      // El HTML ya fue sanitizado por el pipeline de ingestión (DOMPurify)
+  if (landing?.body) {
+    return (
+      <div
+        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0"
+        dangerouslySetInnerHTML={{ __html: landing.body }}
+      />
+    );
+  }
+
+  // 2. Si no hay landing en S3 y es la raíz, intentar el Fallback Native (Legacy Components)
+  if (pageSlug === "home") {
+    const marketingData = await getMarketingData(tenantId);
+    
+    // Si no hay datos de marketing en la API, usamos un default mínimo
+    const safeData: TenantMarketingData = marketingData || {
+      tenantSlug: tenantSlug,
+      heroTitle: "Plataforma SaaS Olympo",
+      heroSubtitle: "Configurando entorno de inquilino...",
+    };
+
+    const LandingComponent = resolveLanding(safeData.tenantSlug);
+
+    if (LandingComponent) {
       return (
-        <div
-          className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0"
-          dangerouslySetInnerHTML={{ __html: landing.body }}
-        />
+        <div className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0">
+          <LandingComponent data={safeData} />
+        </div>
       );
     }
-  }
-
-  // ── Subrutas sin landing → 404 estricto ──
-  if (resolvedParams.catchall && resolvedParams.catchall.length > 0) {
-    return notFound();
-  }
-
-  // ── Legacy Fallback (Storefront Nativo) ──
-  const marketingData = await getMarketingData(tenantId);
-
-  const safeData: TenantMarketingData = marketingData || {
-    tenantSlug: tenantId,
-    heroTitle: "Plataforma SaaS Olympo",
-    heroSubtitle: "Configurando entorno de inquilino...",
-  };
-
-  const LandingComponent = resolveLanding(safeData.tenantSlug);
-
-  if (!LandingComponent) {
+    
+    // Último recurso: Storefront genérico
     return <DefaultStorefront data={safeData} />;
   }
 
-  return (
-    <div className="w-full h-full max-w-[100vw] overflow-x-hidden p-0 m-0">
-      <LandingComponent data={safeData} />
-    </div>
-  );
+  // 3. Si no es la home y no hay contenido en S3 -> 404
+  return notFound();
 }

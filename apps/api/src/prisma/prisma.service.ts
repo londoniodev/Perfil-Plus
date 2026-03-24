@@ -57,7 +57,6 @@ export class PrismaService
               'EmailVerificationToken',
               'RefreshToken',
               'PasswordResetToken',
-              'SystemSetting',
               'Tenant',
               'OrderItem',
               'OrderItemModifier',
@@ -68,7 +67,6 @@ export class PrismaService
               'CategoriesOnPosts',
               'CategoriesOnProducts',
               'TagsOnPosts',
-              'Lesson',
               'LessonAttachment',
               'PostAttachment',
               'Evaluation',
@@ -77,6 +75,7 @@ export class PrismaService
               'UserProgress',
               'Purchase',
               'OrderDeliveryAnalytics',
+              'Subscription',
             ];
 
             if (globalModels.includes(model)) {

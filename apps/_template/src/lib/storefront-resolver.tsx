@@ -10,17 +10,16 @@ import DefaultFormacion from "@/app/(marketing)/formacion/FormacionContent";
  * Evita la interpolación de strings en imports dinámicos para garantizar compatibilidad con el bundler de Next.js.
  */
 const LANDING_REGISTRY: Record<string, any> = {
-    "mauromera": dynamic(() => import("@/components/storefronts/mauromera/Landing")),
-    "soydeborasoysaludable": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")),
-    "cm7mman6x000208jsf3h9h2k1": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")),
-    "cocinasiete": dynamic(() => import("@/components/storefronts/cocinasiete/Landing")),
+    // "mauromera": dynamic(() => import("@/components/storefronts/mauromera/Landing")), -> Migrated to S3
+    // "soydeborasoysaludable": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")), -> Migrated to S3
+    // "cm7mman6x000208jsf3h9h2k1": dynamic(() => import("@/components/storefronts/deborahmoscoso/Landing")), -> Migrated to S3
+    // "cocinasiete": dynamic(() => import("@/components/storefronts/cocinasiete/Landing")), -> Migrated to S3
     "alvarolondono": dynamic(() => import("@/components/storefronts/alvarolondono/Landing")),
     "xn--alvarolondoo-khb.dev": dynamic(() => import("@/components/storefronts/alvarolondono/Landing")),
 };
 
 const FORMACION_REGISTRY: Record<string, any> = {
-    "mauromera": dynamic(() => import("@/components/storefronts/mauromera/formacion/FormacionContent")),
-    // Agrega aquí otros inquilinos con vistas de formación específicas
+    // "mauromera": dynamic(() => import("@/components/storefronts/mauromera/formacion/FormacionContent")), -> Migrated to S3
 };
 
 /**

@@ -209,11 +209,11 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.slug}`)}>
+                                                <DropdownMenuItem onClick={() => router.push(`/superadmin/tenants/${tenant.slug}`)}>
                                                     <Eye className="mr-2 h-4 w-4" />
                                                     Ver Detalles
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.slug}/settings`)}>
+                                                <DropdownMenuItem onClick={() => router.push(`/superadmin/tenants/${tenant.slug}/settings`)}>
                                                     <Settings className="mr-2 h-4 w-4" />
                                                     Configuración
                                                 </DropdownMenuItem>

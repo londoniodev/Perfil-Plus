@@ -26,7 +26,15 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         const hasPort = publicHost.includes(":") && !publicHost.includes(":443");
         const isInternalDocker = publicHost.includes("web-projects") || publicHost.includes("api-") || publicHost.includes("dashboard-");
         const protocol = publicHost.includes("127.0.0.1") || publicHost.includes("localhost") || hasPort || isInternalDocker ? "http" : "https";
-        const url = `${protocol}://${publicHost}/api/revalidate`;
+        // Candidates for revalidation (Public URL, Localhost, internal Docker)
+        const candidates = [
+            `${protocol}://${publicHost}/api/revalidate`,
+            `http://localhost:3000/api/revalidate`,
+            `http://template:3000/api/revalidate`
+        ];
+
+        let success = false;
+        let lastError = "";
 
         const payload: { tag?: string, path?: string } = {};
         if (tag) payload.tag = tag;
@@ -36,22 +44,39 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
             payload.tag = `tenant-${tenantId}-store`; 
         }
 
-        console.log(`[Revalidate] Triggering ISR: ${url} | Tag: ${payload.tag || 'none'} | Path: ${payload.path || 'none'}`);
+        // Usar Set para evitar duplicaciones si publicHost es localhost
+        for (const url of Array.from(new Set(candidates))) {
+            try {
+                console.log(`[Revalidate] Attempting ISR: ${url} | Tag: ${payload.tag || 'none'}`);
+                
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-revalidate-secret": revalidationSecret
+                    },
+                    body: JSON.stringify(payload),
+                    // Crucial: Timeout corto para los fallbacks
+                    signal: AbortSignal.timeout(3000) 
+                });
 
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-revalidate-secret": revalidationSecret
-            },
-            body: JSON.stringify(payload),
-        });
+                if (res.ok) {
+                    console.log(`✅ Storefront ISR triggered successfully via ${url}`);
+                    success = true;
+                    break;
+                } else {
+                    const errBody = await res.text();
+                    lastError = `Status ${res.status}: ${errBody}`;
+                    console.warn(`⚠️ Revalidate via ${url} failed: ${lastError}`);
+                }
+            } catch (e: any) {
+                lastError = e?.message || String(e);
+                console.warn(`⚠️ Revalidate via ${url} error: ${lastError}`);
+            }
+        }
 
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error(`❌ Failed to revalidate storefront (${res.status}): ${errorText}`);
-        } else {
-            console.log(`✅ Storefront ISR triggered successfully`);
+        if (!success) {
+            console.error(`❌ ALL revalidation attempts failed. Last error: ${lastError}`);
         }
     } catch (e) {
         console.error(`❌ Error triggering revalidate webhook:`, e);

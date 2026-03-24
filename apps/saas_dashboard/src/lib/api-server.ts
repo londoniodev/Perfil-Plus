@@ -43,6 +43,11 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
         headers.set('Authorization', `Bearer ${token}`);
     }
 
+    // Auto-set Content-Type for JSON bodies if not specified
+    if (options?.body && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+    }
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout

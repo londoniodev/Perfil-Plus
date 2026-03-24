@@ -8,160 +8,130 @@ import * as url from 'node:url';
 //  Next.js Mocks
 // ─────────────────────────────────────────────
 
-/** 
- * Mock for next/image. 
- * Per tech lead instructions: must return standard <img> with loading="lazy" and decoding="async".
- */
-const NextImageMock = ({ src, alt, className }: any) => {
-  return (
-    <img 
-      src={src} 
-      alt={alt || ''} 
-      className={className} 
-      loading="lazy" 
-      decoding="async" 
-    />
-  );
-};
+const NextImageMock = ({ src, alt, className }: any) => (
+  <img src={src} alt={alt || ''} className={className} loading="lazy" decoding="async" />
+);
 
-/** Mock for next/link. Returns a plain <a> tag. */
-const NextLinkMock = ({ href, children, className, ...props }: any) => {
-  return (
-    <a href={href} className={className} {...props}>
-      {children}
-    </a>
-  );
-};
+const NextLinkMock = ({ href, children, className, ...props }: any) => (
+  <a href={href} className={className} {...props}>{children}</a>
+);
 
-/** Mock for next/font/google. Returns a function that returns a dummy class object. */
-const NextFontGoogleMock = () => {
-    return () => ({
-        className: 'next-font-mock',
-        style: {}
-    });
-};
+const NextFontGoogleMock = () => () => ({ className: 'next-font-mock', style: {} });
 
-// Apply mocks globally to the process so that imported components use them.
-// Note: This is a bit hacky for a script, but effective for static rendering.
-// Alternative: use a bundler or specialized transform.
 (global as any).React = React;
 (global as any).NextImage = NextImageMock;
 (global as any).NextLink = NextLinkMock;
-
-// Mock next/font/google for various common fonts
-(global as any).Poppins = NextFontGoogleMock();
 (global as any).Inter = NextFontGoogleMock();
 (global as any).Outfit = NextFontGoogleMock();
-(global as any).Geist = NextFontGoogleMock();
-(global as any).GeistMono = NextFontGoogleMock();
 
-// Mock useToast from @alvarosky/ui or similar
-(global as any).useToast = () => ({
-    toast: () => {},
-    dismiss: () => {},
-});
-
+(global as any).useToast = () => ({ toast: () => {}, dismiss: () => {} });
 (global as any).useTenant = () => ({
-    tenantId: '6786a344714f3ead406981ee', // Dummy ID for rendering
+    tenantId: '6786a344714f3ead406981ee', 
     slug: (global as any).currentTenantSlug ?? 'cocinasiete',
+    contactPhone: '573000000000'
 });
 
-// We also need to mock lucide-react if the components use it and it's not installed in this package,
-// but since landing-builder sits in the monorepo, it might resolve correctly if we use tsx.
-
 // ─────────────────────────────────────────────
-//  Registry of Legacy Storefronts
+//  Registry of Legacy Storefronts (Multi-Page)
 // ─────────────────────────────────────────────
 
-/** 
- * We dynamically import the components to avoid top-level resolution issues 
- * before mocks are applied.
- */
-const STOREFRONT_MAP: Record<string, string> = {
-  'cocinasiete': '../../../apps/_template/src/components/storefronts/cocinasiete/Landing.tsx',
-  'soydeborasoysaludable': '../../../apps/_template/src/components/storefronts/deborahmoscoso/Landing.tsx',
-  'mauromera': '../../../apps/_template/src/components/storefronts/mauromera/Landing.tsx',
+const STOREFRONT_MAP: Record<string, Record<string, string>> = {
+  'cocinasiete': {
+    'home': '../../../apps/_template/src/components/storefronts/_legacy/cocinasiete/Landing.tsx'
+  },
+  'soydeborasoysaludable': {
+    'home': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/Landing.tsx',
+    'logros': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/logros/LogrosContent.tsx',
+    'servicios': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/servicios/ServicesSelector.tsx',
+    'emprende': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/emprende/EmprendeContent.tsx',
+    'quien-soy': '../../../apps/_template/src/components/storefronts/_legacy/deborahmoscoso/quien-soy/AboutContent.tsx'
+  },
+  'mauromera': {
+    'home': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/Landing.tsx',
+    'servicios': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/servicios/ServicesSelector.tsx',
+    'portafolio': '../../../apps/_template/src/components/storefronts/_legacy/mauromera/portafolio/PortafolioContent.tsx'
+  },
 };
 
 // ─────────────────────────────────────────────
 //  Renderer Logic
 // ─────────────────────────────────────────────
 
-export async function renderLegacyLanding(tenantSlug: string): Promise<string> {
-  const componentPath = STOREFRONT_MAP[tenantSlug];
-  if (!componentPath) {
-    throw new Error(`No legacy component found for tenant: ${tenantSlug}`);
-  }
+export async function renderLegacyLanding(tenantSlug: string, pageSlug: string = 'home'): Promise<string> {
+  const tenantPages = STOREFRONT_MAP[tenantSlug];
+  if (!tenantPages) throw new Error(`No tenant found: ${tenantSlug}`);
+
+  const componentPath = tenantPages[pageSlug];
+  if (!componentPath) throw new Error(`No component for ${tenantSlug}/${pageSlug}`);
 
   (global as any).currentTenantSlug = tenantSlug;
 
-  // Use dynamic import to bring in the component
   const absolutePath = path.resolve(__dirname, componentPath);
   const fileUrl = url.pathToFileURL(absolutePath).href;
-  const { default: LandingComponent } = await import(fileUrl);
+  const module = await import(fileUrl);
+  
+  // Try common export names in legacy code
+  const Component = module.Landing || module.LogrosContent || module.ServicesSelector || module.PortafolioContent || module.AboutContent || module.EmprendeContent || module.default;
+  if (!Component) throw new Error(`Valid component not found in ${componentPath}`);
 
-  // Default mock data (can be refined if components strictly require specific fields)
-  const mockData = {
-    tenantId: tenantSlug,
-    branding: {
-      primaryColor: '#10b981', // emerald-500 default
-      secondaryColor: '#064e3b',
-    },
-    features: [],
-  };
-
-  // Import mocks for wrapping
   const { ToastProvider: ToastMockProvider } = await import('./mocks/ui-toast');
   const { TenantProvider: TenantMockProvider } = await import('./mocks/app-providers');
 
-  // Perform the actual rendering
-  console.log(`🎨 Rendering legacy component for: [${tenantSlug}]`);
+  console.log(`🎨 Rendering: [${tenantSlug}/${pageSlug}]`);
   
   const content = ReactDOMServer.renderToStaticMarkup(
     <TenantMockProvider>
         <ToastMockProvider>
-            <LandingComponent data={mockData} />
+            <Component />
         </ToastMockProvider>
     </TenantMockProvider>
   );
 
-  // Wrap in a minimal HTML shell for the processor
-  // The shell includes the required meta tags and structure for Tailwind scanning
-  const html = `
+  return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Landing - ${tenantSlug}</title>
+    <title>${tenantSlug} - ${pageSlug}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
+<body class="bg-background text-foreground">
     <div id="root">${content}</div>
 </body>
 </html>
   `.trim();
-
-  return html;
 }
 
 // ─────────────────────────────────────────────
-//  CLI Hook (Optional usage via npx tsx src/static-renderer.tsx cocinasiete)
+//  CLI Hook
 // ─────────────────────────────────────────────
 
 if (require.main === module) {
   const tenant = process.argv[2];
+  const page = process.argv[3] || 'home';
+
   if (!tenant) {
-    console.error('Usage: npx tsx src/static-renderer.tsx <tenant-slug>');
+    console.error('Usage: npx tsx src/static-renderer.tsx <tenant-slug> [page-slug|all]');
     process.exit(1);
   }
 
-  renderLegacyLanding(tenant).then(async (html) => {
-    const outputDir = path.resolve(process.cwd(), 'inputs', tenant);
+  const run = async (t: string, p: string) => {
+    const html = await renderLegacyLanding(t, p);
+    const outputDir = path.resolve(process.cwd(), 'inputs', t, p);
     await fs.mkdir(outputDir, { recursive: true });
     await fs.writeFile(path.join(outputDir, 'raw.html'), html);
-    console.log(`✅ Rendered HTML saved to: ${path.join(outputDir, 'raw.html')}`);
-  }).catch(err => {
-    console.error('❌ Rendering failed:', err);
-    process.exit(1);
-  });
+    console.log(`✅ Saved: ${path.join(outputDir, 'raw.html')}`);
+  };
+
+  if (page === 'all') {
+    const pages = Object.keys(STOREFRONT_MAP[tenant] || {});
+    (async () => {
+        for (const p of pages) await run(tenant, p);
+    })();
+  } else {
+    run(tenant, page).catch(err => {
+      console.error('❌ Failed:', err);
+      process.exit(1);
+    });
+  }
 }

@@ -165,7 +165,7 @@ async function processLocalImages(
     return src.startsWith("/");
   });
 
-  const PUBLIC_DIR = path.resolve(__dirname, "../../apps/_template/public");
+  const PUBLIC_DIR = path.resolve(process.cwd(), "../../apps/_template/public");
   let count = 0;
 
   for (let i = 0; i < localImgs.length; i++) {

@@ -56,12 +56,14 @@ export class CorsCacheService implements OnModuleInit {
       for (const tenant of tenants) {
         // Subdomain origin: https://{slug}.{baseDomain}
         if (tenant.slug && this.baseDomain) {
-          originsToAdd.push(`https://${tenant.slug}.${this.baseDomain}`);
+          const origin = this.normalizeDomain(`${tenant.slug}.${this.baseDomain}`);
+          if (origin) originsToAdd.push(`https://${origin}`);
         }
 
         // Custom domain origin: https://{domain}
         if (tenant.domain) {
-          originsToAdd.push(`https://${tenant.domain}`);
+          const origin = this.normalizeDomain(tenant.domain);
+          if (origin) originsToAdd.push(`https://${origin}`);
         }
       }
 
@@ -115,11 +117,15 @@ export class CorsCacheService implements OnModuleInit {
    */
   async checkOrigin(origin: string): Promise<boolean> {
     const redisClient = this.getRedisClient();
+    
+    // Normalizar el origen recibido (de Unicode a Punycode si es necesario)
+    const normalizedOriginName = this.normalizeDomain(origin);
+    const normalizedOrigin = `https://${normalizedOriginName}`;
 
     // Validar en Redis primero si está disponible
     if (redisClient) {
       try {
-        const isAllowed = await redisClient.sIsMember(this.REDIS_KEY, origin);
+        const isAllowed = await redisClient.sIsMember(this.REDIS_KEY, normalizedOrigin);
         if (isAllowed) return true;
       } catch (error: any) {
         this.logger.warn(`Redis falló al verificar CORS para ${origin}, haciendo fallback a BD: ${error.message}`);
@@ -128,35 +134,65 @@ export class CorsCacheService implements OnModuleInit {
 
     // SILENT FALLBACK A BD
     try {
-      const url = new URL(origin);
-      const matchDomain = url.hostname;
+      const matchDomain = normalizedOriginName;
       
-      let baseDomainCheck = this.baseDomain;
+      const baseDomainCheck = this.normalizeDomain(this.baseDomain);
       let slugCheck = '';
       if (baseDomainCheck && matchDomain.endsWith(`.${baseDomainCheck}`)) {
           slugCheck = matchDomain.replace(`.${baseDomainCheck}`, '');
       }
 
-      /* eslint-disable no-restricted-syntax */
-      const tenant = await this.prisma.tenant.findFirst({
+      // IMPORTANTE: Buscamos todos los tenants y normalizamos en memoria o 
+      // confiamos en que al menos uno coincida.
+      // Optimización: Buscamos por slug si coincide con el patrón del baseDomain.
+      const tenants = await this.prisma.tenant.findMany({
         where: {
           OR: [
-             { domain: matchDomain },
-             ...(slugCheck ? [{ slug: slugCheck }] : [])
+             { slug: slugCheck || undefined },
+             // No buscamos directamente por domain porque puede estar en Unicode en la DB 
+             // mientras que matchDomain es Punycode.
           ]
         },
-        select: { id: true }
+        select: { id: true, domain: true }
       });
-      /* eslint-enable no-restricted-syntax */
       
-      if (tenant) {
-        return true;
+      for (const t of tenants) {
+          if (slugCheck && t.id) return true; // Match por slug
+          if (t.domain && this.normalizeDomain(t.domain) === matchDomain) return true; // Match por dominio normalizado
       }
+
+      // Si no hubo match por slug, buscamos por dominio (lento pero seguro si hay pocos tenants)
+      if (tenants.length === 0) {
+          const allCustomDomains = await this.prisma.tenant.findMany({
+              where: { domain: { not: null } },
+              select: { domain: true }
+          });
+          for (const t of allCustomDomains) {
+              if (t.domain && this.normalizeDomain(t.domain) === matchDomain) return true;
+          }
+      }
+
     } catch (err: any) {
        // Ignore invalid URLs or DB query errors silently
     }
 
     return false;
+  }
+
+  /**
+   * Normaliza un dominio a su versión Punycode (ASCII) segura para comparaciones CORS.
+   */
+  private normalizeDomain(domain: string): string {
+    if (!domain) return '';
+    try {
+      // Si ya tiene protocolo, lo usamos. Si no, lo agregamos para que URL() funcione.
+      const urlString = domain.startsWith('http') ? domain : `https://${domain}`;
+      const url = new URL(urlString.toLowerCase());
+      return url.hostname;
+    } catch (e) {
+      // Fallback básico si URL falla
+      return domain.toLowerCase().trim().replace(/^https?:\/\//, '').split('/')[0];
+    }
   }
 
   /**

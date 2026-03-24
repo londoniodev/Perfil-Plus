@@ -22,7 +22,9 @@ interface ActionResult {
 // --- Validación de Seguridad ---
 async function validateSuperAdmin() {
     const user = await getSessionUser()
-    if (!user) redirect("/login")
+    if (!user) {
+        throw new Error('AUTH_REDIRECT')
+    }
     if (user.role !== "SUPERADMIN") {
         throw new Error("Acceso denegado: se requiere rol SUPERADMIN")
     }
@@ -35,6 +37,7 @@ export async function getTenantSettingsAction(tenantSlug: string): Promise<{ suc
         const settings = await serverFetch<any>(`/tenant/${tenantSlug}/settings`)
         return { success: true, data: settings }
     } catch (e: any) {
+        if (e.message === 'AUTH_REDIRECT') redirect('/login')
         return { success: false, error: e.message }
     }
 }
@@ -50,6 +53,7 @@ export async function getTenantFeaturesAction(tenantSlug: string): Promise<{ suc
 
         return { success: true, data: tenant.features || [] }
     } catch (e: any) {
+        if (e.message === 'AUTH_REDIRECT') redirect('/login')
         return { success: false, error: e.message }
     }
 }
@@ -68,6 +72,7 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
 
         return { success: true }
     } catch (error: any) {
+        if (error.message === 'AUTH_REDIRECT') redirect('/login')
         console.error("[updateTenantSettingsAction] Error:", error)
         return {
             success: false,
@@ -95,6 +100,7 @@ export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<
 
         return { success: true }
     } catch (error: any) {
+        if (error.message === 'AUTH_REDIRECT') redirect('/login')
         console.error("[updateTenantFeatures] Error:", error)
         return {
             success: false,

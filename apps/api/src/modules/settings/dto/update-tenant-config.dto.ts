@@ -42,7 +42,35 @@ export class UpdateTenantConfigDto {
 
   @IsString()
   @IsOptional()
+  tenant_name?: string;
+
+  @IsString()
+  @IsOptional()
   primary_color?: string;
+
+  @IsString()
+  @IsOptional()
+  secondary_color?: string;
+
+  @IsString()
+  @IsOptional()
+  mp_public_key?: string;
+
+  @IsString()
+  @IsOptional()
+  mp_access_token?: string;
+
+  @IsString()
+  @IsOptional()
+  mp_webhook_secret?: string;
+
+  @IsString()
+  @IsOptional()
+  mp_client_id?: string;
+
+  @IsString()
+  @IsOptional()
+  mp_client_secret?: string;
 
   @IsString()
   @IsOptional()

@@ -486,13 +486,26 @@ export class StorageService {
     try {
       this.logger.log(`[Landing Sync] Registrando customLink: ${pageSlug} para ${tenantSlug}`);
       
-      const settings = await this.prisma.secure.systemSettings.findFirst({
-        orderBy: { createdAt: 'desc' },
+      // 1. Encontrar el tenantId por slug (usamos .raw para bypass de seguridad en acción de SuperAdmin)
+      const tenant = await this.prisma.raw.tenant.findUnique({
+        where: { slug: tenantSlug },
+        select: { id: true },
       });
 
-      if (!settings) return;
+      if (!tenant) {
+        this.logger.warn(`[Landing Sync] Tenant no encontrado: ${tenantSlug}`);
+        return;
+      }
 
-      const currentLinks = (settings.customLinks as any[]) || [];
+      // 2. Buscar si ya existe la configuración de customLinks
+      const setting = await this.prisma.raw.systemSetting.findFirst({
+        where: {
+          tenantId: tenant.id,
+          key: 'customLinks',
+        },
+      });
+
+      const currentLinks = (setting?.value as any[]) || [];
       const exists = currentLinks.some((l: any) => l.href === `/${pageSlug}` || l.label.toLowerCase() === pageSlug.toLowerCase());
 
       if (!exists) {
@@ -502,10 +515,24 @@ export class StorageService {
           icon: 'Layout',
         };
 
-        await this.prisma.secure.systemSettings.update({
-          where: { id: settings.id },
-          data: {
-            customLinks: [...currentLinks, newLink],
+        const updatedLinks = [...currentLinks, newLink];
+
+        // 3. Upsert de la configuración
+        await this.prisma.raw.systemSetting.upsert({
+          where: {
+            tenantId_key: {
+              tenantId: tenant.id,
+              key: 'customLinks',
+            },
+          },
+          update: {
+            value: updatedLinks,
+          },
+          create: {
+            tenantId: tenant.id,
+            key: 'customLinks',
+            value: updatedLinks,
+            isPublic: true,
           },
         });
         this.logger.log(`[Landing Sync] Enlace añadido con éxito: /${pageSlug}`);
@@ -515,4 +542,5 @@ export class StorageService {
     }
   }
 }
+
 

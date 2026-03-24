@@ -1,4 +1,3 @@
-import {
   Controller,
   Post,
   Delete,
@@ -10,6 +9,7 @@ import {
   FileTypeValidator,
   Query,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from './storage.service';

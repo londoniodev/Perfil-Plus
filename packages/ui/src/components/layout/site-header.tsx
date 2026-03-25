@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { useScroll } from "../../hooks/use-scroll";
 import {
     IconMenu,
@@ -56,6 +57,12 @@ export function SiteHeader({
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isScrolled = useScroll(10);
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const isWhiteText = (forceDark) || (!isScrolled && transparentIsDark);
 
@@ -126,9 +133,25 @@ export function SiteHeader({
                     />
                 </nav>
 
-                {/* Cart Button (Desktop & Mobile) */}
-                <div className="flex items-center gap-2 mr-2">
-                    <div className={cn(isWhiteText ? "text-white" : (isScrolled ? "text-black" : ""))}>
+                {/* Actions (Toggle Theme + Cart) */}
+                <div className="flex items-center gap-1 mr-2">
+                    {mounted && (
+                        <button 
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className={cn(
+                                "inline-flex items-center justify-center rounded-full p-2 transition-colors",
+                                isWhiteText ? "text-white/80 hover:bg-white/10 hover:text-white" : (isScrolled ? "text-black/70 hover:bg-black/5 hover:text-black" : "text-muted-foreground hover:bg-muted hover:text-foreground")
+                            )} 
+                            aria-label="Cambiar tema"
+                        >
+                            {theme === 'dark' ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun transition-transform duration-300"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon transition-transform duration-300"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                            )}
+                        </button>
+                    )}
+                    <div className={cn("ml-1", isWhiteText ? "text-white" : (isScrolled ? "text-black" : ""))}>
                         {cartComponent}
                     </div>
                 </div>

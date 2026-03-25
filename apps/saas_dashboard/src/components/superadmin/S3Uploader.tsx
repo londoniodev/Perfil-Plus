@@ -278,20 +278,34 @@ export function S3Uploader({ tenantSlug }: Props) {
                     ) : (
                         <div className="divide-y divide-slate-800">
                             {landings.map((l, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors">
+                                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-slate-800/30 transition-colors gap-3">
                                     <div className="flex flex-col">
                                         <span className="text-sm font-semibold text-slate-200">{l.label}</span>
                                         <span className="text-xs text-slate-500 font-mono mt-1">{l.href}</span>
                                     </div>
-                                    <Button 
-                                        variant="secondary" 
-                                        size="sm" 
-                                        onClick={() => handleEdit(l)}
-                                        className="bg-slate-800 hover:bg-indigo-600/20 hover:text-indigo-400 border border-slate-700"
-                                    >
-                                        <FileEdit className="w-3.5 h-3.5 mr-2" />
-                                        Reemplazar HTML
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        {(l as any).sourceUrl && (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                asChild
+                                                className="border-slate-700 hover:bg-slate-800 text-slate-300"
+                                            >
+                                                <a href={(l as any).sourceUrl} target="_blank" rel="noopener noreferrer" download>
+                                                    Descargar HTML
+                                                </a>
+                                            </Button>
+                                        )}
+                                        <Button 
+                                            variant="secondary" 
+                                            size="sm" 
+                                            onClick={() => handleEdit(l)}
+                                            className="bg-slate-800 hover:bg-indigo-600/20 hover:text-indigo-400 border border-slate-700 shrink-0"
+                                        >
+                                            <FileEdit className="w-3.5 h-3.5 mr-2" />
+                                            Reemplazar HTML
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

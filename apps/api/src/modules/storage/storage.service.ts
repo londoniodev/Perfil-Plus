@@ -616,8 +616,17 @@ export class StorageService {
     const homeLink = { label: 'Inicio (Home)', href: '/home' };
     const filteredLinks = headerLinks.filter(l => l.href !== '/home' && l.href !== '/inicio');
 
-    return [homeLink, ...filteredLinks];
+    const bucketName = `${tenantSlug}-public`;
+    
+    return [homeLink, ...filteredLinks].map(link => {
+      const slug = link.href.replace(/^\//, '');
+      return {
+        ...link,
+        sourceUrl: `${this.publicUrl}/${bucketName}/landings/${slug}/body.html`
+      };
+    });
   }
 }
+
 
 

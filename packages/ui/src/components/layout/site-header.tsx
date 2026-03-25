@@ -33,6 +33,7 @@ export interface SiteHeaderProps {
     profileUrl?: string;
     showAuthButtons?: boolean;
     transparentIsDark?: boolean;
+    forceDark?: boolean;
     className?: string;
 }
 
@@ -50,17 +51,20 @@ export function SiteHeader({
     profileUrl = "/perfil",
     showAuthButtons = true,
     transparentIsDark = false,
+    forceDark = false,
     className,
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isScrolled = useScroll(10);
 
-    const isWhiteText = !isScrolled && transparentIsDark;
+    const isWhiteText = (forceDark) || (!isScrolled && transparentIsDark);
 
     return (
         <header className={cn(
             "fixed top-0 left-0 w-full z-50 transition duration-300",
-            isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "bg-transparent py-6",
+            forceDark ? "lg:dark lg:bg-zinc-950 lg:border-b lg:border-white/10 py-3" : "",
+            !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
+            !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className
         )}>
             <div className="w-full px-4 md:px-8 flex items-center justify-between">

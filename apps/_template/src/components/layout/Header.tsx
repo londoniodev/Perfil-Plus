@@ -38,6 +38,7 @@ export function Header({
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
             transparentIsDark={isHome}
+            forceDark={true}
         />
     );
 }

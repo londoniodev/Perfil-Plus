@@ -46,27 +46,27 @@ export default function LinktreeFallback({
   const linksToRender = [...navLinks];
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] overflow-y-auto relative flex items-center justify-center bg-zinc-950">
+    <div className="min-h-[100dvh] w-full relative flex flex-col items-center justify-center bg-zinc-950 px-4 py-8 sm:py-12 overflow-x-hidden">
       
-      {/* Background Layer - Full width/height sin deformación */}
+      {/* Background Layer - Fixed to stay behind during scroll */}
       {bgImage ? (
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 pointer-events-none"
           style={{ backgroundImage: `url(${bgImage})` }}
         />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+        <div className="fixed inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black pointer-events-none" />
       )}
 
-      {/* Glassmorphism Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" />
+      {/* Glassmorphism Overlay Fixed */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xl pointer-events-none" />
 
-      {/* Tarjeta Central */}
+      {/* Tarjeta Central - Scrollable naturally */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md p-8 flex flex-col items-center text-center"
+        className="relative z-10 w-full max-w-md p-6 sm:p-8 flex flex-col items-center text-center"
       >
         {/* Avatar / Logo */}
         <div 

@@ -64,29 +64,31 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
             payload.tag = `tenant-${tenantId || 'global'}-store`;
         }
 
-        console.log(`[Revalidate] 🔄 Intentando ISR: ${url} | Tag: ${payload.tag || 'path only'}`);
+        console.log(`[Revalidate] 🔄 Intentando ISR vía única fuente de verdad: ${url} | Tag: ${payload.tag || 'path only'}`);
 
-        // Ejecución ÚNICA, limpia y secuencial (Anti Memory Leak)
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-revalidate-secret": revalidationSecret
-            },
-            body: JSON.stringify(payload),
-            // Timeout preventivo para evitar bloqueos en el backend
-            signal: AbortSignal.timeout(5000)
-        });
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-revalidate-secret": revalidationSecret
+                },
+                body: JSON.stringify(payload),
+                signal: AbortSignal.timeout(5000)
+            });
 
-        if (res.ok) {
-            console.log(`✅ Storefront ISR ejecutado con éxito vía ${url}`);
-        } else {
-            const errBody = await res.text();
-            console.error(`❌ Revalidation falló en ${url}: Status ${res.status} - ${errBody}`);
+            if (res.ok) {
+                console.log(`✅ Storefront ISR ejecutado con éxito vía ${url}`);
+            } else {
+                const errBody = await res.text();
+                console.error(`❌ Revalidation falló en ${url}: Status ${res.status} - ${errBody}`);
+            }
+        } catch (fetchError: any) {
+            // Captura silenciosa con log de error descriptivo según arquitectura
+            console.error(`[Revalidate] ❌ Fallo crítico de conexión en ${url}: ${fetchError.message}`);
         }
 
     } catch (e: any) {
-        // Captura silenciosa con advertencia: la revalidación es una mejora, no debe bloquear el éxito del action
-        console.warn(`[Revalidate] ⚠️ Sin conexión con el storefront para ISR (${url}):`, e?.message || e);
+        console.error(`[Revalidate] ❌ Error inesperado en orquestador ISR:`, e?.message || e);
     }
 }

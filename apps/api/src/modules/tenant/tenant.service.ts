@@ -45,7 +45,7 @@ export class TenantService {
   private readonly nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL || 
     (process.env.STOREFRONT_URL 
       ? `${process.env.STOREFRONT_URL}/api/revalidate` 
-      : 'http://web:3000/api/revalidate');
+      : 'http://web-storefront:3000/api/revalidate');
   private readonly internalApiKey =
     process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
@@ -592,29 +592,31 @@ export class TenantService {
   private async triggerFrontendRevalidation(tags: string[]) {
     try {
       for (const tag of tags) {
-        const response = await fetch(this.nextjsRevalidationUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-revalidate-secret': this.internalApiKey,
-          },
-          body: JSON.stringify({ tag }),
-          signal: AbortSignal.timeout(5000), // Timeout preventivo
-        });
+        try {
+          const response = await fetch(this.nextjsRevalidationUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-revalidate-secret': this.internalApiKey,
+            },
+            body: JSON.stringify({ tag }),
+            signal: AbortSignal.timeout(5000), // Timeout único
+          });
 
-        if (!response.ok) {
-          this.logger.error(
-            `Revalidación Next.js falló para tag [${tag}]: ${response.statusText}`,
-          );
-        } else {
-          this.logger.log(
-            `Caché purgado exitosamente en Next.js para tag: [${tag}]`,
-          );
+          if (response.ok) {
+            this.logger.log(`Caché purgado exitosamente en Next.js para tag: [${tag}]`);
+          } else {
+            const errBody = await response.text();
+            this.logger.error(`Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`);
+          }
+        } catch (e: any) {
+          // Captura silenciosa para no bloquear el proceso principal
+          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${e.message}`);
         }
       }
     } catch (error: any) {
-      this.logger.warn(
-        `[Next.js ISR] Sin conexión con el Webhook en ${this.nextjsRevalidationUrl} (${error.message}). Se omite purga de caché.`,
+      this.logger.error(
+        `[Next.js ISR] Error crítico en el orquestador de revalidación: ${error.message}`,
       );
     }
   }

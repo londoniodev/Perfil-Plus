@@ -17,7 +17,7 @@ export function formatProductForTable(product: any) {
     return {
         id: product.id,
         name: product.name,
-        image: (product.images && product.images[0]) || "/placeholder.jpg",
+        image: (product.images && product.images[0]) || "https://placehold.co/600x400/27272a/ffffff?text=Sin+Imagen",
         type: product.productType,
         price: minPrice,
         stock: totalStock === Infinity ? "Ilimitado" : totalStock,

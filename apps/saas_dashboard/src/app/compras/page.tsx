@@ -141,7 +141,7 @@ function OrderItem({ item, orderStatus }: { item: any, orderStatus: string }) {
             {/* Imagen del Producto */}
             <div className="h-24 w-24 shrink-0 overflow-hidden rounded-md border">
                 <AdaptiveImage
-                    src={product.images[0] || "/placeholder.jpg"}
+                    src={product.images[0] || "https://placehold.co/600x400/27272a/ffffff?text=Sin+Imagen"}
                     aspectRatio="square"
                     alt={product.name}
                 />

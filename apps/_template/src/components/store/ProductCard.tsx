@@ -23,7 +23,7 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
     const isDigital = product.productType === "DIGITAL"
     const isPhysical = product.productType === "PHYSICAL"
 
-    const imageUrl = product.images?.[0] || "/placeholder.jpg";
+    const imageUrl = product.images?.[0] || "https://placehold.co/600x400/27272a/ffffff?text=Sin+Imagen";
     const isAvailable = product.isAvailable !== false
 
     return (

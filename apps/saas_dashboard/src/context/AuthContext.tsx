@@ -284,7 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, [user, performTokenRefresh]);
 
-    const isAdmin = user?.role === "ADMIN";
+    const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
     const isStaff = !!user?.role && STAFF_ROLES.includes(user.role as any);
     const isAuthenticated = !!user;
 

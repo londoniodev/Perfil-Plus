@@ -80,6 +80,11 @@ export class StorageService {
         secretAccessKey: this.configService.get('S3_SECRET_KEY', ''),
       },
       forcePathStyle: true,
+      // Añadir timeout para evitar colgar la API si el DNS falla
+      requestHandler: {
+        connectionTimeout: 5000,
+        requestTimeout: 10000,
+      } as any,
     });
 
     return this.s3Client;

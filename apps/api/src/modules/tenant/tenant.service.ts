@@ -841,7 +841,7 @@ export class TenantService {
     }
   }
 
-  async getTenantByIdOrSlug(idOrSlug: string) {
+  async getTenantByIdOrSlug(idOrSlug: string, requestTenantId?: string) {
     const tenant = await this.prisma.raw.tenant.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
@@ -852,6 +852,18 @@ export class TenantService {
       throw new NotFoundException(
         `Tenant con ID o Slug "${idOrSlug}" no encontrado`,
       );
+    }
+
+    // Si hay un requestTenantId (viene de un ADMIN), validar que sea su propio tenant.
+    // Los SUPERADMIN típicamente no pasan por el decorador con un tenantId restrictivo o el controlador lo maneja.
+    // En este proyecto, el SUPERADMIN tiene rol 'SUPERADMIN'.
+    if (requestTenantId && tenant.id !== requestTenantId) {
+      // Nota: Si el usuario es SUPERADMIN, el RolesGuard ya pasó, 
+      // pero debemos asegurarnos de no bloquear al SUPERADMIN.
+      // Aquí asumimos que si llega un requestTenantId es porque el decorador lo extrajo del JWT.
+      // Si el usuario es SUPERADMIN, su JWT podría tener tenantId null o global.
+      this.logger.warn(`Acceso denegado: Usuario con Tenant ${requestTenantId} intentó acceder a Tenant ${tenant.id}`);
+      throw new UnauthorizedException('No tienes permisos para acceder a este recurso');
     }
 
     return tenant;

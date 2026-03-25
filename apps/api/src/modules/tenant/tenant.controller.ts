@@ -76,9 +76,12 @@ export class TenantController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SUPERADMIN' as any)
-  async findOne(@Param('id') id: string) {
-    return this.tenantService.getTenantByIdOrSlug(id);
+  @Roles('SUPERADMIN' as any, Role.ADMIN)
+  async findOne(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.tenantService.getTenantByIdOrSlug(id, tenantId);
   }
 
   // Uso estrictamente protegido por administradores para configurar el Theme

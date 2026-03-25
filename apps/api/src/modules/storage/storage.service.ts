@@ -577,6 +577,7 @@ export class StorageService {
           secret,
           path: '/', // Forzar recarga del Layout (SSOT Header)
         }),
+        signal: AbortSignal.timeout(5000), // Timeout preventivo
       });
 
       if (!response.ok) {
@@ -584,8 +585,10 @@ export class StorageService {
       } else {
         this.logger.log(`[Landing Sync] Storefront Caché purgado para tenant ${tenantId}`);
       }
-    } catch (err) {
-      this.logger.error(`[Landing Sync] Módulo inalcanzable para Revalidación en ${nextjsRevalidationUrl}`, err);
+    } catch (err: any) {
+      this.logger.warn(
+        `[Next.js ISR] Sin conexión con el Webhook en ${nextjsRevalidationUrl} (${err.message}). Se omite purga de caché.`,
+      );
     }
   }
 

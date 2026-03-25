@@ -86,7 +86,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
         }
 
     } catch (e: any) {
-        // Captura silenciosa con error descriptivo según la regla
-        console.error(`❌ Error crítico disparando webhook de revalidación en ${process.env.STOREFRONT_URL || 'fallback'}:`, e?.message || e);
+        // Captura silenciosa con advertencia: la revalidación es una mejora, no debe bloquear el éxito del action
+        console.warn(`[Revalidate] ⚠️ Sin conexión con el storefront para ISR (${url}):`, e?.message || e);
     }
 }

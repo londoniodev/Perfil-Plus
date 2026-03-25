@@ -599,6 +599,7 @@ export class TenantService {
             'x-revalidate-secret': this.internalApiKey,
           },
           body: JSON.stringify({ tag }),
+          signal: AbortSignal.timeout(5000), // Timeout preventivo
         });
 
         if (!response.ok) {
@@ -612,9 +613,8 @@ export class TenantService {
         }
       }
     } catch (error: any) {
-      this.logger.error(
-        `Error al conectar con el Webhook de Next.js en ${this.nextjsRevalidationUrl}:`,
-        error.message,
+      this.logger.warn(
+        `[Next.js ISR] Sin conexión con el Webhook en ${this.nextjsRevalidationUrl} (${error.message}). Se omite purga de caché.`,
       );
     }
   }

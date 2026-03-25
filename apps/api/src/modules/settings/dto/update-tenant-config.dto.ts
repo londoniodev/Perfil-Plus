@@ -177,4 +177,12 @@ export class UpdateTenantConfigDto {
   @IsString()
   @IsOptional()
   smtp_pass?: string;
+
+  @IsString()
+  @IsOptional()
+  tenant_slug?: string;
+
+  @IsString()
+  @IsOptional()
+  layout_type?: string;
 }

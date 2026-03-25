@@ -86,6 +86,8 @@ export class SettingsService {
       'mp_access_token',
       'deliveryFee',
       'waPhoneNumberId',
+      'tenant_slug',
+      'layout_type',
     ];
 
     const operations = Object.entries(updateDto)

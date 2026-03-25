@@ -284,7 +284,7 @@ export class TenantService {
         const bs =
           (tenantById.brandSettings as unknown as BrandSettingsWithAssets) ||
           {};
-        const logo = bs.logoUrl || menuData.logo || null;
+        const logo = bs.logoUrl || bs.faviconUrl || menuData.logo || null;
         const headerLinks = menuData.headerLinks || null;
         const footerLinks = menuData.footerLinks || null;
         const tagline =
@@ -345,7 +345,7 @@ export class TenantService {
       const bs =
         (tenantBySlug.brandSettings as unknown as BrandSettingsWithAssets) ||
         {};
-      const logo = bs.logoUrl || menuData.logo || null;
+      const logo = bs.logoUrl || bs.faviconUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
       const tagline =

@@ -40,7 +40,7 @@ export default async function MarketingLayout({
     const contactEmail = design?.contactEmail || null;
     const businessName = design?.name || null;
     const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
-    const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
+    const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
 
     const tenantFeaturesRaw = headersList.get('x-tenant-features');
     const tenantCustomLinksRaw = headersList.get('x-tenant-custom-links');

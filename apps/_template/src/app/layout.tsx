@@ -25,7 +25,7 @@ const TableDetector = dynamic(
 export async function generateMetadata(): Promise<Metadata> {
   const tenantId = await getTenantId();
   const design = await getTenantDesign(tenantId);
-  const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
+  const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
   const siteName = design?.name || siteConfig.name;
   const tagline = design?.brandSettings?.tagline || design?.tagline || siteConfig.description;
 
@@ -35,7 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = isLocal ? "http" : "https";
   const currentUrl = `${protocol}://${host}`;
 
-  const faviconUrl = design?.brandSettings?.faviconUrl || '/favicon.ico';
+  const faviconUrl = design?.brandSettings?.faviconUrl 
+    ? `${design.brandSettings.faviconUrl}?v=${new Date(design.brandSettings.updatedAt || Date.now()).getTime()}` 
+    : '/favicon.ico';
 
   return {
     ...baseMetadata,
@@ -94,7 +96,7 @@ export default async function RootLayout({
   // Color principal. Lo pasamos enteramente a BrandProvider en _providers_.
   const rawPrimaryColor = design?.brandSettings?.primaryColor || design?.primary || "zinc";
   const primaryColor = rawPrimaryColor;
-  const logoUrl = design?.brandSettings?.logoUrl || design?.logo || '/images/branding/icon.png';
+  const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
   const headerLinksFromDb = design?.headerLinks || null;
   const footerLinks = design?.footerLinks || null;
   const contactPhone = design?.contactPhone || null;

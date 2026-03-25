@@ -17,6 +17,7 @@ import { CorsCacheService } from '../core/cors-cache.service';
 import { DokployService } from '../core/dokploy.service';
 import { ConfigService } from '@nestjs/config';
 import { SettingsService } from '../settings/settings.service';
+import { ClsService } from 'nestjs-cls';
 
 import * as bcrypt from 'bcryptjs';
 
@@ -56,6 +57,7 @@ export class TenantService {
     private readonly dokployService: DokployService,
     private readonly configService: ConfigService,
     private readonly settingsService: SettingsService,
+    private readonly cls: ClsService,
   ) {}
 
   /**
@@ -838,14 +840,11 @@ export class TenantService {
     }
 
     // Si hay un requestTenantId (viene de un ADMIN), validar que sea su propio tenant.
-    // Los SUPERADMIN típicamente no pasan por el decorador con un tenantId restrictivo o el controlador lo maneja.
-    // En este proyecto, el SUPERADMIN tiene rol 'SUPERADMIN'.
-    if (requestTenantId && tenant.id !== requestTenantId) {
-      // Nota: Si el usuario es SUPERADMIN, el RolesGuard ya pasó, 
-      // pero debemos asegurarnos de no bloquear al SUPERADMIN.
-      // Aquí asumimos que si llega un requestTenantId es porque el decorador lo extrajo del JWT.
-      // Si el usuario es SUPERADMIN, su JWT podría tener tenantId null o global.
-      this.logger.warn(`Acceso denegado: Usuario con Tenant ${requestTenantId} intentó acceder a Tenant ${tenant.id}`);
+    // Los SUPERADMIN tienen bypass total.
+    const userRole = this.cls.get('role');
+    
+    if (userRole !== 'SUPERADMIN' && requestTenantId && tenant.id !== requestTenantId) {
+      this.logger.warn(`Acceso denegado: Usuario con Rol ${userRole} y Tenant ${requestTenantId} intentó acceder a Tenant ${tenant.id}`);
       throw new UnauthorizedException('No tienes permisos para acceder a este recurso');
     }
 

@@ -147,18 +147,19 @@ export default async function MarketingHubPage({ params }: Props) {
   ])).map(f => f.toUpperCase());
   
   const upperFeaturesSet = new Set(allFeatures);
-  const hasLandingFeature = upperFeaturesSet.has("LANDING");
-  const pageSlug = resolvedParams.catchall?.join("/") || "home";
+    const hasLandingFeature = upperFeaturesSet.has("LANDING");
+    const pageSlug = resolvedParams.catchall?.join("/") || "home";
 
-  if (!hasLandingFeature) {
-    // Si no tiene el feature LANDING activo -> Bypassear S3 e invocar directamente Linktree Fallback
-    const navLinks: { label: string; href: string }[] = [];
-    if (upperFeaturesSet.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
-    if (upperFeaturesSet.has('SHOP')) navLinks.push(FEATURE_ROUTES.SHOP);
-    if (upperFeaturesSet.has('BLOG')) navLinks.push(FEATURE_ROUTES.BLOG);
-    if (upperFeaturesSet.has('LMS')) navLinks.push(FEATURE_ROUTES.LMS);
-    
-    const finalLinks = [...navLinks, ...(design?.headerLinks || [])];
+    if (!hasLandingFeature) {
+        // Si no tiene el feature LANDING activo -> Solo mostramos enlaces de features fijas
+        // Ocultamos los enlaces personalizados (headerLinks) ya que pertenecen al sitio web desactivado.
+        const navLinks: { label: string; href: string }[] = [];
+        if (upperFeaturesSet.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
+        if (upperFeaturesSet.has('SHOP')) navLinks.push(FEATURE_ROUTES.SHOP);
+        if (upperFeaturesSet.has('BLOG')) navLinks.push(FEATURE_ROUTES.BLOG);
+        if (upperFeaturesSet.has('LMS')) navLinks.push(FEATURE_ROUTES.LMS);
+        
+        const finalLinks = [...navLinks]; // <--- Solo navLinks, quitamos design?.headerLinks
     
     return (
       <LinktreeFallback 

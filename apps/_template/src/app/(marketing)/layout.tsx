@@ -87,12 +87,13 @@ export default async function MarketingLayout({
         navLinks.push(FEATURE_ROUTES.LMS);
     }
 
-    // 3. Mezclar con enlaces personalizados de la DB si existen
-    const customLinks = headerLinksFromDb || [];
-    const finalLinks = [...navLinks, ...customLinks];
-
     const hasDashboardFeature = upperFeatures.has('DASHBOARD');
     const hasLandingFeature = upperFeatures.has('LANDING');
+
+    // 3. Mezclar con enlaces personalizados de la DB solo si tiene LANDING activo
+    // Esto evita que aparezcan enlaces a páginas de S3 si el sitio web está desactivado.
+    const customLinks = hasLandingFeature ? (headerLinksFromDb || []) : [];
+    const finalLinks = [...navLinks, ...customLinks];
 
     return (
         <NavigationWrapper

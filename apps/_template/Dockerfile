@@ -26,6 +26,8 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY --from=pruner /app/out/full/ .
+RUN mkdir -p apps/_template/public
+
 
 # Build-time arguments for Next.js public env vars (REQUIRED — no default)
 

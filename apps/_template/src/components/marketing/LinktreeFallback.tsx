@@ -1,156 +1,140 @@
 "use client";
 
 import React from "react";
-import { Button } from "@alvarosky/ui";
-import { 
-  UtensilsCrossed, 
-  ShoppingBag, 
-  Store, 
-  ExternalLink,
-  Instagram,
-  Facebook,
-  Globe,
-  Layout
-} from "lucide-react";
+import { ExternalLink, Instagram, Facebook, Globe } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { cn } from "@alvarosky/ui";
 
 interface LinktreeFallbackProps {
   tenantSlug: string;
   features: string[];
+  marketingData?: {
+    tenantSlug: string;
+    heroTitle?: string;
+    heroSubtitle?: string;
+    // Opcionalmente podemos extraer social links o variables del branding si las hay
+  };
+  navLinks?: { label: string; href: string }[];
   branding?: {
-    logo?: string;
+    logoUrl?: string;
     primaryColor?: string;
-    bannerUrl?: string;
+    backgroundImageUrl?: string;
   };
 }
 
 export default function LinktreeFallback({ 
   tenantSlug, 
-  features,
+  marketingData,
+  navLinks = [],
   branding 
 }: LinktreeFallbackProps) {
   
-  const hasRestaurant = features.includes("RESTAURANT");
-  const hasShop = features.includes("SHOP");
-  const hasServices = features.includes("SERVICES");
-  const hasBooking = features.includes("BOOKING");
-
-  const links = [
-    {
-      id: "menu",
-      title: "Ver Menú Digital",
-      subtitle: "Explora nuestra carta y pide online",
-      icon: <UtensilsCrossed className="w-6 h-6" />,
-      href: "/menu",
-      show: hasRestaurant,
-      gradient: "from-orange-500 to-red-600",
-    },
-    {
-      id: "shop",
-      title: "Tienda Online",
-      subtitle: "Compra nuestros productos",
-      icon: <ShoppingBag className="w-6 h-6" />,
-      href: "/tienda",
-      show: hasShop,
-      gradient: "from-blue-500 to-indigo-600",
-    },
-    {
-      id: "services",
-      title: "Nuestros Servicios",
-      subtitle: "Conoce lo que hacemos",
-      icon: <Store className="w-6 h-6" />,
-      href: "/servicios",
-      show: hasServices,
-      gradient: "from-emerald-500 to-teal-600",
-    },
-    {
-      id: "booking",
-      title: "Reservas",
-      subtitle: "Agenda tu cita ahora",
-      icon: <Layout className="w-6 h-6" />,
-      href: "/reservas",
-      show: hasBooking,
-      gradient: "from-purple-500 to-pink-600",
-    }
-  ].filter(link => link.show);
+  // Variables estéticas con fallbacks
+  const bgImage = branding?.backgroundImageUrl || null;
+  const primaryColor = branding?.primaryColor || "#09090b";
+  const logo = branding?.logoUrl || null;
+  const tenantName = tenantSlug.replace(/-/g, " ");
+  
+  // Si no pasamos navLinks explícitos en este bypass, al menos pintar los hardcodeados del step anterior
+  // NOTA: Para respetar el paso 1, el router debería inyectarnos navLinks
+  const linksToRender = navLinks.length > 0 ? navLinks : [
+    { label: "Volver a Olympo", href: "/" }
+  ];
 
   return (
-    <div className="min-h-[calc(100vh-80px)] w-full flex flex-col items-center justify-start py-12 px-4 bg-background">
-      {/* Header Section */}
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center bg-zinc-950">
+      
+      {/* Background Layer */}
+      {bgImage ? (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgImage})` }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+      )}
+
+      {/* Glassmorphism Overlay */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-md" />
+
+      {/* Tarjeta Central */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md flex flex-col items-center mb-12 text-center"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md p-6 flex flex-col items-center text-center"
       >
-        <div className="w-24 h-24 rounded-full bg-muted border-2 border-primary/20 flex items-center justify-center overflow-hidden mb-6 shadow-xl">
-          {branding?.logo ? (
-            <img src={branding.logo} alt={tenantSlug} className="w-full h-full object-cover" />
+        {/* Avatar / Logo */}
+        <div 
+          className="w-24 h-24 rounded-full border-2 overflow-hidden shadow-2xl flex items-center justify-center bg-zinc-900"
+          style={{ borderColor: primaryColor }}
+        >
+          {logo ? (
+            <img src={logo} alt={tenantName} className="w-full h-full object-cover" />
           ) : (
-            <Globe className="w-10 h-10 text-muted-foreground" />
+            <Globe className="w-10 h-10 text-white/50" />
           )}
         </div>
-        <h1 className="text-3xl font-black tracking-tight mb-2 capitalize">
-          {tenantSlug.replace(/-/g, " ")}
+
+        {/* Textos */}
+        <h1 className="text-2xl font-bold mt-4 text-white capitalize tracking-tight">
+          {marketingData?.heroTitle || tenantName}
         </h1>
-        <p className="text-muted-foreground font-medium max-w-[280px]">
-          Bienvenido a nuestra plataforma digital. Elige una opción para continuar.
+        <p className="text-sm text-zinc-300 mt-2 font-light">
+          {marketingData?.heroSubtitle || "Descubre todos nuestros servicios"}
+        </p>
+
+        {/* Links de Navegación  */}
+        <div className="w-full flex flex-col gap-4 mt-8">
+          {linksToRender.map((link, index) => {
+            // Saltamos el link de inicio si no es útil en un hub central
+            if (link.href === '/' && linksToRender.length > 1) return null;
+            
+            return (
+              <motion.div
+                key={link.href}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + (index * 0.1) }}
+              >
+                <Link href={link.href} className="block group">
+                  <div 
+                    className="relative overflow-hidden w-full py-4 px-6 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all duration-300 shadow-lg text-center"
+                    style={{ '--hover-color': primaryColor } as React.CSSProperties}
+                  >
+                    <span className="font-semibold text-white tracking-wide group-hover:text-[var(--hover-color)] transition-colors">
+                      {link.label}
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
+
+        {/* Social Footer */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-12 flex items-center justify-center gap-6"
+        >
+          <a href="#" className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+            <Instagram className="w-5 h-5" />
+          </a>
+          <a href="#" className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+            <Facebook className="w-5 h-5" />
+          </a>
+          <a href="#" className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors">
+            <Globe className="w-5 h-5" />
+          </a>
+        </motion.div>
+        
+        <p className="mt-8 text-[10px] text-white/30 uppercase tracking-[0.2em]">
+          Powered by Olympo SaaS
         </p>
       </motion.div>
-
-      {/* Links Section */}
-      <div className="w-full max-w-md space-y-4">
-        {links.length > 0 ? (
-          links.map((link, index) => (
-            <motion.div
-              key={link.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Link href={link.href} className="block group">
-                <div className="relative p-1 rounded-2xl bg-gradient-to-r transition-all duration-300 group-hover:scale-[1.02] active:scale-[0.98] shadow-lg">
-                  <div className={`absolute inset-0 bg-gradient-to-r ${link.gradient} rounded-2xl`} />
-                  <div className="relative bg-background rounded-[calc(1rem-2px)] p-4 flex items-center gap-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${link.gradient} text-white shadow-md`}>
-                      {link.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
-                        {link.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {link.subtitle}
-                      </p>
-                    </div>
-                    <ExternalLink className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))
-        ) : (
-          <div className="text-center py-12 px-6 border-2 border-dashed rounded-3xl opacity-50">
-            <p className="text-muted-foreground italic">No hay servicios configurados aún.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Social Footer */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-16 flex items-center gap-6"
-      >
-        <Instagram className="w-6 h-6 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-        <Facebook className="w-6 h-6 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-        <Globe className="w-6 h-6 text-muted-foreground hover:text-primary cursor-pointer transition-colors" />
-      </motion.div>
-      
-      <p className="mt-8 text-xs text-muted-foreground font-medium uppercase tracking-widest opacity-40">
-        Powered by Olympo SaaS
-      </p>
     </div>
   );
 }

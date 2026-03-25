@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTenantId } from "@/lib/config-server";
+import { getTenantDesign } from "@/lib/tenant-server";
+import { FEATURE_ROUTES } from "@alvarosky/types";
 import { TenantMarketingData } from "@/types/marketing";
 import { getBucketName } from "@alvarosky/shared";
 import { Metadata } from "next";
@@ -127,8 +129,39 @@ export default async function MarketingHubPage({ params }: Props) {
     return notFound();
   }
 
-  // 1. Intentar resolver la ruta desde S3 (Prioridad 1: Dinámico/Headless)
+  // 0. Si no tiene el feature LANDING activo -> Bypassear S3 e invocar directamente Linktree Fallback
+  const hasLandingFeature = features.includes("LANDING");
   const pageSlug = resolvedParams.catchall?.join("/") || "home";
+
+  if (!hasLandingFeature) {
+    const marketingData = await getMarketingData(tenantId);
+    const design = await getTenantDesign(tenantId);
+    
+    // Reproducimos la construcción del menú idéntico al Layout
+    const upperFeatures = new Set([...features, ...(design?.features || [])].map(f => f.toUpperCase()));
+    const navLinks: { label: string; href: string }[] = [];
+    if (upperFeatures.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
+    if (upperFeatures.has('SHOP')) navLinks.push(FEATURE_ROUTES.SHOP);
+    if (upperFeatures.has('BLOG')) navLinks.push(FEATURE_ROUTES.BLOG);
+    if (upperFeatures.has('LMS')) navLinks.push(FEATURE_ROUTES.LMS);
+    
+    const finalLinks = [...navLinks, ...(design?.headerLinks || [])];
+    
+    return (
+      <LinktreeFallback 
+        tenantSlug={tenantSlug} 
+        marketingData={marketingData || undefined}
+        navLinks={finalLinks}
+        branding={{
+          logoUrl: design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || undefined,
+          primaryColor: design?.brandSettings?.primaryColor,
+          backgroundImageUrl: design?.brandSettings?.authBgUrl // Fallback temporal antes de que user migre `backgroundImageUrl` a BD
+        }}
+      />
+    );
+  }
+
+  // 1. Intentar resolver la ruta desde S3 (Prioridad 1: Dinámico/Headless)
   const landing = await fetchLandingFromS3(tenantId, tenantSlug, pageSlug);
 
   if (landing?.body) {
@@ -146,21 +179,9 @@ export default async function MarketingHubPage({ params }: Props) {
     );
   }
 
-  // 2. Si no hay landing en S3 y es la raíz, aplicar Lógica Linktree / Fallback
+  // 2. Si no hay landing en S3 y es la raíz, aplicar Lógica DefaultStorefront / Olympo SaaS
   if (pageSlug === "home") {
-    const hasLandingFeature = features.includes("LANDING");
-
-    // Si NO tiene el feature LANDING activo -> Linktree Fallback Obligatorio
-    if (!hasLandingFeature) {
-      return (
-        <LinktreeFallback 
-          tenantSlug={tenantSlug} 
-          features={features} 
-        />
-      );
-    }
-
-    // Si tiene LANDING activo pero falló S3 -> DefaultStorefront (o Linktree como último recurso)
+    // Si tiene LANDING activo pero falló S3 -> DefaultStorefront
     const marketingData = await getMarketingData(tenantId);
     const safeData: TenantMarketingData = marketingData || {
       tenantSlug: tenantSlug,

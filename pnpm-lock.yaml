@@ -79,9 +79,6 @@ importers:
       '@alvarosky/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@ducanh2912/next-pwa':
-        specifier: ^10.2.9
-        version: 10.2.9(@types/babel__core@7.20.5)(next@16.1.1(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(webpack@5.104.1)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.2.3))
@@ -178,10 +175,10 @@ importers:
         version: 10.4.23(postcss@8.5.6)
       eslint:
         specifier: ^9
-        version: 9.39.2(jiti@2.6.1)
+        version: 9.39.2(jiti@1.21.7)
       eslint-config-next:
         specifier: 16.1.1
-        version: 16.1.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.1.1(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)
       postcss:
         specifier: ^8.4.49
         version: 8.5.6
@@ -609,10 +606,10 @@ importers:
         version: 10.4.23(postcss@8.5.6)
       eslint:
         specifier: ^9
-        version: 9.39.2(jiti@1.21.7)
+        version: 9.39.2(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.1.1
-        version: 16.1.1(eslint@9.39.2(jiti@1.21.7))(typescript@5.9.3)
+        version: 16.1.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       postcss:
         specifier: ^8.4.49
         version: 8.5.6

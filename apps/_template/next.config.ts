@@ -63,29 +63,6 @@ const securityHeaders = [
 ];
 
 
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-  workboxOptions: {
-    // Evitar cacheo agresivo de imágenes/assets externos para prevenir fugas entre tenants
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/s3\.xn--alvarolondoo-khb\.dev\/.*/i,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'tenant-assets',
-          expiration: {
-            maxEntries: 10,
-            maxAgeSeconds: 60, // Vida muy corta para evitar persistencia errónea
-          },
-        },
-      },
-    ],
-  },
-});
-
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
@@ -123,4 +100,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default nextConfig;

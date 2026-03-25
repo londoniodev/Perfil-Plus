@@ -10,7 +10,8 @@ import {
     generalSettingsSchema, GeneralSettingsValues,
     financeSettingsSchema, FinanceSettingsValues,
     emailSettingsSchema, EmailSettingsValues,
-    apiSettingsSchema, ApiSettingsValues 
+    apiSettingsSchema, ApiSettingsValues,
+    navigationSettingsSchema, NavigationSettingsValues,
 } from "@alvarosky/features"
 
 interface UpdateSettingsResult {
@@ -44,17 +45,12 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
             enableStore: validated.enableStore ?? currentConfig.enableStore,
             enableLMS: validated.enableLMS ?? currentConfig.enableLMS,
             orderTrackingEnabled: validated.orderTrackingEnabled ?? currentConfig.orderTrackingEnabled,
-            contact: {
-                ...(currentConfig.contact || {}),
-                whatsapp: validated.whatsapp !== undefined ? validated.whatsapp : currentConfig.contact?.whatsapp,
-                instagram: validated.instagram !== undefined ? validated.instagram : currentConfig.contact?.instagram,
-                facebook: validated.facebook !== undefined ? validated.facebook : currentConfig.contact?.facebook,
-                address: validated.address !== undefined ? validated.address : currentConfig.contact?.address,
-            },
-            menu: {
-                ...(currentConfig.menu || {}),
-                slogan: validated.menuSlogan !== undefined ? validated.menuSlogan : currentConfig.menu?.slogan,
-            },
+            // Enviar llaves planas para que SystemSetting las acepte (el API filtra objetos complejos)
+            whatsapp: validated.whatsapp ?? currentConfig.whatsapp,
+            instagram: validated.instagram ?? currentConfig.instagram,
+            facebook: validated.facebook ?? currentConfig.facebook,
+            address: validated.address ?? currentConfig.address,
+            menuSlogan: validated.menuSlogan ?? currentConfig.menuSlogan,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
@@ -78,14 +74,13 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
             ...currentConfig,
             currency: validated.currency ?? currentConfig.currency,
             deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
-            MERCADOPAGO_CONFIG: {
-                ...currentConfig.MERCADOPAGO_CONFIG,
-                publicKey: validated.mpPublicKey ?? currentConfig.MERCADOPAGO_CONFIG?.publicKey,
-                accessToken: validated.mpAccessToken ?? currentConfig.MERCADOPAGO_CONFIG?.accessToken,
-                webhookSecret: validated.mpWebhookSecret ?? currentConfig.MERCADOPAGO_CONFIG?.webhookSecret,
-                clientId: validated.mpClientId ?? currentConfig.MERCADOPAGO_CONFIG?.clientId,
-                clientSecret: validated.mpClientSecret ?? currentConfig.MERCADOPAGO_CONFIG?.clientSecret,
-            },
+            // Claves planas para StoreSettings en el API
+            mp_public_key: validated.mpPublicKey ?? currentConfig.mp_public_key,
+            mp_access_token: validated.mpAccessToken ?? currentConfig.mp_access_token,
+            // Claves planas para SystemSetting en el API
+            mpWebhookSecret: validated.mpWebhookSecret ?? currentConfig.mpWebhookSecret,
+            mpClientId: validated.mpClientId ?? currentConfig.mpClientId,
+            mpClientSecret: validated.mpClientSecret ?? currentConfig.mpClientSecret,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
@@ -107,17 +102,12 @@ export async function updateEmailSettings(data: EmailSettingsValues): Promise<Up
 
         const newConfig = {
             ...currentConfig,
-            smtp: {
-                ...currentConfig.smtp,
-                host: validated.smtpHost ?? currentConfig.smtp?.host,
-                port: validated.smtpPort ?? currentConfig.smtp?.port,
-                secure: validated.smtpSecure ?? currentConfig.smtp?.secure,
-                auth: {
-                    ...currentConfig.smtp?.auth,
-                    user: validated.smtpUser ?? currentConfig.smtp?.auth?.user,
-                    pass: validated.smtpPass ?? currentConfig.smtp?.auth?.pass,
-                }
-            },
+            // Claves planas para SystemSetting en el API
+            smtpHost: validated.smtpHost ?? currentConfig.smtpHost,
+            smtpPort: validated.smtpPort ?? currentConfig.smtpPort,
+            smtpSecure: validated.smtpSecure ?? currentConfig.smtpSecure,
+            smtpUser: validated.smtpUser ?? currentConfig.smtpUser,
+            smtpPass: validated.smtpPass ?? currentConfig.smtpPass,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
@@ -147,6 +137,33 @@ export async function updateApiSettings(data: ApiSettingsValues): Promise<Update
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración de APIs" }
+    }
+}
+
+/**
+ * 5. Actualizar Navegación (Header / Footer)
+ */
+export async function updateNavigationSettings(data: NavigationSettingsValues): Promise<UpdateSettingsResult> {
+    try {
+        const user = await validateAdmin()
+        const validated = navigationSettingsSchema.parse(data)
+        const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
+        
+        const currentMenu = currentConfig.menu || {}
+        const newConfig = {
+            ...currentConfig,
+            menu: {
+                ...currentMenu,
+                headerLinks: validated.headerLinks,
+                footerLinks: validated.footerLinks,
+            }
+        }
+
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidateTag(`tenant-${user.tenantId}`, "default")
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar configuración de navegación" }
     }
 }
 

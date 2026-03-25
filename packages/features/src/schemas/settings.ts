@@ -48,6 +48,20 @@ export const apiSettingsSchema = z.object({
 
 export type ApiSettingsValues = z.infer<typeof apiSettingsSchema>;
 
+// 5. Esquema de Navegación (Header / Footer Links)
+export const navigationSettingsSchema = z.object({
+    headerLinks: z.array(z.object({
+        label: z.string().min(1, "Etiqueta requerida"),
+        href: z.string().min(1, "URL requerida"),
+    })).optional().default([]),
+    footerLinks: z.array(z.object({
+        label: z.string().min(1, "Etiqueta requerida"),
+        href: z.string().min(1, "URL requerida"),
+    })).optional().default([]),
+});
+
+export type NavigationSettingsValues = z.infer<typeof navigationSettingsSchema>;
+
 // Mantenemos el global por compatibilidad inmediata durante la transición
 export const settingsSchema = generalSettingsSchema
     .merge(financeSettingsSchema)

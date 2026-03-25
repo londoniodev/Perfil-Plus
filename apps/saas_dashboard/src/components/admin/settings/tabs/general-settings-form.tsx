@@ -184,6 +184,30 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    control={form.control}
+                                    name="enableBlog"
+                                    render={({ field }) => (
+                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/40">
+                                            <FormLabel className="text-base">Blog de Noticias</FormLabel>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="enableLMS"
+                                    render={({ field }) => (
+                                        <FormItem className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/40">
+                                            <FormLabel className="text-base">Plataforma Educativa (LMS)</FormLabel>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         </div>
                     </div>

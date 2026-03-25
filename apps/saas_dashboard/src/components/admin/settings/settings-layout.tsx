@@ -7,6 +7,7 @@ import { GeneralSettingsForm } from "./tabs/general-settings-form"
 import { FinanceSettingsForm } from "./tabs/finance-settings-form"
 import { EmailSettingsForm } from "./tabs/email-settings-form"
 import { ApiSettingsForm } from "./tabs/api-settings-form"
+import { NavigationSettingsForm } from "./tabs/navigation-settings-form"
 
 interface SettingsLayoutProps {
     initialData?: any
@@ -43,29 +44,34 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
         enableStore: initialData?.enableStore ?? true,
         enableLMS: initialData?.enableLMS ?? false,
         orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
-        menuSlogan: initialData?.menu?.slogan || "",
+        menuSlogan: initialData?.menu?.slogan || initialData?.menuSlogan || "",
     }), [initialData]);
 
     const financeData = useMemo(() => ({
         currency: initialData?.currency || "COP",
-        mpPublicKey: initialData?.MERCADOPAGO_CONFIG?.publicKey || "",
-        mpAccessToken: initialData?.MERCADOPAGO_CONFIG?.accessToken || "",
-        mpWebhookSecret: initialData?.MERCADOPAGO_CONFIG?.webhookSecret || "",
-        mpClientId: initialData?.MERCADOPAGO_CONFIG?.clientId || "",
-        mpClientSecret: initialData?.MERCADOPAGO_CONFIG?.clientSecret || "",
+        mpPublicKey: initialData?.mp_public_key || initialData?.MERCADOPAGO_CONFIG?.publicKey || "",
+        mpAccessToken: initialData?.mp_access_token || initialData?.MERCADOPAGO_CONFIG?.accessToken || "",
+        mpWebhookSecret: initialData?.mpWebhookSecret || initialData?.MERCADOPAGO_CONFIG?.webhookSecret || "",
+        mpClientId: initialData?.mpClientId || initialData?.MERCADOPAGO_CONFIG?.clientId || "",
+        mpClientSecret: initialData?.mpClientSecret || initialData?.MERCADOPAGO_CONFIG?.clientSecret || "",
         deliveryFee: initialData?.deliveryFee || 0,
     }), [initialData]);
 
     const emailData = useMemo(() => ({
-        smtpHost: initialData?.smtp?.host || "",
-        smtpPort: initialData?.smtp?.port || 587,
-        smtpSecure: initialData?.smtp?.secure ?? false,
-        smtpUser: initialData?.smtp?.auth?.user || "",
-        smtpPass: initialData?.smtp?.auth?.pass || "",
+        smtpHost: initialData?.smtpHost || initialData?.smtp?.host || "",
+        smtpPort: initialData?.smtpPort || initialData?.smtp?.port || 587,
+        smtpSecure: initialData?.smtpSecure ?? initialData?.smtp?.secure ?? false,
+        smtpUser: initialData?.smtpUser || initialData?.smtp?.auth?.user || "",
+        smtpPass: initialData?.smtpPass || initialData?.smtp?.auth?.pass || "",
     }), [initialData]);
 
     const apiData = useMemo(() => ({
         apiKeyOpenAI: initialData?.api_key_openai || "",
+    }), [initialData]);
+
+    const navigationData = useMemo(() => ({
+        headerLinks: initialData?.menu?.headerLinks || [],
+        footerLinks: initialData?.menu?.footerLinks || [],
     }), [initialData]);
 
     return (
@@ -76,6 +82,7 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
                         <TabsTrigger value="general">General</TabsTrigger>
                         <TabsTrigger value="branding">Branding</TabsTrigger>
                         <TabsTrigger value="finance">Finanzas</TabsTrigger>
+                        <TabsTrigger value="navigation">Navegación</TabsTrigger>
                         <TabsTrigger value="email">Email</TabsTrigger>
                         <TabsTrigger value="apis">API's</TabsTrigger>
                     </TabsList>
@@ -105,6 +112,10 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
                     waPhoneNumberId={initialData?.waPhoneNumberId}
                     wabaId={initialData?.wabaId}
                 />
+            </TabsContent>
+
+            <TabsContent value="navigation">
+                <NavigationSettingsForm initialData={navigationData} />
             </TabsContent>
             </Tabs>
         </div>

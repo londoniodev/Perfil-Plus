@@ -125,10 +125,10 @@ export class SettingsService {
     }
 
     // 2. Actualizar tabla Tenant
-    if (updateDto.tenant_name) {
+    if (updateDto.tenant_name || updateDto.storeName) {
       await this.prisma.secure.tenant.update({
         where: { id: tenantId },
-        data: { name: updateDto.tenant_name },
+        data: { name: updateDto.tenant_name || updateDto.storeName },
       });
     }
 
@@ -155,7 +155,9 @@ export class SettingsService {
       updateDto.mp_public_key !== undefined ||
       updateDto.mp_access_token !== undefined ||
       updateDto.deliveryFee !== undefined ||
-      updateDto.waPhoneNumberId !== undefined
+      updateDto.waPhoneNumberId !== undefined ||
+      updateDto.storeName !== undefined ||
+      updateDto.storeEmail !== undefined
     ) {
       const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
         where: { tenantId }
@@ -178,6 +180,8 @@ export class SettingsService {
             deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : undefined,
             waPhoneNumberId,
             wabaId,
+            storeName: updateDto.storeName,
+            storeEmail: updateDto.storeEmail,
           },
         });
       } else {
@@ -189,6 +193,8 @@ export class SettingsService {
             deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : 0,
             waPhoneNumberId,
             wabaId,
+            storeName: updateDto.storeName,
+            storeEmail: updateDto.storeEmail,
           },
         });
       }

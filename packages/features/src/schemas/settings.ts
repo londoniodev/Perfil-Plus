@@ -53,11 +53,11 @@ export const navigationSettingsSchema = z.object({
     headerLinks: z.array(z.object({
         label: z.string().min(1, "Etiqueta requerida"),
         href: z.string().min(1, "URL requerida"),
-    })).default([]),
+    })),
     footerLinks: z.array(z.object({
         label: z.string().min(1, "Etiqueta requerida"),
         href: z.string().min(1, "URL requerida"),
-    })).default([]),
+    })),
 });
 
 export type NavigationSettingsValues = z.infer<typeof navigationSettingsSchema>;

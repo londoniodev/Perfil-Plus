@@ -8,7 +8,6 @@ import { cn } from "@alvarosky/ui";
 
 interface LinktreeFallbackProps {
   tenantSlug: string;
-  features: string[];
   marketingData?: {
     tenantSlug: string;
     heroTitle?: string;

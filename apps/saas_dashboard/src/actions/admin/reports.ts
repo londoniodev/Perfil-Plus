@@ -31,7 +31,7 @@ export interface ZReport {
 export async function getZReport(date: Date = new Date()): Promise<{ success: boolean; data?: ZReport; error?: string }> {
     try {
         const user = await getSessionUser()
-        if (!user || (user.role !== "ADMIN" && user.role !== "CASHIER")) {
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "CASHIER")) {
             return { success: false, error: "No autorizado" }
         }
 

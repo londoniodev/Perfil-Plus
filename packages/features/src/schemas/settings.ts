@@ -3,7 +3,7 @@ import { z } from "zod";
 // 1. Esquema General (Información del negocio + Funciones)
 export const generalSettingsSchema = z.object({
     storeName: z.string().optional().or(z.literal("")),
-    storeEmail: z.string().email("Email inválido").optional().or(z.literal("")),
+    storeEmail: z.string().refine(val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), "Email inválido").optional().or(z.literal("")),
     whatsapp: z.string().optional().or(z.literal("")),
     instagram: z.string().optional().or(z.literal("")),
     facebook: z.string().optional().or(z.literal("")),

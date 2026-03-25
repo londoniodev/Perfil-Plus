@@ -132,7 +132,7 @@ export async function getWarehouses(): Promise<Warehouse[]> {
 export async function createWarehouse(data: { name: string; isDefault?: boolean }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/warehouses", {
             method: "POST",
@@ -148,7 +148,7 @@ export async function createWarehouse(data: { name: string; isDefault?: boolean 
 export async function updateWarehouse(id: string, data: { name: string; isDefault?: boolean }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/warehouses/${id}`, {
             method: "PATCH",
@@ -164,7 +164,7 @@ export async function updateWarehouse(id: string, data: { name: string; isDefaul
 export async function deleteWarehouse(id: string) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/warehouses/${id}`, { method: "DELETE" })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -197,7 +197,7 @@ export async function createInventoryItem(data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/items", {
             method: "POST",
@@ -219,7 +219,7 @@ export async function updateInventoryItem(id: string, data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/items/${id}`, {
             method: "PUT",
@@ -235,7 +235,7 @@ export async function updateInventoryItem(id: string, data: {
 export async function deleteInventoryItem(id: string) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/items/${id}`, { method: "DELETE" })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -256,7 +256,7 @@ export async function addStockEntry(data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/stock/entry", {
             method: "POST",
@@ -277,7 +277,7 @@ export async function addStockExit(data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/stock/exit", {
             method: "POST",
@@ -299,7 +299,7 @@ export async function transferStock(data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/stock/transfer", {
             method: "POST",
@@ -370,7 +370,7 @@ export async function createRecipe(data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch("/admin/inventory/recipes", {
             method: "POST",
@@ -390,7 +390,7 @@ export async function updateRecipe(id: string, data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/recipes/${id}`, {
             method: "PUT",
@@ -406,7 +406,7 @@ export async function updateRecipe(id: string, data: {
 export async function deleteRecipe(id: string) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/recipes/${id}`, { method: "DELETE" })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -463,7 +463,7 @@ export async function getInventoryCount(id: string): Promise<InventoryCount> {
 export async function createInventoryCount(data: { warehouseId: string; notes?: string }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         const result = await serverFetch<InventoryCount>("/admin/inventory/counts", {
             method: "POST",
@@ -481,7 +481,7 @@ export async function completeInventoryCount(id: string, data: {
 }) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") return { success: false, error: "No autorizado" }
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/counts/${id}/complete`, {
             method: "PATCH",

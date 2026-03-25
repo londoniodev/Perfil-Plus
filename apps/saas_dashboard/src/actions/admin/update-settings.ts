@@ -21,7 +21,7 @@ interface UpdateSettingsResult {
 async function validateAdmin() {
     const user = await getSessionUser()
     if (!user) redirect("/login")
-    if (user.role !== "ADMIN") {
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") {
         throw new Error("No tienes permisos para realizar esta acción")
     }
     return user

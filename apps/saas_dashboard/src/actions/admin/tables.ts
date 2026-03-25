@@ -39,7 +39,7 @@ export async function upsertTable(data: z.infer<typeof tableSchema>) {
     try {
         const user = await getSessionUser()
 
-        if (!user || user.role !== "ADMIN") {
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) {
             return { success: false, error: "No autorizado (Rol o Sesión inválida)" }
         }
 
@@ -84,7 +84,7 @@ export async function upsertTable(data: z.infer<typeof tableSchema>) {
 export async function deleteTable(id: string) {
     try {
         const user = await getSessionUser()
-        if (!user || user.role !== "ADMIN") throw new Error("Unauthorized")
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) throw new Error("Unauthorized")
 
         await serverFetch(`/tables/${id}`, { method: 'DELETE' })
 

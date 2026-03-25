@@ -18,7 +18,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
     try {
         const user = await getSessionUser()
 
-        if (!user || user.role !== "ADMIN") {
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) {
             return { success: false, error: "No autorizado" }
         }
 

@@ -12,7 +12,7 @@ export default async function OrdersPage() {
         redirect("/login")
     }
 
-    if (user.role !== "ADMIN") {
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") {
         redirect("/")
     }
 

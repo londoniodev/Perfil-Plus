@@ -7,7 +7,7 @@ import { WarehousesClient } from "@/components/inventory/WarehousesClient"
 export default async function WarehousesPage() {
     const user = await getSessionUser()
     if (!user) redirect("/login")
-    if (user.role !== "ADMIN") redirect("/")
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") redirect("/")
 
     const warehouses = await getWarehouses()
 

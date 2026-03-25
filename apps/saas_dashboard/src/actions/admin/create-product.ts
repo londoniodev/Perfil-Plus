@@ -27,7 +27,7 @@ export async function createProduct(data: CreateProductInput): Promise<CreatePro
             redirect("/login")
         }
 
-        if (user.role !== "ADMIN") {
+        if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") {
             return {
                 success: false,
                 error: "No tienes permisos para realizar esta acción"

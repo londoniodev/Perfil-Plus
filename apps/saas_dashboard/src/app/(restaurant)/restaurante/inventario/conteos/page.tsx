@@ -7,7 +7,7 @@ import { InventoryCountsClient } from "@/components/inventory/InventoryCountsCli
 export default async function InventoryCountsPage() {
     const user = await getSessionUser()
     if (!user) redirect("/login")
-    if (user.role !== "ADMIN") redirect("/")
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") redirect("/")
 
     const [counts, warehouses] = await Promise.all([
         getInventoryCounts(),

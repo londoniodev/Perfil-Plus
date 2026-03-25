@@ -9,7 +9,7 @@ import { InventoryClient } from "@/components/inventory/InventoryClient"
 export default async function InventoryItemsPage() {
     const user = await getSessionUser()
     if (!user) redirect("/login")
-    if (user.role !== "ADMIN") redirect("/")
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") redirect("/")
 
     const [items, warehouses, alerts] = await Promise.all([
         getInventoryItems(),

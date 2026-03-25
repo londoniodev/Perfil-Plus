@@ -7,7 +7,7 @@ import { RecipesClient } from "@/components/inventory/RecipesClient"
 export default async function RecipesPage() {
     const user = await getSessionUser()
     if (!user) redirect("/login")
-    if (user.role !== "ADMIN") redirect("/")
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") redirect("/")
 
     const [recipes, allProducts, inventoryItems, productsCost] = await Promise.all([
         getRecipes(),

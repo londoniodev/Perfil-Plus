@@ -15,7 +15,7 @@ export default async function ProductsPage() {
         redirect("/login")
     }
 
-    if (user.role !== "ADMIN") {
+    if (user.role !== "ADMIN" && user.role !== "SUPERADMIN") {
         redirect("/")
     }
 

@@ -157,6 +157,7 @@ export default async function MarketingHubPage({ params }: Props) {
           primaryColor: design?.brandSettings?.primaryColor,
           backgroundImageUrl: design?.brandSettings?.authBgUrl // Fallback temporal antes de que user migre `backgroundImageUrl` a BD
         }}
+        socialLinks={design?.socialLinks}
       />
     );
   }

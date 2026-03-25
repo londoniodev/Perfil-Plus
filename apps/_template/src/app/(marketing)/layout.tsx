@@ -92,12 +92,15 @@ export default async function MarketingLayout({
     const finalLinks = [...navLinks, ...customLinks];
 
     const hasDashboardFeature = upperFeatures.has('DASHBOARD');
+    const hasLandingFeature = upperFeatures.has('LANDING');
 
     return (
         <NavigationWrapper
             logo={logoUrl}
             links={finalLinks}
             showAuthButtons={hasDashboardFeature}
+            hideHeader={!hasLandingFeature}
+            hideFooter={!hasLandingFeature}
             footer={
                 <Footer
                     logo={logoUrl}

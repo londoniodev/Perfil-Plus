@@ -303,11 +303,14 @@ export class TenantService {
           tenantById.ownerEmail ||
           null;
 
+        const socialLinks = menuData.socialLinks || null;
+
         return {
           ...tenantById,
           logo,
           headerLinks,
           footerLinks,
+          socialLinks,
           contactEmail,
           contactPhone,
           tagline,
@@ -364,11 +367,14 @@ export class TenantService {
         tenantBySlug.ownerEmail ||
         null;
 
+      const socialLinks = menuData.socialLinks || null;
+
       return {
         ...tenantBySlug,
         logo,
         headerLinks,
         footerLinks,
+        socialLinks,
         contactEmail,
         contactPhone,
         tagline,

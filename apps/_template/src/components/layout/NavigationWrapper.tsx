@@ -14,6 +14,8 @@ interface NavigationWrapperProps {
     showAuthButtons?: boolean;
     logo?: string;
     links?: NavLink[];
+    hideHeader?: boolean;
+    hideFooter?: boolean;
 }
 
 export function NavigationWrapper({ 
@@ -22,6 +24,8 @@ export function NavigationWrapper({
     showAuthButtons = true, 
     logo,
     links,
+    hideHeader = false,
+    hideFooter = false,
 }: NavigationWrapperProps) {
     const pathname = usePathname();
 
@@ -47,13 +51,15 @@ export function NavigationWrapper({
 
     return (
         <>
-            <Header 
-                showAuthButtons={showAuthButtons} 
-                logo={logo} 
-                links={links}
-            />
+            {!hideHeader && (
+                <Header 
+                    showAuthButtons={showAuthButtons} 
+                    logo={logo} 
+                    links={links}
+                />
+            )}
             <main>{children}</main>
-            {footer}
+            {!hideFooter && footer}
         </>
     );
 }

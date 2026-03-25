@@ -185,4 +185,24 @@ export class UpdateTenantConfigDto {
   @IsString()
   @IsOptional()
   layout_type?: string;
+
+  @IsString()
+  @IsOptional()
+  whatsapp?: string;
+
+  @IsString()
+  @IsOptional()
+  instagram?: string;
+
+  @IsString()
+  @IsOptional()
+  facebook?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsString()
+  @IsOptional()
+  menuSlogan?: string;
 }

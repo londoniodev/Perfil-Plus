@@ -122,28 +122,41 @@ export default async function MarketingHubPage({ params }: Props) {
 
   const tenantId = headersList.get("x-tenant-id") || await getTenantId();
   const tenantSlug = headersList.get("x-tenant-slug");
-  const featuresStr = headersList.get("x-tenant-features") || "";
-  const features = featuresStr.split(",").filter(Boolean);
+  const featuresStr = headersList.get("x-tenant-features");
+  let features: string[] = [];
+  if (featuresStr) {
+    try {
+      features = JSON.parse(featuresStr);
+    } catch (e) {
+      features = featuresStr.split(",").filter(Boolean);
+    }
+  }
+  features = features.map(f => f.toUpperCase());
 
   if (!tenantId || !tenantSlug) {
     return notFound();
   }
 
-  // 0. Si no tiene el feature LANDING activo -> Bypassear S3 e invocar directamente Linktree Fallback
-  const hasLandingFeature = features.includes("LANDING");
+  const design = await getTenantDesign(tenantId);
+  const marketingData = await getMarketingData(tenantId);
+
+  // Unificar features (Headers + DB) para evitar falsos negativos del Fallback
+  const allFeatures = Array.from(new Set([
+    ...features,
+    ...(design?.features || [])
+  ])).map(f => f.toUpperCase());
+  
+  const upperFeaturesSet = new Set(allFeatures);
+  const hasLandingFeature = upperFeaturesSet.has("LANDING");
   const pageSlug = resolvedParams.catchall?.join("/") || "home";
 
   if (!hasLandingFeature) {
-    const marketingData = await getMarketingData(tenantId);
-    const design = await getTenantDesign(tenantId);
-    
-    // Reproducimos la construcción del menú idéntico al Layout
-    const upperFeatures = new Set([...features, ...(design?.features || [])].map(f => f.toUpperCase()));
+    // Si no tiene el feature LANDING activo -> Bypassear S3 e invocar directamente Linktree Fallback
     const navLinks: { label: string; href: string }[] = [];
-    if (upperFeatures.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
-    if (upperFeatures.has('SHOP')) navLinks.push(FEATURE_ROUTES.SHOP);
-    if (upperFeatures.has('BLOG')) navLinks.push(FEATURE_ROUTES.BLOG);
-    if (upperFeatures.has('LMS')) navLinks.push(FEATURE_ROUTES.LMS);
+    if (upperFeaturesSet.has('RESTAURANT')) navLinks.push(FEATURE_ROUTES.RESTAURANT);
+    if (upperFeaturesSet.has('SHOP')) navLinks.push(FEATURE_ROUTES.SHOP);
+    if (upperFeaturesSet.has('BLOG')) navLinks.push(FEATURE_ROUTES.BLOG);
+    if (upperFeaturesSet.has('LMS')) navLinks.push(FEATURE_ROUTES.LMS);
     
     const finalLinks = [...navLinks, ...(design?.headerLinks || [])];
     
@@ -155,7 +168,7 @@ export default async function MarketingHubPage({ params }: Props) {
         branding={{
           logoUrl: design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || undefined,
           primaryColor: design?.brandSettings?.primaryColor,
-          backgroundImageUrl: design?.brandSettings?.authBgUrl // Fallback temporal antes de que user migre `backgroundImageUrl` a BD
+          backgroundImageUrl: design?.brandSettings?.authBgUrl 
         }}
         socialLinks={design?.socialLinks}
       />

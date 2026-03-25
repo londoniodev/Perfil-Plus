@@ -13,11 +13,14 @@ export async function uploadLandingHtmlAction(formData: FormData) {
             return { success: false, error: "Faltan campos obligatorios" };
         }
 
-        // Crear un nuevo FormData para la API (NestJS espera 'file' e campos de texto)
+        const label = formData.get("label") as string;
+
+        // Crear un nuevo FormData para la API (NestJS espera 'file' y campos de texto)
         const apiFormData = new FormData();
         apiFormData.append("file", file);
         apiFormData.append("tenantSlug", tenantSlug);
         apiFormData.append("pageSlug", pageSlug);
+        if (label) apiFormData.append("label", label);
 
         // Llamar a la API
         // NOTA: No pasamos Content-Type para que el navegador/servidor maneje el Boundary

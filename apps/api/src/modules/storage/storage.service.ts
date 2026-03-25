@@ -485,7 +485,9 @@ export class StorageService {
 
   private async syncCustomLink(tenantSlug: string, pageSlug: string, label?: string): Promise<void> {
     try {
-      this.logger.log(`[Landing Sync] Registrando customLink: ${pageSlug} para ${tenantSlug}`);
+      const resolvedLabel = label || (pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1));
+      const targetHref = `/${pageSlug}`;
+      this.logger.log(`[Landing Sync] Upsert link: "${resolvedLabel}" → ${targetHref} para ${tenantSlug}`);
       
       // 1. Encontrar el tenantId por slug (usamos .raw para bypass de seguridad en acción de SuperAdmin)
       const tenant = await this.prisma.raw.tenant.findUnique({
@@ -507,44 +509,50 @@ export class StorageService {
       });
 
       const menuData = (setting?.value as Record<string, any>) || {};
-      const currentLinks = Array.isArray(menuData.headerLinks) ? menuData.headerLinks : [];
+      const currentLinks: { label: string; href: string }[] = Array.isArray(menuData.headerLinks) ? menuData.headerLinks : [];
       
-      const exists = currentLinks.some((l: any) => l.href === `/${pageSlug}` || l.label.toLowerCase() === pageSlug.toLowerCase());
+      // 3. Upsert Semántico: actualizar label si href existe, push si es nuevo
+      const existingIndex = currentLinks.findIndex((l) => l.href === targetHref);
+      let updatedLinks: { label: string; href: string }[];
 
-      if (!exists) {
-        const newLink = {
-          label: label || (pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1)),
-          href: `/${pageSlug}`,
-          // icon: 'Layout', // Mantener coherencia con el frontal si es necesario
-        };
+      if (existingIndex >= 0) {
+        // ACTUALIZAR label existente
+        updatedLinks = currentLinks.map((l, i) => 
+          i === existingIndex ? { ...l, label: resolvedLabel } : l
+        );
+        this.logger.log(`[Landing Sync] Label actualizado: "${currentLinks[existingIndex].label}" → "${resolvedLabel}"`);
+      } else {
+        // PUSH nuevo enlace
+        updatedLinks = [...currentLinks, { label: resolvedLabel, href: targetHref }];
+        this.logger.log(`[Landing Sync] Enlace nuevo añadido: "${resolvedLabel}" (${targetHref})`);
+      }
 
-        const updatedLinks = [...currentLinks, newLink];
-        const updatedMenu = { ...menuData, headerLinks: updatedLinks };
+      const updatedMenu = { ...menuData, headerLinks: updatedLinks };
 
-        // 3. Upsert de la configuración de menú
-        await this.prisma.raw.systemSetting.upsert({
-          where: {
-            tenantId_key: {
-              tenantId: tenant.id,
-              key: 'menu',
-            },
-          },
-          update: {
-            value: updatedMenu,
-          },
-          create: {
+      // 4. Upsert de la configuración de menú
+      await this.prisma.raw.systemSetting.upsert({
+        where: {
+          tenantId_key: {
             tenantId: tenant.id,
             key: 'menu',
-            value: updatedMenu,
-            isPublic: true,
           },
-        });
-        this.logger.log(`[Landing Sync] Enlace '${pageSlug}' añadido a menu.headerLinks con éxito.`);
-      }
+        },
+        update: {
+          value: updatedMenu,
+        },
+        create: {
+          tenantId: tenant.id,
+          key: 'menu',
+          value: updatedMenu,
+          isPublic: true,
+        },
+      });
+      this.logger.log(`[Landing Sync] menu.headerLinks sincronizado correctamente.`);
     } catch (error) {
       this.logger.error(`[Landing Sync] No se pudo sincronizar el customLink:`, error);
     }
   }
+
 }
 
 

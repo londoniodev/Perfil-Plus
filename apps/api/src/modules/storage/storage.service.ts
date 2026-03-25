@@ -548,11 +548,76 @@ export class StorageService {
         },
       });
       this.logger.log(`[Landing Sync] menu.headerLinks sincronizado correctamente.`);
+      
+      // 5. Disparar Revalidación Asíncrona (Avisa al SSR que limpie Caché)
+      await this.triggerStorefrontRevalidation(tenantSlug);
+      
     } catch (error) {
       this.logger.error(`[Landing Sync] No se pudo sincronizar el customLink:`, error);
     }
   }
 
+  /**
+   * Dispara el Webhook de Revalidación en el Frontend Next.js
+   * Evita CircularDependency con TenantService gestionándolo usando fetches nativos.
+   */
+  private async triggerStorefrontRevalidation(tenantId: string): Promise<void> {
+    const nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL ||
+      (process.env.STOREFRONT_URL
+        ? `${process.env.STOREFRONT_URL}/api/revalidate`
+        : 'http://web:3000/api/revalidate');
+    const secret = process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+
+    try {
+      const response = await fetch(nextjsRevalidationUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId, // Compatibilidad retro
+          secret,
+          path: '/', // Forzar recarga del Layout (SSOT Header)
+        }),
+      });
+
+      if (!response.ok) {
+        this.logger.error(`[Landing Sync] Revalidación fallida (${response.status}): ${await response.text()}`);
+      } else {
+        this.logger.log(`[Landing Sync] Storefront Caché purgado para tenant ${tenantId}`);
+      }
+    } catch (err) {
+      this.logger.error(`[Landing Sync] Módulo inalcanzable para Revalidación en ${nextjsRevalidationUrl}`, err);
+    }
+  }
+
+  /**
+   * Obtiene la lista de landings publicadas leyendo los headerLinks desde DB
+   * e inyectando siempre la vista principal (home).
+   */
+  async listLandings(tenantSlug: string) {
+    const tenant = await this.prisma.raw.tenant.findUnique({
+      where: { slug: tenantSlug },
+      select: { id: true },
+    });
+
+    if (!tenant) throw new BadRequestException('Tenant no encontrado');
+
+    const setting = await this.prisma.raw.systemSetting.findFirst({
+      where: {
+        tenantId: tenant.id,
+        key: 'menu',
+      },
+    });
+
+    const menuData = (setting?.value as Record<string, any>) || {};
+    const headerLinks: { label: string; href: string }[] = Array.isArray(menuData.headerLinks)
+      ? menuData.headerLinks
+      : [];
+
+    const homeLink = { label: 'Inicio (Home)', href: '/home' };
+    const filteredLinks = headerLinks.filter(l => l.href !== '/home' && l.href !== '/inicio');
+
+    return [homeLink, ...filteredLinks];
+  }
 }
 
 

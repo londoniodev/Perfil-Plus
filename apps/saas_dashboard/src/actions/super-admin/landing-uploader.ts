@@ -56,3 +56,15 @@ export async function uploadLandingHtmlAction(formData: FormData) {
         return { success: false, error: error instanceof Error ? error.message : "Error desconocido al subir" };
     }
 }
+
+export async function listLandingsAction(tenantSlug: string) {
+    try {
+        const result = await serverFetch<any[]>(`/storage/landing/${tenantSlug}`, {
+            method: "GET",
+        });
+        return { success: true, data: result };
+    } catch (error) {
+        console.error("[List Landings Error]:", error);
+        return { success: false, error: "Error conectando con el servidor" };
+    }
+}

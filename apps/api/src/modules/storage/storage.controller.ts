@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Delete,
   Param,
   UseInterceptors,
@@ -136,6 +137,12 @@ export class StorageController {
       throw new BadRequestException('tenantSlug and pageSlug are required');
     }
     return this.storageService.uploadLandingHtml(tenantSlug, pageSlug, file.buffer, label);
+  }
+
+  @Get('landing/:tenantSlug')
+  async listLandings(@Param('tenantSlug') tenantSlug: string) {
+    if (!tenantSlug) throw new BadRequestException('tenantSlug is required');
+    return this.storageService.listLandings(tenantSlug);
   }
 
   @Delete(':key')

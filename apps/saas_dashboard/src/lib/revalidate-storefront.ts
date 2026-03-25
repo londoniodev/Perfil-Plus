@@ -11,6 +11,7 @@ import { serverFetch } from "./api-server";
  * 3. Ejecución limpia y secuencial (sin cascadas de promesas).
  */
 export async function revalidateStorefront(options: { tag?: string, path?: string, tenant?: { id: string, slug: string } } = {}) {
+    let url = "";
     try {
         const { tag, path } = options;
         let { tenant } = options;
@@ -24,7 +25,6 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
             return;
         }
 
-        let url = "";
 
         // 1. Single Source of Truth: URL interna de Docker
         if (storefrontUrl) {

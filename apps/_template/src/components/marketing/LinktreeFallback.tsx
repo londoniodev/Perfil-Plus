@@ -43,11 +43,10 @@ export default function LinktreeFallback({
   const logo = branding?.logoUrl || null;
   const tenantName = tenantSlug.replace(/-/g, " ");
   
-  // Lista de navegación final con el botón de "Entrar" al final
   const linksToRender = [...navLinks];
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden flex items-center justify-center bg-zinc-950">
+    <div className="fixed inset-0 w-full h-[100dvh] overflow-y-auto relative flex items-center justify-center bg-zinc-950">
       
       {/* Background Layer - Full width/height sin deformación */}
       {bgImage ? (

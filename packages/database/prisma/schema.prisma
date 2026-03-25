@@ -877,6 +877,8 @@ model BrandSettings {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   tagline        String?
+  metaTitle      String?
+  metaDescription String? @db.VarChar(160)
   authBgUrl      String?
   authQuote      String?
   tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)

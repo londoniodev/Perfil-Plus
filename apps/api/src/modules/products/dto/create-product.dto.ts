@@ -14,6 +14,10 @@ import { CreateModifierGroupDto } from './create-modifier-group.dto';
 export class CreateProductVariantDto {
   @IsString()
   @IsOptional()
+  id?: string;
+
+  @IsString()
+  @IsOptional()
   name?: string;
 
   @IsString()

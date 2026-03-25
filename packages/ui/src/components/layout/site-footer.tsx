@@ -27,7 +27,7 @@ export function SiteFooter({
     links,
     companyName,
     developerName = "Alvaro Londoño",
-    developerUrl = "https://portafolio.alvarolondoño.dev",
+    developerUrl = "https://alvarolondono.dev",
     className,
     contactInfo,
 }: SiteFooterProps) {

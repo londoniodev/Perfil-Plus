@@ -127,6 +127,7 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set('x-tenant-slug', tenantSlug);
     requestHeaders.set('x-tenant-features', JSON.stringify(normalizedFeatures));
     requestHeaders.set('x-tenant-custom-links', JSON.stringify(tenantCustomLinks));
+    requestHeaders.set('x-is-home', (url.pathname === '/' || url.pathname === '/home') ? 'true' : 'false');
 
     if (shouldRewrite) {
         const dashboardHost = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';

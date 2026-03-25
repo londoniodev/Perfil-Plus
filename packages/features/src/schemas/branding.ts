@@ -10,6 +10,8 @@ export const brandingSchema = z.object({
     faviconUrl: z.string().optional().or(z.literal("")),
     secondaryColor: z.string().optional().or(z.literal("")),
     fontFamily: z.enum(FONT_VALUES).default("Inter"),
+    metaTitle: z.string().optional().or(z.literal("")),
+    metaDescription: z.string().optional().or(z.literal("")),
 });
 
 export type BrandingFormValues = z.infer<typeof brandingSchema>;

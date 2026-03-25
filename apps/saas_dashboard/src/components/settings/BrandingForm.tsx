@@ -141,6 +141,8 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
             faviconUrl: "",
             secondaryColor: "",
             fontFamily: "Inter",
+            metaTitle: "",
+            metaDescription: "",
             ...(defaultValues as any),
         },
     });
@@ -157,6 +159,8 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                 faviconUrl: "",
                 secondaryColor: "",
                 fontFamily: "Inter",
+                metaTitle: "",
+                metaDescription: "",
                 ...(defaultValues as any),
             })
         }
@@ -357,6 +361,49 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                 />
                             </div>
 
+                            <Separator />
+
+                            {/* --- SEO y Metadatos --- */}
+                            <div className="space-y-4 pt-4">
+                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                                    <span className="p-1 rounded bg-primary/10 text-primary">🔍</span>
+                                    SEO y Metadatos
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Personaliza cómo aparece tu negocio en los motores de búsqueda (Google, etc.) y en redes sociales.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="metaTitle"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Título SEO (Meta Title)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="Ej: Mi Restaurante | El mejor sabor artesanal" />
+                                                </FormControl>
+                                                <FormDescription>Máximo 60 caracteres recomendados.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="metaDescription"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Descripción SEO (Meta Description)</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="Ej: Disfruta de la mejor comida artesanal con ingredientes frescos..." />
+                                                </FormControl>
+                                                <FormDescription>Máximo 160 caracteres recomendados.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                     <div className="flex justify-center pt-4">

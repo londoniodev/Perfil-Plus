@@ -93,15 +93,22 @@ export default async function MarketingLayout({
     // 3. Mezclar con enlaces personalizados de la DB solo si tiene LANDING activo
     // Esto evita que aparezcan enlaces a páginas de S3 si el sitio web está desactivado.
     const customLinks = hasLandingFeature ? (headerLinksFromDb || []) : [];
-    const finalLinks = [...navLinks, ...customLinks];
+    
+    // Eliminamos duplicados por href para evitar redundancia
+    const allLinks = [...navLinks, ...customLinks];
+    const finalLinks = allLinks.filter((link, index, self) => 
+        index === self.findIndex((t) => t.href === link.href)
+    );
+
+    const isHomePage = headersList.get('x-is-home') === 'true';
 
     return (
         <NavigationWrapper
             logo={logoUrl}
             links={finalLinks}
             showAuthButtons={hasDashboardFeature}
-            hideHeader={!hasLandingFeature}
-            hideFooter={!hasLandingFeature}
+            hideHeader={!hasLandingFeature && isHomePage}
+            hideFooter={!hasLandingFeature && isHomePage}
             footer={
                 <Footer
                     logo={logoUrl}

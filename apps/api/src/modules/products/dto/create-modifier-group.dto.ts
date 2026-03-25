@@ -13,6 +13,10 @@ import { Type } from 'class-transformer';
 
 export class CreateModifierDto {
   @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
   name: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -30,6 +34,10 @@ export class CreateModifierDto {
 }
 
 export class CreateModifierGroupDto {
+  @IsString()
+  @IsOptional()
+  id?: string;
+
   @IsString()
   name: string;
 

@@ -52,4 +52,12 @@ export class UpdateBrandSettingsDto {
     message: 'layoutType debe ser CLASSIC, INSTAGRAM o MINIMAL',
   })
   layoutType?: LayoutType;
+
+  @IsOptional()
+  @IsString()
+  metaTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  metaDescription?: string;
 }

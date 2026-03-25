@@ -105,13 +105,13 @@ export function SiteHeader({
                 </div>
 
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 z-10 lg:ml-4 group">
+                <Link href="/" className="flex-1 flex items-center gap-2 z-10 lg:ml-4 group">
                     <Image
                         src={logo}
                         alt={logoAlt}
                         width={200}
                         height={80}
-                        className="h-8 md:h-10 w-auto object-contain rounded-full transition group-hover:scale-105"
+                        className="h-8 md:h-10 w-auto max-w-[180px] object-contain rounded-full transition group-hover:scale-105"
                         priority
                         unoptimized={logoUnoptimized}
                     />
@@ -119,7 +119,7 @@ export function SiteHeader({
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden lg:flex items-center gap-8">
+                <nav className="hidden lg:flex flex-none items-center justify-center gap-8">
                     <DesktopNavLinks
                         links={links}
                         isLoggedIn={isAuthenticated}
@@ -134,7 +134,7 @@ export function SiteHeader({
                 </nav>
 
                 {/* Actions (Toggle Theme + Cart) */}
-                <div className="flex items-center gap-1 mr-2">
+                <div className="flex-1 flex items-center justify-end gap-1 mr-2">
                     {mounted && (
                         <button 
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

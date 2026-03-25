@@ -27,7 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const design = await getTenantDesign(tenantId);
   const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
   const siteName = design?.name || siteConfig.name;
-  const tagline = design?.brandSettings?.tagline || design?.tagline || siteConfig.description;
+  const brand = design?.brandSettings;
+  
+  // SEO Autónomo: Prioridad a los campos personalizados del tenant
+  const seoTitle = brand?.metaTitle || `${siteName} | ${brand?.tagline || design?.tagline || siteConfig.description}`;
+  const seoDescription = brand?.metaDescription || brand?.tagline || design?.tagline || siteConfig.description;
 
   const headersList = await headers();
   const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
@@ -46,32 +50,32 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: currentUrl,
     },
     title: {
-      default: `${siteName} | ${tagline}`,
+      default: seoTitle,
       template: `%s | ${siteName}`,
     },
-    description: tagline,
+    description: seoDescription,
     icons: {
       icon: faviconUrl,
       apple: logoUrl,
     },
     openGraph: {
       ...baseMetadata.openGraph,
-      title: `${siteName} | ${tagline}`,
-      description: tagline,
+      title: seoTitle,
+      description: seoDescription,
       siteName: siteName,
       images: [
         {
           url: `/api/og?tenantId=${tenantId}`,
           width: 1200,
           height: 630,
-          alt: `${siteName} - ${tagline}`,
+          alt: `${siteName} - ${seoDescription}`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${siteName} | ${tagline}`,
-      description: tagline,
+      title: seoTitle,
+      description: seoDescription,
       images: [`/api/og?tenantId=${tenantId}`],
     }
   };

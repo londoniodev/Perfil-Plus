@@ -36,12 +36,6 @@ export class StorageController {
     file: Express.Multer.File,
     @Query('folder') folder?: string,
   ) {
-    console.log('Upload File Request Received:', {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      folder,
-    });
     return this.storageService.uploadFile(file, folder || 'uploads');
   }
 
@@ -59,13 +53,6 @@ export class StorageController {
     file: Express.Multer.File,
     @Query('folder') folder?: string,
   ) {
-    console.log('Upload Image Request Received:', {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      folder,
-    });
-
     // Validación manual de tipo si es necesario
     if (!file.mimetype.match(/(jpg|jpeg|png|gif|webp|avif)$/i)) {
       console.warn('Invalid mimetype detected:', file.mimetype);

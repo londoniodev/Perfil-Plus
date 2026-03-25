@@ -239,10 +239,7 @@ export class StorageService {
       const savedPercent = Math.round(
         (1 - optimized.length / originalSize) * 100,
       );
-      this.logger.log(
-        `[IMAGE OPT] ${folder}: ${(originalSize / 1024).toFixed(0)}KB → ${(optimized.length / 1024).toFixed(0)}KB (${savedPercent}% ahorrado, max ${profile.maxWidth}px, q${profile.quality})`,
-      );
-
+ 
       return {
         buffer: optimized,
         contentType: 'image/webp',
@@ -297,9 +294,6 @@ export class StorageService {
     }
 
     const bucket = await this.getBucketName(isPrivate);
-    this.logger.log(
-      `[Upload] bucket=${bucket}, folder=${folder}, isImage=${isImage}, optimized=${!!optimized}`,
-    );
     await this.ensureBucketExists(bucket, isPrivate);
 
     const client = await this.getS3Client();

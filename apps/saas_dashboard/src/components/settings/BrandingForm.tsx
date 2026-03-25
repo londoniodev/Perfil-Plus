@@ -140,7 +140,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
             logoUrl: "",
             faviconUrl: "",
             secondaryColor: "",
-            fontFamily: "",
+            fontFamily: "Inter",
             ...(defaultValues as any),
         },
     });
@@ -156,7 +156,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                 logoUrl: "",
                 faviconUrl: "",
                 secondaryColor: "",
-                fontFamily: "",
+                fontFamily: "Inter",
                 ...(defaultValues as any),
             })
         }
@@ -183,18 +183,27 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
 
     async function onSubmit(data: BrandingFormValues) {
         try {
+            console.log("[BrandingForm] Enviando datos:", data);
             await updateTenantBranding(data);
             toast.success("Diseño actualizado correctamente");
         } catch (error) {
-            console.error(error);
+            console.error("[BrandingForm] Error en onSubmit:", error);
             toast.error("Error al actualizar el diseño");
         }
     }
 
+    const onInvalid = (errors: any) => {
+        console.warn("[BrandingForm] Errores de validación:", errors);
+        const firstError = Object.values(errors)[0] as any;
+        if (firstError?.message) {
+            toast.error(`Error en el formulario: ${firstError.message}`);
+        }
+    };
+
     return (
         <div className="w-full">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-8">
                     <Card>
                         <CardHeader>
                             <CardTitle>Apariencia del Tenant</CardTitle>
@@ -218,6 +227,11 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                                     token={authToken}
                                                     tenantId={TENANT_ID}
                                                     folder="branding"
+                                                    onUploadSuccess={(url) => {
+                                                        toast.success("Logo horizontal subido correctamente");
+                                                        field.onChange(url);
+                                                    }}
+                                                    onUploadError={(err) => toast.error(`Error subiendo logo: ${err}`)}
                                                 />
                                             </FormControl>
                                             <FormDescription>Utilizado en headers y correos electrónicos.</FormDescription>
@@ -240,6 +254,11 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                                     token={authToken}
                                                     tenantId={TENANT_ID}
                                                     folder="branding"
+                                                    onUploadSuccess={(url) => {
+                                                        toast.success("Favicon subido correctamente");
+                                                        field.onChange(url);
+                                                    }}
+                                                    onUploadError={(err) => toast.error(`Error subiendo favicon: ${err}`)}
                                                 />
                                             </FormControl>
                                             <FormDescription>Utilizado en el Menú Digital, favicon y móviles.</FormDescription>

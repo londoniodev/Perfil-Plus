@@ -238,9 +238,6 @@ export class TenantService {
       tenantId === 'admin_build' ||
       tenantId === 'template'
     ) {
-      this.logger.log(
-        `[BRANDING DEBUG] Ignorando búsqueda en BD para tenant '${tenantId}' (Next.js ISR Fallback)`,
-      );
       return {
         id: 'default',
         name: 'SaaS Platform',
@@ -258,9 +255,6 @@ export class TenantService {
       };
     }
 
-    this.logger.log(
-      `[BRANDING DEBUG] getTenantBranding called with tenantId: "${tenantId}"`,
-    );
     try {
       const tenantById = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
@@ -275,7 +269,6 @@ export class TenantService {
         },
       });
       if (tenantById) {
-        this.logger.log(`[BRANDING DEBUG] Found tenant by ID: ${tenantId}`);
         const menuSetting = await this.prisma.secure.systemSetting.findFirst({
           where: { tenantId: tenantById.id, key: 'menu' },
         });
@@ -321,14 +314,8 @@ export class TenantService {
         };
       }
     } catch (error) {
-      this.logger.warn(
-        `[BRANDING DEBUG] findFirst by ID failed for "${tenantId}": ${error?.message || error}`,
-      );
+      // Búsqueda por ID falló
     }
-
-    this.logger.log(
-      `[BRANDING DEBUG] ID lookup failed, trying slug lookup for: "${tenantId}"`,
-    );
 
     const tenantBySlug = await this.prisma.secure.tenant.findFirst({
       where: { slug: tenantId },
@@ -344,7 +331,6 @@ export class TenantService {
     });
 
     if (tenantBySlug) {
-      this.logger.log(`[BRANDING DEBUG] Found tenant by slug: ${tenantId}`);
       const menuSetting = await this.prisma.secure.systemSetting.findFirst({
         where: { tenantId: tenantBySlug.id, key: 'menu' },
       });
@@ -389,9 +375,6 @@ export class TenantService {
       };
     }
 
-    this.logger.error(
-      `[BRANDING DEBUG] Tenant NOT FOUND for ID/Slug: "${tenantId}"`,
-    );
     throw new NotFoundException(`Tenant con ID/Slug ${tenantId} no encontrado`);
   }
 
@@ -539,9 +522,6 @@ export class TenantService {
       features: resolvedFeatures,
       customLinks,
     };
-    this.logger.log(
-      `[IDENTIFY DEBUG] Resolved tenant for domain "${domain}": id=${tenant.id}, features=${JSON.stringify(resolvedTenant.features)}`,
-    );
     await this.cacheManager.set(cacheKey, resolvedTenant, 3600 * 1000);
     return resolvedTenant;
   }
@@ -589,10 +569,6 @@ export class TenantService {
         authQuote,
       },
     });
-
-    this.logger.log(
-      `Branding (BrandSettings) actualizado de forma segura para Tenant ID: ${tenantId}`,
-    );
 
     this.triggerFrontendRevalidation([
       `tenant-branding-${tenantId}`,

@@ -551,6 +551,8 @@ model Order {
   @@index([driverId])
   @@index([status, createdAt])
   @@index([mpPaymentId])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
 }
 
 model OrderItem {

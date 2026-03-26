@@ -1,6 +1,14 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+/**
+ * Servicio de integración con Bold - API Link de Pagos
+ * Docs: https://developers.bold.co/pagos-en-linea/api-link-de-pagos
+ *
+ * URL base: https://integrations.api.bold.co
+ * Endpoint: POST /online/link/v1
+ * Auth: x-api-key <llave_de_identidad>
+ */
 export interface BoldPaymentLinkResponse {
   payment_link: string;
 }
@@ -8,10 +16,22 @@ export interface BoldPaymentLinkResponse {
 @Injectable()
 export class BoldService {
   private readonly logger = new Logger(BoldService.name);
-  private readonly apiUrl = 'https://integrations.api.bold.co/online/link/v1';
+
+  /** URL base de la API Link de Pagos de Bold */
+  private readonly apiUrl = 'https://integrations.api.bold.co';
 
   constructor(private configService: ConfigService) {}
 
+  /**
+   * Crea un Link de Pago en Bold.
+   *
+   * Docs: POST /online/link/v1
+   * Payload mínimo monto cerrado:
+   *   { "amount_type": "CLOSE", "amount": { "currency": "COP", "total_amount": 10000, "tip_amount": 0 } }
+   *
+   * Response:
+   *   { "payload": { "payment_link": "LNK_xxx", "url": "https://checkout.bold.co/LNK_xxx" }, "errors": [] }
+   */
   async createPaymentLink(
     orderData: {
       orderId: string;
@@ -30,57 +50,129 @@ export class BoldService {
         throw new BadRequestException('Bold API Key is missing for this tenant.');
       }
 
-      // Convert amount to the lowest denominator (eg. cents for USD, but for COP it is usually just the integer value or multiplied by 100 based on Bold's specific requirements.
-      // Bold specifies amount must be in the smallest currency unit. For COP usually * 100, but we should safely calculate it. 
-      // Assuming COP, you multiply by 100. Let's do a safe conversion.
-      // In Bold Link v1, amount for COP is just the integer amount without cents.
-      // Wait, double checking if it needs to be in cents. If the error says 'amount is invalid' later, we can multiply by 100.
-      // Actually, standard in Colombia for Bold is the exact amount. But let's leave * 100 if that was standard? No, wait. Bold's swagger says "Amount. 0 to 999999999. Do not use commas or points". If COP, $10,000 = 10000. Wompi uses cents. Bold uses flat values. Let's send the exact value.
-      const amountInCents = Math.round(orderData.totalAmount);
+      // Bold usa el valor real en COP (no centavos). Ej: $10.000 = 10000
+      const totalAmount = Math.round(orderData.totalAmount);
 
-      const payload = {
-        amount_type: "CLOSED",
-        amount: amountInCents,
-        currency: orderData.currency || 'COP',
-        description: orderData.description || `Orden ${orderData.orderId}`,
-        redirect_url: redirectUrl,
-        notification_url: notificationUrl,
-        reference: orderData.orderId,
+      // Construir reference único (Bold acepta alfanuméricos, guiones y guiones bajos, máx 60 chars)
+      // Recomiendan agregar timestamp para evitar duplicados
+      const reference = `${orderData.orderId}-${Date.now()}`.slice(0, 60);
+
+      // Expiración: 30 minutos desde ahora en NANOSEGUNDOS (requerimiento Bold)
+      const expirationDate = (Date.now() + 30 * 60 * 1000) * 1e6; // ms → nanosegundos
+
+      // Payload según docs oficiales de Bold Link de Pagos
+      const payload: Record<string, unknown> = {
+        amount_type: 'CLOSE', // ⚠️ Es "CLOSE" no "CLOSED" — crítico
+        amount: {
+          currency: orderData.currency || 'COP',
+          total_amount: totalAmount,
+          tip_amount: 0,
+          taxes: [],
+        },
+        reference,
+        description:
+          (orderData.description || `Orden ${orderData.orderId}`).slice(0, 100), // máx 100 chars
+        expiration_date: expirationDate,
+        callback_url: redirectUrl,
       };
 
-      this.logger.log(`Creating Bold payment link for order ${orderData.orderId}...`);
+      // Email del pagador (opcional)
+      if (orderData.customerEmail) {
+        payload.payer_email = orderData.customerEmail;
+      }
 
-      const response = await fetch(this.apiUrl, {
+      this.logger.log(
+        `Creating Bold payment link for order ${orderData.orderId}, amount: ${totalAmount} ${orderData.currency || 'COP'}`,
+      );
+
+      const response = await fetch(`${this.apiUrl}/online/link/v1`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': boldApiKey,
-          // Sending Authorization just in case their lambda still checks it, but x-api-key is the one required by their AWS API Gateway
-          'Authorization': `ApiKey ${boldApiKey}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        this.logger.error(`Error from Bold API: ${errorData}`);
-        throw new BadRequestException('Error al comunicarse con pasarela Bold');
+        const errorText = await response.text();
+        this.logger.error(`Bold API error [${response.status}]: ${errorText}`);
+        throw new BadRequestException(
+          `Error de Bold [${response.status}]: ${this.parseErrorMessage(errorText)}`,
+        );
       }
 
+      // Response: { "payload": { "payment_link": "LNK_xxx", "url": "https://checkout.bold.co/LNK_xxx" }, "errors": [] }
       const data = await response.json();
-      
-      // La API de bold devuelve una URL de pago en data.payment_link
-      if (!data || !data.payment_link) {
-         this.logger.error('Unexpected response format from Bold API', data);
-         throw new BadRequestException('Formato de respuesta inválido de Bold');
+      const linkPayload = data?.payload;
+
+      if (!linkPayload?.url) {
+        this.logger.error('Unexpected Bold response format', data);
+        throw new BadRequestException('Formato de respuesta inesperado de Bold');
       }
+
+      this.logger.log(
+        `Bold payment link created: ${linkPayload.payment_link} → ${linkPayload.url}`,
+      );
 
       return {
-        payment_link: data.payment_link,
+        payment_link: linkPayload.url,
       };
     } catch (error) {
-      this.logger.error(`Failed to create Bold payment link: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
-      throw new BadRequestException('No se pudo generar el link de pago con Bold');
+      if (error instanceof BadRequestException) throw error;
+
+      this.logger.error(
+        `Failed to create Bold payment link: ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+      );
+      throw new BadRequestException(
+        'No se pudo generar el link de pago con Bold',
+      );
+    }
+  }
+
+  /**
+   * Consulta el estado de un link de pago.
+   * Docs: GET /online/link/v1/{payment_link}
+   */
+  async getPaymentLinkStatus(
+    paymentLinkId: string,
+    boldApiKey: string,
+  ): Promise<Record<string, unknown>> {
+    const response = await fetch(
+      `${this.apiUrl}/online/link/v1/${paymentLinkId}`,
+      {
+        method: 'GET',
+        headers: {
+          'x-api-key': boldApiKey,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      this.logger.error(
+        `Bold status check error [${response.status}]: ${errorText}`,
+      );
+      throw new BadRequestException('Error al consultar estado en Bold');
+    }
+
+    const data = await response.json();
+    return data?.payload || data;
+  }
+
+  /** Extrae un mensaje legible de los errores JSON de Bold. */
+  private parseErrorMessage(errorText: string): string {
+    try {
+      const parsed = JSON.parse(errorText);
+      if (parsed?.errors?.length > 0) {
+        return parsed.errors.map((e: any) => e.message || e).join(', ');
+      }
+      if (parsed?.payload?.message) {
+        return parsed.payload.message;
+      }
+      return parsed?.message || errorText;
+    } catch {
+      return errorText;
     }
   }
 }

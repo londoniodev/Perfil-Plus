@@ -178,7 +178,8 @@ export default function MenuClient({
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            orderId: result.orderId
+                            orderId: result.orderId,
+                            slug: restaurant.slug
                         })
                     })
                     const data = await res.json()

@@ -7,7 +7,8 @@ export class OrderValidationService {
 
   async validateAndDeductStock(orderItemsData: any[], tx: any) {
     for (const item of orderItemsData) {
-      if (item.stockType !== -1) {
+      // -1 indica stock ilimitado (infinito). Solo validamos y deducimos si es >= 0.
+      if (item.stockType >= 0) {
         if (item.stockType < item.quantity) {
           throw new BadRequestException(
             `Stock insuficiente para ${item.productName} (${item.variantName})`,
@@ -21,7 +22,8 @@ export class OrderValidationService {
       }
 
       for (const mod of item.modifiers) {
-        if (mod.stock !== null && mod.stock < mod.quantity) {
+        // -1 indica stock ilimitado en modificadores. Solo validamos si es >= 0.
+        if (mod.stock !== null && mod.stock !== -1 && mod.stock < mod.quantity) {
           throw new BadRequestException(
             `Stock insuficiente para modificador ${mod.modifierName}`,
           );

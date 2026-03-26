@@ -18,14 +18,20 @@ export const generalSettingsSchema = z.object({
 
 export type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
 
-// 2. Esquema de Finanzas (Mercado Pago + Tarifas)
+// 2. Esquema de Finanzas (Pasarelas de Pago + Tarifas)
+export const paymentProviderEnum = z.enum(["MERCADO_PAGO", "BOLD", "CASH", "NONE"]);
+export type PaymentProviderType = z.infer<typeof paymentProviderEnum>;
+
 export const financeSettingsSchema = z.object({
+    activePaymentProvider: paymentProviderEnum.optional(),
     currency: z.string().optional().or(z.literal("")),
     mpPublicKey: z.string().optional().or(z.literal("")),
     mpAccessToken: z.string().optional().or(z.literal("")),
     mpWebhookSecret: z.string().optional().or(z.literal("")),
     mpClientId: z.string().optional().or(z.literal("")),
     mpClientSecret: z.string().optional().or(z.literal("")),
+    boldApiKey: z.string().optional().or(z.literal("")),
+    boldSecretKey: z.string().optional().or(z.literal("")),
     deliveryFee: z.number().min(0, "El valor debe ser positivo o cero").optional(),
 });
 

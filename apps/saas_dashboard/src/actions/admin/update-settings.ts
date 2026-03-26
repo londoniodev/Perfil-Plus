@@ -76,6 +76,7 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
 
         const newConfig = {
             ...currentConfig,
+            activePaymentProvider: validated.activePaymentProvider ?? currentConfig.activePaymentProvider,
             currency: validated.currency ?? currentConfig.currency,
             deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
             // Claves planas para StoreSettings en el API
@@ -85,6 +86,9 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
             mpWebhookSecret: validated.mpWebhookSecret ?? currentConfig.mpWebhookSecret,
             mpClientId: validated.mpClientId ?? currentConfig.mpClientId,
             mpClientSecret: validated.mpClientSecret ?? currentConfig.mpClientSecret,
+            // Bold credentials
+            boldApiKey: validated.boldApiKey ?? currentConfig.boldApiKey,
+            boldSecretKey: validated.boldSecretKey ?? currentConfig.boldSecretKey,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })

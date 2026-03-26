@@ -64,6 +64,11 @@ export class SettingsService {
       waPhoneNumberId: storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
       deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : (Number(collapsed['deliveryFee']) || 0),
       hero_image: brandSettings?.authBgUrl || '', 
+
+      // 5. Payment Provider (Bold integration)
+      activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
+      boldApiKey: storeSettings?.boldApiKey || '',
+      boldSecretKey: storeSettings?.boldSecretKey || '',
     };
 
     return finalConfig;
@@ -90,6 +95,10 @@ export class SettingsService {
       'tenant_slug',
       'layout_type',
       'hero_image',
+      // Bold payment provider keys
+      'activePaymentProvider',
+      'boldApiKey',
+      'boldSecretKey',
     ];
 
     const operations = Object.entries(updateDto)
@@ -170,7 +179,10 @@ export class SettingsService {
       updateDto.deliveryFee !== undefined ||
       updateDto.waPhoneNumberId !== undefined ||
       updateDto.storeName !== undefined ||
-      updateDto.storeEmail !== undefined
+      updateDto.storeEmail !== undefined ||
+      updateDto.activePaymentProvider !== undefined ||
+      updateDto.boldApiKey !== undefined ||
+      updateDto.boldSecretKey !== undefined
     ) {
       const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
         where: { tenantId }
@@ -195,6 +207,9 @@ export class SettingsService {
             wabaId,
             storeName: updateDto.storeName,
             storeEmail: updateDto.storeEmail,
+            activePaymentProvider: updateDto.activePaymentProvider,
+            boldApiKey: updateDto.boldApiKey,
+            boldSecretKey: updateDto.boldSecretKey,
           },
         });
       } else {
@@ -208,6 +223,9 @@ export class SettingsService {
             wabaId,
             storeName: updateDto.storeName,
             storeEmail: updateDto.storeEmail,
+            activePaymentProvider: updateDto.activePaymentProvider || 'NONE',
+            boldApiKey: updateDto.boldApiKey,
+            boldSecretKey: updateDto.boldSecretKey,
           },
         });
       }

@@ -49,12 +49,15 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
     }), [initialData]);
 
     const financeData = useMemo(() => ({
+        activePaymentProvider: initialData?.activePaymentProvider || "NONE",
         currency: initialData?.currency || "COP",
         mpPublicKey: initialData?.mp_public_key || initialData?.MERCADOPAGO_CONFIG?.publicKey || "",
         mpAccessToken: initialData?.mp_access_token || initialData?.MERCADOPAGO_CONFIG?.accessToken || "",
         mpWebhookSecret: initialData?.mpWebhookSecret || initialData?.MERCADOPAGO_CONFIG?.webhookSecret || "",
         mpClientId: initialData?.mpClientId || initialData?.MERCADOPAGO_CONFIG?.clientId || "",
         mpClientSecret: initialData?.mpClientSecret || initialData?.MERCADOPAGO_CONFIG?.clientSecret || "",
+        boldApiKey: initialData?.boldApiKey || "",
+        boldSecretKey: initialData?.boldSecretKey || "",
         deliveryFee: initialData?.deliveryFee || 0,
     }), [initialData]);
 

@@ -361,19 +361,22 @@ model Purchase {
 }
 
 model StoreSettings {
-  id              String   @id @default(cuid())
-  mpAccessToken   String?
-  mpPublicKey     String?
-  storeName       String?
-  storeEmail      String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  deliveryFee     Decimal? @default(0) @db.Decimal(10, 2)
-  tenantId        String
-  waAccessToken   String?
-  waPhoneNumberId String?  @unique
-  wabaId          String?  @unique
-  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  id                     String          @id @default(cuid())
+  mpAccessToken          String?
+  mpPublicKey            String?
+  activePaymentProvider  PaymentProvider @default(NONE)
+  boldApiKey             String?
+  boldSecretKey          String?
+  storeName              String?
+  storeEmail             String?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  deliveryFee            Decimal?        @default(0) @db.Decimal(10, 2)
+  tenantId               String
+  waAccessToken          String?
+  waPhoneNumberId        String?         @unique
+  wabaId                 String?         @unique
+  tenant                 Tenant          @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
 }
@@ -515,33 +518,35 @@ model Modifier {
 }
 
 model Order {
-  id                String                  @id @default(cuid())
-  userId            String?
-  orderNumber       String
-  totalAmount       Decimal                 @db.Decimal(10, 2)
-  status            OrderStatus             @default(PENDING)
-  mpPaymentId       String?
-  shippingData      Json?
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
-  customerName      String?
-  customerPhone     String?
-  notes             String?
-  orderType         OrderType               @default(DINE_IN)
-  tableNumber       String?
-  assignedAt        DateTime?
-  customerEmail     String?
-  deliverySequence  Int?
-  driverId          String?
-  guestCount        Int?                    @default(1)
-  identification    String?
-  tenantId          String
-  driver            DeliveryDriver?         @relation(fields: [driverId], references: [id])
-  tenant            Tenant                  @relation(fields: [tenantId], references: [id])
-  user              User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deliveryAnalytics OrderDeliveryAnalytics?
-  items             OrderItem[]
-  payments          Payment[]
+  id                 String                  @id @default(cuid())
+  userId             String?
+  orderNumber        String
+  totalAmount        Decimal                 @db.Decimal(10, 2)
+  status             OrderStatus             @default(PENDING)
+  mpPaymentId        String?
+  paymentProvider    PaymentProvider?        @default(NONE)
+  paymentExternalId  String?
+  shippingData       Json?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  customerName       String?
+  customerPhone      String?
+  notes              String?
+  orderType          OrderType               @default(DINE_IN)
+  tableNumber        String?
+  assignedAt         DateTime?
+  customerEmail      String?
+  deliverySequence   Int?
+  driverId           String?
+  guestCount         Int?                    @default(1)
+  identification     String?
+  tenantId           String
+  driver             DeliveryDriver?         @relation(fields: [driverId], references: [id])
+  tenant             Tenant                  @relation(fields: [tenantId], references: [id])
+  user               User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveryAnalytics  OrderDeliveryAnalytics?
+  items              OrderItem[]
+  payments           Payment[]
 
   @@unique([tenantId, orderNumber])
   @@index([tenantId])
@@ -551,6 +556,7 @@ model Order {
   @@index([driverId])
   @@index([status, createdAt])
   @@index([mpPaymentId])
+  @@index([paymentExternalId])
   @@index([tenantId, createdAt])
   @@index([tenantId, status, createdAt])
 }
@@ -982,4 +988,11 @@ enum LayoutType {
   CLASSIC
   INSTAGRAM
   MINIMAL
+}
+
+enum PaymentProvider {
+  MERCADO_PAGO
+  BOLD
+  CASH
+  NONE
 }

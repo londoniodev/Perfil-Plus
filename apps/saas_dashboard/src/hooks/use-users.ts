@@ -41,7 +41,9 @@ export function useUsers(isAdmin: boolean, authLoading: boolean) {
                 setMeta(data.meta);
             }
         } catch (error: any) {
-            if (error.name !== "AbortError") {
+            if (error.name === "AbortError") {
+                // Ignore AbortError silently
+            } else {
                 console.error("Error fetching users:", error);
                 toast.error("Error al cargar usuarios");
             }

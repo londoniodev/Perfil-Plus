@@ -11,7 +11,9 @@ export async function middleware(request: NextRequest) {
     // Leer el Host considerando que estamos detrás de un Reverse Proxy (Dokploy/Traefik)
     const hostname = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
     const cleanHostname = hostname.split(':')[0];
-    console.log(`[DOKPLOY DEBUG] Raw Hostname: ${hostname} | Clean: ${cleanHostname}`);
+    if (process.env.NODE_ENV !== 'production') {
+        console.log(`[DOKPLOY DEBUG] Raw Hostname: ${hostname} | Clean: ${cleanHostname}`);
+    }
 
     let domainToQuery = cleanHostname;
     if (domainToQuery.startsWith('www.')) {
@@ -49,14 +51,20 @@ export async function middleware(request: NextRequest) {
                 tenantSlug = tenantData.slug || domainToQuery;
                 tenantFeatures = (tenantData.features || []).map((f: string) => f.toUpperCase());
                 tenantCustomLinks = tenantData.customLinks || [];
-                console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, slug: ${tenantSlug}, features: ${JSON.stringify(tenantFeatures)}`);
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[DOKPLOY DEBUG] Edge Proxy Success: Tenant ID identified as ${tenantId}, slug: ${tenantSlug}, features: ${JSON.stringify(tenantFeatures)}`);
+                }
             } else if (res.status === 404) {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${domainToQuery} at ${fetchUrl}`);
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned 404 for domain ${domainToQuery} at ${fetchUrl}`);
+                }
                 // Redirigir a 404 si el dominio apunta aquí pero no está registrado
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
             } else {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${domainToQuery} at ${fetchUrl}`);
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${domainToQuery} at ${fetchUrl}`);
+                }
             }
         } catch (error: any) {
             console.error(`[DOKPLOY ERROR] Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}. URL: ${fetchUrl}. Error: ${error?.message || error}`);
@@ -114,7 +122,9 @@ export async function middleware(request: NextRequest) {
         if (url.pathname === guard.path || url.pathname.startsWith(`${guard.path}/`)) {
             const hasFeature = normalizedFeatures.includes(guard.feature);
             if (!hasFeature && !isBaseDomain) {
-                console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a ${guard.path} sin el feature ${guard.feature}. Redirigiendo a 404.`);
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log(`[DOKPLOY DEBUG] Edge Proxy: Dominio ${cleanHostname} intentó acceder a ${guard.path} sin el feature ${guard.feature}. Redirigiendo a 404.`);
+                }
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
             }

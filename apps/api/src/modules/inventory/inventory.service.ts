@@ -465,6 +465,12 @@ export class InventoryService {
       const portionMultiplier = orderItem.quantity / recipe.yield;
 
       for (const ing of recipe.ingredients) {
+        if (!ing.inventoryItemId) {
+          this.logger.warn(
+            `[DEDUCT_BY_ORDER] Receta para producto ${orderItem.productId} tiene un ingrediente sin inventoryItemId. Saltando...`,
+          );
+          continue;
+        }
         deductions.push({
           inventoryItemId: ing.inventoryItemId,
           deductQty:

@@ -21,7 +21,9 @@ export async function getTenantDesign(tenantId: string) {
     const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
     const finalEndpoint = `${API_URL}/tenant/branding`;
 
-    console.log(`[SSR BRANDING DEBUG] Fetching tenant ${tenantId} from: ${finalEndpoint}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[SSR BRANDING DEBUG] Fetching tenant ${tenantId} from: ${finalEndpoint}`);
+    }
 
     const response = await fetch(finalEndpoint, {
       cache: 'force-cache',

@@ -55,19 +55,20 @@ export async function GET(request: Request) {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 25 }}>
             {design.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img 
-                src={design.logo} 
-                alt="logo" 
-                style={{ 
-                  width: 130, 
-                  height: 130, 
-                  borderRadius: '24px', 
-                  objectFit: 'cover',
-                  border: '2px solid rgba(255,255,255,0.1)',
-                  boxShadow: `0 10px 30px ${design.primary}60`
-                }} 
-              />
+              <div style={{ display: 'flex', borderRadius: '24px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)', boxShadow: `0 10px 30px ${design.primary}60` }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={design.logo} 
+                  alt="logo" 
+                  width="130"
+                  height="130"
+                  style={{ 
+                    width: 130, 
+                    height: 130, 
+                    objectFit: 'cover',
+                  }} 
+                />
+              </div>
             ) : (
               <div 
                 style={{ 

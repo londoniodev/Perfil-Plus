@@ -289,24 +289,15 @@ export class PaymentsService {
   // ==================== PRODUCT PURCHASES ====================
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
-    // 2. Credenciales Multi-tenant
-    const setting = await this.prisma.secure.systemSetting.findFirst({
-      where: { tenantId, key: 'MERCADOPAGO_CONFIG' },
+    // 2. Credenciales Multi-tenant desde StoreSettings (SSOT)
+    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+      where: { tenantId },
     });
 
-    if (!setting || !setting.value) {
-      throw new BadRequestException(
-        'El vendedor no ha configurado MercadoPago',
-      );
-    }
-
-    const config =
-      typeof setting.value === 'string'
-        ? JSON.parse(setting.value)
-        : setting.value;
-    const accessToken = config.accessToken;
+    const accessToken = storeSettings?.mpAccessToken;
 
     if (!accessToken) {
+      this.logger.error(`[PAYMENTS] Tenant ${tenantId} no tiene mpAccessToken en StoreSettings`);
       throw new BadRequestException(
         'El vendedor no ha configurado MercadoPago',
       );
@@ -511,25 +502,15 @@ export class PaymentsService {
     const resolvedTenantId = tenantId;
 
     try {
-      // 1. Recuperar Credenciales
-      const setting = await this.prisma.secure.systemSetting.findFirst({
-        where: { tenantId: resolvedTenantId, key: 'MERCADOPAGO_CONFIG' },
+      // 1. Recuperar Credenciales desde StoreSettings (SSOT)
+      const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+        where: { tenantId: resolvedTenantId },
       });
 
-      if (!setting || !setting.value) {
-        return {
-          status: 'error',
-          reason: 'Mercado Pago configuration missing',
-        };
-      }
-
-      const config =
-        typeof setting.value === 'string'
-          ? JSON.parse(setting.value)
-          : setting.value;
-      const accessToken = config.accessToken;
+      const accessToken = storeSettings?.mpAccessToken;
 
       if (!accessToken) {
+        this.logger.error(`[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`);
         return { status: 'error', reason: 'Mercado Pago not configured' };
       }
 

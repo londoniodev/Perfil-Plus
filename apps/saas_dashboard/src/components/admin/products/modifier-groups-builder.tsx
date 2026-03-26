@@ -127,6 +127,7 @@ export function ModifierGroupsBuilder() {
 }
 
 function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: any }) {
+    const { watch, setValue } = useFormContext<ProductFormValues>()
     const { fields, append, remove } = useFieldArray({
         control,
         name: `modifierGroups.${nestIndex}.modifiers`
@@ -141,7 +142,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                     variant="ghost"
                     size="sm"
                     className="h-7 text-xs"
-                    onClick={() => append({ name: "", priceAdjustment: 0, stock: null, stockControl: true, isAvailable: true })}
+                    onClick={() => append({ name: "", priceAdjustment: 0, stock: 0, isAvailable: true })}
                 >
                     <Plus className="mr-1 h-3 w-3" />
                     Agregar Opción
@@ -201,7 +202,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                                         control={control}
                                         name={`modifierGroups.${nestIndex}.modifiers.${k}.stock`}
                                         render={({ field }) => {
-                                            const stockControl = watch(`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`)
+                                            const isInfinite = field.value === -1
                                             return (
                                                 <FormItem className="mb-0 space-y-0">
                                                     <FormControl>
@@ -209,13 +210,14 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                                                             <Input
                                                                 {...field}
                                                                 type="number"
-                                                                placeholder={stockControl ? "0" : "∞"}
-                                                                disabled={!stockControl}
-                                                                className={`h-8 text-sm ${!stockControl ? "text-transparent" : ""}`}
-                                                                value={field.value ?? ""}
-                                                                onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                                                                min="-1"
+                                                                placeholder={!isInfinite ? "0" : "∞"}
+                                                                disabled={isInfinite}
+                                                                className={`h-8 text-sm ${isInfinite ? "text-transparent" : ""}`}
+                                                                value={isInfinite ? "" : (field.value ?? 0)}
+                                                                onChange={(e) => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                                                             />
-                                                            {!stockControl && (
+                                                            {isInfinite && (
                                                                 <div className="absolute inset-0 flex items-center pl-3 pointer-events-none text-muted-foreground font-bold text-sm">
                                                                     ∞
                                                                 </div>
@@ -228,40 +230,21 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                                     />
                                 </TableCell>
                                 <TableCell className="p-2">
-                                    <FormField
-                                        control={control}
-                                        name={`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`}
-                                        render={({ field }) => (
-                                            <FormItem className="mb-0 space-y-0 flex justify-center">
-                                                <FormControl>
-                                                    <Input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4" 
-                                                        checked={field.value} 
-                                                        onChange={(e) => field.onChange(e.target.checked)} 
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </TableCell>
-                                <TableCell className="p-2">
-                                    <FormField
-                                        control={control}
-                                        name={`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`}
-                                        render={({ field }) => (
-                                            <FormItem className="mb-0 space-y-0 flex justify-center">
-                                                <FormControl>
-                                                    <Input 
-                                                        type="checkbox" 
-                                                        className="w-4 h-4" 
-                                                        checked={field.value} 
-                                                        onChange={(e) => field.onChange(e.target.checked)} 
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <div className="flex justify-center h-8 items-center">
+                                        <Input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 cursor-pointer" 
+                                            checked={watch(`modifierGroups.${nestIndex}.modifiers.${k}.stock` as any) !== -1} 
+                                            onChange={(e) => {
+                                                const current = watch(`modifierGroups.${nestIndex}.modifiers.${k}.stock` as any)
+                                                if (!e.target.checked) {
+                                                    setValue(`modifierGroups.${nestIndex}.modifiers.${k}.stock` as any, -1)
+                                                } else {
+                                                    setValue(`modifierGroups.${nestIndex}.modifiers.${k}.stock` as any, current === -1 ? 0 : current)
+                                                }
+                                            }} 
+                                        />
+                                    </div>
                                 </TableCell>
                                 <TableCell className="p-2 text-right pr-4">
                                     <Button

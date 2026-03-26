@@ -13,7 +13,7 @@ interface ProductVariantsFormProps {
 }
 
 export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) {
-    const { control, watch } = useFormContext<ProductFormValues>()
+    const { control, watch, setValue } = useFormContext<ProductFormValues>()
     const productType = watch("productType")
 
     const { fields, append, remove } = useFieldArray({
@@ -34,7 +34,7 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => append({ name: "", sku: "", price: 0, stock: 0, stockControl: true, isDefault: false })}
+                    onClick={() => append({ name: "", sku: "", price: 0, stock: 0, isDefault: false })}
                 >
                     <IconPlus className="h-4 w-4 mr-2" />
                     Agregar
@@ -62,7 +62,7 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                                 control={control}
                                 name={`variants.${index}.stock`}
                                 render={({ field }) => {
-                                    const stockControl = watch(`variants.${index}.stockControl`)
+                                    const isInfinite = field.value === -1
                                     return (
                                         <FormItem>
                                             <FormLabel>Stock</FormLabel>
@@ -71,13 +71,14 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                                                     <Input
                                                         {...field}
                                                         type="number"
-                                                        min="0"
-                                                        placeholder={stockControl ? "0" : "∞"}
-                                                        disabled={!stockControl}
-                                                        className={!stockControl ? "text-transparent" : ""}
+                                                        min="-1"
+                                                        placeholder={!isInfinite ? "0" : "∞"}
+                                                        disabled={isInfinite}
+                                                        className={isInfinite ? "text-transparent" : ""}
+                                                        value={isInfinite ? "" : (field.value ?? 0)}
                                                         onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
                                                     />
-                                                    {!stockControl && (
+                                                    {isInfinite && (
                                                         <div className="absolute inset-0 flex items-center pl-3 pointer-events-none text-muted-foreground font-bold text-lg">
                                                             ∞
                                                         </div>
@@ -90,25 +91,26 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                             />
                         </div>
                         <div className="col-span-6 sm:col-span-3">
-                            <FormField
-                                control={control}
-                                name={`variants.${index}.stockControl`}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col justify-end pb-2">
-                                        <FormLabel className="text-xs mb-2">Control stock</FormLabel>
-                                        <FormControl>
-                                            <div className="flex items-center h-10">
-                                                <Input 
-                                                    type="checkbox" 
-                                                    className="w-4 h-4" 
-                                                    checked={field.value} 
-                                                    onChange={(e) => field.onChange(e.target.checked)} 
-                                                />
-                                            </div>
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
+                            <FormItem className="flex flex-col justify-end pb-2">
+                                <FormLabel className="text-xs mb-2">Control stock</FormLabel>
+                                <FormControl>
+                                    <div className="flex items-center h-10">
+                                        <Input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 cursor-pointer" 
+                                            checked={watch(`variants.${index}.stock` as any) !== -1} 
+                                            onChange={(e) => {
+                                                const current = watch(`variants.${index}.stock` as any)
+                                                if (!e.target.checked) {
+                                                    setValue(`variants.${index}.stock` as any, -1)
+                                                } else {
+                                                    setValue(`variants.${index}.stock` as any, current === -1 ? 0 : current)
+                                                }
+                                            }} 
+                                        />
+                                    </div>
+                                </FormControl>
+                            </FormItem>
                         </div>
                         <div className="col-span-12 sm:col-span-1 flex items-end justify-end">
                             {fields.length > 1 && (

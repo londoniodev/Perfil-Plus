@@ -34,7 +34,7 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => append({ name: "", sku: "", price: null, stock: 0, isDefault: false })}
+                    onClick={() => append({ name: "", sku: "", price: 0, stock: 0, stockControl: true, isDefault: false })}
                 >
                     <IconPlus className="h-4 w-4 mr-2" />
                     Agregar
@@ -61,17 +61,50 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                             <FormField
                                 control={control}
                                 name={`variants.${index}.stock`}
+                                render={({ field }) => {
+                                    const stockControl = watch(`variants.${index}.stockControl`)
+                                    return (
+                                        <FormItem>
+                                            <FormLabel>Stock</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Input
+                                                        {...field}
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder={stockControl ? "0" : "∞"}
+                                                        disabled={!stockControl}
+                                                        className={!stockControl ? "text-transparent" : ""}
+                                                        onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
+                                                    />
+                                                    {!stockControl && (
+                                                        <div className="absolute inset-0 flex items-center pl-3 pointer-events-none text-muted-foreground font-bold text-lg">
+                                                            ∞
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </FormControl>
+                                        </FormItem>
+                                    )
+                                }}
+                            />
+                        </div>
+                        <div className="col-span-6 sm:col-span-3">
+                            <FormField
+                                control={control}
+                                name={`variants.${index}.stockControl`}
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Stock</FormLabel>
+                                    <FormItem className="flex flex-col justify-end pb-2">
+                                        <FormLabel className="text-xs mb-2">Control stock</FormLabel>
                                         <FormControl>
-                                            <Input
-                                                {...field}
-                                                type="number"
-                                                min="0"
-                                                placeholder="0"
-                                                onChange={e => field.onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-                                            />
+                                            <div className="flex items-center h-10">
+                                                <Input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4" 
+                                                    checked={field.value} 
+                                                    onChange={(e) => field.onChange(e.target.checked)} 
+                                                />
+                                            </div>
                                         </FormControl>
                                     </FormItem>
                                 )}

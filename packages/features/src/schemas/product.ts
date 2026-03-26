@@ -6,6 +6,7 @@ export const variantSchema = z.object({
     sku: z.string().optional(),
     price: z.coerce.number().optional().nullable(),
     stock: z.coerce.number().int().min(-1).default(0),
+    stockControl: z.boolean().default(true),
     isDefault: z.boolean().default(false),
     attributes: z.record(z.string(), z.any()).optional()
 });
@@ -15,6 +16,7 @@ export const modifierSchema = z.object({
     name: z.string().min(1, "Nombre requerido"),
     priceAdjustment: z.coerce.number().default(0),
     stock: z.coerce.number().nullable().optional(),
+    stockControl: z.boolean().default(true),
     isAvailable: z.boolean().default(true)
 });
 

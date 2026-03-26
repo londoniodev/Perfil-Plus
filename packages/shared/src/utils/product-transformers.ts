@@ -4,7 +4,7 @@
 export function formatProductForTable(product: any) {
     // Calcular stock total sumando todas las variantes
     const totalStock = product.variants ? product.variants.reduce((sum: number, variant: any) => {
-        if (variant.stock === -1) return Infinity; // Ilimitado
+        if (variant.stockControl === false) return Infinity; // Ilimitado
         return sum + (Number(variant.stock) || 0);
     }, 0) : 0;
 

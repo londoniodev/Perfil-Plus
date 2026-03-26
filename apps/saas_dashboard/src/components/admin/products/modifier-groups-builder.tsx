@@ -8,7 +8,7 @@ import { Button, Input, Accordion, AccordionContent, AccordionItem, AccordionTri
 import { ProductFormValues } from "@alvarosky/features"
 
 export function ModifierGroupsBuilder() {
-    const { control } = useFormContext<ProductFormValues>()
+    const { control, watch } = useFormContext<ProductFormValues>()
 
     const { fields: groupFields, append: appendGroup, remove: removeGroup } = useFieldArray({
         control,
@@ -141,7 +141,7 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                     variant="ghost"
                     size="sm"
                     className="h-7 text-xs"
-                    onClick={() => append({ name: "", priceAdjustment: 0, stock: null, isAvailable: true })}
+                    onClick={() => append({ name: "", priceAdjustment: 0, stock: null, stockControl: true, isAvailable: true })}
                 >
                     <Plus className="mr-1 h-3 w-3" />
                     Agregar Opción
@@ -152,10 +152,11 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                 <Table className="w-full">
                     <TableHeader>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
-                            <TableHead className="w-[40%] pl-4">Nombre</TableHead>
-                            <TableHead className="w-[20%]">Precio</TableHead>
+                            <TableHead className="w-[35%] pl-4">Nombre</TableHead>
+                            <TableHead className="w-[15%]">Precio</TableHead>
                             <TableHead className="w-[20%]">Stock</TableHead>
-                            <TableHead className="w-[10%] text-right pr-4"></TableHead>
+                            <TableHead className="w-[15%] text-center">Control</TableHead>
+                            <TableHead className="w-[15%] text-right pr-4"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -199,10 +200,64 @@ function ModifiersTable({ nestIndex, control }: { nestIndex: number, control: an
                                     <FormField
                                         control={control}
                                         name={`modifierGroups.${nestIndex}.modifiers.${k}.stock`}
+                                        render={({ field }) => {
+                                            const stockControl = watch(`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`)
+                                            return (
+                                                <FormItem className="mb-0 space-y-0">
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <Input
+                                                                {...field}
+                                                                type="number"
+                                                                placeholder={stockControl ? "0" : "∞"}
+                                                                disabled={!stockControl}
+                                                                className={`h-8 text-sm ${!stockControl ? "text-transparent" : ""}`}
+                                                                value={field.value ?? ""}
+                                                                onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                                                            />
+                                                            {!stockControl && (
+                                                                <div className="absolute inset-0 flex items-center pl-3 pointer-events-none text-muted-foreground font-bold text-sm">
+                                                                    ∞
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </FormControl>
+                                                </FormItem>
+                                            )
+                                        }}
+                                    />
+                                </TableCell>
+                                <TableCell className="p-2">
+                                    <FormField
+                                        control={control}
+                                        name={`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`}
                                         render={({ field }) => (
-                                            <FormItem className="mb-0 space-y-0">
+                                            <FormItem className="mb-0 space-y-0 flex justify-center">
                                                 <FormControl>
-                                                    <Input {...field} type="number" placeholder="∞" className="h-8 text-sm" value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))} />
+                                                    <Input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4" 
+                                                        checked={field.value} 
+                                                        onChange={(e) => field.onChange(e.target.checked)} 
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </TableCell>
+                                <TableCell className="p-2">
+                                    <FormField
+                                        control={control}
+                                        name={`modifierGroups.${nestIndex}.modifiers.${k}.stockControl`}
+                                        render={({ field }) => (
+                                            <FormItem className="mb-0 space-y-0 flex justify-center">
+                                                <FormControl>
+                                                    <Input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4" 
+                                                        checked={field.value} 
+                                                        onChange={(e) => field.onChange(e.target.checked)} 
+                                                    />
                                                 </FormControl>
                                             </FormItem>
                                         )}

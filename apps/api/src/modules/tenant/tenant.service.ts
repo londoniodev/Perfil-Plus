@@ -260,36 +260,21 @@ export class TenantService {
 
     let tenant: any = null;
 
-    // Verificar si es un UUID válido para buscar por ID primero sin lanzar excepción
-    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(tenantId)) {
-      tenant = await this.prisma.secure.tenant.findFirst({
-        where: { id: tenantId },
-        select: {
-          id: true,
-          design: true,
-          name: true,
-          features: true,
-          ownerEmail: true,
-          notes: true,
-          brandSettings: true,
-        },
-      });
-    }
-
-    if (!tenant) {
-      tenant = await this.prisma.secure.tenant.findFirst({
-        where: { slug: tenantId },
-        select: {
-          id: true,
-          design: true,
-          name: true,
-          features: true,
-          ownerEmail: true,
-          notes: true,
-          brandSettings: true,
-        },
-      });
-    }
+    // Buscar simultáneamente por ID (CUID) o Slug
+    tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: tenantId }, { slug: tenantId }],
+      },
+      select: {
+        id: true,
+        design: true,
+        name: true,
+        features: true,
+        ownerEmail: true,
+        notes: true,
+        brandSettings: true,
+      },
+    });
 
     if (tenant) {
       const menuSetting = await this.prisma.secure.systemSetting.findFirst({
@@ -343,20 +328,13 @@ export class TenantService {
   async getTenantMarketing(tenantId: string) {
     let tenant: any = null;
     
-    // Validar formato UUID preventivo
-    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(tenantId)) {
-      tenant = await this.prisma.secure.tenant.findUnique({
-        where: { id: tenantId },
-        select: { slug: true, name: true, notes: true },
-      });
-    }
-
-    if (!tenant) {
-      tenant = await this.prisma.secure.tenant.findUnique({
-        where: { slug: tenantId },
-        select: { slug: true, name: true, notes: true },
-      });
-    }
+    // Buscar unificadamente por ID o Slug
+    tenant = await this.prisma.secure.tenant.findFirst({
+      where: {
+        OR: [{ id: tenantId }, { slug: tenantId }],
+      },
+      select: { slug: true, name: true, notes: true },
+    });
 
     if (tenant) {
       return {

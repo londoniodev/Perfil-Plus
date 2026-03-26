@@ -478,7 +478,7 @@ export class TenantService {
     const metaTitle = design.metaTitle || null;
     const metaDescription = design.metaDescription || null;
 
-    const updatedSettings = await this.prisma.brandSettings.upsert({
+    const updatedSettings = await this.prisma.secure.brandSettings.upsert({
       where: { tenantId },
       create: {
         tenantId,
@@ -554,7 +554,7 @@ export class TenantService {
   }
 
   async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
-    const updated = await this.prisma.brandSettings.upsert({
+    const updated = await this.prisma.secure.brandSettings.upsert({
       where: { tenantId },
       create: {
         tenantId,

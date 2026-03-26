@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useCart } from "@/store/use-cart"
+import { useCart, getItemTotalPrice } from "@/store/use-cart"
 import {
     Button,
     Input,
@@ -92,7 +92,11 @@ export function CheckoutForm() {
                 items: items.map(item => ({
                     variantId: item.variantId,
                     quantity: item.quantity,
-                    modifiers: [] // TODO: Add modifiers support to Cart
+                    modifiers: item.modifiers?.map(mod => ({
+                        modifierName: mod.name,
+                        quantity: mod.quantity,
+                        priceAdjustment: mod.price
+                    })) || []
                 })),
                 tableNumber: tableId || undefined,
                 orderType: data.orderType,
@@ -233,9 +237,11 @@ export function CheckoutForm() {
                             <div key={item.variantId} className="flex justify-between items-start text-sm">
                                 <div>
                                     <p className="font-medium">{item.title} x{item.quantity}</p>
-                                    {item.subtitle && <p className="text-muted-foreground text-xs">{item.subtitle}</p>}
+                                    <p className="text-muted-foreground text-xs">
+                                        {[item.subtitle, item.modifiers?.map(m => `+ ${m.name}`).join(", ")].filter(Boolean).join(" | ")}
+                                    </p>
                                 </div>
-                                <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                                <p className="font-medium">{formatCurrency(getItemTotalPrice(item) * item.quantity)}</p>
                             </div>
                         ))}
                         <Separator />

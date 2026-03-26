@@ -63,7 +63,7 @@ export class SettingsService {
       mp_access_token: storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
       waPhoneNumberId: storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
       deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : (Number(collapsed['deliveryFee']) || 0),
-      hero_image: '', // tenant?.heroImage removed because it's not in schema
+      hero_image: brandSettings?.authBgUrl || '', 
     };
 
     return finalConfig;
@@ -145,17 +145,19 @@ export class SettingsService {
 
     // 3. Actualizar BrandSettings si hay cambios de apariencia
     // Aquí solo manejamos colores por ahora, theme va a SystemSetting
-    if (updateDto.primary_color || updateDto.secondary_color) {
+    if (updateDto.primary_color || updateDto.secondary_color || updateDto.hero_image !== undefined) {
       await this.prisma.secure.brandSettings.upsert({
         where: { tenantId },
         update: {
           primaryColor: updateDto.primary_color,
           secondaryColor: updateDto.secondary_color,
+          authBgUrl: updateDto.hero_image,
         },
         create: {
           tenantId,
           primaryColor: updateDto.primary_color || '#09090b',
           secondaryColor: updateDto.secondary_color || '#f4f4f5',
+          authBgUrl: updateDto.hero_image || '',
           layoutType: 'CLASSIC',
         },
       });

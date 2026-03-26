@@ -12,8 +12,6 @@ import { BrandSettingsFormValues } from "@alvarosky/shared";
  */
 export async function updateBrandSettings(data: BrandSettingsFormValues) {
     try {
-        console.log(`[Brand Settings Action] Actualizando BrandSettings via API Backend...`);
-
         await serverFetch('/tenant/brand-settings', {
             method: 'PATCH',
             body: JSON.stringify(data),

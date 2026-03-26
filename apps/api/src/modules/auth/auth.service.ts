@@ -596,4 +596,18 @@ export class AuthService {
         'Contraseña actualizada correctamente. Ya puedes iniciar sesión.',
     };
   }
+
+  async generateSseToken(userId: string, tenantId: string) {
+    const payload = {
+      sub: userId,
+      tenantId,
+      purpose: 'sse_connection',
+    };
+
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '60s', // Extremely short-lived
+    });
+
+    return { token };
+  }
 }

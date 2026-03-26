@@ -22,17 +22,20 @@ export async function GET(request: Request) {
     if (response.ok) {
       const data = await response.json();
       const rawDesign = data?.design ?? {};
+      const brand = data?.brandSettings ?? {};
+      
       design = {
         name: data?.name || 'Mi Negocio',
-        tagline: data?.tagline || 'Visita nuestra tienda',
-        logo: data?.logo,
-        primary: rawDesign.colors?.primary || '#000000',
+        tagline: brand.tagline || data?.tagline || 'Visita nuestra tienda',
+        logo: brand.logoUrl || brand.faviconUrl || data?.logo || null,
+        primary: brand.primaryColor || rawDesign.colors?.primary || '#000000',
       };
     } else {
       design = {
         name: 'Mi Negocio',
         tagline: 'Visita nuestra tienda',
         primary: '#000000',
+        logo: null
       };
     }
 

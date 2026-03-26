@@ -53,11 +53,17 @@ export class TenantController {
   }
 
 
-  // Este endpoint es DE USO PÚBLICO y no requiere JWT. Su función es inicializar la UI pública desde layout.tsx.
   @Public()
   @SkipThrottle()
   @Get('branding')
   async getTenantBranding(@CurrentTenant() tenantId: string) {
+    return this.tenantService.getTenantBranding(tenantId);
+  }
+
+  @Public()
+  @SkipThrottle()
+  @Get('branding/:id')
+  async getTenantBrandingById(@Param('id') tenantId: string) {
     return this.tenantService.getTenantBranding(tenantId);
   }
 

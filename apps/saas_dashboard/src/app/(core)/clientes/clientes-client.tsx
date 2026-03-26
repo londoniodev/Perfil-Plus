@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useEffect, useState } from "react"
 import {
     Table,
     TableBody,
@@ -75,6 +75,11 @@ export function ClientesClient({
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
 
+    // Sincronizar estado local si initialLeads cambia (SWR/Server Actions fallback)
+    useEffect(() => {
+        setLeads(initialLeads);
+    }, [initialLeads]);
+
     const filteredLeads = leads.filter((lead) => {
         const q = search.toLowerCase()
         return (
@@ -90,11 +95,7 @@ export function ClientesClient({
         currentPage * itemsPerPage
     )
 
-    useState(() => {
-        setCurrentPage(1)
-    }) // This is a bit odd, should be useEffect but simpler to just reset when search changes below or use useMemo for paginatedLeads and reset currentPage in search handler.
-
-    // Better way to reset page
+    // Reset page when filtering
     const handleSearchChange = (val: string) => {
         setSearch(val)
         setCurrentPage(1)
@@ -127,14 +128,15 @@ export function ClientesClient({
     }
 
     return (
-        <div className="space-y-6">
+        <section className="space-y-6" aria-labelledby="clientes-title">
+            <h2 id="clientes-title" className="sr-only">Gestión de Clientes y Leads</h2>
             {/* Stats Cards */}
             {stats && (
                 <div className="grid gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.total}</div>
@@ -143,7 +145,7 @@ export function ClientesClient({
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Esta Semana</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.thisWeek}</div>
@@ -152,7 +154,7 @@ export function ClientesClient({
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Fuentes</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm space-y-1">
@@ -172,10 +174,9 @@ export function ClientesClient({
                 </div>
             )}
 
-            {/* Search */}
             <div className="flex items-center gap-2">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <Input
                         placeholder="Buscar por nombre, email o teléfono..."
                         className="pl-8"
@@ -222,13 +223,13 @@ export function ClientesClient({
                                             <div className="space-y-1">
                                                 {lead.email && (
                                                     <div className="flex items-center gap-1 text-sm">
-                                                        <Mail className="h-3 w-3 text-muted-foreground" />
+                                                        <Mail className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
                                                         <span>{lead.email}</span>
                                                     </div>
                                                 )}
                                                 {lead.phone && (
                                                     <div className="flex items-center gap-1 text-sm">
-                                                        <Phone className="h-3 w-3 text-muted-foreground" />
+                                                        <Phone className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
                                                         <span>{lead.phone}</span>
                                                     </div>
                                                 )}
@@ -258,8 +259,9 @@ export function ClientesClient({
                                                 size="icon"
                                                 className="text-destructive hover:text-destructive"
                                                 onClick={() => setDeleteId(lead.id)}
+                                                aria-label={`Eliminar cliente ${lead.name || "Sin nombre"}`}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-4 w-4" aria-hidden="true" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -326,6 +328,6 @@ export function ClientesClient({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </section>
     )
 }

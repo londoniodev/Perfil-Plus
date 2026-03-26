@@ -37,16 +37,33 @@ export class OrderPricingService {
     let totalAmount = new Decimal(0);
     const orderItemsData: any[] = [];
 
-    for (const item of items) {
-      // ✅ Usar this.prisma.secure en lugar del cliente crudo
-      const variant = await this.prisma.secure.productVariant.findUnique({
-        where: { id: item.variantId },
-        include: {
-          product: {
-            include: { modifierGroups: { include: { modifiers: true } } },
-          },
+    // Pre-fetch all variants to avoid N+1 queries
+    const variantIds = items.map((i) => i.variantId);
+    const variants = await this.prisma.secure.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      include: {
+        product: {
+          include: { modifierGroups: { include: { modifiers: true } } },
         },
+      },
+    });
+
+    const variantMap = new Map(variants.map((v) => [v.id, v]));
+
+    // Pre-fetch fallback modifiers to avoid N+1 queries for modifiers not found in product groups
+    const allModifierIds = items.flatMap((item) => (item.modifiers || []).map((m) => m.modifierId));
+    let fallbackModifierMap = new Map();
+
+    if (allModifierIds.length > 0) {
+      const fallbackModifiers = await this.prisma.secure.modifier.findMany({
+        where: { id: { in: allModifierIds } },
       });
+      fallbackModifierMap = new Map(fallbackModifiers.map((m) => [m.id, m]));
+    }
+
+    for (const item of items) {
+      // ✅ Usar variante pre-cargada
+      const variant = variantMap.get(item.variantId);
 
       if (!variant) {
         throw new NotFoundException(
@@ -76,10 +93,8 @@ export class OrderPricingService {
           }
 
           if (!dbModifier) {
-            // ✅ Usar this.prisma.secure también para fallback de búsqueda de modificador
-            dbModifier = await this.prisma.secure.modifier.findUnique({
-              where: { id: mod.modifierId },
-            });
+            // ✅ Usar fallback precargado
+            dbModifier = fallbackModifierMap.get(mod.modifierId);
           }
 
           if (!dbModifier) continue;

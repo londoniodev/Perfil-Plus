@@ -12,6 +12,7 @@ import { useState } from "react"
 // ============================================
 
 export interface CartItem {
+    cartItemId: string
     variantId: string
     title: string
     subtitle?: string
@@ -28,7 +29,7 @@ export interface CartSheetProps {
     /** Total price */
     totalPrice: number
     /** Remove item callback */
-    onRemoveItem: (variantId: string) => void
+    onRemoveItem: (cartItemId: string) => void
     /** Checkout callback - should handle redirect */
     onCheckout: () => Promise<void>
     /** Whether checkout is processing */
@@ -77,7 +78,7 @@ export function CartSheet({
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.variantId} className="flex gap-4 group">
+                            <div key={item.cartItemId} className="flex gap-4 group">
                                 <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[var(--radius)] border border-border bg-muted">
                                     <AdaptiveImage src={item.imageSrc} aspectRatio="square" alt={item.title} className="opacity-90 group-hover:opacity-100 transition-opacity" />
                                 </div>
@@ -99,7 +100,7 @@ export function CartSheet({
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
-                                                onClick={() => onRemoveItem(item.variantId)}
+                                                onClick={() => onRemoveItem(item.cartItemId)}
                                             >
                                                 <Trash2 className="h-3 w-3" />
                                             </Button>

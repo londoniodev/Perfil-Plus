@@ -35,7 +35,7 @@ interface QuickCommerceCheckoutProps {
 
 export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceCheckoutProps) {
     const { items: cartItems, totalPrice, tableId, setCart } = useCart()
-    const { tenantId } = useTenant()
+    const { tenantId, activePaymentProvider } = useTenant()
     const toast = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -94,7 +94,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                     notes: item.notes,
                     modifiers: item.modifiers?.map(m => ({
                         modifierId: m.id,
-                        quantity: 1
+                        quantity: m.quantity || 1
                     }))
                 })),
                 customer: {
@@ -112,7 +112,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
             const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
             
-            const endpoint = data.paymentMethod === "MERCADOPAGO" 
+            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod === "BOLD")
                 ? `${API_URL}/payments/product/checkout`
                 : `${API_URL}/orders`; // Usar el endpoint estándar para pedidos directos
 
@@ -252,13 +252,24 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                                 <p className="text-xs text-muted-foreground">Pagas al recibir tu pedido</p>
                             </div>
                         </Label>
-                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                            <RadioGroupItem value="MERCADOPAGO" />
-                            <div className="flex-1">
-                                <p className="font-medium text-sm">Mercado Pago</p>
-                                <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
-                            </div>
-                        </Label>
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                                <RadioGroupItem value="MERCADOPAGO" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">Mercado Pago</p>
+                                    <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
+                                </div>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                                <RadioGroupItem value="BOLD" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">Pago en línea Seguro (Bold)</p>
+                                    <p className="text-xs text-muted-foreground">Tarjetas, PSE, Nequi</p>
+                                </div>
+                            </Label>
+                        )}
                     </RadioGroup>
                 </div>
 
@@ -406,13 +417,24 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                                 <p className="text-xs text-muted-foreground">Pagas al recibir tu pedido</p>
                             </div>
                         </Label>
-                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                            <RadioGroupItem value="MERCADOPAGO" />
-                            <div className="flex-1">
-                                <p className="font-medium text-sm">Mercado Pago</p>
-                                <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
-                            </div>
-                        </Label>
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                                <RadioGroupItem value="MERCADOPAGO" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">Mercado Pago</p>
+                                    <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
+                                </div>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
+                                <RadioGroupItem value="BOLD" />
+                                <div className="flex-1">
+                                    <p className="font-medium text-sm">Pago en línea Seguro (Bold)</p>
+                                    <p className="text-xs text-muted-foreground">Tarjetas, PSE, Nequi</p>
+                                </div>
+                            </Label>
+                        )}
                     </RadioGroup>
                 </div>
 

@@ -18,7 +18,7 @@ import {
     Separator,
     useToast
 } from "@alvarosky/ui"
-import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed } from "lucide-react"
+import { Download, ArrowRight, Loader2, Truck, ShoppingBag, UtensilsCrossed, ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { LocationPicker } from "./location-picker"
@@ -28,7 +28,7 @@ import { checkoutSchema, type CheckoutFormData } from "@alvarosky/features"
 
 export function EcommerceCheckout() {
     const { items, totalPrice, tableId, clearCart, setCart } = useCart()
-    const { tenantId } = useTenant()
+    const { tenantId, activePaymentProvider } = useTenant()
     const toast = useToast()
     const router = useRouter()
     const { user } = useAuth()
@@ -69,7 +69,7 @@ export function EcommerceCheckout() {
                     notes: item.notes,
                     modifiers: item.modifiers?.map(m => ({
                         modifierId: m.id,
-                        quantity: 1
+                        quantity: m.quantity || 1
                     }))
                 })),
                 customer: {
@@ -246,8 +246,18 @@ export function EcommerceCheckout() {
                                 )}
                             </Button>
 
-                            <p className="text-xs text-center text-muted-foreground mt-2">
-                                Pago 100% seguro a través de MercadoPago.
+                            <p className="text-xs text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
+                                {activePaymentProvider === "BOLD" ? (
+                                    <>
+                                        <ShieldCheck className="w-4 h-4 text-[#E63946]" />
+                                        <span>Pago 100% seguro a través de Bold.</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <ShieldCheck className="w-4 h-4 text-[#009EE3]" />
+                                        <span>Pago 100% seguro a través de MercadoPago.</span>
+                                    </>
+                                )}
                             </p>
                         </form>
                     </CardContent>

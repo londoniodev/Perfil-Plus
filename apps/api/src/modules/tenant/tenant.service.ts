@@ -286,6 +286,10 @@ export class TenantService {
       const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'smtp' },
       });
+      const storeSettings = await this.prisma.secure.storeSettings.findFirst({
+        where: { tenantId: tenant.id },
+        select: { activePaymentProvider: true }
+      });
 
       const menuData = (menuSetting?.value as any) || {};
       const bs = (tenant.brandSettings as unknown as BrandSettingsWithAssets) || {};
@@ -318,6 +322,7 @@ export class TenantService {
         contactEmail,
         contactPhone,
         tagline,
+        activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
         brandSettings: tenant.brandSettings || null,
       };
     }

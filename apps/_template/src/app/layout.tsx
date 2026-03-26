@@ -164,6 +164,7 @@ export default async function RootLayout({
           tagline={tenantTagline}
           design={design}
           primaryColor={primaryColor}
+          activePaymentProvider={design?.activePaymentProvider || 'NONE'}
         >
           <GlobalSchemas />
           <ToastProvider>

@@ -61,6 +61,7 @@ export async function getTenantDesign(tenantId: string) {
       socialLinks: data?.socialLinks || null,
       contactEmail: data?.contactEmail || null,
       contactPhone: data?.contactPhone || null,
+      activePaymentProvider: data?.activePaymentProvider || 'NONE',
       brandSettings: data?.brandSettings || null,
     };
   } catch (e) {

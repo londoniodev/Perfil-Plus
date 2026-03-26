@@ -34,6 +34,7 @@ export function CartSheet() {
     return (
         <SharedCartSheet
             items={cart.items.map(item => ({
+                cartItemId: item.cartItemId,
                 variantId: item.variantId,
                 title: item.title,
                 subtitle: item.subtitle,

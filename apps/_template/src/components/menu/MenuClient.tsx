@@ -13,10 +13,12 @@ import {
 } from "lucide-react"
 import { FaWhatsapp, FaInstagram, FaFacebook, FaXTwitter, FaYoutube, FaTiktok } from "react-icons/fa6"
 import { Button } from "@alvarosky/ui"
-import { useCart, useOrder, useMenu, type PublicProduct, type PublicCategory, type ProductVariant } from "@alvarosky/restaurant-sdk"
+import { useOrder, useMenu, type PublicProduct, type PublicCategory, type ProductVariant } from "@alvarosky/restaurant-sdk"
+import { useCart } from "@/store/use-cart"
 import { useTenant } from "@/app/providers"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { useRouter } from "next/navigation"
 import { formatCurrency } from "@/lib/utils"
 
 // Fallback food images for products without uploaded photos
@@ -48,7 +50,7 @@ const ProductModal = dynamic(() => import("@alvarosky/ui").then(mod => mod.Produ
     ssr: false,
     loading: () => <div className="fixed inset-0 bg-white/50 z-50 flex items-center justify-center"><div className="animate-spin text-primary w-10 h-10 border-4 border-current border-t-transparent rounded-full" /></div>
 })
-const NamePromptModal = dynamic(() => import("./NamePromptModal").then(mod => mod.NamePromptModal), { ssr: false })
+// Se ha removido NamePromptModal porque el checkout unificado se encarga de este formulario
 const OrderTrackingModal = dynamic(() => import("./OrderTrackingModal").then(mod => mod.OrderTrackingModal), { ssr: false })
 
 // ─────────────────────────────────────────────
@@ -62,16 +64,16 @@ export default function MenuClient({
     layoutType?: 'CLASSIC' | 'INSTAGRAM' | 'MINIMAL'
 }) {
     const { tenantId } = useTenant();
+    const router = useRouter()
     const { categories, products, restaurant, isLoading, isError } = useMenu(tenantId)
 
-    const { addItem, totalItems, cart, total, removeItem, clearCart } = useCart()
+    const { items: cart, totalItems, totalPrice: total, addItem, removeItem, clearCart, setTableId } = useCart()
     const { createOrder, isSubmitting } = useOrder(tenantId)
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL")
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedProduct, setSelectedProduct] = useState<PublicProduct | null>(null)
     const [isCartOpen, setIsCartOpen] = useState(false)
-    const [isNamePromptOpen, setIsNamePromptOpen] = useState(false)
     const [trackingOrder, setTrackingOrder] = useState<{ isOpen: boolean; orderId: string; orderNumber: string }>({ isOpen: false, orderId: "", orderNumber: "" })
     const [isFloatingCartVisible, setIsFloatingCartVisible] = useState(true)
     const [isSearchActive, setIsSearchActive] = useState(false)
@@ -142,70 +144,13 @@ export default function MenuClient({
 
     const handleCheckout = () => {
         if (cart.length === 0) return
-        setIsNamePromptOpen(true)
-    }
-
-    const handleConfirmOrder = async (data: { name: string; phone: string; address?: string; lat?: number; lng?: number; paymentMethod: "CASH" | "MERCADOPAGO" }) => {
-        const orderData = {
-            cart,
-            total: total(),
-            customer: {
-                name: data.name,
-                phone: data.phone,
-                tableNumber: table || undefined,
-                address: data.address
-            },
-            shippingData: data.address ? {
-                name: data.name,
-                phone: data.phone,
-                address: data.address,
-                lat: data.lat,
-                lng: data.lng
-            } : undefined,
-            paymentMethod: data.paymentMethod
-        }
-
-        const result = await createOrder(orderData)
-
-        if (result.success) {
-            setIsNamePromptOpen(false)
-            setIsCartOpen(false)
-            clearCart()
-
-            if (data.paymentMethod === "MERCADOPAGO") {
-                try {
-                    const res = await fetch(`/api/checkout/mercadopago`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            orderId: result.orderId,
-                            slug: restaurant.slug
-                        })
-                    })
-                    const data = await res.json()
-                    if (data.init_point) {
-                        window.location.href = data.init_point
-                    } else {
-                        console.error("MP Response:", data)
-                        alert(`❌ Error obteniendo link de pago: ${data.error || 'Unknown'}`)
-                    }
-                } catch (e) {
-                    console.error("MP Fetch Error:", e)
-                    alert("❌ Error conectando c/ MercadoPago")
-                }
-            } else if (restaurant.orderTrackingEnabled) {
-                setTrackingOrder({
-                    isOpen: true,
-                    orderId: result.orderId,
-                    orderNumber: (result as any).orderNumber || result.orderId
-                })
-            } else {
-                alert(`✅ Orden creada exitosamente! #${(result as any).orderNumber || result.orderId}`)
-            }
+        setIsCartOpen(false)
+        if (table) {
+            setTableId(table)
         } else {
-            // @ts-ignore
-            alert(`❌ Error al crear orden: ${result.error}`)
+            setTableId(null)
         }
+        router.push('/checkout')
     }
 
     // Username format
@@ -543,12 +488,18 @@ export default function MenuClient({
                         onAddToCart={(p: PublicProduct, v: string, m: any[], q: number) => {
                             addItem({
                                 productId: p.id,
-                                name: p.name,
+                                title: p.name,
                                 variantId: v,
                                 price: Number(p.variants?.find((va: ProductVariant) => va.id === v)?.price ?? p.basePrice) || 0,
                                 quantity: q,
-                                modifiers: m,
-                                image: p.images?.[0] || getFallbackImage(0, p.name)
+                                modifiers: m.map(mod => ({
+                                    id: mod.modifierId,
+                                    name: mod.modifierName,
+                                    price: mod.priceAdjustment,
+                                    quantity: mod.quantity
+                                })),
+                                imageSrc: p.images?.[0] || getFallbackImage(0, p.name),
+                                productType: "RESTAURANT"
                             })
                             setSelectedProduct(null)
                         }}
@@ -581,13 +532,13 @@ export default function MenuClient({
 
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 {cart.map((item) => (
-                                    <div key={item.variantId} className="flex gap-4 items-center">
+                                    <div key={item.cartItemId} className="flex gap-4 items-center">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        {item.image && (
+                                        {item.imageSrc && (
                                             <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
                                                 <Image
-                                                    src={item.image}
-                                                    alt={item.name}
+                                                    src={item.imageSrc}
+                                                    alt={item.title}
                                                     fill
                                                     sizes="80px"
                                                     className="object-cover"
@@ -595,11 +546,12 @@ export default function MenuClient({
                                             </div>
                                         )}
                                         <div className="flex-1">
-                                            <h4 className="font-bold text-lg text-slate-900">{item.name}</h4>
+                                            <h4 className="font-bold text-lg text-slate-900">{item.title}</h4>
+                                            {item.subtitle && <p className="text-xs text-slate-500 font-medium">{item.subtitle}</p>}
                                             <p className="text-primary font-semibold text-sm">{formatCurrency(item.price)}</p>
                                         </div>
                                         <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg p-1 text-slate-700">
-                                            <button onClick={() => item.quantity > 1 ? addItem({ ...item, quantity: -1 }) : removeItem(item.variantId)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 rounded-md transition-colors"><Minus className="w-4 h-4" /></button>
+                                            <button onClick={() => item.quantity > 1 ? addItem({ ...item, quantity: -1 }) : removeItem(item.cartItemId)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 rounded-md transition-colors"><Minus className="w-4 h-4" /></button>
                                             <span className="font-bold w-4 text-center">{item.quantity}</span>
                                             <button onClick={() => addItem({ ...item, quantity: 1 })} className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 rounded-md transition-colors"><Plus className="w-4 h-4" /></button>
                                         </div>
@@ -621,14 +573,6 @@ export default function MenuClient({
                     </>
                 )}
             </AnimatePresence>
-
-            <NamePromptModal
-                isOpen={isNamePromptOpen}
-                onClose={() => setIsNamePromptOpen(false)}
-                onConfirm={handleConfirmOrder}
-                isSubmitting={isSubmitting}
-                isTableOrder={!!table}
-            />
 
             <OrderTrackingModal
                 isOpen={trackingOrder.isOpen}

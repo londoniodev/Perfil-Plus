@@ -22,11 +22,13 @@ export type TenantContextType = {
     tagline?: string | null;
     authBgUrl?: string | null;
     authQuote?: string | null;
+    activePaymentProvider: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE';
 };
 
 const TenantContext = createContext<TenantContextType>({ 
     tenantId: "default",
     features: [],
+    activePaymentProvider: 'NONE',
 });
 
 export function useTenant() {
@@ -45,6 +47,7 @@ export function TenantProvider({
     tagline = null,
     authBgUrl = null,
     authQuote = null,
+    activePaymentProvider = 'NONE',
 }: { 
     children: React.ReactNode, 
     tenantId: string,
@@ -57,9 +60,10 @@ export function TenantProvider({
     tagline?: string | null,
     authBgUrl?: string | null,
     authQuote?: string | null,
+    activePaymentProvider?: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE',
 }) {
     return (
-        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline, authBgUrl, authQuote }}>
+        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline, authBgUrl, authQuote, activePaymentProvider }}>
             {children}
         </TenantContext.Provider>
     );
@@ -86,6 +90,7 @@ export function AppProviders({
     tagline = null,
     design,
     primaryColor,
+    activePaymentProvider = 'NONE',
 }: {
     children: React.ReactNode;
     tenantId: string;
@@ -98,6 +103,7 @@ export function AppProviders({
     tagline?: string | null;
     design: any;
     primaryColor: string;
+    activePaymentProvider?: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE';
 }) {
     return (
         <TenantProvider
@@ -111,6 +117,7 @@ export function AppProviders({
             tagline={tagline}
             authBgUrl={design?.brandSettings?.authBgUrl || null}
             authQuote={design?.brandSettings?.authQuote || null}
+            activePaymentProvider={activePaymentProvider}
         >
             <ThemeProvider
                 attribute="class"

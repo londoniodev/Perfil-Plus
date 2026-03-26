@@ -105,6 +105,26 @@ export class PaymentsController {
     return { status: 'received', message: 'Payment processing triggered' };
   }
 
+  @Post('webhook/bold')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async handleBoldWebhook(
+    @Body() body: any,
+    @Query('tenantId') tenantId: string,
+  ) {
+    if (!tenantId) {
+      return { status: 'error', reason: 'tenantId missing from query' };
+    }
+
+    // Bold maneja la notificación en body.
+    // Ej de payload Bold: { event: 'PAYMENT_SUCCESS', payment: { reference: 'ORD-123', status: 'APPROVED', ... } }
+    // Emitir el evento para asincronía (opcional) o llamar servicio directamente. 
+    // Optamos por llamar directo si queremos logica sincrona para el walkthrough.
+    // Vamos a delegarlo a PaymentsService
+    
+    return this.paymentsService.processBoldWebhook(body, tenantId);
+  }
+
   // ==================== ADMIN ====================
 
   @Get('admin/stats')

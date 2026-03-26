@@ -158,6 +158,14 @@ export class AuthController {
     return this.authService.getMe(userId);
   }
 
+  @Post('sse-token')
+  async generateSseToken(
+    @CurrentUser('id') userId: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.authService.generateSseToken(userId, tenantId);
+  }
+
   // ============ Email Verification ============
 
   @Public()

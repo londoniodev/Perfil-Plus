@@ -93,6 +93,12 @@ export class OrdersEventsController {
     }
     try {
       const payload = this.jwtService.verify(token);
+
+      // Verify this is an SSE-specific token
+      if (payload.purpose !== 'sse_connection') {
+        throw new UnauthorizedException('Invalid token purpose');
+      }
+
       // El payload debe contener el tenantId si es un usuario de tenant.
       // Si es un admin de plataforma, quizás vea todo?
       // Asumimos que los usuarios (cocina/meseros) tienen un tenantId en sus claims o metadata.

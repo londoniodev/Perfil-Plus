@@ -300,7 +300,7 @@ export class ProductsService {
   // ============ DESCARGAS DIGITALES ============
   async getProductDownloadUrl(productId: string, userId: string) {
     // 1. Verificar suscripción activa
-    const subscription = await this.prisma.subscription.findUnique({
+    const subscription = await this.prisma.secure.subscription.findUnique({
       where: { userId },
     });
 
@@ -321,7 +321,7 @@ export class ProductsService {
       // Fallback tabla Purchase deprecada
       const hasLegacyPurchase =
         !hasPurchased &&
-        (await this.prisma.purchase.findFirst({
+        (await this.prisma.secure.purchase.findFirst({
           where: { userId, status: 'approved', productId },
         }));
 

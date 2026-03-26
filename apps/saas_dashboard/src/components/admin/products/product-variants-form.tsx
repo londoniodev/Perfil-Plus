@@ -21,7 +21,7 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
         name: "variants",
     })
 
-    if (productType !== "PHYSICAL" || hasModifiers) return null
+    if (productType !== "PHYSICAL" && productType !== "RESTAURANT") return null
 
     return (
         <Card>

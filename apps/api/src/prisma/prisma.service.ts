@@ -111,9 +111,23 @@ export class PrismaService
                 args.where = { ...args.where, tenantId: safeTenantId };
               }
 
-              if (['create', 'createMany'].includes(operation) && safeTenantId) {
+              if (operation === 'create' && safeTenantId) {
                 // @ts-ignore
                 args.data = { ...args.data, tenantId: safeTenantId };
+              }
+
+              if (operation === 'createMany' && safeTenantId && args.data) {
+                if (Array.isArray(args.data)) {
+                  // Inyectar en cada elemento del array
+                  args.data = args.data.map((item) => ({
+                    ...item,
+                    tenantId: safeTenantId,
+                  }));
+                } else {
+                  // Por si acaso recibiera un objeto (aunque sea createMany)
+                  // @ts-ignore
+                  args.data = { ...args.data, tenantId: safeTenantId };
+                }
               }
             }
 

@@ -487,7 +487,7 @@ export class InventoryService {
 
     // Doble filtrado defensivo: Asegurar que todo objeto en movementData tiene el ID requerido
     const movementData = deductions
-      .filter((d) => !!d.inventoryItemId)
+      .filter((d) => d && typeof d.inventoryItemId === 'string' && d.inventoryItemId.trim() !== '')
       .map((d) => ({
         tenantId,
         inventoryItemId: d.inventoryItemId,
@@ -502,9 +502,12 @@ export class InventoryService {
       await prismaClient.inventoryMovement.createMany({ data: movementData });
     }
 
-    // Batch upsert — INSERT...ON CONFLICT no replicable en Prisma ORM (no existe upsertMany)
+    // Batch upsert — Filtrar deducciones de nuevo para la agregación
+    const validDeductions = deductions.filter(d => d && typeof d.inventoryItemId === 'string' && d.inventoryItemId.trim() !== '');
+    if (validDeductions.length === 0) return { alerts: [] };
+
     const aggregated = new Map<string, number>();
-    for (const d of deductions) {
+    for (const d of validDeductions) {
       aggregated.set(
         d.inventoryItemId,
         (aggregated.get(d.inventoryItemId) || 0) + d.deductQty,

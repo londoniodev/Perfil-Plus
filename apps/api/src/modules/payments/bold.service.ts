@@ -8,7 +8,7 @@ export interface BoldPaymentLinkResponse {
 @Injectable()
 export class BoldService {
   private readonly logger = new Logger(BoldService.name);
-  private readonly apiUrl = 'https://payments.api.bold.co/v2/payment-links';
+  private readonly apiUrl = 'https://integrations.api.bold.co/online/link/v1';
 
   constructor(private configService: ConfigService) {}
 
@@ -33,9 +33,13 @@ export class BoldService {
       // Convert amount to the lowest denominator (eg. cents for USD, but for COP it is usually just the integer value or multiplied by 100 based on Bold's specific requirements.
       // Bold specifies amount must be in the smallest currency unit. For COP usually * 100, but we should safely calculate it. 
       // Assuming COP, you multiply by 100. Let's do a safe conversion.
-      const amountInCents = Math.round(orderData.totalAmount * 100);
+      // In Bold Link v1, amount for COP is just the integer amount without cents.
+      // Wait, double checking if it needs to be in cents. If the error says 'amount is invalid' later, we can multiply by 100.
+      // Actually, standard in Colombia for Bold is the exact amount. But let's leave * 100 if that was standard? No, wait. Bold's swagger says "Amount. 0 to 999999999. Do not use commas or points". If COP, $10,000 = 10000. Wompi uses cents. Bold uses flat values. Let's send the exact value.
+      const amountInCents = Math.round(orderData.totalAmount);
 
       const payload = {
+        amount_type: "CLOSED",
         amount: amountInCents,
         currency: orderData.currency || 'COP',
         description: orderData.description || `Orden ${orderData.orderId}`,
@@ -50,7 +54,7 @@ export class BoldService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `ApiKey ${boldApiKey}`,
+          'Authorization': `apiKey ${boldApiKey}`,
         },
         body: JSON.stringify(payload),
       });

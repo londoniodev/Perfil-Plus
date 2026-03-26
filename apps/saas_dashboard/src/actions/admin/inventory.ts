@@ -138,7 +138,7 @@ export async function createWarehouse(data: { name: string; isDefault?: boolean 
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al crear almacén" }
@@ -154,7 +154,7 @@ export async function updateWarehouse(id: string, data: { name: string; isDefaul
             method: "PATCH",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar almacén" }
@@ -167,7 +167,7 @@ export async function deleteWarehouse(id: string) {
         if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/warehouses/${id}`, { method: "DELETE" })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al eliminar almacén" }
@@ -203,7 +203,7 @@ export async function createInventoryItem(data: {
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al crear ingrediente" }
@@ -225,7 +225,7 @@ export async function updateInventoryItem(id: string, data: {
             method: "PUT",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar ingrediente" }
@@ -238,7 +238,7 @@ export async function deleteInventoryItem(id: string) {
         if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/items/${id}`, { method: "DELETE" })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al eliminar ingrediente" }
@@ -262,7 +262,7 @@ export async function addStockEntry(data: {
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al agregar stock" }
@@ -283,7 +283,7 @@ export async function addStockExit(data: {
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al retirar stock" }
@@ -305,7 +305,7 @@ export async function transferStock(data: {
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al transferir stock" }
@@ -376,7 +376,7 @@ export async function createRecipe(data: {
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al crear receta" }
@@ -396,7 +396,7 @@ export async function updateRecipe(id: string, data: {
             method: "PUT",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar receta" }
@@ -409,7 +409,7 @@ export async function deleteRecipe(id: string) {
         if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
 
         await serverFetch(`/admin/inventory/recipes/${id}`, { method: "DELETE" })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al eliminar receta" }
@@ -469,7 +469,7 @@ export async function createInventoryCount(data: { warehouseId: string; notes?: 
             method: "POST",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true, data: result }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al crear conteo" }
@@ -487,7 +487,7 @@ export async function completeInventoryCount(id: string, data: {
             method: "PATCH",
             body: JSON.stringify(data),
         })
-        revalidateTag(`tenant-${user.tenantId}`)
+        revalidateTag(`tenant-${user.tenantId}`, "page")
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al completar conteo" }

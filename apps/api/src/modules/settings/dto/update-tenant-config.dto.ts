@@ -240,4 +240,17 @@ export class UpdateTenantConfigDto {
   @IsString()
   @IsOptional()
   smtpPass?: string;
+
+  // BOLD / Multi-tenant payments
+  @IsString()
+  @IsOptional()
+  activePaymentProvider?: string;
+
+  @IsString()
+  @IsOptional()
+  boldApiKey?: string;
+
+  @IsString()
+  @IsOptional()
+  boldSecretKey?: string;
 }

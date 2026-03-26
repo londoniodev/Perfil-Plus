@@ -41,11 +41,12 @@ export function NavigationWrapper({
         pathname === "/registro" ||
         pathname?.startsWith("/auth");
 
-    // Menú público del restaurante - sin header/footer
+    // Menú público del restaurante y checkout - sin header/footer
     const isMenuPage = pathname === "/menu" || pathname?.endsWith("/menu");
+    const isCheckoutPage = pathname?.startsWith("/checkout");
 
-    // Dashboard, Auth and Menu pages don't show Header/Footer
-    if (isDashboard || isAuthPage || isMenuPage) {
+    // Dashboard, Auth, Menu and Checkout pages don't show Header/Footer
+    if (isDashboard || isAuthPage || isMenuPage || isCheckoutPage) {
         return <>{children}</>;
     }
 

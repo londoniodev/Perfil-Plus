@@ -46,9 +46,12 @@ export class BoldService {
     notificationUrl: string,
   ): Promise<BoldPaymentLinkResponse> {
     try {
-      if (!boldApiKey) {
+      const apiKey = boldApiKey?.trim();
+      if (!apiKey) {
         throw new BadRequestException('Bold API Key is missing for this tenant.');
       }
+
+      this.logger.log(`[DEBUG_BOL_1] Using Bold API Key starting with: ${apiKey.substring(0, 5)}...`);
 
       // Bold usa el valor real en COP (no centavos). Ej: $10.000 = 10000
       const totalAmount = Math.round(orderData.totalAmount);
@@ -89,7 +92,7 @@ export class BoldService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': boldApiKey,
+          'Authorization': `x-api-key ${apiKey}`,
         },
         body: JSON.stringify(payload),
       });
@@ -143,7 +146,7 @@ export class BoldService {
       {
         method: 'GET',
         headers: {
-          'x-api-key': boldApiKey,
+          'Authorization': `x-api-key ${boldApiKey}`,
         },
       },
     );

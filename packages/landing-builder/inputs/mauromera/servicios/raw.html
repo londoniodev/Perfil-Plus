@@ -4,6 +4,77 @@
     <meta charset="UTF-8">
     <title>mauromera - servicios</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --background: 240 10% 4%;
+            --foreground: 0 0% 98%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --border: 240 3.7% 15.9%;
+            --accent: 217.2 91.2% 59.8%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+        }
+
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes scroll-right { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes aura-pulse { 0%, 100% { transform: scale(1); opacity: 0.25; } 50% { transform: scale(1.1); opacity: 0.4; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); } 50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.5); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInBottom { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .heading-h1 { font-size: 3.5rem; font-weight: 800; color: white; line-height: 1.1; }
+        .heading-h2 { font-size: 2.5rem; font-weight: 700; color: white; }
+        .heading-h3 { font-size: 1.5rem; font-weight: 600; color: rgba(255, 255, 255, 0.9); }
+        .section-title { font-size: 3.5rem; font-weight: 800; color: white; letter-spacing: -0.02em; }
+        .text-body { font-size: 1.125rem; line-height: 1.6; color: #a1a1aa; }
+
+        .animate-in { animation-duration: 500ms; animation-fill-mode: forwards; }
+        .fade-in { animation-name: fadeIn; }
+        .slide-in-from-bottom-4 { animation-name: slideInBottom; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'hsl(var(--background))',
+                        foreground: 'hsl(var(--foreground))',
+                        primary: {
+                            DEFAULT: 'hsl(var(--primary))',
+                            foreground: 'hsl(var(--primary-foreground))',
+                        },
+                        muted: {
+                            DEFAULT: 'hsl(var(--muted))',
+                            foreground: 'hsl(var(--muted-foreground))',
+                        },
+                        border: 'hsl(var(--border))',
+                        accent: {
+                            DEFAULT: 'hsl(var(--accent))',
+                            foreground: 'hsl(var(--accent-foreground))',
+                        },
+                    },
+                    animation: {
+                        'scroll-left': 'scroll-left 30s linear infinite',
+                        'scroll-right': 'scroll-right 30s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'aura-pulse': 'aura-pulse 4s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+                    }
+                }
+            }
+        };
+    </script>
 </head>
 <body class="bg-background text-foreground">
     <div id="root"><section class="relative pb-20 pt-32 md:pb-32 md:pt-40 overflow-hidden"><div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[150px] opacity-20 pointer-events-none transition-colors duration-700" style="background:#3b82f6"></div><div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10"><section class="flex flex-col gap-1 items-center text-center mb-12 md:mb-16"><div class="flex flex-col gap-1.5 max-w-4xl mx-auto"><h1 class="tracking-tight text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-white">Servicios</h1><p class="text-muted-foreground text-balance text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">Desde consultoría estratégica para empresas hasta orientación vocacional y psicoterapia clínica.</p></div></section><div class="flex justify-center mb-16"><div class="flex gap-2 p-1 rounded-full bg-muted/50 border border-border"><button class="flex items-center rounded-full transition-all duration-300 font-medium text-sm gap-2.5 px-6 py-2.5 text-white" style="background:#3b82f6;color:white"><span class="text-lg"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span><span>Empresas</span></button><button class="flex items-center rounded-full transition-all duration-300 font-medium text-sm p-2.5" style="background:transparent;color:#f97316"><span class="text-lg"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></span></button><button class="flex items-center rounded-full transition-all duration-300 font-medium text-sm p-2.5" style="background:transparent;color:#10b981"><span class="text-lg"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></span></button></div></div><div><div class="animate-in fade-in slide-in-from-bottom-4 duration-500"><div class="text-center mb-12"><h2 class="heading-h2 mb-4">Consultoría organizacional &amp; desarrollo</h2><p class="text-body max-w-2xl mx-auto">Cultura clara. Liderazgo humano. Equipos que conversan mejor y sostienen resultados. Transformamos la dinámica interna para potenciar el negocio.</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"><div class="rounded-xl text-card-foreground shadow-sm ease-out hover:shadow-md hover:border-border/60 bg-white/[0.03] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] transition-all duration-300 h-full"><div class="flex flex-col space-y-1.5 p-6"><h3 class="tracking-tight text-xl font-bold">¿Te suena familiar?</h3></div><div class="p-6 pt-0 space-y-4"><div class="p-3 rounded-lg border border-l-4 bg-background/50 text-sm italic" style="border-left-color:hsl(var(--primary));border-color:var(--border)">&quot;Estrategia clara, pero cultura desconectada.&quot;</div><div class="p-3 rounded-lg border border-l-4 bg-background/50 text-sm italic" style="border-left-color:hsl(var(--primary));border-color:var(--border)">&quot;Líderes operativos, pero sin herramientas humanas.&quot;</div><div class="p-3 rounded-lg border border-l-4 bg-background/50 text-sm italic" style="border-left-color:hsl(var(--primary));border-color:var(--border)">&quot;Silos entre áreas que frenan la agilidad.&quot;</div><div class="p-3 rounded-lg border border-l-4 bg-background/50 text-sm italic" style="border-left-color:hsl(var(--primary));border-color:var(--border)">&quot;Alta rotación de talento clave.&quot;</div></div></div><div class="rounded-xl text-card-foreground shadow-sm ease-out hover:shadow-md hover:border-border/60 bg-white/[0.03] backdrop-blur-md border border-white/10 hover:bg-white/[0.08] transition-all duration-300 h-full"><div class="flex flex-col space-y-1.5 p-6"><h3 class="tracking-tight text-xl font-bold">Nuestra Intervención</h3></div><div class="p-6 pt-0"><p class="text-muted-foreground mb-6 text-sm">No entregamos PDFs que nadie lee. Diseñamos experiencias y acompañamientos que cambian comportamientos.</p><ul class="flex flex-col gap-3 text-left"><li class="flex items-start gap-3 text-sm"><span class="mt-0.5 shrink-0" style="color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span class="text-foreground/90">Diagnóstico de cultura y clima (más allá de la encuesta).</span></li><li class="flex items-start gap-3 text-sm"><span class="mt-0.5 shrink-0" style="color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span class="text-foreground/90">Desarrollo de habilidades conversacionales para líderes.</span></li><li class="flex items-start gap-3 text-sm"><span class="mt-0.5 shrink-0" style="color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span class="text-foreground/90">Alineación de equipos directivos (Team Coaching).</span></li><li class="flex items-start gap-3 text-sm"><span class="mt-0.5 shrink-0" style="color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span class="text-foreground/90">Diseño de rituales y artefactos culturales.</span></li><li class="flex items-start gap-3 text-sm"><span class="mt-0.5 shrink-0" style="color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"></polyline></svg></span><span class="text-foreground/90">Gestión del cambio para nuevas implementaciones.</span></li></ul></div></div></div><div class="bg-muted/30 rounded-2xl p-8 mb-12"><h3 class="heading-h2 text-center mb-10">Cómo trabajamos</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-6"><div class="text-center"><div class="text-3xl font-bold text-muted-foreground/50 mb-2">01</div><h4 class="font-bold mb-1" style="color:hsl(var(--primary))">Entender</h4><p class="text-sm text-muted-foreground">Diagnóstico profundo y entrevistas.</p></div><div class="text-center"><div class="text-3xl font-bold text-muted-foreground/50 mb-2">02</div><h4 class="font-bold mb-1" style="color:hsl(var(--primary))">Diseñar</h4><p class="text-sm text-muted-foreground">Co-creación de la ruta de solución.</p></div><div class="text-center"><div class="text-3xl font-bold text-muted-foreground/50 mb-2">03</div><h4 class="font-bold mb-1" style="color:hsl(var(--primary))">Activar</h4><p class="text-sm text-muted-foreground">Talleres, coaching y mentoría.</p></div><div class="text-center"><div class="text-3xl font-bold text-muted-foreground/50 mb-2">04</div><h4 class="font-bold mb-1" style="color:hsl(var(--primary))">Medir</h4><p class="text-sm text-muted-foreground">Seguimiento a indicadores de impacto.</p></div></div></div><div class="text-center mt-12"><a href="https://wa.me/573183771838?text=Hola%20Mauro,%20me%20interesa%20consultoría%20para%20empresas." class="inline-flex items-center justify-center gap-2 duration-200 cursor-pointer no-underline font-medium font-[family-name:var(--font-sans)] disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground border border-transparent hover:bg-primary/90 active:scale-[0.98] px-8 py-4 text-base rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1" target="_blank" rel="noopener noreferrer" style="background:hsl(var(--primary));border-color:hsl(var(--primary))"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-5 w-5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Agenda reunión de diagnóstico</a><p class="text-sm text-muted-foreground mt-3">30 min para evaluar si somos el fit correcto.</p></div></div></div></div></section></div>

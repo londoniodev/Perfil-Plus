@@ -22,6 +22,7 @@ export type TenantContextType = {
     tagline?: string | null;
     authBgUrl?: string | null;
     authQuote?: string | null;
+    logoUrl?: string | null;
     activePaymentProvider: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE';
 };
 
@@ -47,6 +48,7 @@ export function TenantProvider({
     tagline = null,
     authBgUrl = null,
     authQuote = null,
+    logoUrl = null,
     activePaymentProvider = 'NONE',
 }: { 
     children: React.ReactNode, 
@@ -60,10 +62,11 @@ export function TenantProvider({
     tagline?: string | null,
     authBgUrl?: string | null,
     authQuote?: string | null,
+    logoUrl?: string | null,
     activePaymentProvider?: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE',
 }) {
     return (
-        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline, authBgUrl, authQuote, activePaymentProvider }}>
+        <TenantContext.Provider value={{ tenantId, features, headerLinks, footerLinks, contactPhone, contactEmail, businessName, tagline, authBgUrl, authQuote, logoUrl, activePaymentProvider }}>
             {children}
         </TenantContext.Provider>
     );
@@ -117,6 +120,7 @@ export function AppProviders({
             tagline={tagline}
             authBgUrl={design?.brandSettings?.authBgUrl || null}
             authQuote={design?.brandSettings?.authQuote || null}
+            logoUrl={design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png'}
             activePaymentProvider={activePaymentProvider}
         >
             <ThemeProvider

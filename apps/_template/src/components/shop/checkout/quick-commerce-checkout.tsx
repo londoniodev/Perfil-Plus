@@ -35,7 +35,7 @@ interface QuickCommerceCheckoutProps {
 
 export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceCheckoutProps) {
     const { items: cartItems, totalPrice, tableId, setCart } = useCart()
-    const { tenantId, activePaymentProvider } = useTenant()
+    const { tenantId, activePaymentProvider, logoUrl } = useTenant()
     const toast = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -180,11 +180,12 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 })}
                 className="max-w-xl mx-auto space-y-6 pb-24"
             >
-                <header className="text-center space-y-2">
-                    <CheckCircle2 className="mx-auto h-10 w-10 text-green-500" aria-hidden="true" />
-                    <h1 className="text-2xl font-bold tracking-tight">¡Todo listo!</h1>
-                    <p className="text-muted-foreground text-sm">Revisa tu pedido y confirma con un toque</p>
-                </header>
+                {/* Logo del restaurante centrado */}
+                {logoUrl && (
+                    <div className="flex justify-center mb-6">
+                        <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+                    </div>
+                )}
 
                 {/* Resumen de productos */}
                 <Card className="border-primary/20 bg-primary/5">
@@ -292,10 +293,12 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     // ================================================
     return (
         <div className="max-w-xl mx-auto space-y-6">
-            <header className="text-center space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight">Confirmar Pedido</h1>
-                <p className="text-muted-foreground text-sm">Estas a un paso de disfrutar tu comida</p>
-            </header>
+            {/* Logo del restaurante centrado */}
+            {logoUrl && (
+                <div className="flex justify-center mb-2">
+                    <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+                </div>
+            )}
 
             <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
                     console.error('[Checkout Form] Validación fallida:', errors)
@@ -385,21 +388,27 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                                 <Input id="q-address" {...form.register("address")} placeholder="Calle, apto, oficina..." className="bg-muted/30" />
                                 {form.formState.errors.address && <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>}
                             </div>
-                            <div className="space-y-2">
-                                <Label>Ubícanos en el Mapa</Label>
-                                <div className="h-[200px] rounded-xl overflow-hidden border">
-                                    <LocationPicker 
-                                        initialLocation={waData?.customerData ? { lat: waData.customerData.lat, lng: waData.customerData.lng } : undefined}
-                                        onLocationChange={(loc) => {
-                                            form.setValue("lat", loc.lat)
-                                            form.setValue("lng", loc.lng)
-                                        }} 
-                                    />
-                                </div>
-                                {form.formState.errors.lat && <p className="text-xs text-destructive">{form.formState.errors.lat.message as string}</p>}
-                            </div>
                         </CardContent>
                     </Card>
+                )}
+
+                {/* 4. Ubicación (Sección propia fuera de Card) */}
+                {orderType === 'DELIVERY' && (
+                    <div className="space-y-3">
+                        <Label className="px-1">Ubícanos en el Mapa</Label>
+                        <div className="relative w-full -mx-4 px-4 md:mx-0 md:px-0">
+                            <div className="h-[250px] w-[calc(100%+2rem)] -ml-4 md:w-full md:ml-0 md:rounded-xl overflow-hidden border shadow-sm">
+                                <LocationPicker 
+                                    initialLocation={waData?.customerData ? { lat: waData.customerData.lat, lng: waData.customerData.lng } : undefined}
+                                    onLocationChange={(loc) => {
+                                        form.setValue("lat", loc.lat)
+                                        form.setValue("lng", loc.lng)
+                                    }} 
+                                />
+                            </div>
+                        </div>
+                        {form.formState.errors.lat && <p className="text-xs text-destructive px-1">{form.formState.errors.lat.message as string}</p>}
+                    </div>
                 )}
 
                 {/* 5. Método de Pago */}

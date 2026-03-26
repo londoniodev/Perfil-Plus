@@ -109,9 +109,10 @@ async function downloadExternalImages(
   assetsDir: string,
   quality: number,
 ): Promise<number> {
+  const s3Url = process.env.S3_PUBLIC_URL || "https://s3.xn--alvarolondoo-khb.dev";
   const externalImgs = $("img").filter((_i, el) => {
     const src = $(el).attr("src") || "";
-    return src.startsWith("http://") || src.startsWith("https://");
+    return src.startsWith("http://") || src.startsWith("https://") || src.startsWith(s3Url);
   });
 
   let count = 0;
@@ -165,7 +166,7 @@ async function processLocalImages(
     return src.startsWith("/");
   });
 
-  const PUBLIC_DIR = path.resolve(process.cwd(), "../../apps/_template/public");
+  const PUBLIC_DIR = path.resolve(__dirname, "../../../apps/_template/public");
   let count = 0;
 
   for (let i = 0; i < localImgs.length; i++) {
@@ -526,7 +527,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   const bodyHtmlPath = path.join(outputDir, "body.html");
   await fs.writeFile(bodyHtmlPath, finalBodyHtml, "utf-8");
 
-  // ── Step 10: Clean up — remove index.html if it exists from previous runs ──
+  // ── Step 11: Clean up ──
   const legacyIndexPath = path.join(outputDir, "index.html");
   await fs.unlink(legacyIndexPath).catch(() => { /* ignore */ });
   await fs.unlink(intermediateHtmlPath).catch(() => { /* ignore */ });

@@ -468,7 +468,7 @@ export class InventoryService {
         // Guardián: Si no hay ID de item de inventario o no existe el objeto, se salta para evitar errores de Prisma
         if (!ing.inventoryItemId || !ing.inventoryItem) {
           this.logger.warn(
-            `[DEDUCT_BY_ORDER] Receta para producto ${orderItem.productId} tiene un ingrediente incompleto (ID: ${ing.id}). Ignorando deducción.`,
+            `[DEDUCT_BY_ORDER] Receta para producto ${orderItem.productId} tiene un ingrediente incompleto (Item: ${ing.inventoryItemId || 'N/A'}). Ignorando deducción.`,
           );
           continue;
         }

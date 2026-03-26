@@ -523,34 +523,44 @@ export class StorageService {
    * Dispara el Webhook de Revalidación en el Frontend Next.js
    * Evita CircularDependency con TenantService gestionándolo usando fetches nativos.
    */
-  private async triggerStorefrontRevalidation(tenantId: string): Promise<void> {
-    const nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL ||
-      (process.env.STOREFRONT_URL
-        ? `${process.env.STOREFRONT_URL}/api/revalidate`
-        : 'http://web:3000/api/revalidate');
-    const secret = process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+  private async triggerStorefrontRevalidation(tenantId: string) {
+    const nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL || 
+      (process.env.STOREFRONT_URL 
+        ? `${process.env.STOREFRONT_URL}/api/revalidate` 
+        : 'http://web-storefront:3000/api/revalidate');
+    const internalApiKey = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+
+    const tags = [
+      `tenant-branding-${tenantId}`,
+      `tenant-marketing-${tenantId}`,
+      `tenant-branding`,
+      `tenant-marketing`,
+    ];
 
     try {
-      const response = await fetch(nextjsRevalidationUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId, // Compatibilidad retro
-          secret,
-          path: '/', // Forzar recarga del Layout (SSOT Header)
-        }),
-        signal: AbortSignal.timeout(5000), // Timeout preventivo
-      });
+      for (const tag of tags) {
+        try {
+          const response = await fetch(nextjsRevalidationUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-revalidate-secret': internalApiKey,
+            },
+            body: JSON.stringify({ tag }),
+            signal: AbortSignal.timeout(5000),
+          });
 
-      if (!response.ok) {
-        this.logger.error(`[Landing Sync] Revalidación fallida (${response.status}): ${await response.text()}`);
-      } else {
-        this.logger.log(`[Landing Sync] Storefront Caché purgado para tenant ${tenantId}`);
+          if (response.ok) {
+            this.logger.log(`[Landing Sync] Caché purgado para tag: [${tag}]`);
+          } else {
+            this.logger.error(`[Landing Sync] Revalidación fallida para ${tag} (${response.status})`);
+          }
+        } catch (e: any) {
+          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${nextjsRevalidationUrl}: ${e.message}`);
+        }
       }
-    } catch (err: any) {
-      this.logger.warn(
-        `[Next.js ISR] Sin conexión con el Webhook en ${nextjsRevalidationUrl} (${err.message}). Se omite purga de caché.`,
-      );
+    } catch (error: any) {
+      this.logger.error(`[Next.js ISR] Error crítico en el orquestador: ${error.message}`);
     }
   }
 

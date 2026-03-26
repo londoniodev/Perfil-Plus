@@ -596,35 +596,12 @@ export class TenantService {
   }
 
   private async triggerFrontendRevalidation(tags: string[]) {
-    try {
-      for (const tag of tags) {
-        try {
-          const response = await fetch(this.nextjsRevalidationUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-revalidate-secret': this.internalApiKey,
-            },
-            body: JSON.stringify({ tag }),
-            signal: AbortSignal.timeout(5000), // Timeout único
-          });
-
-          if (response.ok) {
-            this.logger.log(`Caché purgado exitosamente en Next.js para tag: [${tag}]`);
-          } else {
-            const errBody = await response.text();
-            this.logger.error(`Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`);
-          }
-        } catch (e: any) {
-          // Captura silenciosa para no bloquear el proceso principal
-          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${e.message}`);
-        }
-      }
-    } catch (error: any) {
-      this.logger.error(
-        `[Next.js ISR] Error crítico en el orquestador de revalidación: ${error.message}`,
-      );
-    }
+    return this.revalidateTags(
+      this.nextjsRevalidationUrl,
+      this.internalApiKey,
+      tags,
+      'Next.js ISR',
+    );
   }
 
   async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
@@ -675,34 +652,56 @@ export class TenantService {
       'tenant-branding',
     ];
 
-    Promise.all(
-      tags.map((tag) =>
-        fetch(`${storefrontUrl}/api/revalidate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-revalidate-secret': revalidationSecret,
-          },
-          body: JSON.stringify({ tag }),
-        })
-          .then((res) => {
-            if (res.ok) {
+    this.revalidateTags(
+      `${storefrontUrl}/api/revalidate`,
+      revalidationSecret,
+      tags,
+      'Cross-App Revalidation',
+    );
+  }
+
+  private async revalidateTags(
+    url: string,
+    secret: string,
+    tags: string[],
+    context: string,
+  ) {
+    try {
+      await Promise.all(
+        tags.map(async (tag) => {
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-revalidate-secret': secret,
+              },
+              body: JSON.stringify({ tag }),
+              signal: AbortSignal.timeout(5000), // Timeout de 5s por request
+            });
+
+            if (response.ok) {
               this.logger.log(
-                `[Cross-App Revalidation] Storefront invalidado: [${tag}]`,
+                `[${context}] Caché purgado exitosamente para tag: [${tag}]`,
               );
             } else {
-              this.logger.warn(
-                `[Cross-App Revalidation] Storefront respondió ${res.status} para tag [${tag}]`,
+              const errBody = await response.text();
+              this.logger.error(
+                `[${context}] Revalidación falló en ${url}: Status ${response.status} - ${errBody}`,
               );
             }
-          })
-          .catch((err) => {
-            this.logger.error(
-              `[Cross-App Revalidation] Error conectando con Storefront (${storefrontUrl}): ${err.message}`,
+          } catch (e: any) {
+            this.logger.warn(
+              `[${context}] Fallo de conexión en ${url} para tag [${tag}]: ${e.message}`,
             );
-          }),
-      ),
-    );
+          }
+        }),
+      );
+    } catch (error: any) {
+      this.logger.error(
+        `[${context}] Error crítico en el orquestador de revalidación: ${error.message}`,
+      );
+    }
   }
 
   async findAll() {

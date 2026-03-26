@@ -55,6 +55,9 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
+        // Revalidar Storefront (Branding y Datos básicos)
+        await revalidateStorefront({ tag: `tenant-${user.tenantId}-branding` })
+        
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración general" }
@@ -85,6 +88,9 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
+        // Revalidar Storefront (Precios de envío y moneda)
+        await revalidateStorefront({ tag: `tenant-${user.tenantId}-store` })
+
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración financiera" }
@@ -161,6 +167,9 @@ export async function updateNavigationSettings(data: NavigationSettingsValues): 
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
+        // Revalidar Storefront (Enlaces de navegación)
+        await revalidateStorefront({ tag: `tenant-${user.tenantId}-store` })
+
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración de navegación" }

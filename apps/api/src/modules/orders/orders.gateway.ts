@@ -6,7 +6,7 @@ import {
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Throttle, SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Subject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Public } from '../../common/decorators/public.decorator';
@@ -93,26 +93,13 @@ export class OrdersEventsController {
     }
     try {
       const payload = this.jwtService.verify(token);
-      // El payload debe contener el tenantId si es un usuario de tenant.
-      // Si es un admin de plataforma, quizás vea todo?
-      // Asumimos que los usuarios (cocina/meseros) tienen un tenantId en sus claims o metadata.
-      // O, más simple: el token se firma con el secret global, pero el usuario pertenece a un tenant.
-      // El JWT payload standard tiene 'sub' (userId).
-      // Necesitamos 'tenantId'. Revisar generateTokens.
-      // Por ahora, extraemos 'tenantId' del request header si es SSE standard,
-      // pero EventSource browser API no soporta headers.
-      // Solución: El token DEBE incluir tenantId.
 
-      // FIXME: Asumimos que el token tiene tenantId. Si no, tenemos un problema.
-      // En auth.service.ts veremos qué tiene el payload.
-      // Si no tiene tenantId, usaremos el email/user para buscarlo (costoso) o requerimos que se pase ?tenantId=...
-      // Pero pasar tenantId en query param es inseguro si no se valida contra el token.
+      if (!payload.tenantId) {
+        throw new UnauthorizedException('Token missing tenantId');
+      }
 
-      // Asumiendo que el payload tiene: { sub: userId, email: ..., tenantId?: ... }
-      // Si no está en el token, lo ideal es regenerar tokens para incluirlo.
-
-      return this.gateway.getEvents(payload.tenantId || 'default');
-    } catch (e) {
+      return this.gateway.getEvents(payload.tenantId as string);
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
   }

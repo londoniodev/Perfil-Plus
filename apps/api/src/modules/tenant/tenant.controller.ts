@@ -52,7 +52,6 @@ export class TenantController {
     return this.tenantService.findAll();
   }
 
-
   @Public()
   @SkipThrottle()
   @Get('branding')
@@ -83,10 +82,7 @@ export class TenantController {
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPERADMIN' as any, Role.ADMIN)
-  async findOne(
-    @Param('id') id: string,
-    @CurrentTenant() tenantId: string,
-  ) {
+  async findOne(@Param('id') id: string, @CurrentTenant() tenantId: string) {
     return this.tenantService.getTenantByIdOrSlug(id, tenantId);
   }
 

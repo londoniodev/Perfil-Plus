@@ -249,10 +249,7 @@ export class OrdersService {
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          await this.inventoryService.restoreByOrder(
-            orderId,
-            tx,
-          );
+          await this.inventoryService.restoreByOrder(orderId, tx);
         }
       }
 

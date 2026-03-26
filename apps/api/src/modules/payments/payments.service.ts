@@ -290,14 +290,18 @@ export class PaymentsService {
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
     // 2. Credenciales Multi-tenant desde StoreSettings (SSOT)
-    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+    const storeSettings = await (
+      this.prisma.secure as any
+    ).storeSettings.findFirst({
       where: { tenantId },
     });
 
     const accessToken = storeSettings?.mpAccessToken;
 
     if (!accessToken) {
-      this.logger.error(`[PAYMENTS] Tenant ${tenantId} no tiene mpAccessToken en StoreSettings`);
+      this.logger.error(
+        `[PAYMENTS] Tenant ${tenantId} no tiene mpAccessToken en StoreSettings`,
+      );
       throw new BadRequestException(
         'El vendedor no ha configurado MercadoPago',
       );
@@ -503,14 +507,18 @@ export class PaymentsService {
 
     try {
       // 1. Recuperar Credenciales desde StoreSettings (SSOT)
-      const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+      const storeSettings = await (
+        this.prisma.secure as any
+      ).storeSettings.findFirst({
         where: { tenantId: resolvedTenantId },
       });
 
       const accessToken = storeSettings?.mpAccessToken;
 
       if (!accessToken) {
-        this.logger.error(`[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`);
+        this.logger.error(
+          `[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`,
+        );
         return { status: 'error', reason: 'Mercado Pago not configured' };
       }
 

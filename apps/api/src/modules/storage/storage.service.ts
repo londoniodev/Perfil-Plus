@@ -13,7 +13,10 @@ import * as fs from 'fs/promises';
 import { join } from 'path';
 import sharp from 'sharp';
 import { PrismaService } from '../../prisma/prisma.service';
-import { getStorageSlug, getBucketName as resolveBucketName } from '@alvarosky/shared';
+import {
+  getStorageSlug,
+  getBucketName as resolveBucketName,
+} from '@alvarosky/shared';
 
 /** Perfiles de optimización de imagen por carpeta */
 interface ImageProfile {
@@ -155,7 +158,9 @@ export class StorageService {
         StorageService.verifiedBuckets.add(bucket);
         this.logger.log(`Bucket ${bucket} created successfully.`);
       } catch (createError: any) {
-        this.logger.error(`Failed to create bucket ${bucket}: ${createError.message || createError}`);
+        this.logger.error(
+          `Failed to create bucket ${bucket}: ${createError.message || createError}`,
+        );
         throw new BadRequestException(
           `No se pudo crear el almacenamiento para ${bucket}`,
         );
@@ -202,7 +207,9 @@ export class StorageService {
         }),
       );
     } catch (error: any) {
-      this.logger.error(`Error setting public policy for ${bucket}: ${error.message || error}`);
+      this.logger.error(
+        `Error setting public policy for ${bucket}: ${error.message || error}`,
+      );
       // No lanzamos error fatal, pero logueamos
     }
   }
@@ -237,7 +244,7 @@ export class StorageService {
       const savedPercent = Math.round(
         (1 - optimized.length / originalSize) * 100,
       );
- 
+
       return {
         buffer: optimized,
         contentType: 'image/webp',
@@ -267,10 +274,16 @@ export class StorageService {
     const finalContentType = optimized?.contentType ?? file.mimetype;
     const finalExtension =
       optimized?.extension ?? file.originalname.split('.').pop()?.toLowerCase();
-    
+
     const fileName = `${randomUUID()}.${finalExtension}`;
 
-    return this.saveToStorage(fileName, finalBuffer, finalContentType, folder, isPrivate);
+    return this.saveToStorage(
+      fileName,
+      finalBuffer,
+      finalContentType,
+      folder,
+      isPrivate,
+    );
   }
 
   async uploadBuffer(
@@ -336,7 +349,9 @@ export class StorageService {
       return { key, url, bucket };
     } catch (error: any) {
       this.logger.error(`S3 Upload Error: ${error.message || error}`);
-      throw new BadRequestException('Error al subir el archivo al almacenamiento S3');
+      throw new BadRequestException(
+        'Error al subir el archivo al almacenamiento S3',
+      );
     }
   }
 
@@ -351,7 +366,9 @@ export class StorageService {
         await fs.unlink(filePath);
       } catch (error: any) {
         // Ignoramos si no existe
-        this.logger.warn(`Could not delete local file ${filePath}: ${error.message || error}`);
+        this.logger.warn(
+          `Could not delete local file ${filePath}: ${error.message || error}`,
+        );
       }
       return;
     }
@@ -445,12 +462,19 @@ export class StorageService {
     }
   }
 
-  private async syncCustomLink(tenantSlug: string, pageSlug: string, label?: string): Promise<void> {
+  private async syncCustomLink(
+    tenantSlug: string,
+    pageSlug: string,
+    label?: string,
+  ): Promise<void> {
     try {
-      const resolvedLabel = label || (pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1));
+      const resolvedLabel =
+        label || pageSlug.charAt(0).toUpperCase() + pageSlug.slice(1);
       const targetHref = `/${pageSlug}`;
-      this.logger.log(`[Landing Sync] Upsert link: "${resolvedLabel}" → ${targetHref} para ${tenantSlug}`);
-      
+      this.logger.log(
+        `[Landing Sync] Upsert link: "${resolvedLabel}" → ${targetHref} para ${tenantSlug}`,
+      );
+
       // 1. Encontrar el tenantId por slug (usamos .raw para bypass de seguridad en acción de SuperAdmin)
       const tenant = await this.prisma.raw.tenant.findUnique({
         where: { slug: tenantSlug },
@@ -471,22 +495,35 @@ export class StorageService {
       });
 
       const menuData = (setting?.value as Record<string, any>) || {};
-      const currentLinks: { label: string; href: string }[] = Array.isArray(menuData.headerLinks) ? menuData.headerLinks : [];
-      
+      const currentLinks: { label: string; href: string }[] = Array.isArray(
+        menuData.headerLinks,
+      )
+        ? menuData.headerLinks
+        : [];
+
       // 3. Upsert Semántico: actualizar label si href existe, push si es nuevo
-      const existingIndex = currentLinks.findIndex((l) => l.href === targetHref);
+      const existingIndex = currentLinks.findIndex(
+        (l) => l.href === targetHref,
+      );
       let updatedLinks: { label: string; href: string }[];
 
       if (existingIndex >= 0) {
         // ACTUALIZAR label existente
-        updatedLinks = currentLinks.map((l, i) => 
-          i === existingIndex ? { ...l, label: resolvedLabel } : l
+        updatedLinks = currentLinks.map((l, i) =>
+          i === existingIndex ? { ...l, label: resolvedLabel } : l,
         );
-        this.logger.log(`[Landing Sync] Label actualizado: "${currentLinks[existingIndex].label}" → "${resolvedLabel}"`);
+        this.logger.log(
+          `[Landing Sync] Label actualizado: "${currentLinks[existingIndex].label}" → "${resolvedLabel}"`,
+        );
       } else {
         // PUSH nuevo enlace
-        updatedLinks = [...currentLinks, { label: resolvedLabel, href: targetHref }];
-        this.logger.log(`[Landing Sync] Enlace nuevo añadido: "${resolvedLabel}" (${targetHref})`);
+        updatedLinks = [
+          ...currentLinks,
+          { label: resolvedLabel, href: targetHref },
+        ];
+        this.logger.log(
+          `[Landing Sync] Enlace nuevo añadido: "${resolvedLabel}" (${targetHref})`,
+        );
       }
 
       const updatedMenu = { ...menuData, headerLinks: updatedLinks };
@@ -509,13 +546,17 @@ export class StorageService {
           isPublic: true,
         },
       });
-      this.logger.log(`[Landing Sync] menu.headerLinks sincronizado correctamente.`);
-      
+      this.logger.log(
+        `[Landing Sync] menu.headerLinks sincronizado correctamente.`,
+      );
+
       // 5. Disparar Revalidación Asíncrona (Avisa al SSR que limpie Caché)
       await this.triggerStorefrontRevalidation(tenantSlug);
-      
     } catch (error) {
-      this.logger.error(`[Landing Sync] No se pudo sincronizar el customLink:`, error);
+      this.logger.error(
+        `[Landing Sync] No se pudo sincronizar el customLink:`,
+        error,
+      );
     }
   }
 
@@ -524,11 +565,15 @@ export class StorageService {
    * Evita CircularDependency con TenantService gestionándolo usando fetches nativos.
    */
   private async triggerStorefrontRevalidation(tenantId: string): Promise<void> {
-    const nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL ||
+    const nextjsRevalidationUrl =
+      process.env.INTERNAL_STOREFRONT_URL ||
       (process.env.STOREFRONT_URL
         ? `${process.env.STOREFRONT_URL}/api/revalidate`
         : 'http://web:3000/api/revalidate');
-    const secret = process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    const secret =
+      process.env.REVALIDATION_SECRET ||
+      process.env.INTERNAL_API_KEY ||
+      'default_dev_secret_key';
 
     try {
       const response = await fetch(nextjsRevalidationUrl, {
@@ -543,9 +588,13 @@ export class StorageService {
       });
 
       if (!response.ok) {
-        this.logger.error(`[Landing Sync] Revalidación fallida (${response.status}): ${await response.text()}`);
+        this.logger.error(
+          `[Landing Sync] Revalidación fallida (${response.status}): ${await response.text()}`,
+        );
       } else {
-        this.logger.log(`[Landing Sync] Storefront Caché purgado para tenant ${tenantId}`);
+        this.logger.log(
+          `[Landing Sync] Storefront Caché purgado para tenant ${tenantId}`,
+        );
       }
     } catch (err: any) {
       this.logger.warn(
@@ -574,24 +623,25 @@ export class StorageService {
     });
 
     const menuData = (setting?.value as Record<string, any>) || {};
-    const headerLinks: { label: string; href: string }[] = Array.isArray(menuData.headerLinks)
+    const headerLinks: { label: string; href: string }[] = Array.isArray(
+      menuData.headerLinks,
+    )
       ? menuData.headerLinks
       : [];
 
     const homeLink = { label: 'Inicio (Home)', href: '/home' };
-    const filteredLinks = headerLinks.filter(l => l.href !== '/home' && l.href !== '/inicio');
+    const filteredLinks = headerLinks.filter(
+      (l) => l.href !== '/home' && l.href !== '/inicio',
+    );
 
     const bucketName = `${tenantSlug}-public`;
-    
-    return [homeLink, ...filteredLinks].map(link => {
+
+    return [homeLink, ...filteredLinks].map((link) => {
       const slug = link.href.replace(/^\//, '');
       return {
         ...link,
-        sourceUrl: `${this.publicUrl}/${bucketName}/landings/${slug}/body.html`
+        sourceUrl: `${this.publicUrl}/${bucketName}/landings/${slug}/body.html`,
       };
     });
   }
 }
-
-
-

@@ -145,7 +145,6 @@ export class StorageService {
     } catch (error) {
       // Si error es 404 (NotFound), creamos el bucket
       try {
-        this.logger.log(`Bucket ${bucket} not found. Creating...`);
         await client.send(new CreateBucketCommand({ Bucket: bucket }));
 
         if (!isPrivate) {
@@ -153,7 +152,6 @@ export class StorageService {
         }
 
         StorageService.verifiedBuckets.add(bucket);
-        this.logger.log(`Bucket ${bucket} created successfully.`);
       } catch (createError: any) {
         this.logger.error(`Failed to create bucket ${bucket}: ${createError.message || createError}`);
         throw new BadRequestException(

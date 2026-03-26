@@ -16,8 +16,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "orderId y slug son requeridos" }, { status: 400 });
         }
 
-        console.log(`[MP Proxy] Iniciando checkout para orden ${orderId} (Tenant: ${slug})`);
-
         // 1. Obtener la orden del backend para validar items y precios
         // Pasamos el slug como x-tenant-id para la resolución multi-tenant
         const order = await serverFetch<any>(`/orders/${orderId}`, {

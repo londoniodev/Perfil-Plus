@@ -465,12 +465,14 @@ export class InventoryService {
       const portionMultiplier = orderItem.quantity / recipe.yield;
 
       for (const ing of recipe.ingredients) {
-        if (!ing.inventoryItemId) {
+        // Guardián: Si no hay ID de item de inventario o no existe el objeto, se salta para evitar errores de Prisma
+        if (!ing.inventoryItemId || !ing.inventoryItem) {
           this.logger.warn(
-            `[DEDUCT_BY_ORDER] Receta para producto ${orderItem.productId} tiene un ingrediente sin inventoryItemId. Saltando...`,
+            `[DEDUCT_BY_ORDER] Receta para producto ${orderItem.productId} tiene un ingrediente incompleto (ID: ${ing.id}). Ignorando deducción.`,
           );
           continue;
         }
+
         deductions.push({
           inventoryItemId: ing.inventoryItemId,
           deductQty:
@@ -483,17 +485,22 @@ export class InventoryService {
 
     if (deductions.length === 0) return { alerts: [] };
 
-    const movementData = deductions.map((d) => ({
-      tenantId,
-      inventoryItemId: d.inventoryItemId,
-      warehouseId: defaultWarehouse,
-      type: MovementType.SALE,
-      quantity: -d.deductQty,
-      reason: `Venta orden ${orderId}`,
-      reference: orderId,
-    }));
+    // Doble filtrado defensivo: Asegurar que todo objeto en movementData tiene el ID requerido
+    const movementData = deductions
+      .filter((d) => !!d.inventoryItemId)
+      .map((d) => ({
+        tenantId,
+        inventoryItemId: d.inventoryItemId,
+        warehouseId: defaultWarehouse,
+        type: MovementType.SALE,
+        quantity: -d.deductQty,
+        reason: `Venta orden ${orderId}`,
+        reference: orderId,
+      }));
 
-    await prismaClient.inventoryMovement.createMany({ data: movementData });
+    if (movementData.length > 0) {
+      await prismaClient.inventoryMovement.createMany({ data: movementData });
+    }
 
     // Batch upsert — INSERT...ON CONFLICT no replicable en Prisma ORM (no existe upsertMany)
     const aggregated = new Map<string, number>();

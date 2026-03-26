@@ -258,8 +258,11 @@ export class TenantService {
       };
     }
 
-    try {
-      const tenantById = await this.prisma.secure.tenant.findFirst({
+    let tenant: any = null;
+
+    // Verificar si es un UUID válido para buscar por ID primero sin lanzar excepción
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(tenantId)) {
+      tenant = await this.prisma.secure.tenant.findFirst({
         where: { id: tenantId },
         select: {
           id: true,
@@ -271,93 +274,43 @@ export class TenantService {
           brandSettings: true,
         },
       });
-      if (tenantById) {
-        const menuSetting = await this.prisma.secure.systemSetting.findFirst({
-          where: { tenantId: tenantById.id, key: 'menu' },
-        });
-        const whatsappSetting =
-          await this.prisma.secure.systemSetting.findFirst({
-            where: { tenantId: tenantById.id, key: 'whatsapp' },
-          });
-        const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
-          where: { tenantId: tenantById.id, key: 'smtp' },
-        });
-
-        const menuData = (menuSetting?.value as any) || {};
-        const bs =
-          (tenantById.brandSettings as unknown as BrandSettingsWithAssets) ||
-          {};
-        const logo = bs.logoUrl || bs.faviconUrl || menuData.logo || null;
-        const headerLinks = menuData.headerLinks || null;
-        const footerLinks = menuData.footerLinks || null;
-        const tagline =
-          bs.tagline ||
-          menuData.tagline ||
-          tenantById.notes ||
-          'Plataforma Profesional';
-
-        const contactPhone =
-          (whatsappSetting?.value as string) || menuData.contactPhone || null;
-        const smtpData = (smtpSetting?.value as any) || {};
-        const contactEmail =
-          smtpData?.auth?.user ||
-          menuData.contactEmail ||
-          tenantById.ownerEmail ||
-          null;
-
-        const socialLinks = menuData.socialLinks || null;
-
-        return {
-          ...tenantById,
-          logo,
-          headerLinks,
-          footerLinks,
-          socialLinks,
-          contactEmail,
-          contactPhone,
-          tagline,
-          brandSettings: tenantById.brandSettings || null,
-        };
-      }
-    } catch (error) {
-      // Búsqueda por ID falló
     }
 
-    const tenantBySlug = await this.prisma.secure.tenant.findFirst({
-      where: { slug: tenantId },
-      select: {
-        id: true,
-        design: true,
-        name: true,
-        features: true,
-        ownerEmail: true,
-        notes: true,
-        brandSettings: true,
-      },
-    });
+    if (!tenant) {
+      tenant = await this.prisma.secure.tenant.findFirst({
+        where: { slug: tenantId },
+        select: {
+          id: true,
+          design: true,
+          name: true,
+          features: true,
+          ownerEmail: true,
+          notes: true,
+          brandSettings: true,
+        },
+      });
+    }
 
-    if (tenantBySlug) {
+    if (tenant) {
       const menuSetting = await this.prisma.secure.systemSetting.findFirst({
-        where: { tenantId: tenantBySlug.id, key: 'menu' },
+        where: { tenantId: tenant.id, key: 'menu' },
       });
       const whatsappSetting = await this.prisma.secure.systemSetting.findFirst({
-        where: { tenantId: tenantBySlug.id, key: 'whatsapp' },
+        where: { tenantId: tenant.id, key: 'whatsapp' },
       });
       const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
-        where: { tenantId: tenantBySlug.id, key: 'smtp' },
+        where: { tenantId: tenant.id, key: 'smtp' },
       });
 
       const menuData = (menuSetting?.value as any) || {};
-      const bs =
-        (tenantBySlug.brandSettings as unknown as BrandSettingsWithAssets) ||
-        {};
+      const bs = (tenant.brandSettings as unknown as BrandSettingsWithAssets) || {};
       const logo = bs.logoUrl || bs.faviconUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
       const tagline =
         bs.tagline ||
         menuData.tagline ||
-        tenantBySlug.notes ||
+        tenant.notes ||
         'Plataforma Profesional';
 
       const contactPhone =
@@ -366,13 +319,13 @@ export class TenantService {
       const contactEmail =
         smtpData?.auth?.user ||
         menuData.contactEmail ||
-        tenantBySlug.ownerEmail ||
+        tenant.ownerEmail ||
         null;
 
       const socialLinks = menuData.socialLinks || null;
 
       return {
-        ...tenantBySlug,
+        ...tenant,
         logo,
         headerLinks,
         footerLinks,
@@ -380,7 +333,7 @@ export class TenantService {
         contactEmail,
         contactPhone,
         tagline,
-        brandSettings: tenantBySlug.brandSettings || null,
+        brandSettings: tenant.brandSettings || null,
       };
     }
 
@@ -388,34 +341,29 @@ export class TenantService {
   }
 
   async getTenantMarketing(tenantId: string) {
-    try {
-      const tenantById = await this.prisma.secure.tenant.findUnique({
+    let tenant: any = null;
+    
+    // Validar formato UUID preventivo
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i.test(tenantId)) {
+      tenant = await this.prisma.secure.tenant.findUnique({
         where: { id: tenantId },
         select: { slug: true, name: true, notes: true },
       });
-      if (tenantById) {
-        return {
-          tenantSlug: tenantById.slug,
-          heroTitle: tenantById.name || 'Empresa Creciendo',
-          heroSubtitle:
-            tenantById.notes || 'Configurando soluciones digitales para ti...',
-        };
-      }
-    } catch (error) {
-      // Ignorar mismatch de tipo ID Postgres
     }
 
-    const tenantBySlug = await this.prisma.secure.tenant.findUnique({
-      where: { slug: tenantId },
-      select: { slug: true, name: true, notes: true },
-    });
+    if (!tenant) {
+      tenant = await this.prisma.secure.tenant.findUnique({
+        where: { slug: tenantId },
+        select: { slug: true, name: true, notes: true },
+      });
+    }
 
-    if (tenantBySlug) {
+    if (tenant) {
       return {
-        tenantSlug: tenantBySlug.slug,
-        heroTitle: tenantBySlug.name || 'Empresa Creciendo',
+        tenantSlug: tenant.slug,
+        heroTitle: tenant.name || 'Empresa Creciendo',
         heroSubtitle:
-          tenantBySlug.notes || 'Configurando soluciones digitales para ti...',
+          tenant.notes || 'Configurando soluciones digitales para ti...',
       };
     }
 
@@ -642,68 +590,15 @@ export class TenantService {
     this.logger.log(`BrandSettings actualizado para Tenant ID: ${tenantId}`);
 
     this.triggerFrontendRevalidation([
+      `tenant-brand-${tenantId}`,
       `tenant-branding-${tenantId}`,
       `tenant-branding`,
     ]);
 
-    this.triggerStorefrontRevalidation(tenantId);
-
     return updated;
   }
 
-  private triggerStorefrontRevalidation(tenantId: string) {
-    const storefrontUrl = process.env.STOREFRONT_URL;
-    const revalidationSecret = process.env.REVALIDATION_SECRET;
 
-    if (!revalidationSecret) {
-      this.logger.warn(
-        '[ISR Revalidation] REVALIDATION_SECRET no configurado. Abortando.',
-      );
-      return;
-    }
-
-    if (!storefrontUrl) {
-      this.logger.error(
-        '[ISR Revalidation] Error: STOREFRONT_URL no está definido. No se puede revalidar el caché del storefront.',
-      );
-      return;
-    }
-
-    const tags = [
-      `tenant-brand-${tenantId}`,
-      `tenant-branding-${tenantId}`,
-      'tenant-branding',
-    ];
-
-    Promise.all(
-      tags.map((tag) =>
-        fetch(`${storefrontUrl}/api/revalidate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-revalidate-secret': revalidationSecret,
-          },
-          body: JSON.stringify({ tag }),
-        })
-          .then((res) => {
-            if (res.ok) {
-              this.logger.log(
-                `[Cross-App Revalidation] Storefront invalidado: [${tag}]`,
-              );
-            } else {
-              this.logger.warn(
-                `[Cross-App Revalidation] Storefront respondió ${res.status} para tag [${tag}]`,
-              );
-            }
-          })
-          .catch((err) => {
-            this.logger.error(
-              `[Cross-App Revalidation] Error conectando con Storefront (${storefrontUrl}): ${err.message}`,
-            );
-          }),
-      ),
-    );
-  }
 
   async findAll() {
     return this.prisma.raw.tenant.findMany({

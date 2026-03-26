@@ -24,7 +24,7 @@ interface ImageProfile {
 
 const IMAGE_PROFILES: Record<string, ImageProfile> = {
   products: { maxWidth: 1200, maxHeight: 1200, quality: 82 },
-  branding: { maxWidth: 512, maxHeight: 512, quality: 85 },
+  branding: { maxWidth: 1920, maxHeight: 1920, quality: 85 }, // Aumentado para soportar Hero Images
   images: { maxWidth: 1024, maxHeight: 1024, quality: 80 },
   uploads: { maxWidth: 1024, maxHeight: 1024, quality: 80 },
 };
@@ -105,10 +105,9 @@ export class StorageService {
         if (tenantInfo?.slug) {
           return getStorageSlug(tenantInfo.slug);
         }
-      } catch (error) {
-        console.error(
-          '[StorageService] Error resolviendo slug de tenantId:',
-          error,
+      } catch (error: any) {
+        this.logger.error(
+          `[StorageService] Error resolviendo slug de tenantId: ${error.message || error}`,
         );
       }
 
@@ -145,9 +144,8 @@ export class StorageService {
       StorageService.verifiedBuckets.add(bucket);
     } catch (error) {
       // Si error es 404 (NotFound), creamos el bucket
-      // AWS SDK v3 lanza error normal, chequeamos si es NotFound
       try {
-        console.log(`Bucket ${bucket} not found. Creating...`);
+        this.logger.log(`Bucket ${bucket} not found. Creating...`);
         await client.send(new CreateBucketCommand({ Bucket: bucket }));
 
         if (!isPrivate) {
@@ -155,9 +153,9 @@ export class StorageService {
         }
 
         StorageService.verifiedBuckets.add(bucket);
-        console.log(`Bucket ${bucket} created successfully.`);
-      } catch (createError) {
-        console.error(`Failed to create bucket ${bucket}:`, createError);
+        this.logger.log(`Bucket ${bucket} created successfully.`);
+      } catch (createError: any) {
+        this.logger.error(`Failed to create bucket ${bucket}: ${createError.message || createError}`);
         throw new BadRequestException(
           `No se pudo crear el almacenamiento para ${bucket}`,
         );
@@ -203,8 +201,8 @@ export class StorageService {
           Policy: JSON.stringify(policy),
         }),
       );
-    } catch (error) {
-      console.error(`Error setting public policy for ${bucket}`, error);
+    } catch (error: any) {
+      this.logger.error(`Error setting public policy for ${bucket}: ${error.message || error}`);
       // No lanzamos error fatal, pero logueamos
     }
   }
@@ -260,7 +258,6 @@ export class StorageService {
     folder: string = 'uploads',
     isPrivate: boolean = false,
   ): Promise<UploadResult> {
-    // Optimizar imagen antes de subir (si aplica)
     const isImage = IMAGE_MIMETYPES.test(file.mimetype);
     const optimized = isImage
       ? await this.optimizeImage(file.buffer, file.mimetype, folder)
@@ -270,54 +267,10 @@ export class StorageService {
     const finalContentType = optimized?.contentType ?? file.mimetype;
     const finalExtension =
       optimized?.extension ?? file.originalname.split('.').pop()?.toLowerCase();
+    
+    const fileName = `${randomUUID()}.${finalExtension}`;
 
-    const driver = this.configService.get('STORAGE_DRIVER', 's3');
-
-    if (driver === 'local') {
-      const tenantId = await this.getTenantId();
-      const fileName = `${randomUUID()}.${finalExtension}`;
-
-      const uploadDir = join(process.cwd(), 'uploads', tenantId, folder);
-
-      try {
-        await fs.mkdir(uploadDir, { recursive: true });
-        await fs.writeFile(join(uploadDir, fileName), finalBuffer);
-
-        const key = `${folder}/${fileName}`;
-        const url = `${this.publicUrl}/${tenantId}/${key}`;
-
-        return { key, url, bucket: 'local' };
-      } catch (error) {
-        this.logger.error('Local Upload Error:', error);
-        throw new BadRequestException('Error al subir el archivo localmente');
-      }
-    }
-
-    const bucket = await this.getBucketName(isPrivate);
-    await this.ensureBucketExists(bucket, isPrivate);
-
-    const client = await this.getS3Client();
-    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
-
-    const key = `${folder}/${randomUUID()}.${finalExtension}`;
-
-    try {
-      await client.send(
-        new PutObjectCommand({
-          Bucket: bucket,
-          Key: key,
-          Body: finalBuffer,
-          ContentType: finalContentType,
-        }),
-      );
-
-      const url = isPrivate ? `${key}` : `${this.publicUrl}/${bucket}/${key}`;
-
-      return { key, url, bucket };
-    } catch (error) {
-      this.logger.error('S3 Upload Error:', error);
-      throw new BadRequestException('Error al subir el archivo');
-    }
+    return this.saveToStorage(fileName, finalBuffer, finalContentType, folder, isPrivate);
   }
 
   async uploadBuffer(
@@ -327,13 +280,23 @@ export class StorageService {
     folder: string = 'uploads',
     isPrivate: boolean = false,
   ): Promise<UploadResult> {
+    const extension = filename.split('.').pop()?.toLowerCase() || 'bin';
+    const fileName = `${randomUUID()}.${extension}`;
+
+    return this.saveToStorage(fileName, buffer, contentType, folder, isPrivate);
+  }
+
+  private async saveToStorage(
+    fileName: string,
+    buffer: Buffer,
+    contentType: string,
+    folder: string,
+    isPrivate: boolean,
+  ): Promise<UploadResult> {
     const driver = this.configService.get('STORAGE_DRIVER', 's3');
 
     if (driver === 'local') {
       const tenantId = await this.getTenantId();
-      const extension = filename.split('.').pop()?.toLowerCase();
-      const fileName = `${randomUUID()}.${extension}`;
-
       const uploadDir = join(process.cwd(), 'uploads', tenantId, folder);
 
       try {
@@ -344,8 +307,8 @@ export class StorageService {
         const url = `${this.publicUrl}/${tenantId}/${key}`;
 
         return { key, url, bucket: 'local' };
-      } catch (error) {
-        console.error('Local Upload Buffer Error:', error);
+      } catch (error: any) {
+        this.logger.error(`Local Upload Error: ${error.message || error}`);
         throw new BadRequestException('Error al subir el archivo localmente');
       }
     }
@@ -356,8 +319,7 @@ export class StorageService {
     const client = await this.getS3Client();
     const { PutObjectCommand } = await import('@aws-sdk/client-s3');
 
-    const extension = filename.split('.').pop()?.toLowerCase();
-    const key = `${folder}/${randomUUID()}.${extension}`;
+    const key = `${folder}/${fileName}`;
 
     try {
       await client.send(
@@ -372,9 +334,9 @@ export class StorageService {
       const url = isPrivate ? `${key}` : `${this.publicUrl}/${bucket}/${key}`;
 
       return { key, url, bucket };
-    } catch (error) {
-      console.error('S3 Upload Buffer Error:', error);
-      throw new BadRequestException('Error al subir el archivo');
+    } catch (error: any) {
+      this.logger.error(`S3 Upload Error: ${error.message || error}`);
+      throw new BadRequestException('Error al subir el archivo al almacenamiento S3');
     }
   }
 
@@ -387,9 +349,9 @@ export class StorageService {
       const filePath = join(process.cwd(), 'uploads', tenantId, key);
       try {
         await fs.unlink(filePath);
-      } catch (error) {
+      } catch (error: any) {
         // Ignoramos si no existe
-        console.warn(`Could not delete local file ${filePath}`, error);
+        this.logger.warn(`Could not delete local file ${filePath}: ${error.message || error}`);
       }
       return;
     }

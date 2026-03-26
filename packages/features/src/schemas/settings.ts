@@ -13,6 +13,7 @@ export const generalSettingsSchema = z.object({
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
     orderTrackingEnabled: z.boolean().optional(),
+    heroImage: z.string().optional().or(z.literal("")),
 });
 
 export type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;

@@ -14,7 +14,7 @@ export class SettingsService {
   async getTenantConfig(tenantId: string) {
     const tenant = await this.prisma.secure.tenant.findUnique({
       where: { id: tenantId },
-      select: { name: true, slug: true },
+      select: { name: true, slug: true }, // heroImage removed because it's not in schema
     });
 
     const settings = await this.prisma.secure.systemSetting.findMany({
@@ -63,6 +63,7 @@ export class SettingsService {
       mp_access_token: storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
       waPhoneNumberId: storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
       deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : (Number(collapsed['deliveryFee']) || 0),
+      hero_image: '', // tenant?.heroImage removed because it's not in schema
     };
 
     return finalConfig;
@@ -88,6 +89,7 @@ export class SettingsService {
       'waPhoneNumberId',
       'tenant_slug',
       'layout_type',
+      'hero_image',
     ];
 
     const operations = Object.entries(updateDto)
@@ -125,11 +127,20 @@ export class SettingsService {
     }
 
     // 2. Actualizar tabla Tenant
-    if (updateDto.tenant_name || updateDto.storeName) {
-      await this.prisma.secure.tenant.update({
-        where: { id: tenantId },
-        data: { name: updateDto.tenant_name || updateDto.storeName },
-      });
+    if (updateDto.tenant_name || updateDto.storeName || updateDto.hero_image) {
+      const dataToUpdate: any = {};
+      if (updateDto.tenant_name || updateDto.storeName) {
+        dataToUpdate.name = updateDto.tenant_name || updateDto.storeName;
+      }
+      // heroImage is missing in schema, so we can't update it directly on Tenant
+      // if (updateDto.hero_image !== undefined) dataToUpdate.heroImage = updateDto.hero_image;
+
+      if (Object.keys(dataToUpdate).length > 0) {
+        await this.prisma.secure.tenant.update({
+          where: { id: tenantId },
+          data: dataToUpdate,
+        });
+      }
     }
 
     // 3. Actualizar BrandSettings si hay cambios de apariencia

@@ -49,6 +49,10 @@ interface Tenant {
     status: string
     dbName: string
     createdAt: Date
+    brandSettings?: {
+        logoUrl?: string | null
+        faviconUrl?: string | null
+    }
 }
 
 interface TenantsTableProps {
@@ -175,9 +179,17 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                     <TableCell className="pl-4">
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-9 w-9 border border-border/50">
-                                                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                                                    {getInitials(tenant.name || tenant.slug)}
-                                                </AvatarFallback>
+                                                {tenant.brandSettings?.faviconUrl || tenant.brandSettings?.logoUrl ? (
+                                                    <img 
+                                                        src={tenant.brandSettings?.faviconUrl || tenant.brandSettings?.logoUrl || ""} 
+                                                        alt={tenant.name || tenant.slug} 
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                                                        {getInitials(tenant.name || tenant.slug)}
+                                                    </AvatarFallback>
+                                                )}
                                             </Avatar>
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-foreground">{tenant.name || tenant.slug}</span>

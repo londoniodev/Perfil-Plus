@@ -45,6 +45,7 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
         enableLMS: initialData?.enableLMS ?? false,
         orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
         menuSlogan: initialData?.menu?.slogan || initialData?.menuSlogan || "",
+        heroImage: initialData?.hero_image || "",
     }), [initialData]);
 
     const financeData = useMemo(() => ({

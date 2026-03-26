@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { generalSettingsSchema, GeneralSettingsValues } from "@alvarosky/features"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, Switch, useToast } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Switch, useToast } from "@alvarosky/ui"
 import { Loader2, MapPin } from "lucide-react"
 import { updateGeneralSettings } from "@/actions/admin/update-settings"
 import { SingleImageDropzone } from "@alvarosky/ui"
@@ -38,6 +38,7 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
             orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
+            heroImage: initialData?.heroImage || "",
         },
     })
 
@@ -210,6 +211,40 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                 />
                             </div>
                         </div>
+                    </div>
+                </Card>
+
+                <Card className="p-6">
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-semibold">Identidad Visual</h3>
+                        <FormField
+                            control={form.control}
+                            name="heroImage"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Imagen de Portada (Hero / Background)</FormLabel>
+                                    <FormControl>
+                                        <SingleImageDropzone
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            endpoint={`${API_BASE}/storage/upload/image`}
+                                            token={authToken}
+                                            tenantId={TENANT_ID}
+                                            folder="branding"
+                                            onUploadSuccess={(url) => {
+                                                toast.success("Imagen de portada subida");
+                                                field.onChange(url);
+                                            }}
+                                            onUploadError={(err) => toast.error(`Error: ${err}`)}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Esta imagen se usa como fondo en las páginas de login, registro y en tu perfil público (Linktree).
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     </div>
                 </Card>
 

@@ -205,4 +205,39 @@ export class UpdateTenantConfigDto {
   @IsString()
   @IsOptional()
   menuSlogan?: string;
+
+  @IsString()
+  @IsOptional()
+  hero_image?: string;
+
+  // Claves camelCase usadas por Dashboard
+  @IsString()
+  @IsOptional()
+  mpWebhookSecret?: string;
+
+  @IsString()
+  @IsOptional()
+  mpClientId?: string;
+
+  @IsString()
+  @IsOptional()
+  mpClientSecret?: string;
+
+  @IsString()
+  @IsOptional()
+  smtpHost?: string;
+
+  @IsOptional()
+  smtpPort?: string | number;
+
+  @IsOptional()
+  smtpSecure?: boolean;
+
+  @IsString()
+  @IsOptional()
+  smtpUser?: string;
+
+  @IsString()
+  @IsOptional()
+  smtpPass?: string;
 }

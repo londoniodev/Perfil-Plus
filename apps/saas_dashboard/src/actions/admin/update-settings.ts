@@ -51,6 +51,7 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
             facebook: validated.facebook ?? currentConfig.facebook,
             address: validated.address ?? currentConfig.address,
             menuSlogan: validated.menuSlogan ?? currentConfig.menuSlogan,
+            hero_image: validated.heroImage ?? currentConfig.hero_image,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })

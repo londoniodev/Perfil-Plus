@@ -8,6 +8,22 @@ import { headers } from "next/headers"
 
 
 // --- TYPES ---
+export interface POSModifier {
+    id: string
+    name: string
+    price: number
+    stock: number
+    isAvailable: boolean
+}
+
+export interface POSModifierGroup {
+    id: string
+    name: string
+    minSelect: number
+    maxSelect: number
+    modifiers: POSModifier[]
+}
+
 export type POSProduct = {
     id: string
     name: string
@@ -19,7 +35,7 @@ export type POSProduct = {
         price: number
         stock: number
     }[]
-    modifierGroups: any[] // TODO: Type correctly
+    modifierGroups: POSModifierGroup[]
 }
 
 const posOrderItemSchema = z.object({

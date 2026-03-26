@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { POSProduct } from "@/actions/pos"
+import { POSProduct, POSModifier, POSModifierGroup } from "@/actions/pos"
 import {
     Dialog,
     DialogContent,
@@ -32,7 +32,7 @@ interface ProductSelectionDialogProps {
         quantity: number
         modifiers: {
             modifierId: string
-            modifierName: string
+            name: string
             priceAdjustment: number
             quantity: number
         }[]
@@ -63,7 +63,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         let total = 0
         product.modifierGroups.forEach(group => {
             const selectedIds = selectedModifiers[group.id] || new Set()
-            group.modifiers.forEach((mod: any) => {
+            group.modifiers.forEach((mod: POSModifier) => {
                 if (selectedIds.has(mod.id)) {
                     total += Number(mod.price)
                 }
@@ -133,10 +133,15 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         if (!validateSelection()) return
 
         // Prepare modifiers list
-        const appliedModifiers: any[] = []
+        const appliedModifiers: {
+            modifierId: string
+            name: string
+            priceAdjustment: number
+            quantity: number
+        }[] = []
         product.modifierGroups.forEach(group => {
             const selectedIds = selectedModifiers[group.id] || new Set()
-            group.modifiers.forEach((mod: any) => {
+            group.modifiers.forEach((mod: POSModifier) => {
                 if (selectedIds.has(mod.id)) {
                     appliedModifiers.push({
                         modifierId: mod.id,
@@ -194,7 +199,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                         )}
 
                         {/* MODIFIERS */}
-                        {product?.modifierGroups && product.modifierGroups.map((group: any) => {
+                        {product?.modifierGroups && product.modifierGroups.map((group: POSModifierGroup) => {
                             const selectedIds = selectedModifiers[group.id] || new Set()
                             const currentCount = selectedIds.size
                             const isSatisfied = currentCount >= group.minSelect && currentCount <= group.maxSelect
@@ -219,7 +224,7 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-2">
-                                        {group.modifiers.map((mod: any) => {
+                                        {group.modifiers.map((mod: POSModifier) => {
                                             const isSelected = selectedIds.has(mod.id)
                                             return (
                                                 <div

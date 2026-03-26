@@ -12,8 +12,6 @@ import { BrandSettingsFormValues } from "@alvarosky/shared";
  */
 export async function updateBrandSettings(data: BrandSettingsFormValues) {
     try {
-        console.log(`[Brand Settings Action] Actualizando BrandSettings via API Backend...`);
-
         await serverFetch('/tenant/brand-settings', {
             method: 'PATCH',
             body: JSON.stringify(data),
@@ -26,8 +24,9 @@ export async function updateBrandSettings(data: BrandSettingsFormValues) {
         }
 
         return { success: true };
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Error updating brand settings:", e);
-        return { success: false, error: e.message || "Error al actualizar la configuración de marca" };
+        const error = e as Error;
+        return { success: false, error: error.message || "Error al actualizar la configuración de marca" };
     }
 }

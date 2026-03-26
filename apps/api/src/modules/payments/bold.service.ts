@@ -54,7 +54,9 @@ export class BoldService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `apiKey ${boldApiKey}`,
+          'x-api-key': boldApiKey,
+          // Sending Authorization just in case their lambda still checks it, but x-api-key is the one required by their AWS API Gateway
+          'Authorization': `ApiKey ${boldApiKey}`,
         },
         body: JSON.stringify(payload),
       });

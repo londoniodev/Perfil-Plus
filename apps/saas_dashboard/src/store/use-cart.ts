@@ -10,8 +10,13 @@ export interface CartItem {
     price: number
     quantity: number
     productType: "DIGITAL" | "PHYSICAL" | "SERVICE"
-    modifiers?: { id: string; name: string; price: number }[]
+    modifiers?: { id: string; name: string; price: number; quantity: number }[]
     notes?: string
+}
+
+export const getItemTotalPrice = (item: CartItem) => {
+    const modifiersPrice = item.modifiers?.reduce((acc, mod) => acc + (mod.price * mod.quantity), 0) || 0
+    return item.price + modifiersPrice
 }
 
 interface CartStore {
@@ -39,8 +44,8 @@ export const useCart = create<CartStore>()(
                 // Comparar variantId Y modificadores para agrupar
                 const existingItemIndex = currentItems.findIndex((item) =>
                     item.variantId === data.variantId &&
-                    JSON.stringify(item.modifiers?.sort((a, b) => a.id.localeCompare(b.id))) ===
-                    JSON.stringify(data.modifiers?.sort((a, b) => a.id.localeCompare(b.id)))
+                    JSON.stringify([...(item.modifiers || [])].sort((a, b) => a.id.localeCompare(b.id))) ===
+                    JSON.stringify([...(data.modifiers || [])].sort((a, b) => a.id.localeCompare(b.id)))
                 )
 
                 if (existingItemIndex > -1) {
@@ -64,7 +69,9 @@ export const useCart = create<CartStore>()(
 
             totalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
 
-            totalPrice: () => get().items.reduce((total, item) => total + (item.price * item.quantity), 0),
+            totalPrice: () => get().items.reduce((total, item) => {
+                return total + (getItemTotalPrice(item) * item.quantity)
+            }, 0),
         }),
         {
             name: 'cart-storage',

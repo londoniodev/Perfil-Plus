@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { CartSheet as SharedCartSheet, Button } from "@alvarosky/ui"
-import { useCart } from "@/store/use-cart"
+import { useCart, getItemTotalPrice } from "@/store/use-cart"
 
 export function CartSheet() {
     const [isMounted, setIsMounted] = useState(false)
@@ -24,7 +24,12 @@ export function CartSheet() {
             // Preparar datos del carrito
             const cartItems = cart.items.map(item => ({
                 variantId: item.variantId,
-                quantity: item.quantity
+                quantity: item.quantity,
+                modifiers: item.modifiers?.map(mod => ({
+                    modifierName: mod.name,
+                    quantity: mod.quantity,
+                    priceAdjustment: mod.price
+                })) || []
             }))
 
             // Ejecutar Server Action
@@ -58,8 +63,8 @@ export function CartSheet() {
             items={cart.items.map(item => ({
                 variantId: item.variantId,
                 title: item.title,
-                subtitle: item.subtitle,
-                price: item.price,
+                subtitle: [item.subtitle, item.modifiers?.map(m => `+ ${m.name}`).join(", ")].filter(Boolean).join(" | "),
+                price: getItemTotalPrice(item),
                 quantity: item.quantity,
                 imageSrc: item.imageSrc
             }))}

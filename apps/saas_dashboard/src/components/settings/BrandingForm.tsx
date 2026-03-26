@@ -117,12 +117,6 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
     const colorInputRef = useRef<HTMLInputElement>(null);
     const [authToken, setAuthToken] = useState("");
 
-    useImperativeHandle(ref, () => ({
-        submit: () => {
-            return form.handleSubmit(onSubmit)();
-        }
-    }));
-
     // Read auth token on client side
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -147,6 +141,21 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
         },
     });
 
+    // Moving onSubmit up so it's defined before it's accessed by useImperativeHandle
+    async function onSubmit(data: BrandingFormValues) {
+        try {
+            await updateTenantBranding(data);
+            toast.success("Diseño actualizado correctamente");
+        } catch (_error) {
+            toast.error("Error al actualizar el diseño");
+        }
+    }
+
+    useImperativeHandle(ref, () => ({
+        submit: () => {
+            return form.handleSubmit(onSubmit)();
+        }
+    }));
     // Hidratar formulario cuando cambian los valores iniciales
     useEffect(() => {
         if (defaultValues) {
@@ -185,19 +194,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
         }
     };
 
-    async function onSubmit(data: BrandingFormValues) {
-        try {
-            console.log("[BrandingForm] Enviando datos:", data);
-            await updateTenantBranding(data);
-            toast.success("Diseño actualizado correctamente");
-        } catch (error) {
-            console.error("[BrandingForm] Error en onSubmit:", error);
-            toast.error("Error al actualizar el diseño");
-        }
-    }
-
     const onInvalid = (errors: any) => {
-        console.warn("[BrandingForm] Errores de validación:", errors);
         const firstError = Object.values(errors)[0] as any;
         if (firstError?.message) {
             toast.error(`Error en el formulario: ${firstError.message}`);

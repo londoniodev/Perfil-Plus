@@ -42,9 +42,10 @@ interface BrandSettingsWithAssets {
 @Injectable()
 export class TenantService {
   private readonly logger = new Logger(TenantService.name);
-  private readonly nextjsRevalidationUrl = process.env.INTERNAL_STOREFRONT_URL || 
-    (process.env.STOREFRONT_URL 
-      ? `${process.env.STOREFRONT_URL}/api/revalidate` 
+  private readonly nextjsRevalidationUrl =
+    process.env.INTERNAL_STOREFRONT_URL ||
+    (process.env.STOREFRONT_URL
+      ? `${process.env.STOREFRONT_URL}/api/revalidate`
       : 'http://web-storefront:3000/api/revalidate');
   private readonly internalApiKey =
     process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
@@ -288,11 +289,12 @@ export class TenantService {
       });
       const storeSettings = await this.prisma.secure.storeSettings.findFirst({
         where: { tenantId: tenant.id },
-        select: { activePaymentProvider: true }
+        select: { activePaymentProvider: true },
       });
 
       const menuData = (menuSetting?.value as any) || {};
-      const bs = (tenant.brandSettings as unknown as BrandSettingsWithAssets) || {};
+      const bs =
+        (tenant.brandSettings as unknown as BrandSettingsWithAssets) || {};
       const logo = bs.logoUrl || bs.faviconUrl || menuData.logo || null;
       const headerLinks = menuData.headerLinks || null;
       const footerLinks = menuData.footerLinks || null;
@@ -332,7 +334,7 @@ export class TenantService {
 
   async getTenantMarketing(tenantId: string) {
     let tenant: any = null;
-    
+
     // Buscar unificadamente por ID o Slug
     tenant = await this.prisma.secure.tenant.findFirst({
       where: {
@@ -399,7 +401,13 @@ export class TenantService {
             { slug: slugFromDomain },
           ],
         },
-        select: { id: true, slug: true, name: true, status: true, features: true },
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          status: true,
+          features: true,
+        },
       });
     } catch (error) {
       this.logger.error(`Error en identifyTenant: ${error.message}`);
@@ -416,7 +424,13 @@ export class TenantService {
               { domain: { contains: domain, mode: 'insensitive' } },
             ],
           },
-          select: { id: true, slug: true, name: true, status: true, features: true },
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            status: true,
+            features: true,
+          },
         });
       } catch (error) {
         // Ignorar
@@ -430,7 +444,9 @@ export class TenantService {
       );
     }
 
-    const resolvedFeatures = (tenant.features || []).map((f: string) => f.toUpperCase());
+    const resolvedFeatures = (tenant.features || []).map((f: string) =>
+      f.toUpperCase(),
+    );
 
     // Leer custom links del tenant desde SystemSetting(key='menu') — Usamos .raw para bypass inicial
     let customLinks: { label: string; href: string }[] = [];
@@ -445,15 +461,18 @@ export class TenantService {
         customLinks = menuData.headerLinks;
       } else {
         // Fallback defensivo a la clave legacy customLinks si no existe el objeto menu estructurado
-        const legacyLinksSetting = await this.prisma.raw.systemSetting.findFirst({
-          where: { tenantId: tenant.id, key: 'customLinks' },
-        });
+        const legacyLinksSetting =
+          await this.prisma.raw.systemSetting.findFirst({
+            where: { tenantId: tenant.id, key: 'customLinks' },
+          });
         if (legacyLinksSetting && Array.isArray(legacyLinksSetting.value)) {
           customLinks = legacyLinksSetting.value as any[];
         }
       }
     } catch (error) {
-       this.logger.error(`[IDENTIFY] Error obteniendo links de navegación: ${error.message}`);
+      this.logger.error(
+        `[IDENTIFY] Error obteniendo links de navegación: ${error.message}`,
+      );
     }
 
     const resolvedTenant = {
@@ -541,14 +560,20 @@ export class TenantService {
           });
 
           if (response.ok) {
-            this.logger.log(`Caché purgado exitosamente en Next.js para tag: [${tag}]`);
+            this.logger.log(
+              `Caché purgado exitosamente en Next.js para tag: [${tag}]`,
+            );
           } else {
             const errBody = await response.text();
-            this.logger.error(`Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`);
+            this.logger.error(
+              `Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`,
+            );
           }
         } catch (e: any) {
           // Captura silenciosa para no bloquear el proceso principal
-          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${e.message}`);
+          this.logger.warn(
+            `[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${e.message}`,
+          );
         }
       }
     } catch (error: any) {
@@ -580,8 +605,6 @@ export class TenantService {
 
     return updated;
   }
-
-
 
   async findAll() {
     return this.prisma.raw.tenant.findMany({
@@ -675,7 +698,9 @@ export class TenantService {
    */
   private async invalidateTenantCache(slug?: string, domain?: string) {
     const keys = new Set<string>();
-    const baseDomain = this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') || 'alvarolondono.dev';
+    const baseDomain =
+      this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
+      'alvarolondono.dev';
 
     if (slug) {
       const lowerSlug = slug.toLowerCase();
@@ -694,19 +719,24 @@ export class TenantService {
       }
     }
 
-    this.logger.log(`[Cache Invalidation] Purgando ${keys.size} claves de Redis para el tenant ${slug}...`);
-    
-    const results = await Promise.all(
-      Array.from(keys).map(key => 
-        this.cacheManager.del(key)
-          .then(() => ({ key, success: true }))
-          .catch(err => ({ key, success: false, error: err.message }))
-      )
+    this.logger.log(
+      `[Cache Invalidation] Purgando ${keys.size} claves de Redis para el tenant ${slug}...`,
     );
 
-    const failed = results.filter(r => !r.success);
+    const results = await Promise.all(
+      Array.from(keys).map((key) =>
+        this.cacheManager
+          .del(key)
+          .then(() => ({ key, success: true }))
+          .catch((err) => ({ key, success: false, error: err.message })),
+      ),
+    );
+
+    const failed = results.filter((r) => !r.success);
     if (failed.length > 0) {
-      this.logger.error(`[Cache Invalidation] Erre al purgar algunas claves: ${JSON.stringify(failed)}`);
+      this.logger.error(
+        `[Cache Invalidation] Erre al purgar algunas claves: ${JSON.stringify(failed)}`,
+      );
     } else {
       this.logger.log(`[Cache Invalidation] Purga completa exitosa.`);
     }
@@ -728,10 +758,18 @@ export class TenantService {
     // Si hay un requestTenantId (viene de un ADMIN), validar que sea su propio tenant.
     // Los SUPERADMIN tienen bypass total.
     const userRole = this.cls.get('role');
-    
-    if (userRole !== 'SUPERADMIN' && requestTenantId && tenant.id !== requestTenantId) {
-      this.logger.warn(`Acceso denegado: Usuario con Rol ${userRole} y Tenant ${requestTenantId} intentó acceder a Tenant ${tenant.id}`);
-      throw new UnauthorizedException('No tienes permisos para acceder a este recurso');
+
+    if (
+      userRole !== 'SUPERADMIN' &&
+      requestTenantId &&
+      tenant.id !== requestTenantId
+    ) {
+      this.logger.warn(
+        `Acceso denegado: Usuario con Rol ${userRole} y Tenant ${requestTenantId} intentó acceder a Tenant ${tenant.id}`,
+      );
+      throw new UnauthorizedException(
+        'No tienes permisos para acceder a este recurso',
+      );
     }
 
     return tenant;

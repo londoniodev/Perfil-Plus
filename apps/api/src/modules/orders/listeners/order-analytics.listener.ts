@@ -54,9 +54,10 @@ export class OrderAnalyticsListener {
       if (['PENDING', 'CANCELLED'].includes(event.newStatus)) return;
 
       await this.cls.runWith({ tenantId: event.tenantId } as any, async () => {
-        const record = await this.prisma.secure.orderDeliveryAnalytics.findUnique({
-          where: { orderId: event.orderId },
-        });
+        const record =
+          await this.prisma.secure.orderDeliveryAnalytics.findUnique({
+            where: { orderId: event.orderId },
+          });
         if (!record) return;
 
         const now = new Date();

@@ -49,7 +49,7 @@ export class JwtAuthGuard implements CanActivate {
         // Inyectar contexto multi-tenant de manera segura ANTES de hacer peticiones a Prisma.
         this.cls.set('tenantId', payload.tenantId);
       }
-      
+
       // Inyectar rol y userId para lógica de bypass en PrismaExtension
       this.cls.set('role', payload.role);
       this.cls.set('userId', payload.sub);

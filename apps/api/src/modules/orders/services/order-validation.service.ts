@@ -23,7 +23,11 @@ export class OrderValidationService {
 
       for (const mod of item.modifiers) {
         // -1 indica stock ilimitado en modificadores. Solo validamos si es >= 0.
-        if (mod.stock !== null && mod.stock !== -1 && mod.stock < mod.quantity) {
+        if (
+          mod.stock !== null &&
+          mod.stock !== -1 &&
+          mod.stock < mod.quantity
+        ) {
           throw new BadRequestException(
             `Stock insuficiente para modificador ${mod.modifierName}`,
           );

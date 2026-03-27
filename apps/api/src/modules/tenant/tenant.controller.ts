@@ -37,6 +37,15 @@ export class TenantController {
     return this.tenantService.identifyTenant(domain, token);
   }
 
+  // Endpoint de emergencia: Purga TODAS las claves de resolución de tenant en Redis
+  @Public()
+  @Post('flush-resolution-cache')
+  async flushResolutionCache(
+    @Headers('x-internal-token') token: string,
+  ) {
+    return this.tenantService.flushAllTenantResolutionCache(token);
+  }
+
   // Endpoint SaaS the aprovisionamiento automático the Tenants
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)

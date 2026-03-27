@@ -8,6 +8,7 @@ import { FinanceSettingsForm } from "./tabs/finance-settings-form"
 import { EmailSettingsForm } from "./tabs/email-settings-form"
 import { ApiSettingsForm } from "./tabs/api-settings-form"
 import { NavigationSettingsForm } from "./tabs/navigation-settings-form"
+import { BusinessHoursSettingsForm } from "./tabs/business-hours-settings-form"
 
 interface SettingsLayoutProps {
     initialData?: any
@@ -78,6 +79,12 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
         footerLinks: initialData?.menu?.footerLinks || [],
     }), [initialData]);
 
+    const businessHoursData = useMemo(() => {
+        const bh = initialData?.businessHours;
+        if (!bh) return undefined;
+        return bh;
+    }, [initialData]);
+
     return (
         <div className="max-w-4xl mx-auto w-full space-y-6">
             <Tabs defaultValue="general" className="w-full">
@@ -87,6 +94,7 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
                         <TabsTrigger value="branding">Branding</TabsTrigger>
                         <TabsTrigger value="finance">Finanzas</TabsTrigger>
                         <TabsTrigger value="navigation">Navegación</TabsTrigger>
+                        <TabsTrigger value="hours">Horarios</TabsTrigger>
                         <TabsTrigger value="email">Email</TabsTrigger>
                         <TabsTrigger value="apis">API's</TabsTrigger>
                     </TabsList>
@@ -120,6 +128,10 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
 
             <TabsContent value="navigation">
                 <NavigationSettingsForm initialData={navigationData} />
+            </TabsContent>
+
+            <TabsContent value="hours">
+                <BusinessHoursSettingsForm initialData={businessHoursData} />
             </TabsContent>
             </Tabs>
         </div>

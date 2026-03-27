@@ -76,6 +76,9 @@ export class SettingsService {
       activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
       boldApiKey: storeSettings?.boldApiKey || '',
       boldSecretKey: storeSettings?.boldSecretKey || '',
+
+      // 6. Business Hours (Horarios de atención)
+      businessHours: storeSettings?.businessHours || null,
     };
 
     return finalConfig;
@@ -106,6 +109,8 @@ export class SettingsService {
       'activePaymentProvider',
       'boldApiKey',
       'boldSecretKey',
+      // Business Hours
+      'businessHours',
     ];
 
     const operations = Object.entries(updateDto)
@@ -195,7 +200,8 @@ export class SettingsService {
       updateDto.storeEmail !== undefined ||
       updateDto.activePaymentProvider !== undefined ||
       updateDto.boldApiKey !== undefined ||
-      updateDto.boldSecretKey !== undefined
+      updateDto.boldSecretKey !== undefined ||
+      updateDto.businessHours !== undefined
     ) {
       const storeSettings = await (
         this.prisma.secure as any
@@ -230,6 +236,7 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider,
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
+            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
           },
         });
       } else {
@@ -249,6 +256,7 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider || 'NONE',
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
+            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
           },
         });
       }

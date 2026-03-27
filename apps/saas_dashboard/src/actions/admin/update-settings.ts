@@ -12,6 +12,7 @@ import {
     emailSettingsSchema, EmailSettingsValues,
     apiSettingsSchema, ApiSettingsValues,
     navigationSettingsSchema, NavigationSettingsValues,
+    businessHoursSettingsSchema, BusinessHoursSettingsValues,
 } from "@alvarosky/features"
 
 interface UpdateSettingsResult {
@@ -181,3 +182,24 @@ export async function updateNavigationSettings(data: NavigationSettingsValues): 
     }
 }
 
+/**
+ * 6. Actualizar Horarios de Atención
+ */
+export async function updateBusinessHoursSettings(data: BusinessHoursSettingsValues): Promise<UpdateSettingsResult> {
+    try {
+        const user = await validateAdmin()
+        const validated = businessHoursSettingsSchema.parse(data)
+
+        const newConfig = {
+            businessHours: validated,
+        }
+
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidateTag(`tenant-${user.tenantId}`, "default")
+        await revalidateStorefront({ tag: `tenant-${user.tenantId}-store` })
+
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar horarios de atención" }
+    }
+}

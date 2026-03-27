@@ -385,6 +385,7 @@ export class TenantService {
     }
 
     let tenant: any = null;
+    let dbQueryFailed = false;
     const baseDomain =
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
       'xn--alvarolondoo-khb.dev';
@@ -410,11 +411,12 @@ export class TenantService {
         },
       });
     } catch (error) {
-      this.logger.error(`Error en identifyTenant: ${error.message}`);
+      dbQueryFailed = true;
+      this.logger.error(`Error en identifyTenant (query primario): ${error.message}`);
     }
 
     if (!tenant) {
-      // Fallback a regex like search as requested in existing code
+      // Fallback a búsqueda parcial
       try {
         tenant = await this.prisma.secure.tenant.findFirst({
           where: {
@@ -433,12 +435,22 @@ export class TenantService {
           },
         });
       } catch (error) {
-        // Ignorar
+        dbQueryFailed = true;
+        this.logger.error(`Error en identifyTenant (query fallback): ${error.message}`);
       }
     }
 
     if (!tenant) {
-      await this.cacheManager.set(cacheKey, 'NOT_FOUND', 3600 * 1000);
+      // CRÍTICO: Solo cachear NOT_FOUND si la DB respondió correctamente.
+      // Si la DB falló (error de conexión, timeout, etc.), NO cachear
+      // para evitar envenenar Redis y bloquear TODOS los tenants.
+      if (!dbQueryFailed) {
+        await this.cacheManager.set(cacheKey, 'NOT_FOUND', 3600 * 1000);
+      } else {
+        this.logger.error(
+          `[IDENTIFY CRITICAL] DB falló para dominio ${domain}. NO se cachea NOT_FOUND para evitar envenenamiento de caché.`,
+        );
+      }
       throw new NotFoundException(
         `Tenant no encontrado para el dominio: ${domain}`,
       );
@@ -740,6 +752,63 @@ export class TenantService {
     } else {
       this.logger.log(`[Cache Invalidation] Purga completa exitosa.`);
     }
+  }
+
+  /**
+   * EMERGENCIA: Purga TODAS las claves de resolución de tenant en Redis.
+   * Útil cuando un fallo de DB transitorio envenenó el caché con NOT_FOUND masivos.
+   * Solo accesible por SUPERADMIN vía endpoint protegido.
+   */
+  async flushAllTenantResolutionCache(internalToken: string) {
+    const expectedToken =
+      process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    if (internalToken !== expectedToken) {
+      throw new UnauthorizedException('Acceso denegado');
+    }
+
+    // Obtener todos los tenants para construir las claves a purgar
+    const tenants = await this.prisma.raw.tenant.findMany({
+      select: { slug: true, domain: true },
+    });
+
+    const baseDomain =
+      this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
+      'xn--alvarolondoo-khb.dev';
+
+    const keys = new Set<string>();
+    for (const t of tenants) {
+      if (t.slug) {
+        keys.add(`tenant_resolve_${t.slug.toLowerCase()}`);
+        keys.add(`tenant_resolve_${t.slug.toLowerCase()}.${baseDomain}`);
+      }
+      if (t.domain) {
+        keys.add(`tenant_resolve_${t.domain.toLowerCase()}`);
+        if (t.domain.startsWith('www.')) {
+          keys.add(`tenant_resolve_${t.domain.substring(4).toLowerCase()}`);
+        } else {
+          keys.add(`tenant_resolve_www.${t.domain.toLowerCase()}`);
+        }
+      }
+    }
+
+    this.logger.warn(
+      `[EMERGENCY FLUSH] Purgando ${keys.size} claves de resolución de tenant...`,
+    );
+
+    let purged = 0;
+    for (const key of keys) {
+      try {
+        await this.cacheManager.del(key);
+        purged++;
+      } catch {
+        // Ignorar errores individuales
+      }
+    }
+
+    this.logger.warn(
+      `[EMERGENCY FLUSH] Completado. ${purged}/${keys.size} claves purgadas.`,
+    );
+    return { purged, total: keys.size };
   }
 
   async getTenantByIdOrSlug(idOrSlug: string, requestTenantId?: string) {

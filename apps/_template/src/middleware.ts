@@ -62,9 +62,8 @@ export async function middleware(request: NextRequest) {
                 url.pathname = '/404-tenant';
                 return NextResponse.rewrite(url);
             } else {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.log(`[DOKPLOY DEBUG] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${domainToQuery} at ${fetchUrl}`);
-                }
+                // SIEMPRE logear errores inesperados (incluso en producción)
+                console.error(`[DOKPLOY ERROR] Edge Proxy: Backend returned status ${res.status} ${res.statusText} for domain ${domainToQuery} at ${fetchUrl}`);
             }
         } catch (error: any) {
             console.error(`[DOKPLOY ERROR] Edge Proxy: Falló comunicación con API para el host: ${cleanHostname}. URL: ${fetchUrl}. Error: ${error?.message || error}`);

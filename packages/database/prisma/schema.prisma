@@ -376,6 +376,7 @@ model StoreSettings {
   waAccessToken          String?
   waPhoneNumberId        String?         @unique
   wabaId                 String?         @unique
+  businessHours          Json?
   tenant                 Tenant          @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])

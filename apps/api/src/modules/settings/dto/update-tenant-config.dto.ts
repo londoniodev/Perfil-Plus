@@ -253,4 +253,9 @@ export class UpdateTenantConfigDto {
   @IsString()
   @IsOptional()
   boldSecretKey?: string;
+
+  // Business Hours (horarios de atención)
+  @IsObject()
+  @IsOptional()
+  businessHours?: Record<string, any>;
 }

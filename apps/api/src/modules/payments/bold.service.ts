@@ -41,13 +41,10 @@ export class BoldService {
       description: string;
       customerName?: string;
       customerEmail?: string;
-      customerPhone?: string;
-      customerIdentification?: string;
     },
     boldApiKey: string,
     redirectUrl: string,
     notificationUrl: string,
-    paymentMethodType?: string,
   ): Promise<BoldPaymentLinkResponse> {
     try {
       const apiKey = boldApiKey?.trim();
@@ -81,25 +78,9 @@ export class BoldService {
         callback_url: redirectUrl,
       };
 
-      if (paymentMethodType) {
-        payload.payment_methods = [paymentMethodType];
-      }
-
-      // Email del pagador (opcional)
+      // Email del pagador (único campo de pre-fill soportado por Bold)
       if (orderData.customerEmail) {
         payload.payer_email = orderData.customerEmail;
-      }
-      
-      // Intentar auto-completar datos del pagador (útil para Nequi/Daviplata)
-      if (orderData.customerPhone) {
-        // Formatear: solo números (Bold suele preferir formato E164 o local limpio)
-        payload.payer_phone = orderData.customerPhone.replace(/\D/g, '');
-      }
-      if (orderData.customerName) {
-        payload.payer_name = orderData.customerName;
-      }
-      if (orderData.customerIdentification) {
-        payload.payer_document = orderData.customerIdentification.replace(/\D/g, '');
       }
 
       this.logger.log(

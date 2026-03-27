@@ -10,8 +10,7 @@ export const checkoutSchema = z.object({
     address: z.string().optional(),
     city: z.string().optional(),
     lat: z.number().optional(),
-    lng: z.number().optional(),
-    paymentMethod: z.string().optional()
+    lng: z.number().optional()
 }).superRefine((data, ctx) => {
     if (data.orderType === "DELIVERY") {
         if (!data.address || data.address.length < 5) {
@@ -45,7 +44,7 @@ export const quickCommerceSchema = z.object({
     customerName: z.string().min(2, "Nombre requerido"),
     customerPhone: z.string().min(7, "Celular requerido"),
     orderType: z.enum(["DINE_IN", "DELIVERY", "PICKUP"]),
-    paymentMethod: z.string(),
+    paymentMethod: z.enum(["CASH", "MERCADOPAGO", "BOLD"]),
     notes: z.string().optional(),
     address: z.string().optional(),
     lat: z.number().optional(),

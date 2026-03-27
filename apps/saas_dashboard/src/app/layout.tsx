@@ -96,8 +96,8 @@ export default async function DashboardLayout({
             <body className={`${getFontVariables()} font-sans antialiased`}>
                 <ThemeProvider
                     attribute="class"
-                    defaultTheme="light"
-                    enableSystem={true}
+                    defaultTheme="dark"
+                    enableSystem={false}
                 >
                     <AuthProvider>
                         <DashboardProvider>

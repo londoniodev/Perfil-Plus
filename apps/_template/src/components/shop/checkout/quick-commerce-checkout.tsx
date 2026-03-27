@@ -8,11 +8,6 @@ import {
     Button,
     Input,
     Label,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
     RadioGroup,
     RadioGroupItem,
     Card,
@@ -117,7 +112,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
             const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
             
-            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod.startsWith("BOLD"))
+            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod === "BOLD")
                 ? `${API_URL}/payments/product/checkout`
                 : `${API_URL}/orders`; // Usar el endpoint estándar para pedidos directos
 
@@ -246,58 +241,37 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 {/* Método de pago */}
                 <div className="space-y-3">
                     <Label className="text-base">Método de Pago</Label>
-                    <Select
+                    <RadioGroup
                         value={form.watch("paymentMethod")}
                         onValueChange={(val) => form.setValue("paymentMethod", val as any)}
+                        className="grid gap-3"
                     >
-                        <SelectTrigger className="w-full text-left h-auto py-3 bg-card border-2">
-                            <SelectValue placeholder="Selecciona un método de pago" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {activePaymentProvider === 'BOLD' && (
-                                <>
-                                    <SelectItem value="BOLD_NEQUI">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Nequi</span>
-                                            <span className="text-xs text-muted-foreground">Pago rápido con tu número celular</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_DAVIPLATA">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Daviplata</span>
-                                            <span className="text-xs text-muted-foreground">Pago rápido con App Daviplata</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_POS">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Tarjeta de Crédito / Débito</span>
-                                            <span className="text-xs text-muted-foreground">Visa, Mastercard, etc.</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_PAY_BY_LINK">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">PSE / Transferencia Bancaria</span>
-                                            <span className="text-xs text-muted-foreground">Débito bancario seguro</span>
-                                        </div>
-                                    </SelectItem>
-                                </>
-                            )}
-                            {activePaymentProvider === 'MERCADO_PAGO' && (
-                                <SelectItem value="MERCADOPAGO">
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">Pago en línea (Mercado Pago)</span>
-                                        <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
-                                    </div>
-                                </SelectItem>
-                            )}
-                            <SelectItem value="CASH">
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label htmlFor="pm-bold-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="BOLD" id="pm-bold-express" />
                                 <div className="flex flex-col">
-                                    <span className="font-medium">Efectivo / Contraentrega</span>
-                                    <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                                    <span className="font-medium">Pago en línea Seguro (Bold)</span>
+                                    <span className="text-xs text-muted-foreground">Nequi, Tarjetas, Daviplata, PSE</span>
                                 </div>
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label htmlFor="pm-mp-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="MERCADOPAGO" id="pm-mp-express" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                    <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                </div>
+                            </Label>
+                        )}
+                        <Label htmlFor="pm-cash-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroupItem value="CASH" id="pm-cash-express" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Efectivo / Contraentrega</span>
+                                <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                            </div>
+                        </Label>
+                    </RadioGroup>
                 </div>
 
                 {/* CTA: Confirmación express */}
@@ -443,58 +417,37 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 {/* 5. Método de Pago */}
                 <div className="space-y-3">
                     <Label className="text-base">Método de Pago</Label>
-                    <Select
+                    <RadioGroup
                         value={form.watch("paymentMethod")}
                         onValueChange={(val) => form.setValue("paymentMethod", val as any)}
+                        className="grid gap-3"
                     >
-                        <SelectTrigger className="w-full text-left h-auto py-3 bg-card border-2">
-                            <SelectValue placeholder="Selecciona un método de pago" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {activePaymentProvider === 'BOLD' && (
-                                <>
-                                    <SelectItem value="BOLD_NEQUI">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Nequi</span>
-                                            <span className="text-xs text-muted-foreground">Pago rápido con tu número celular</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_DAVIPLATA">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Daviplata</span>
-                                            <span className="text-xs text-muted-foreground">Pago rápido con App Daviplata</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_POS">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Tarjeta de Crédito / Débito</span>
-                                            <span className="text-xs text-muted-foreground">Visa, Mastercard, etc.</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="BOLD_PAY_BY_LINK">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">PSE / Transferencia Bancaria</span>
-                                            <span className="text-xs text-muted-foreground">Débito bancario seguro</span>
-                                        </div>
-                                    </SelectItem>
-                                </>
-                            )}
-                            {activePaymentProvider === 'MERCADO_PAGO' && (
-                                <SelectItem value="MERCADOPAGO">
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">Pago en línea (Mercado Pago)</span>
-                                        <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
-                                    </div>
-                                </SelectItem>
-                            )}
-                            <SelectItem value="CASH">
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label htmlFor="pm-bold" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="BOLD" id="pm-bold" />
                                 <div className="flex flex-col">
-                                    <span className="font-medium">Efectivo / Contraentrega</span>
-                                    <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                                    <span className="font-medium">Pago en línea Seguro (Bold)</span>
+                                    <span className="text-xs text-muted-foreground">Nequi, Tarjetas, Daviplata, PSE</span>
                                 </div>
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label htmlFor="pm-mp" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="MERCADOPAGO" id="pm-mp" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                    <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                </div>
+                            </Label>
+                        )}
+                        <Label htmlFor="pm-cash" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroupItem value="CASH" id="pm-cash" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Efectivo / Contraentrega</span>
+                                <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                            </div>
+                        </Label>
+                    </RadioGroup>
                 </div>
 
                 {/* Botón Flotante (Sticky) */}

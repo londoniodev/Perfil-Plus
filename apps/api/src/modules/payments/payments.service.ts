@@ -725,11 +725,19 @@ export class PaymentsService {
                 : [];
             const modifierMap = new Map(allModifiers.map((m) => [m.id, m]));
 
+            // Batch fetch all variants involved
+            const allVariantIds = items.map((i: any) => i.variantId);
+            const allVariants =
+              allVariantIds.length > 0
+                ? await tx.productVariant.findMany({
+                    where: { id: { in: allVariantIds } },
+                    include: { product: true },
+                  })
+                : [];
+            const variantMap = new Map(allVariants.map((v) => [v.id, v]));
+
             for (const item of items) {
-              const variant = await tx.productVariant.findUnique({
-                where: { id: item.variantId },
-                include: { product: true },
-              });
+              const variant = variantMap.get(item.variantId);
 
               if (!variant) continue;
 

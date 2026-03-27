@@ -126,6 +126,10 @@ function createMockTx() {
       findMany: jest.fn(),
       update: jest.fn(),
     },
+    deliveryDriver: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
     productVariant: {
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -188,7 +192,10 @@ describe('OrdersService', () => {
           provide: PrismaService,
           useValue: {
             ...mockClient,
-            secure: mockClient,
+            secure: {
+              ...mockClient,
+              deliveryDriver: mockTx.deliveryDriver,
+            },
             $transaction: mockClient.$transaction,
           },
         },
@@ -1726,6 +1733,78 @@ describe('OrdersService', () => {
       );
 
       expect(result).toEqual(driverOrders);
+    });
+  });
+
+  describe('updateStatus Security Checks', () => {
+    const MOCK_DRIVER_RECORD = {
+      id: 'driver-1',
+      userId: 'user-driver-1',
+    };
+
+    it('debería permitir que un driver actualice su propia orden', async () => {
+      const assignedOrder = {
+        id: 'order-1',
+        status: 'ASSIGNED',
+        driverId: 'driver-1',
+      };
+
+      mockClient.order.findUnique.mockResolvedValue(assignedOrder);
+      mockTx.deliveryDriver.findUnique.mockResolvedValue(MOCK_DRIVER_RECORD);
+      mockTx.order.update.mockResolvedValue({ ...assignedOrder, status: 'IN_TRANSIT' });
+
+      const result = await service.updateStatus(
+        'order-1',
+        { status: 'IN_TRANSIT' as any },
+        'DRIVER' as any,
+        'user-driver-1',
+      );
+
+      expect(result.status).toBe('IN_TRANSIT');
+      expect(mockTx.deliveryDriver.findUnique).toHaveBeenCalledWith({
+        where: { userId: 'user-driver-1' },
+      });
+    });
+
+    it('debería lanzar ForbiddenException si un driver intenta actualizar una orden de otro driver', async () => {
+      const otherOrder = {
+        id: 'order-1',
+        status: 'ASSIGNED',
+        driverId: 'driver-other',
+      };
+
+      mockClient.order.findUnique.mockResolvedValue(otherOrder);
+      mockTx.deliveryDriver.findUnique.mockResolvedValue(MOCK_DRIVER_RECORD);
+
+      const { ForbiddenException } = require('@nestjs/common');
+      await expect(
+        service.updateStatus(
+          'order-1',
+          { status: 'IN_TRANSIT' as any },
+          'DRIVER' as any,
+          'user-driver-1',
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('debería permitir que un ADMIN actualice cualquier orden sin userId', async () => {
+      const order = {
+        id: 'order-1',
+        status: 'READY',
+        driverId: null,
+      };
+
+      mockClient.order.findUnique.mockResolvedValue(order);
+      mockTx.order.update.mockResolvedValue({ ...order, status: 'DELIVERED' });
+
+      const result = await service.updateStatus(
+        'order-1',
+        { status: 'DELIVERED' as any },
+        'ADMIN' as any,
+      );
+
+      expect(result.status).toBe('DELIVERED');
+      expect(mockTx.deliveryDriver.findUnique).not.toHaveBeenCalled();
     });
   });
 });

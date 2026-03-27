@@ -12,7 +12,7 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import * as express from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentsService } from './payments.service';
 import { CreateSubscriptionDto, CreateCheckoutDto } from './dto';
@@ -52,7 +52,7 @@ export class PaymentsController {
   @Post('product/checkout')
   @Public()
   async createProductCheckout(
-    @Req() req: Request,
+    @Req() req: express.Request,
     @Body() dto: CreateCheckoutDto,
   ) {
     // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
@@ -72,7 +72,6 @@ export class PaymentsController {
     @Headers('x-request-id') xRequestId: string,
     @Query('tenantId') tenantId: string,
   ) {
-    // 1. Validación de firma (Seguridad) - FAIL CLOSE
     const dataId = body?.data?.id || body?.id;
 
     if (!tenantId) {
@@ -86,11 +85,9 @@ export class PaymentsController {
     );
 
     if (!isValid) {
-      // Retornamos 200 para que MP no reintente, pero registramos el error
       return { status: 'error', reason: 'invalid signature' };
     }
 
-    // 2. Emitir evento para procesamiento asíncrono (Fast Acknowledgement)
     const type = body.type || body.topic;
 
     if (type === 'payment') {
@@ -101,7 +98,6 @@ export class PaymentsController {
       });
     }
 
-    // 3. Retorno rápido 200 OK
     return { status: 'received', message: 'Payment processing triggered' };
   }
 
@@ -109,20 +105,22 @@ export class PaymentsController {
   @Public()
   @HttpCode(HttpStatus.OK)
   async handleBoldWebhook(
+    @Req() req: RawBodyRequest<express.Request>,
     @Body() body: any,
+    @Headers('x-bold-signature') signature: string,
     @Query('tenantId') tenantId: string,
   ) {
     if (!tenantId) {
       return { status: 'error', reason: 'tenantId missing from query' };
     }
 
-    // Bold maneja la notificación en body.
-    // Ej de payload Bold: { event: 'PAYMENT_SUCCESS', payment: { reference: 'ORD-123', status: 'APPROVED', ... } }
-    // Emitir el evento para asincronía (opcional) o llamar servicio directamente. 
-    // Optamos por llamar directo si queremos logica sincrona para el walkthrough.
-    // Vamos a delegarlo a PaymentsService
-    
-    return this.paymentsService.processBoldWebhook(body, tenantId);
+    // Pasamos el rawBody para la validación de firma HMAC
+    return this.paymentsService.processBoldWebhook(
+      body,
+      tenantId,
+      signature,
+      req.rawBody,
+    );
   }
 
   // ==================== ADMIN ====================

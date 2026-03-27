@@ -110,11 +110,17 @@ async function downloadExternalImages(
   quality: number,
 ): Promise<number> {
   const s3Url = process.env.S3_PUBLIC_URL || "https://s3.xn--alvarolondoo-khb.dev";
-  const externalImgs = $("img").filter((_i, el) => {
+  const allImgs = $("img");
+  log("🔍", `Total <img> found: ${allImgs.length}`);
+  
+  const externalImgs = allImgs.filter((_i, el) => {
     const src = $(el).attr("src") || "";
-    return src.startsWith("http://") || src.startsWith("https://") || src.startsWith(s3Url);
+    const isExt = src.startsWith("http://") || src.startsWith("https://") || src.startsWith(s3Url);
+    if (isExt) log("📍", `Found valid image src: ${src.slice(0, 60)}...`);
+    return isExt;
   });
 
+  log("📥", `Images to download: ${externalImgs.length}`);
   let count = 0;
 
   for (let i = 0; i < externalImgs.length; i++) {
@@ -125,7 +131,7 @@ async function downloadExternalImages(
     if (!src) continue;
 
     try {
-      log("⬇️", `Downloading external image #${i + 1}: ${src.slice(0, 80)}...`);
+      log("⬇️", `Downloading [${i+1}/${externalImgs.length}]: ${src.slice(0, 60)}...`);
 
       const response = await axios.get<ArrayBuffer>(src, {
         responseType: "arraybuffer",
@@ -136,16 +142,17 @@ async function downloadExternalImages(
       const filename = `img-ext-${i + 1}.webp`;
       const outputPath = path.join(assetsDir, filename);
 
+      log("🪄", `Optimizing ${filename}...`);
       await sharp(buffer)
         .webp({ quality })
         .toFile(outputPath);
 
       $(el).attr("src", `./assets/${filename}`);
       count++;
-      log("✅", `External image #${i + 1} → ${filename}`);
+      log("✅", `Saved: ${filename}`);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      log("❌", `Failed to download external image #${i + 1} (${src.slice(0, 60)}): ${message}`);
+      log("❌", `Failed [${i+1}]: ${message}`);
     }
   }
 

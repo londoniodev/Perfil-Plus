@@ -182,8 +182,8 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             >
                 {/* Logo del restaurante centrado */}
                 {logoUrl && (
-                    <div className="flex justify-center mb-6">
-                        <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+                    <div className="flex justify-center mb-8">
+                        <img src={logoUrl} alt="Logo" className="h-28 w-auto object-contain" />
                     </div>
                 )}
 
@@ -295,8 +295,8 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
         <div className="max-w-xl mx-auto space-y-6">
             {/* Logo del restaurante centrado */}
             {logoUrl && (
-                <div className="flex justify-center mb-2">
-                    <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+                <div className="flex justify-center mb-4">
+                    <img src={logoUrl} alt="Logo" className="h-28 w-auto object-contain" />
                 </div>
             )}
 
@@ -396,8 +396,11 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 {orderType === 'DELIVERY' && (
                     <div className="space-y-3">
                         <Label className="px-1">Ubícanos en el Mapa</Label>
-                        <div className="relative w-full -mx-4 px-4 md:mx-0 md:px-0">
-                            <div className="h-[250px] w-[calc(100%+2rem)] -ml-4 md:w-full md:ml-0 md:rounded-xl overflow-hidden border shadow-sm">
+                        {/* 
+                            TÉCNICA FULL-BLEED (Ancho total independientemente del container)
+                        */}
+                        <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
+                            <div className="h-[300px] w-full border-y md:max-w-xl md:mx-auto md:rounded-xl md:border shadow-sm overflow-hidden z-0">
                                 <LocationPicker 
                                     initialLocation={waData?.customerData ? { lat: waData.customerData.lat, lng: waData.customerData.lng } : undefined}
                                     onLocationChange={(loc) => {

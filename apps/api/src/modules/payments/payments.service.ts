@@ -1071,54 +1071,115 @@ export class PaymentsService {
 
   // ==================== BOLD WEBHOOK ====================
 
-  async processBoldWebhook(body: any, tenantId: string) {
-    this.logger.log(`Received Bold Webhook for tenant ${tenantId}`, body);
+  async processBoldWebhook(
+    body: any,
+    tenantId: string,
+    signature: string,
+    rawBody?: Buffer,
+  ) {
+    this.logger.log(`Received Bold Webhook for tenant ${tenantId}`, {
+      event: body.event,
+      status: body.payment?.status || body.status,
+    });
+
+    // 1. Obtener el secreto del tenant para validar la firma
+    // Usamos findFirst en StoreSettings para este tenant
+    const storeSettings = await this.prisma.secure.storeSettings.findFirst({
+      where: { tenantId },
+    });
+
+    const secret = storeSettings?.boldSecretKey;
+
+    // 2. Validar firma HMAC (Seguridad)
+    if (rawBody && signature && secret) {
+      const isValid = this.boldService.verifyWebhookSignature(
+        rawBody,
+        signature,
+        secret,
+      );
+      if (!isValid) {
+        this.logger.error(
+          `Invalid Bold Webhook Signature for tenant ${tenantId}`,
+        );
+        return { status: 'error', reason: 'invalid signature' };
+      }
+    } else {
+      this.logger.warn(
+        `Bold Webhook received without signature validation (missing signature or secret for tenant ${tenantId})`,
+      );
+    }
 
     const payment = body?.payment || body;
     if (!payment || !payment.reference) {
-      return { status: 'ignored', reason: 'Invalid bold webhook payload (missing payment reference)' };
+      return {
+        status: 'ignored',
+        reason: 'Invalid bold webhook payload (missing payment reference)',
+      };
     }
 
-    const orderId = payment.reference; 
-    const paymentStatus = payment.status; 
+    // La referencia es el orderId que enviamos al crear el link
+    // Nota: Bold suele enviar algo como "ORD-123-timestamp", pero nosotros enviamos "ID_ORDEN" 
+    // o "ID_ORDEN-timestamp" según BoldService.
+    const referenceParts = payment.reference.split('-');
+    const orderId = referenceParts[0];
+    const paymentStatus = payment.status; // APPROVED, REJECTED, FAILED
     const paymentId = payment.id || payment.transaction_id;
 
+    const order = await this.prisma.secure.order.findUnique({
+      where: { id: orderId },
+      include: { items: true, user: { select: { email: true, name: true } } },
+    });
+
+    if (!order) {
+      this.logger.error(`Order ${orderId} not found for Bold webhook`);
+      return { status: 'error', reason: 'Order not found' };
+    }
+
+    // Anti-IDOR: Verificar que la orden pertenezca al tenant que envió el webhook
+    if (order.tenantId !== tenantId) {
+      this.logger.error(
+        `Security Breach: Webhook tenant ${tenantId} tried updating order ${orderId} belonging to ${order.tenantId}`,
+      );
+      return { status: 'error', reason: 'Order tenant mismatch' };
+    }
+
+    // 3. Manejo de Estados
     if (paymentStatus === 'APPROVED') {
-      try {
-        const order = await this.prisma.secure.order.findUnique({
-          where: { id: orderId, tenantId },
-          include: { items: true },
+      if (order.status === 'APPROVED' || order.status === 'DELIVERED') {
+        return { status: 'processed', reason: 'Already approved' };
+      }
+
+      await this.prisma.secure.$transaction([
+        this.prisma.secure.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'APPROVED',
+            paymentExternalId: paymentId?.toString(),
+            paymentProvider: 'BOLD',
+          },
+        }),
+        this.prisma.secure.orderItem.updateMany({
+          where: { orderId: orderId },
+          data: { isPaid: true },
+        }),
+      ]);
+
+      this.logger.log(`Order ${orderId} APPROVED via Bold Webhook`);
+
+      // 4. Fulfillment (Productos Digitales / Emails)
+      // Reutilizamos approveOrder si queremos email genérico, o llamamos la lógica directamente
+      await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT');
+    } else if (paymentStatus === 'REJECTED' || paymentStatus === 'FAILED' || paymentStatus === 'DECLINED') {
+      this.logger.warn(`Order ${orderId} REJECTED/FAILED via Bold Webhook: ${paymentStatus}`);
+      
+      if (order.status === 'PENDING') {
+        await this.prisma.secure.order.update({
+          where: { id: orderId },
+          data: { 
+            status: 'CANCELLED',
+            notes: (order.notes || '') + `\nPago rechazado por Bold (${paymentStatus})`
+          },
         });
-
-        if (!order) {
-          this.logger.error(`Order ${orderId} not found for Bold webhook`);
-          return { status: 'error', reason: 'Order not found' };
-        }
-
-        if (order.status === 'APPROVED') {
-          return { status: 'processed', reason: 'Already approved' };
-        }
-
-        // 1. Update order and items to PAID
-        await this.prisma.secure.$transaction([
-          this.prisma.secure.order.update({
-            where: { id: orderId },
-            data: { 
-              status: 'APPROVED', 
-              paymentExternalId: paymentId?.toString(),
-            },
-          }),
-          this.prisma.secure.orderItem.updateMany({
-            where: { orderId: orderId },
-            data: { isPaid: true },
-          }),
-        ]);
-
-        this.logger.log(`Order ${orderId} approved via Bold Webhook`);
-
-      } catch (error) {
-        this.logger.error(`Error processing Bold webhook for order ${orderId}`, error);
-        return { status: 'error', reason: 'Internal processing error' };
       }
     }
 

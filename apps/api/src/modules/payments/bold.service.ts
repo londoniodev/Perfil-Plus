@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 /**
  * Servicio de integración con Bold - API Link de Pagos
@@ -50,8 +51,6 @@ export class BoldService {
       if (!apiKey) {
         throw new BadRequestException('Bold API Key is missing for this tenant.');
       }
-
-      this.logger.log(`[DEBUG_BOL_1] Using Bold API Key starting with: ${apiKey.substring(0, 5)}...`);
 
       // Bold usa el valor real en COP (no centavos). Ej: $10.000 = 10000
       const totalAmount = Math.round(orderData.totalAmount);
@@ -161,6 +160,32 @@ export class BoldService {
 
     const data = await response.json();
     return data?.payload || data;
+  }
+
+  /**
+   * Verifica la firma HMAC-SHA256 de un webhook de Bold.
+   * @param rawBody El buffer o string crudo del body
+   * @param signature La firma recibida (ej. del header x-bold-signature)
+   * @param secret El secreto de webhook del tenant
+   */
+  verifyWebhookSignature(
+    rawBody: string | Buffer,
+    signature: string,
+    secret: string,
+  ): boolean {
+    if (!signature || !secret) return false;
+
+    try {
+      const hash = crypto
+        .createHmac('sha256', secret)
+        .update(rawBody)
+        .digest('hex');
+
+      return hash === signature;
+    } catch (error) {
+      this.logger.error('Error verifying Bold webhook signature', error);
+      return false;
+    }
   }
 
   /** Extrae un mensaje legible de los errores JSON de Bold. */

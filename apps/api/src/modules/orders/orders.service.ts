@@ -91,8 +91,9 @@ export class OrdersService {
                   if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                   if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
                   if (methodLabel === 'BOLD') methodLabel = 'Bold';
-                  if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
-                  
+                  if (methodLabel === 'MERCADOPAGO')
+                    methodLabel = 'MercadoPago';
+
                   const paymentNote = dto.paymentMethod
                     ? `Forma de pago: ${methodLabel}`
                     : null;
@@ -188,6 +189,7 @@ export class OrdersService {
     orderId: string,
     dto: UpdateOrderStatusDto,
     userRole: Role,
+    userId?: string,
   ) {
     const order = await this.prisma.secure.order.findUnique({
       where: { id: orderId },
@@ -195,6 +197,20 @@ export class OrdersService {
 
     if (!order) {
       throw new NotFoundException('Orden no encontrada');
+    }
+
+    if (userRole === Role.DRIVER) {
+      if (!userId) {
+        throw new ForbiddenException('Usuario no autenticado');
+      }
+      const driver = await this.prisma.secure.deliveryDriver.findUnique({
+        where: { userId },
+      });
+      if (!driver || order.driverId !== driver.id) {
+        throw new ForbiddenException(
+          'No tienes permiso para actualizar esta orden',
+        );
+      }
     }
 
     validateOrderTransition(order.status, dto.status, userRole);
@@ -239,10 +255,7 @@ export class OrdersService {
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          await this.inventoryService.restoreByOrder(
-            orderId,
-            tx,
-          );
+          await this.inventoryService.restoreByOrder(orderId, tx);
         }
       }
 

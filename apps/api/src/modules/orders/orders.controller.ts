@@ -93,8 +93,9 @@ export class AdminOrdersController {
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
     @CurrentUser('role') role: Role,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.ordersService.updateStatus(id, dto, role);
+    return this.ordersService.updateStatus(id, dto, role, userId);
   }
 
   @Post(':id/pay')
@@ -142,7 +143,8 @@ export class DriverOrdersController {
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
     @CurrentUser('role') role: Role,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.ordersService.updateStatus(id, dto, role);
+    return this.ordersService.updateStatus(id, dto, role, userId);
   }
 }

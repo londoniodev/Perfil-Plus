@@ -1,4 +1,4 @@
-## 2024-03-26 - [Tenant Isolation Gap in Branding Updates]
-**Vulnerability:** IDOR (Insecure Direct Object Reference) combined with RLS Bypass.
-**Learning:** Updates to a tenant's BrandSettings were using the non-secure Prisma client (`this.prisma.brandSettings.upsert()`). Even though `tenantId` was supplied, it bypassed Row-Level Security, allowing a user from one tenant to modify another tenant's branding if they manipulated the ID.
-**Prevention:** Always use the injected `this.prisma.secure` client for operations scoped to a tenant. Only use the standard or `raw` clients for explicit global operations (like resolving the tenant context initially or global CRON jobs).
+## 2026-03-27 - [Broken Access Control on Driver Order Status Update]
+ **Vulnerability:** [Broken Access Control / IDOR in DriverOrdersController]
+ **Learning:** [The DriverOrdersController.updateStatus method was accepting updates from any user with the DRIVER role without checking if the order belonged to that driver. This would allow a driver to update the status of another driver's assigned orders.]
+ **Prevention:** [Always check object ownership against the authenticated user's ID when performing mutations, even if they have a privileged role. In this case, passing the `userId` to the service and matching the `DeliveryDriver.id` against the `order.driverId` prevents unauthorized updates.]

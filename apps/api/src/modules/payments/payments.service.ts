@@ -291,7 +291,9 @@ export class PaymentsService {
   // ==================== PRODUCT PURCHASES ====================
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
-    const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+    const storeSettings = await (
+      this.prisma.secure as any
+    ).storeSettings.findFirst({
       where: { tenantId },
     });
 
@@ -337,8 +339,14 @@ export class PaymentsService {
     for (const item of dto.items) {
       const variant = variantMap.get(item.variantId);
 
-      if (!variant) throw new NotFoundException(`Variante no encontrada: ${item.variantId}`);
-      if (!variant.product.published) throw new BadRequestException(`Producto no disponible: ${variant.product.name}`);
+      if (!variant)
+        throw new NotFoundException(
+          `Variante no encontrada: ${item.variantId}`,
+        );
+      if (!variant.product.published)
+        throw new BadRequestException(
+          `Producto no disponible: ${variant.product.name}`,
+        );
 
       let unitPrice = Number(variant.price);
       let description = variant.name !== 'Standard' ? variant.name : '';
@@ -360,7 +368,9 @@ export class PaymentsService {
           }
         }
         if (modDescriptions.length > 0) {
-          description = description ? `${description} - ${modDescriptions.join(', ')}` : modDescriptions.join(', ');
+          description = description
+            ? `${description} - ${modDescriptions.join(', ')}`
+            : modDescriptions.join(', ');
         }
       }
 
@@ -373,7 +383,8 @@ export class PaymentsService {
         quantity: item.quantity,
         unit_price: unitPrice,
         currency_id: currency,
-        picture_url: variant.product.images?.[0] || variant.product.digitalFileUrl,
+        picture_url:
+          variant.product.images?.[0] || variant.product.digitalFileUrl,
       });
 
       orderItemsData.push({
@@ -398,7 +409,10 @@ export class PaymentsService {
     // Si la orden ya existiera proveniente del DTO:
     let orderIdToUse = dto.existingOrderId;
 
-    if (!orderIdToUse && (activeProvider === 'BOLD' || activeProvider === 'CASH')) {
+    if (
+      !orderIdToUse &&
+      (activeProvider === 'BOLD' || activeProvider === 'CASH')
+    ) {
       const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
       const newOrder = await this.prisma.secure.order.create({
         data: {
@@ -418,14 +432,18 @@ export class PaymentsService {
             if (activeProvider === 'BOLD') methodLabel = 'Bold';
             if (activeProvider === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
             const paymentNote = `Forma de pago: ${methodLabel}`;
-            return dto.customer?.notes ? `${dto.customer.notes}\n\n${paymentNote}` : paymentNote;
+            return dto.customer?.notes
+              ? `${dto.customer.notes}\n\n${paymentNote}`
+              : paymentNote;
           })(),
-          shippingData: dto.customer?.address ? {
-            address: dto.customer.address,
-            city: dto.customer.city || '',
-            lat: dto.customer.lat,
-            lng: dto.customer.lng,
-          } : undefined,
+          shippingData: dto.customer?.address
+            ? {
+                address: dto.customer.address,
+                city: dto.customer.city || '',
+                lat: dto.customer.lat,
+                lng: dto.customer.lng,
+              }
+            : undefined,
           items: {
             create: orderItemsData, // Relación pre-construida
           },
@@ -438,7 +456,8 @@ export class PaymentsService {
 
     if (activeProvider === 'MERCADO_PAGO') {
       const accessToken = storeSettings?.mpAccessToken;
-      if (!accessToken) throw new BadRequestException('MercadoPago no está configurado');
+      if (!accessToken)
+        throw new BadRequestException('MercadoPago no está configurado');
 
       const client = new MercadoPagoConfig({ accessToken });
       const preference = new Preference(client);
@@ -461,7 +480,8 @@ export class PaymentsService {
       const fullName = (dto.customer?.name || 'Cliente').trim();
       const nameParts = fullName.split(/\s+/);
       const firstName = nameParts[0];
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Cliente';
+      const lastName =
+        nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Cliente';
 
       const preferenceData = {
         items: preferenceItems,
@@ -473,10 +493,16 @@ export class PaymentsService {
             ? { area_code: '57', number: dto.customer.phone.replace(/\D/g, '') }
             : undefined,
           identification: dto.customer?.identification
-            ? { type: 'CC', number: dto.customer.identification.replace(/\D/g, '') }
+            ? {
+                type: 'CC',
+                number: dto.customer.identification.replace(/\D/g, ''),
+              }
             : undefined,
           address: dto.customer?.address
-            ? { street_name: dto.customer.address, zip_code: dto.customer.city || '' }
+            ? {
+                street_name: dto.customer.address,
+                zip_code: dto.customer.city || '',
+              }
             : undefined,
         },
         back_urls: {
@@ -491,11 +517,11 @@ export class PaymentsService {
 
       try {
         const response = await preference.create({ body: preferenceData });
-        
+
         // Si creamoos u orden previa, actualizamos el provider a MP.
         // Pero dado nuestro flujo if (!orderIdToUse) arriba no entramos ahí.
         // Si quisiéramos crear la orden anticipada también para MP, deberíamos hacerlo arriba para todos, pero MP tiene el fallback metadata.
-        
+
         return {
           init_point: response.init_point,
           sandbox_init_point: response.sandbox_init_point,
@@ -503,14 +529,20 @@ export class PaymentsService {
           totalAmount,
         };
       } catch (error) {
-        this.logger.error('Error creating product preference via MercadoPago', error);
-        throw new BadRequestException('Error al iniciar el pago con MercadoPago');
+        this.logger.error(
+          'Error creating product preference via MercadoPago',
+          error,
+        );
+        throw new BadRequestException(
+          'Error al iniciar el pago con MercadoPago',
+        );
       }
-    } 
-    
-    else if (activeProvider === 'BOLD') {
+    } else if (activeProvider === 'BOLD') {
       const boldApiKey = storeSettings?.boldApiKey;
-      if (!boldApiKey) throw new BadRequestException('La integración con Bold no tiene API Key configurada');
+      if (!boldApiKey)
+        throw new BadRequestException(
+          'La integración con Bold no tiene API Key configurada',
+        );
 
       const redirectUrl = `${frontendUrl}/checkout/success?orderId=${orderIdToUse}`;
       const notificationUrl = `${apiUrl}/api/payments/webhook/bold?tenantId=${tenantId}`;
@@ -527,7 +559,7 @@ export class PaymentsService {
         },
         boldApiKey,
         redirectUrl,
-        notificationUrl
+        notificationUrl,
       );
 
       return {
@@ -536,9 +568,7 @@ export class PaymentsService {
         preferenceId: orderIdToUse,
         totalAmount,
       };
-    } 
-    
-    else if (activeProvider === 'CASH') {
+    } else if (activeProvider === 'CASH') {
       return {
         init_point: `${frontendUrl}/checkout/success?orderId=${orderIdToUse}&type=cash`,
         sandbox_init_point: `${frontendUrl}/checkout/success?orderId=${orderIdToUse}&type=cash`,
@@ -586,14 +616,18 @@ export class PaymentsService {
 
     try {
       // 1. Recuperar Credenciales desde StoreSettings (SSOT)
-      const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
+      const storeSettings = await (
+        this.prisma.secure as any
+      ).storeSettings.findFirst({
         where: { tenantId: resolvedTenantId },
       });
 
       const accessToken = storeSettings?.mpAccessToken;
 
       if (!accessToken) {
-        this.logger.error(`[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`);
+        this.logger.error(
+          `[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`,
+        );
         return { status: 'error', reason: 'Mercado Pago not configured' };
       }
 
@@ -690,11 +724,19 @@ export class PaymentsService {
                 : [];
             const modifierMap = new Map(allModifiers.map((m) => [m.id, m]));
 
+            // Batch fetch all variants involved
+            const allVariantIds = items.map((i: any) => i.variantId);
+            const allVariants =
+              allVariantIds.length > 0
+                ? await tx.productVariant.findMany({
+                    where: { id: { in: allVariantIds } },
+                    include: { product: true },
+                  })
+                : [];
+            const variantMap = new Map(allVariants.map((v) => [v.id, v]));
+
             for (const item of items) {
-              const variant = await tx.productVariant.findUnique({
-                where: { id: item.variantId },
-                include: { product: true },
-              });
+              const variant = variantMap.get(item.variantId);
 
               if (!variant) continue;
 
@@ -1052,11 +1094,10 @@ export class PaymentsService {
   // ==================== ADMIN ====================
 
   async getPaymentStats() {
-    const [activeSubscriptions, pendingSubscriptions] =
-      await Promise.all([
-        this.prisma.secure.subscription.count({ where: { status: 'ACTIVE' } }),
-        this.prisma.secure.subscription.count({ where: { status: 'PENDING' } }),
-      ]);
+    const [activeSubscriptions, pendingSubscriptions] = await Promise.all([
+      this.prisma.secure.subscription.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.secure.subscription.count({ where: { status: 'PENDING' } }),
+    ]);
 
     const recentSubscriptions = await this.prisma.secure.subscription.findMany({
       where: { status: 'ACTIVE' },
@@ -1066,7 +1107,7 @@ export class PaymentsService {
     });
 
     // En versiones anteriores había purchase count, lo dejamos como 0 para no romper reportes frontend
-    const totalEbookPurchases = 0; 
+    const totalEbookPurchases = 0;
 
     return {
       activeSubscriptions,
@@ -1125,7 +1166,7 @@ export class PaymentsService {
     }
 
     // La referencia es el orderId que enviamos al crear el link
-    // Nota: Bold suele enviar algo como "ORD-123-timestamp", pero nosotros enviamos "ID_ORDEN" 
+    // Nota: Bold suele enviar algo como "ORD-123-timestamp", pero nosotros enviamos "ID_ORDEN"
     // o "ID_ORDEN-timestamp" según BoldService.
     const referenceParts = payment.reference.split('-');
     const orderId = referenceParts[0];
@@ -1176,15 +1217,23 @@ export class PaymentsService {
       // 4. Fulfillment (Productos Digitales / Emails)
       // Reutilizamos approveOrder si queremos email genérico, o llamamos la lógica directamente
       await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT');
-    } else if (paymentStatus === 'REJECTED' || paymentStatus === 'FAILED' || paymentStatus === 'DECLINED') {
-      this.logger.warn(`Order ${orderId} REJECTED/FAILED via Bold Webhook: ${paymentStatus}`);
-      
+    } else if (
+      paymentStatus === 'REJECTED' ||
+      paymentStatus === 'FAILED' ||
+      paymentStatus === 'DECLINED'
+    ) {
+      this.logger.warn(
+        `Order ${orderId} REJECTED/FAILED via Bold Webhook: ${paymentStatus}`,
+      );
+
       if (order.status === 'PENDING') {
         await this.prisma.secure.order.update({
           where: { id: orderId },
-          data: { 
+          data: {
             status: 'CANCELLED',
-            notes: (order.notes || '') + `\nPago rechazado por Bold (${paymentStatus})`
+            notes:
+              (order.notes || '') +
+              `\nPago rechazado por Bold (${paymentStatus})`,
           },
         });
       }

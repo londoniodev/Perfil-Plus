@@ -136,7 +136,12 @@ export class StorageController {
     if (!tenantSlug || !pageSlug) {
       throw new BadRequestException('tenantSlug and pageSlug are required');
     }
-    return this.storageService.uploadLandingHtml(tenantSlug, pageSlug, file.buffer, label);
+    return this.storageService.uploadLandingHtml(
+      tenantSlug,
+      pageSlug,
+      file.buffer,
+      label,
+    );
   }
 
   @Get('landing/:tenantSlug')
@@ -151,4 +156,3 @@ export class StorageController {
     return { message: 'Archivo eliminado correctamente' };
   }
 }
-

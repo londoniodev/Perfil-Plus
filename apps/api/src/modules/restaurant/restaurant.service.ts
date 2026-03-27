@@ -220,7 +220,11 @@ export class RestaurantService {
     return response;
   }
 
-  async toggleLike(slug: string | undefined, productId: string, userPhone: string) {
+  async toggleLike(
+    slug: string | undefined,
+    productId: string,
+    userPhone: string,
+  ) {
     // slug is used for public API identification but we don't need tenantId here
     // since productLike is scoped by productId which already belongs to a tenant
     const existingLike = await this.prisma.secure.productLike.findUnique({

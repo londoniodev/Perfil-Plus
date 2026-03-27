@@ -10,6 +10,11 @@ import {
     Label,
     RadioGroup,
     RadioGroupItem,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
     Card,
     CardContent,
     CardHeader,
@@ -51,7 +56,8 @@ export function EcommerceCheckout() {
             identification: "",
             lat: undefined,
             lng: undefined,
-            notes: ""
+            notes: "",
+            paymentMethod: "CASH" // Default to avoid empty states
         }
     })
 
@@ -83,6 +89,7 @@ export function EcommerceCheckout() {
                     lng: data.lng,
                     identification: data.identification,
                 },
+                paymentMethod: data.paymentMethod,
                 frontUrl: window.location.origin
             }
 
@@ -236,6 +243,62 @@ export function EcommerceCheckout() {
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notas adicionales (Opcional)</Label>
                                 <Input id="notes" {...form.register("notes")} placeholder="Instrucciones de entrega..." />
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t">
+                                <Label className="text-base font-semibold">Método de Pago</Label>
+                                <Select
+                                    value={form.watch("paymentMethod")}
+                                    onValueChange={(val) => form.setValue("paymentMethod", val as any)}
+                                >
+                                    <SelectTrigger className="w-full text-left h-auto py-3 bg-card border-2">
+                                        <SelectValue placeholder="Selecciona un método de pago" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {activePaymentProvider === 'BOLD' && (
+                                            <>
+                                                <SelectItem value="BOLD_NEQUI">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">Nequi</span>
+                                                        <span className="text-xs text-muted-foreground">Pago rápido con tu celular</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="BOLD_DAVIPLATA">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">Daviplata</span>
+                                                        <span className="text-xs text-muted-foreground">Pago rápido con App Daviplata</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="BOLD_POS">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">Tarjeta de Crédito / Débito</span>
+                                                        <span className="text-xs text-muted-foreground">Visa, Mastercard, etc.</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="BOLD_PAY_BY_LINK">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">PSE / Transferencia Bancaria</span>
+                                                        <span className="text-xs text-muted-foreground">Débito bancario seguro</span>
+                                                    </div>
+                                                </SelectItem>
+                                            </>
+                                        )}
+                                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                                            <SelectItem value="MERCADOPAGO">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                                    <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                                </div>
+                                            </SelectItem>
+                                        )}
+                                        <SelectItem value="CASH">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">Efectivo / Contraentrega</span>
+                                                <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                                            </div>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <Button type="submit" className="w-full mt-6" size="lg" disabled={isSubmitting}>

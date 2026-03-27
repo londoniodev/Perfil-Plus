@@ -413,10 +413,14 @@ export class PaymentsService {
           customerEmail: dto.customer?.email,
           identification: dto.customer?.identification,
           notes: (() => {
-            let methodLabel = activeProvider;
-            if (activeProvider === 'CASH') methodLabel = 'Efectivo';
-            if (activeProvider === 'BOLD') methodLabel = 'Bold';
-            if (activeProvider === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            let methodLabel = dto.paymentMethod || activeProvider;
+            if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            if (methodLabel === 'BOLD') methodLabel = 'Bold';
+            if (methodLabel === 'BOLD_NEQUI') methodLabel = 'Bold (Nequi)';
+            if (methodLabel === 'BOLD_DAVIPLATA') methodLabel = 'Bold (Daviplata)';
+            if (methodLabel === 'BOLD_POS' || methodLabel === 'BOLD_PAY_BY_LINK') methodLabel = 'Bold (Tarjeta/PSE)';
+            
             const paymentNote = `Forma de pago: ${methodLabel}`;
             return dto.customer?.notes ? `${dto.customer.notes}\n\n${paymentNote}` : paymentNote;
           })(),
@@ -516,6 +520,12 @@ export class PaymentsService {
       const notificationUrl = `${apiUrl}/api/payments/webhook/bold?tenantId=${tenantId}`;
       const description = `Pago de Orden en ${storeSettings.storeName || 'Tienda'}`;
 
+      let paymentMethodType: string | undefined = undefined;
+      const checkoutMethod = dto.paymentMethod || '';
+      if (checkoutMethod.startsWith('BOLD_')) {
+         paymentMethodType = checkoutMethod.replace('BOLD_', '');
+      }
+
       const boldResponse = await this.boldService.createPaymentLink(
         {
           orderId: orderIdToUse as string,
@@ -524,10 +534,13 @@ export class PaymentsService {
           description,
           customerName: dto.customer?.name,
           customerEmail: dto.customer?.email,
+          customerPhone: dto.customer?.phone,
+          customerIdentification: dto.customer?.identification,
         },
         boldApiKey,
         redirectUrl,
-        notificationUrl
+        notificationUrl,
+        paymentMethodType
       );
 
       return {

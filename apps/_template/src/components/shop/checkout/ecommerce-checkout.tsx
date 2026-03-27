@@ -33,6 +33,7 @@ export function EcommerceCheckout() {
     const router = useRouter()
     const { user } = useAuth()
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [paymentMethod, setPaymentMethod] = useState<string>(activePaymentProvider === 'BOLD' ? 'BOLD' : (activePaymentProvider === 'MERCADO_PAGO' ? 'MERCADOPAGO' : 'CASH'))
 
     // Variables Derivadas
     const isDigitalOnly = items.length > 0 && items.every(item => item.productType === "DIGITAL")
@@ -83,6 +84,7 @@ export function EcommerceCheckout() {
                     lng: data.lng,
                     identification: data.identification,
                 },
+                paymentMethod,
                 frontUrl: window.location.origin
             }
 
@@ -236,6 +238,41 @@ export function EcommerceCheckout() {
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notas adicionales (Opcional)</Label>
                                 <Input id="notes" {...form.register("notes")} placeholder="Instrucciones de entrega..." />
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t">
+                                <Label className="text-base font-semibold">Método de Pago</Label>
+                                <RadioGroup
+                                    value={paymentMethod}
+                                    onValueChange={(val) => setPaymentMethod(val)}
+                                    className="grid gap-3"
+                                >
+                                    {activePaymentProvider === 'BOLD' && (
+                                        <Label htmlFor="pm-bold-ec" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                            <RadioGroupItem value="BOLD" id="pm-bold-ec" />
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">Pago en línea Seguro (Bold)</span>
+                                                <span className="text-xs text-muted-foreground">Nequi, Tarjetas, Daviplata, PSE</span>
+                                            </div>
+                                        </Label>
+                                    )}
+                                    {activePaymentProvider === 'MERCADO_PAGO' && (
+                                        <Label htmlFor="pm-mp-ec" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                            <RadioGroupItem value="MERCADOPAGO" id="pm-mp-ec" />
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                                <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                            </div>
+                                        </Label>
+                                    )}
+                                    <Label htmlFor="pm-cash-ec" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                        <RadioGroupItem value="CASH" id="pm-cash-ec" />
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">Efectivo / Contraentrega</span>
+                                            <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
+                                        </div>
+                                    </Label>
+                                </RadioGroup>
                             </div>
 
                             <Button type="submit" className="w-full mt-6" size="lg" disabled={isSubmitting}>

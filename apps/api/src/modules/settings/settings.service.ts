@@ -20,6 +20,7 @@ export class SettingsService {
     const settings = await this.prisma.secure.systemSetting.findMany({
       where: {
         tenantId,
+        isPublic: true,
       },
     });
 
@@ -54,16 +55,22 @@ export class SettingsService {
       primary_color: brandSettings?.primaryColor || '#6366f1',
       secondary_color: brandSettings?.secondaryColor || '#a5a6f6',
       // 'theme' en la UI es light/dark/auto, se saca de SystemSetting (collapsed)
-      theme: collapsed['theme'] || '', 
+      theme: collapsed['theme'] || '',
       // Si el frontend llegara a usar layoutType, se expone como layout_type
       layout_type: brandSettings?.layoutType || 'CLASSIC',
-      
+
       // 4. StoreSettings (Mapeo explícito)
-      mp_public_key: storeSettings?.mpPublicKey || collapsed['mp_public_key'] || '',
-      mp_access_token: storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
-      waPhoneNumberId: storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
-      deliveryFee: storeSettings?.deliveryFee !== null ? Number(storeSettings?.deliveryFee) : (Number(collapsed['deliveryFee']) || 0),
-      hero_image: brandSettings?.authBgUrl || '', 
+      mp_public_key:
+        storeSettings?.mpPublicKey || collapsed['mp_public_key'] || '',
+      mp_access_token:
+        storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
+      waPhoneNumberId:
+        storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
+      deliveryFee:
+        storeSettings?.deliveryFee !== null
+          ? Number(storeSettings?.deliveryFee)
+          : Number(collapsed['deliveryFee']) || 0,
+      hero_image: brandSettings?.authBgUrl || '',
 
       // 5. Payment Provider (Bold integration)
       activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
@@ -79,7 +86,7 @@ export class SettingsService {
    */
   async updateTenantConfig(tenantId: string, updateDto: UpdateTenantConfigDto) {
     if (!updateDto || Object.keys(updateDto).length === 0) {
-      return { success: true }; 
+      return { success: true };
     }
 
     // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
@@ -108,7 +115,9 @@ export class SettingsService {
         // 2. NO es una de las llaves que van a tablas específicas
         // 3. No es un objeto complejo que el frontend envía por error
         const isComplex = typeof value === 'object' && value !== null;
-        return value !== undefined && !storeAndBrandKeys.includes(key) && !isComplex;
+        return (
+          value !== undefined && !storeAndBrandKeys.includes(key) && !isComplex
+        );
       })
       .map(([key, value]) => {
         return this.prisma.secure.systemSetting.upsert({
@@ -154,7 +163,11 @@ export class SettingsService {
 
     // 3. Actualizar BrandSettings si hay cambios de apariencia
     // Aquí solo manejamos colores por ahora, theme va a SystemSetting
-    if (updateDto.primary_color || updateDto.secondary_color || updateDto.hero_image !== undefined) {
+    if (
+      updateDto.primary_color ||
+      updateDto.secondary_color ||
+      updateDto.hero_image !== undefined
+    ) {
       await this.prisma.secure.brandSettings.upsert({
         where: { tenantId },
         update: {
@@ -184,17 +197,21 @@ export class SettingsService {
       updateDto.boldApiKey !== undefined ||
       updateDto.boldSecretKey !== undefined
     ) {
-      const storeSettings = await (this.prisma.secure as any).storeSettings.findFirst({
-        where: { tenantId }
+      const storeSettings = await (
+        this.prisma.secure as any
+      ).storeSettings.findFirst({
+        where: { tenantId },
       });
 
       // Normalizar campos únicos para evitar conflictos P2002 (PostgreSQL UNIQUE permite múltiples NULL pero solo un "")
-      const waPhoneNumberId = updateDto.waPhoneNumberId !== undefined 
-        ? (updateDto.waPhoneNumberId?.trim() || null) 
-        : undefined;
-      const wabaId = updateDto.wabaId !== undefined 
-        ? (updateDto.wabaId?.trim() || null) 
-        : undefined;
+      const waPhoneNumberId =
+        updateDto.waPhoneNumberId !== undefined
+          ? updateDto.waPhoneNumberId?.trim() || null
+          : undefined;
+      const wabaId =
+        updateDto.wabaId !== undefined
+          ? updateDto.wabaId?.trim() || null
+          : undefined;
 
       if (storeSettings) {
         await (this.prisma.secure as any).storeSettings.update({
@@ -202,7 +219,10 @@ export class SettingsService {
           data: {
             mpPublicKey: updateDto.mp_public_key,
             mpAccessToken: updateDto.mp_access_token,
-            deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : undefined,
+            deliveryFee:
+              updateDto.deliveryFee !== undefined
+                ? Number(updateDto.deliveryFee)
+                : undefined,
             waPhoneNumberId,
             wabaId,
             storeName: updateDto.storeName,
@@ -218,7 +238,10 @@ export class SettingsService {
             tenantId,
             mpPublicKey: updateDto.mp_public_key,
             mpAccessToken: updateDto.mp_access_token,
-            deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : 0,
+            deliveryFee:
+              updateDto.deliveryFee !== undefined
+                ? Number(updateDto.deliveryFee)
+                : 0,
             waPhoneNumberId,
             wabaId,
             storeName: updateDto.storeName,

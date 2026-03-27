@@ -11,6 +11,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
 import { OrderCreatedEvent } from './events/order.events';
+import { ClsService } from 'nestjs-cls';
 
 // ============ MOCK FACTORIES ============
 
@@ -128,6 +129,7 @@ function createMockTx() {
     },
     productVariant: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
     },
     modifier: {
@@ -188,7 +190,56 @@ describe('OrdersService', () => {
           provide: PrismaService,
           useValue: {
             ...mockClient,
-            secure: mockClient,
+            secure: {
+              ...mockClient,
+              productVariant: {
+                ...mockClient.productVariant,
+                findMany: jest.fn().mockImplementation(async ({ where }) => {
+                  const idIn = where?.id?.in || [];
+                  const results = [];
+                  for (const id of idIn) {
+                    try {
+                      // Attempt to retrieve using the existing mock logic for findUnique
+                      const res = await mockClient.productVariant.findUnique({ where: { id } });
+                      if (res) {
+                        res.id = id;
+                        results.push(res);
+                      }
+                    } catch (err) {}
+                  }
+                  return results;
+                }),
+              },
+              modifier: {
+                ...mockClient.modifier,
+                findMany: jest.fn().mockImplementation(async ({ where }) => {
+                  const idIn = where?.id?.in || [];
+                  if (mockTx.modifier.findUnique.mock.results && mockTx.modifier.findUnique.mock.results.length > 0) {
+                     const results = [];
+                     for (const id of idIn) {
+                        try {
+                          const res = await mockTx.modifier.findUnique({ where: { id }});
+                          if(res) results.push(res);
+                        } catch(e) {}
+                     }
+                     return results;
+                  }
+                  return [];
+                }),
+              },
+              order: {
+                ...mockClient.order,
+                findFirst: jest.fn().mockImplementation((...args) => mockClient.order.findFirst(...args)),
+              },
+              deliveryDriver: {
+                ...mockClient.deliveryDriver,
+                findUnique: jest.fn().mockImplementation((...args) => mockClient.deliveryDriver.findUnique(...args)),
+              },
+              product: {
+                ...mockClient.product,
+                findUnique: jest.fn().mockImplementation((...args) => mockClient.product.findUnique(...args)),
+              },
+            },
             $transaction: mockClient.$transaction,
           },
         },
@@ -207,6 +258,10 @@ describe('OrdersService', () => {
         {
           provide: EventEmitter2,
           useValue: { emit: jest.fn() },
+        },
+        {
+          provide: ClsService,
+          useValue: { get: jest.fn().mockReturnValue('tenant-test-1') },
         },
       ],
     }).compile();
@@ -1615,6 +1670,13 @@ describe('OrdersService', () => {
 
       // findUnique initial check (uses mockClient via prisma.secure)
       mockClient.order.findUnique.mockResolvedValue(assignedOrder);
+      // findUnique for driver (ownership check)
+      mockClient.deliveryDriver.findUnique.mockResolvedValue({
+        ...MOCK_DRIVER_RECORD,
+        id: 'driver-1',
+        currentActiveOrders: 2,
+        status: 'AT_CAPACITY',
+      });
       // update dentro de la transacción
       mockTx.order.update.mockResolvedValue({
         ...assignedOrder,
@@ -1623,6 +1685,7 @@ describe('OrdersService', () => {
       // findUnique del driver dentro de tx (para el release)
       mockTx.deliveryDriver.findUnique.mockResolvedValue({
         ...MOCK_DRIVER_RECORD,
+        id: 'driver-1',
         currentActiveOrders: 2,
         status: 'AT_CAPACITY',
       });
@@ -1638,6 +1701,7 @@ describe('OrdersService', () => {
         'order-1',
         { status: 'DELIVERED' as any },
         'DRIVER' as any,
+        'user-driver-1',
       );
 
       // Verificar que el driver fue liberado

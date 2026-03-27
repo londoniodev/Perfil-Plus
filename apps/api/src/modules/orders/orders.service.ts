@@ -91,8 +91,9 @@ export class OrdersService {
                   if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                   if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
                   if (methodLabel === 'BOLD') methodLabel = 'Bold';
-                  if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
-                  
+                  if (methodLabel === 'MERCADOPAGO')
+                    methodLabel = 'MercadoPago';
+
                   const paymentNote = dto.paymentMethod
                     ? `Forma de pago: ${methodLabel}`
                     : null;
@@ -188,6 +189,7 @@ export class OrdersService {
     orderId: string,
     dto: UpdateOrderStatusDto,
     userRole: Role,
+    userId?: string,
   ) {
     const order = await this.prisma.secure.order.findUnique({
       where: { id: orderId },
@@ -195,6 +197,20 @@ export class OrdersService {
 
     if (!order) {
       throw new NotFoundException('Orden no encontrada');
+    }
+
+    if (userRole === Role.DRIVER) {
+      if (!userId) {
+        throw new ForbiddenException('Usuario no autenticado');
+      }
+      const driver = await this.prisma.secure.deliveryDriver.findUnique({
+        where: { userId },
+      });
+      if (!driver || order.driverId !== driver.id) {
+        throw new ForbiddenException(
+          'No tienes permiso para actualizar esta orden',
+        );
+      }
     }
 
     validateOrderTransition(order.status, dto.status, userRole);
@@ -215,34 +231,65 @@ export class OrdersService {
         });
 
         if (orderWithItems) {
+          const variantIncrements = new Map<string, number>();
+          const modifierIncrements = new Map<string, number>();
+
           for (const item of orderWithItems.items) {
             if (item.variant.stock !== -1) {
-              await tx.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { increment: item.quantity } },
-              });
+              variantIncrements.set(
+                item.variantId,
+                (variantIncrements.get(item.variantId) || 0) + item.quantity
+              );
             }
 
             for (const mod of item.modifiers) {
-              const originalModifier = await tx.modifier.findUnique({
-                where: { id: mod.modifierId },
-              });
-              if (originalModifier && originalModifier.stock !== null) {
-                await tx.modifier.update({
-                  where: { id: mod.modifierId },
-                  data: { stock: { increment: mod.quantity * item.quantity } },
-                });
+              modifierIncrements.set(
+                mod.modifierId,
+                (modifierIncrements.get(mod.modifierId) || 0) + mod.quantity * item.quantity
+              );
+            }
+          }
+
+          const updatePromises: any[] = [];
+
+          for (const [variantId, increment] of variantIncrements.entries()) {
+            updatePromises.push(
+              tx.productVariant.update({
+                where: { id: variantId },
+                data: { stock: { increment } },
+              })
+            );
+          }
+
+          if (modifierIncrements.size > 0) {
+            const modifierIds = Array.from(modifierIncrements.keys());
+            const modifiersToUpdate = await tx.modifier.findMany({
+              where: {
+                id: { in: modifierIds },
+                stock: { not: null },
+              },
+              select: { id: true },
+            });
+
+            for (const mod of modifiersToUpdate) {
+              const increment = modifierIncrements.get(mod.id);
+              if (increment) {
+                updatePromises.push(
+                  tx.modifier.update({
+                    where: { id: mod.id },
+                    data: { stock: { increment } },
+                  })
+                );
               }
             }
           }
+
+          await Promise.all(updatePromises);
           this.logger.log(
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          await this.inventoryService.restoreByOrder(
-            orderId,
-            tx,
-          );
+          await this.inventoryService.restoreByOrder(orderId, tx);
         }
       }
 

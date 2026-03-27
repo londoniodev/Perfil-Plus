@@ -11,12 +11,11 @@ import {
     RadioGroup,
     RadioGroupItem,
     Label,
-    Checkbox,
     ScrollArea,
     Badge
 } from "@alvarosky/ui"
 import { formatCurrency } from "@/lib/utils"
-import { Plus, Minus, AlertCircle } from "lucide-react"
+import { Plus, Minus } from "lucide-react"
 import { toast } from "sonner"
 
 interface ProductSelectionDialogProps {
@@ -43,12 +42,13 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
     const [selectedVariantId, setSelectedVariantId] = useState<string>("")
     const [quantity, setQuantity] = useState(1)
 
-    // State for selected modifiers: GroupId -> Set of ModifierIds
-    const [selectedModifiers, setSelectedModifiers] = useState<Record<string, Set<string>>>({})
+    // State for selected modifiers: GroupId -> Record of ModifierId -> Quantity
+    const [selectedModifiers, setSelectedModifiers] = useState<Record<string, Record<string, number>>>({})
 
     // Reset state when product changes or dialog opens
     useEffect(() => {
         if (open && product) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setQuantity(1)
             // Default select first variant
             const defaultVariant = product.variants.find(v => v.stock !== 0) || product.variants[0]
@@ -62,10 +62,11 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         if (!product) return 0
         let total = 0
         product.modifierGroups.forEach(group => {
-            const selectedIds = selectedModifiers[group.id] || new Set()
+            const selectedMods = selectedModifiers[group.id] || {}
             group.modifiers.forEach((mod: POSModifier) => {
-                if (selectedIds.has(mod.id)) {
-                    total += Number(mod.price)
+                const qty = selectedMods[mod.id]
+                if (qty) {
+                    total += Number(mod.price) * qty
                 }
             })
         })
@@ -85,31 +86,38 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
 
     const totalPrice = (basePrice + modifiersTotal) * quantity
 
-    const handleModifierToggle = (groupId: string, modifierId: string, maxSelect: number) => {
+    const handleModifierQuantityChange = (groupId: string, modifierId: string, delta: number, maxSelect: number) => {
         setSelectedModifiers(prev => {
-            const currentSet = new Set(prev[groupId] || [])
+            const groupMods = { ...(prev[groupId] || {}) }
+            const currentTotal = Object.values(groupMods).reduce((sum, qty) => sum + qty, 0)
+            const currentQty = groupMods[modifierId] || 0
 
-            if (currentSet.has(modifierId)) {
-                currentSet.delete(modifierId)
-            } else {
-                // If maxSelect is 1 (Radio behavior), clear others
+            if (delta > 0) {
                 if (maxSelect === 1) {
-                    currentSet.clear()
-                    currentSet.add(modifierId)
-                } else {
-                    // Check max limit
-                    if (currentSet.size < maxSelect) {
-                        currentSet.add(modifierId)
-                    } else {
-                        toast.error(`Máximo ${maxSelect} opciones permitidas`)
-                        return prev // No change
+                    // Radio behavior
+                    return {
+                        ...prev,
+                        [groupId]: { [modifierId]: 1 }
                     }
+                }
+
+                if (currentTotal + delta > maxSelect) {
+                    toast.error(`Máximo ${maxSelect} opciones permitidas`)
+                    return prev
+                }
+                groupMods[modifierId] = currentQty + delta
+            } else {
+                const newQty = Math.max(0, currentQty + delta)
+                if (newQty === 0) {
+                    delete groupMods[modifierId]
+                } else {
+                    groupMods[modifierId] = newQty
                 }
             }
 
             return {
                 ...prev,
-                [groupId]: currentSet
+                [groupId]: groupMods
             }
         })
     }
@@ -118,7 +126,8 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
         if (!product) return false
 
         for (const group of product.modifierGroups) {
-            const selectedCount = (selectedModifiers[group.id] || new Set()).size
+            const selectedMods = selectedModifiers[group.id] || {}
+            const selectedCount = Object.values(selectedMods).reduce((sum, qty) => sum + qty, 0)
             if (selectedCount < group.minSelect) {
                 toast.error(`Selecciona al menos ${group.minSelect} opción(es) en "${group.name}"`)
                 return false
@@ -140,14 +149,15 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
             quantity: number
         }[] = []
         product.modifierGroups.forEach(group => {
-            const selectedIds = selectedModifiers[group.id] || new Set()
+            const selectedMods = selectedModifiers[group.id] || {}
             group.modifiers.forEach((mod: POSModifier) => {
-                if (selectedIds.has(mod.id)) {
+                const qty = selectedMods[mod.id]
+                if (qty) {
                     appliedModifiers.push({
                         modifierId: mod.id,
                         name: mod.name,
                         priceAdjustment: Number(mod.price),
-                        quantity: 1 // TODO: Support quantity per modifier? Currently 1.
+                        quantity: qty
                     })
                 }
             })
@@ -200,8 +210,8 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
 
                         {/* MODIFIERS */}
                         {product?.modifierGroups && product.modifierGroups.map((group: POSModifierGroup) => {
-                            const selectedIds = selectedModifiers[group.id] || new Set()
-                            const currentCount = selectedIds.size
+                            const selectedMods = selectedModifiers[group.id] || {}
+                            const currentCount = Object.values(selectedMods).reduce((sum, qty) => sum + qty, 0)
                             const isSatisfied = currentCount >= group.minSelect && currentCount <= group.maxSelect
 
                             return (
@@ -225,27 +235,61 @@ export function ProductSelectionDialog({ open, onOpenChange, product, onAddToCar
 
                                     <div className="grid grid-cols-1 gap-2">
                                         {group.modifiers.map((mod: POSModifier) => {
-                                            const isSelected = selectedIds.has(mod.id)
+                                            const qty = selectedMods[mod.id] || 0
+                                            const isSelected = qty > 0
                                             return (
                                                 <div
                                                     key={mod.id}
                                                     className={`
+                                                        flex items-center justify-between p-3 rounded-lg border transition cursor-pointer
                                                         ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted/50 border-border/40 bg-muted/20'}
                                                     `}
-                                                    onClick={() => handleModifierToggle(group.id, mod.id, group.maxSelect)}
+                                                    onClick={() => {
+                                                        if (group.maxSelect === 1) {
+                                                            if (isSelected) {
+                                                                handleModifierQuantityChange(group.id, mod.id, -1, group.maxSelect)
+                                                            } else {
+                                                                handleModifierQuantityChange(group.id, mod.id, 1, group.maxSelect)
+                                                            }
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        {group.maxSelect === 1 ? (
+                                                        {group.maxSelect === 1 && (
                                                             <div className={`h-4 w-4 rounded-full border border-primary flex items-center justify-center ${isSelected ? 'bg-primary' : ''}`}>
                                                                 {isSelected && <div className="h-2 w-2 rounded-full bg-primary-foreground" />}
                                                             </div>
-                                                        ) : (
-                                                            <Checkbox checked={isSelected} />
                                                         )}
-                                                        <span className="text-sm font-medium">{mod.name}</span>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-medium">{mod.name}</span>
+                                                            {mod.price > 0 && (
+                                                                <span className="text-xs font-mono text-muted-foreground">+ {formatCurrency(mod.price)}</span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    {mod.price > 0 && (
-                                                        <span className="text-xs font-mono text-muted-foreground">+ {formatCurrency(mod.price)}</span>
+
+                                                    {group.maxSelect > 1 && (
+                                                        <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-full shadow-sm"
+                                                                onClick={() => handleModifierQuantityChange(group.id, mod.id, -1, group.maxSelect)}
+                                                                disabled={qty === 0}
+                                                            >
+                                                                <Minus className="h-4 w-4" />
+                                                            </Button>
+                                                            <span className="w-4 text-center text-sm font-semibold tabular-nums">{qty}</span>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-full shadow-sm"
+                                                                onClick={() => handleModifierQuantityChange(group.id, mod.id, 1, group.maxSelect)}
+                                                                disabled={currentCount >= group.maxSelect}
+                                                            >
+                                                                <Plus className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             )

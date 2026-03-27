@@ -1,5 +1,48 @@
-import { OrdersGateway, OrderEvent } from './orders.gateway';
+import {
+  OrdersGateway,
+  OrderEvent,
+  OrdersEventsController,
+} from './orders.gateway';
 import { firstValueFrom, take, toArray } from 'rxjs';
+import { UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
+describe('OrdersEventsController', () => {
+  let controller: OrdersEventsController;
+  let gateway: OrdersGateway;
+  let jwtService: JwtService;
+
+  beforeEach(() => {
+    gateway = new OrdersGateway();
+    jwtService = new JwtService({ secret: 'test-secret' });
+    controller = new OrdersEventsController(gateway, jwtService);
+  });
+
+  describe('events', () => {
+    it('debería lanzar UnauthorizedException si no se provee token', () => {
+      expect(() => controller.events('')).toThrow(UnauthorizedException);
+    });
+
+    it('debería lanzar UnauthorizedException si el token no tiene propósto sse_connection', () => {
+      const token = jwtService.sign({ purpose: 'other', tenantId: 'tenant-1' });
+      expect(() => controller.events(token)).toThrow(UnauthorizedException);
+    });
+
+    it('debería lanzar UnauthorizedException si falta el tenantId en el token', () => {
+      const token = jwtService.sign({ purpose: 'sse_connection' });
+      expect(() => controller.events(token)).toThrow(UnauthorizedException);
+    });
+
+    it('debería retornar los eventos del gateway si el token es válido', () => {
+      const token = jwtService.sign({
+        purpose: 'sse_connection',
+        tenantId: 'tenant-1',
+      });
+      const eventsObservable = controller.events(token);
+      expect(eventsObservable).toBeDefined();
+    });
+  });
+});
 
 describe('OrdersGateway', () => {
   let gateway: OrdersGateway;

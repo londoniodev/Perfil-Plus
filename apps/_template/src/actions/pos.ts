@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache"
 import { headers } from "next/headers"
 import { z } from "zod"
 import { API_BASE } from "../lib/config"
+import { getSessionUser } from "../lib/auth-server"
 
 
 // --- TYPES ---
@@ -107,6 +108,7 @@ export async function getPOSProducts() {
 export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>) {
     try {
         const { tableId, items } = createPOSOrderSchema.parse(data)
+        const user = await getSessionUser()
 
         // Transform items to match API expected DTO
         const orderItems = items.map(item => ({
@@ -121,19 +123,26 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
         const headersList = await headers()
         const tenantId = headersList.get("x-tenant-id") || "template"
 
+        const requestHeaders: Record<string, string> = {
+            "Content-Type": "application/json",
+            "x-tenant-id": tenantId
+        }
+
+        if (user?.accessToken) {
+            requestHeaders["Authorization"] = `Bearer ${user.accessToken}`
+        }
+
         // Call API to create order (Ensures Tenant Context & Logic)
         const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-tenant-id": tenantId
-            },
+            headers: requestHeaders,
             body: JSON.stringify({
                 orderType: "DINE_IN",
                 tableNumber: tableId,
                 items: orderItems,
-                status: "PREPARING" // Autosend to kitchen
-                // TODO: Pass waitstaff/user info if API supports it
+                status: "PREPARING", // Autosend to kitchen
+                waitstaffId: user?.id,
+                waitstaffName: user?.name
             })
         })
 
@@ -148,7 +157,8 @@ export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>)
 
         return { success: true, orderId: order.id }
 
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e as Error
         console.error("Create POS Order Error:", error)
         return { success: false, error: error.message || "Failed to create order" }
     }

@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react"
 export function CheckoutForm() {
     const { tenantId, features } = useTenant()
     const { setCart } = useCart()
-    const toast = useToast()
+    const { toast } = useToast()
     const router = useRouter()
     const searchParams = useSearchParams()
     

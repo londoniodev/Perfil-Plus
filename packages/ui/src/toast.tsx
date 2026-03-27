@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from "react";
 
 // ============================================================================
 // TYPES
@@ -16,6 +16,13 @@ export interface Toast {
     duration?: number;
 }
 
+export type ToastFunction = ((props: Omit<Toast, "id">) => void) & {
+    success: (message: string, title?: string) => void;
+    error: (message: string, title?: string) => void;
+    warning: (message: string, title?: string) => void;
+    info: (message: string, title?: string) => void;
+};
+
 interface ToastContextType {
     toasts: Toast[];
     showToast: (toast: Omit<Toast, "id">) => void;
@@ -24,6 +31,7 @@ interface ToastContextType {
     warning: (message: string, title?: string) => void;
     info: (message: string, title?: string) => void;
     removeToast: (id: string) => void;
+    toast: ToastFunction;
 }
 
 // ============================================================================
@@ -36,15 +44,22 @@ export function useToast() {
     const context = useContext(ToastContext);
     if (!context) {
         // Return a dummy context instead of throwing, allowing static rendering
+        const dummyToast = (() => { }) as any;
+        dummyToast.success = () => { };
+        dummyToast.error = () => { };
+        dummyToast.warning = () => { };
+        dummyToast.info = () => { };
+
         return {
             toasts: [],
-            showToast: () => {},
-            success: () => {},
-            error: () => {},
-            warning: () => {},
-            info: () => {},
-            removeToast: () => {},
-        } as any;
+            showToast: () => { },
+            success: () => { },
+            error: () => { },
+            warning: () => { },
+            info: () => { },
+            removeToast: () => { },
+            toast: dummyToast,
+        } as ToastContextType;
     }
     return context;
 }
@@ -95,8 +110,17 @@ export function ToastProvider({ children }: ToastProviderProps) {
         showToast({ type: "info", message, title: title ?? "Información" });
     }, [showToast]);
 
+    const toast = useMemo(() => {
+        const fn = (props: Omit<Toast, "id">) => showToast(props);
+        fn.success = success;
+        fn.error = error;
+        fn.warning = warning;
+        fn.info = info;
+        return fn as ToastFunction;
+    }, [showToast, success, error, warning, info]);
+
     return (
-        <ToastContext.Provider value={{ toasts, showToast, success, error, warning, info, removeToast }}>
+        <ToastContext.Provider value={{ toasts, showToast, success, error, warning, info, removeToast, toast }}>
             {children}
             <ToastContainer toasts={toasts} onRemove={removeToast} />
         </ToastContext.Provider>
@@ -206,5 +230,3 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         </div>
     );
 }
-
-

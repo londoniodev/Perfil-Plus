@@ -55,12 +55,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>
 
 export function CheckoutForm() {
     const { items, totalPrice, tableId, clearCart } = useCart()
-    const toast = useToast() // Fix: useToast returns the hook object, usually we destructure or use directly depending on lib.
-    // In @alvarosky/ui (shadcn), it's usually const { toast } = useToast().
-    // Wait, in previous file I used const toast = useToast() and it worked?
-    // Let me check TablesPage again. I changed it FROM { toast } TO toast.
-
-    // Let's assume const toast = useToast() is correct based on my previous fix.
+    const { toast } = useToast()
 
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)

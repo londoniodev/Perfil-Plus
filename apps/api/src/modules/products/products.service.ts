@@ -137,26 +137,28 @@ export class ProductsService {
 
       // Crear modifier groups si se envían (restaurante)
       if (modifierGroups && modifierGroups.length > 0) {
-        for (const group of modifierGroups) {
-          await tx.modifierGroup.create({
-            data: {
-              tenantId: this.cls.get('tenantId'),
-              productId: product.id,
-              name: group.name,
-              minSelect: group.minSelect ?? 0,
-              maxSelect: group.maxSelect ?? 1,
-              modifiers: {
-                create: group.modifiers.map((mod) => ({
-                  tenantId: this.cls.get('tenantId'),
-                  name: mod.name,
-                  priceAdjustment: mod.priceAdjustment ?? 0,
-                  stock: mod.stock ?? null,
-                  isAvailable: mod.isAvailable ?? true,
-                })),
+        await Promise.all(
+          modifierGroups.map((group) =>
+            tx.modifierGroup.create({
+              data: {
+                tenantId: this.cls.get('tenantId'),
+                productId: product.id,
+                name: group.name,
+                minSelect: group.minSelect ?? 0,
+                maxSelect: group.maxSelect ?? 1,
+                modifiers: {
+                  create: group.modifiers.map((mod) => ({
+                    tenantId: this.cls.get('tenantId'),
+                    name: mod.name,
+                    priceAdjustment: mod.priceAdjustment ?? 0,
+                    stock: mod.stock ?? null,
+                    isAvailable: mod.isAvailable ?? true,
+                  })),
+                },
               },
-            },
-          });
-        }
+            }),
+          ),
+        );
       }
 
       const result = await tx.product.findFirst({
@@ -242,26 +244,28 @@ export class ProductsService {
         });
 
         if (modifierGroups && modifierGroups.length > 0) {
-          for (const group of modifierGroups) {
-            await tx.modifierGroup.create({
-              data: {
-                tenantId: this.cls.get('tenantId'),
-                productId: id,
-                name: group.name,
-                minSelect: group.minSelect ?? 0,
-                maxSelect: group.maxSelect ?? 1,
-                modifiers: {
-                  create: group.modifiers.map((mod) => ({
-                    tenantId: this.cls.get('tenantId'),
-                    name: mod.name,
-                    priceAdjustment: mod.priceAdjustment ?? 0,
-                    stock: mod.stock ?? null,
-                    isAvailable: mod.isAvailable ?? true,
-                  })),
+          await Promise.all(
+            modifierGroups.map((group) =>
+              tx.modifierGroup.create({
+                data: {
+                  tenantId: this.cls.get('tenantId'),
+                  productId: id,
+                  name: group.name,
+                  minSelect: group.minSelect ?? 0,
+                  maxSelect: group.maxSelect ?? 1,
+                  modifiers: {
+                    create: group.modifiers.map((mod) => ({
+                      tenantId: this.cls.get('tenantId'),
+                      name: mod.name,
+                      priceAdjustment: mod.priceAdjustment ?? 0,
+                      stock: mod.stock ?? null,
+                      isAvailable: mod.isAvailable ?? true,
+                    })),
+                  },
                 },
-              },
-            });
-          }
+              }),
+            ),
+          );
         }
       }
 

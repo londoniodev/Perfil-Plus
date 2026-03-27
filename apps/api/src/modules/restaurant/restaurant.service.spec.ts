@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RestaurantService } from './restaurant.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 import { NotFoundException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -61,6 +62,8 @@ const MOCK_PRODUCTS = [
     categories: [
       { category: { id: 'cat-1', name: 'Hamburguesas', slug: 'hamburguesas' } },
     ],
+    likes: [],
+    comments: [],
   },
   {
     id: 'prod-2',
@@ -76,6 +79,8 @@ const MOCK_PRODUCTS = [
     categories: [
       { category: { id: 'cat-2', name: 'Bebidas', slug: 'bebidas' } },
     ],
+    likes: [],
+    comments: [],
   },
 ];
 
@@ -91,6 +96,8 @@ const MOCK_SYSTEM_SETTING = {
 };
 
 // ============ MOCK PRISMA ============
+
+const MOCK_TENANT_ID = 'tenant-123';
 
 function createMockPrisma() {
   const mockTenantClient = {
@@ -109,6 +116,25 @@ function createMockPrisma() {
     getTenantBySlug: jest.fn(),
     getTenantClient: jest.fn().mockResolvedValue(mockTenantClient),
     _tenantClient: mockTenantClient,
+    secure: {
+      tenant: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: MOCK_TENANT_ID,
+          name: 'Test Tenant',
+          slug: 'test-tenant',
+          brandSettings: null,
+        }),
+      },
+      category: {
+        findMany: jest.fn().mockResolvedValue(MOCK_CATEGORIES),
+      },
+      product: {
+        findMany: jest.fn().mockResolvedValue(MOCK_PRODUCTS),
+      },
+      systemSetting: {
+        findMany: jest.fn().mockResolvedValue([MOCK_SYSTEM_SETTING]),
+      },
+    },
   };
 }
 
@@ -125,6 +151,8 @@ describe('RestaurantService', () => {
       providers: [
         RestaurantService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: 'CACHE_MANAGER', useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
+        { provide: ClsService, useValue: { get: jest.fn() } },
       ],
     }).compile();
 

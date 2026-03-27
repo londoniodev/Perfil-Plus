@@ -164,9 +164,11 @@ export class EvaluationService {
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
     // Verificar si ya completó la evaluación
-    const existingResult = await this.prisma.secure.evaluationResult.findUnique({
-      where: { userId_evaluationId: { userId, evaluationId } },
-    });
+    const existingResult = await this.prisma.secure.evaluationResult.findUnique(
+      {
+        where: { userId_evaluationId: { userId, evaluationId } },
+      },
+    );
 
     return {
       ...evaluation,
@@ -190,9 +192,11 @@ export class EvaluationService {
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
     // Verificar si ya completó la evaluación
-    const existingResult = await this.prisma.secure.evaluationResult.findUnique({
-      where: { userId_evaluationId: { userId, evaluationId } },
-    });
+    const existingResult = await this.prisma.secure.evaluationResult.findUnique(
+      {
+        where: { userId_evaluationId: { userId, evaluationId } },
+      },
+    );
 
     if (existingResult) {
       throw new BadRequestException('Ya has completado esta evaluación');

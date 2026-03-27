@@ -1,6 +1,12 @@
 import React from 'react';
 
 export function useToast() {
+  const toast = (() => {}) as any;
+  toast.success = () => {};
+  toast.error = () => {};
+  toast.warning = () => {};
+  toast.info = () => {};
+
   return {
     toasts: [],
     showToast: () => {},
@@ -9,6 +15,7 @@ export function useToast() {
     warning: () => {},
     info: () => {},
     removeToast: () => {},
+    toast: toast,
   };
 }
 

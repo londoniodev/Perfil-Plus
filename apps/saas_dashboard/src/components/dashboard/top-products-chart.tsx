@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, LabelList, Cell } from "recharts"
 import {
     Card,
     CardContent,
@@ -14,18 +14,16 @@ import {
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
+import { generateThemeColors } from "@/lib/chart-colors"
 
 const chartConfig = {
     cantidad: {
         label: "Platos",
-        theme: {
-            light: "hsl(197, 37%, 24%)",
-            dark: "hsl(30, 80%, 55%)"
-        }
+        color: "hsl(var(--primary))",
     },
     ingresos: {
         label: "Ingresos",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(var(--primary) / 0.6)",
     },
 } satisfies ChartConfig
 
@@ -37,16 +35,18 @@ export interface TopProductData {
 
 interface TopProductsChartProps {
     data: TopProductData[]
+    periodLabel?: string
 }
 
-export function TopProductsChart({ data }: TopProductsChartProps) {
+export function TopProductsChart({ data, periodLabel }: TopProductsChartProps) {
     const hasData = data.length > 0
+    const colors = generateThemeColors(data.length)
 
     return (
         <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base">Productos Más Vendidos</CardTitle>
-                <CardDescription>Top 5 del mes actual</CardDescription>
+                <CardDescription>Top 5 de {periodLabel || "el período seleccionado"}</CardDescription>
             </CardHeader>
             <CardContent className="px-2 sm:px-6">
                 {hasData ? (
@@ -71,7 +71,11 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                                     <ChartTooltipContent
                                         formatter={(value, name) => {
                                             if (name === "ingresos") {
-                                                return `$${Number(value).toLocaleString("es-CO")}`
+                                                return new Intl.NumberFormat("es-CO", {
+                                                    style: "currency",
+                                                    currency: "COP",
+                                                    maximumFractionDigits: 0,
+                                                }).format(Number(value))
                                             }
                                             return `${value} unidades`
                                         }}
@@ -80,10 +84,12 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                             />
                             <Bar
                                 dataKey="cantidad"
-                                fill="var(--color-cantidad)"
                                 radius={[0, 6, 6, 0]}
                                 barSize={24}
                             >
+                                {data.map((_, index) => (
+                                    <Cell key={index} fill={colors[index] || colors[0]} />
+                                ))}
                                 <LabelList
                                     dataKey="cantidad"
                                     position="right"

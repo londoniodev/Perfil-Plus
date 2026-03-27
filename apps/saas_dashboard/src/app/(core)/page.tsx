@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth-server";
 import { getTenantId } from "@/lib/config-server";
 import { serverFetch } from "@/lib/api-server";
 import { getDashboardStats, type DashboardStats } from "@/actions/admin/dashboard";
+import { getPeriodLabel } from "@/lib/chart-colors";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
 import { TopProductsChart, type TopProductData } from "@/components/dashboard/top-products-chart";
@@ -29,6 +30,7 @@ import {
     ChefHat,
     Timer,
     Percent,
+    Receipt,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -87,11 +89,12 @@ function DashboardSkeleton() {
 // Extracted metrics component to allow Suspense streaming
 async function DashboardMetrics({ tenant, period }: { tenant: any, period: string }) {
     const stats = await getDashboardStats(tenant.features || [], period);
+    const periodLabel = getPeriodLabel(period);
 
     const mappedTopProducts: TopProductData[] = (stats.topProducts || []).map(p => ({
         name: p.productName,
         cantidad: p.quantity,
-        ingresos: 0 // Simplificado
+        ingresos: 0,
     }));
 
     const mappedOrderTypes: OrderTypeData[] = (stats.orderTypes || []).map((ot) => ({
@@ -99,20 +102,25 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         label: ot.type === 'DINE_IN' ? 'Mesa' : ot.type === 'DELIVERY' ? 'Domicilio' : 'Llevar',
         count: ot.count,
         total: ot.total || 0,
-        fill: ot.type === 'DINE_IN' ? 'var(--color-DINE_IN)' : ot.type === 'DELIVERY' ? 'var(--color-DELIVERY)' : 'var(--color-TAKE_AWAY)'
+        fill: '',
     }));
 
     const mappedPaymentMethods: PaymentMethodData[] = (stats.paymentMethods || []).map(pm => ({
         method: pm.method,
         label: pm.method === 'CASH' ? 'Efectivo' : 'Tarjeta/Transferencia',
         count: pm.count,
-        total: pm.total || 0 // Properly mapped from backend
+        total: pm.total || 0,
     }));
 
     const mappedProductionTimes: ProductionTimeData[] = (stats.productionTimes || []).map(p => ({
         step: p.stage === 'Preparation' ? 'Espera a preparar' : p.stage === 'Shipping' ? 'Tiempo de Cocción' : 'Servicio a Mesa',
         time: p.minutes
     }));
+
+    // Ticket promedio global
+    const avgTicketAll = (stats.avgTicketByType || []);
+    const totalTicketSum = avgTicketAll.reduce((acc: number, t: any) => acc + (t.avgTicket || 0), 0);
+    const avgTicket = avgTicketAll.length > 0 ? totalTicketSum / avgTicketAll.length : 0;
 
 
 
@@ -193,7 +201,11 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                                 value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
                                 icon={UtensilsCrossed}
                             />
-                            {/* Plato Más Vendido Hoy card removed per user request */}
+                            <StatsCard
+                                title="Ticket Promedio"
+                                value={formatCurrency(avgTicket)}
+                                icon={Receipt}
+                            />
                         </>
                     )}
                 </div>
@@ -205,7 +217,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
             {(hasShop || hasRestaurant) && (
                 <div className="space-y-4">
                     <h2 className="text-xl font-bold tracking-tight">Análisis de Rendimiento</h2>
-                    <RevenueChart data={stats.revenueByDay} />
+                    <RevenueChart data={stats.revenueByDay} periodLabel={periodLabel} />
                 </div>
             )}
 
@@ -215,14 +227,14 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
 
                     {/* Fila 1: Tipos de Orden, Métodos de Pago y Tiempos de Entrega */}
                     <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
-                        <OrderTypeChart data={mappedOrderTypes} />
-                        <PaymentMethodsChart data={mappedPaymentMethods} />
+                        <OrderTypeChart data={mappedOrderTypes} periodLabel={periodLabel} />
+                        <PaymentMethodsChart data={mappedPaymentMethods} periodLabel={periodLabel} />
                         <ProductionTimeChart data={mappedProductionTimes} />
                     </div>
 
                     {/* Fila 2: Productos Más Vendidos */}
                     <div className="grid gap-4 sm:gap-6 grid-cols-1 mt-4 sm:mt-6">
-                        <TopProductsChart data={mappedTopProducts} />
+                        <TopProductsChart data={mappedTopProducts} periodLabel={periodLabel} />
                     </div>
 
                     {/* Fila 3: Tiempos de Producción por Producto */}

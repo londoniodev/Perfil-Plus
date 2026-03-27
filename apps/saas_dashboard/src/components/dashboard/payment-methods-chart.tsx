@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Cell } from "recharts"
 import {
     Card,
     CardContent,
@@ -14,14 +14,12 @@ import {
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
+import { generateThemeColors } from "@/lib/chart-colors"
 
 const chartConfig = {
     total: {
         label: "Ingresos",
-        theme: {
-            light: "hsl(173, 58%, 39%)",
-            dark: "hsl(160, 60%, 45%)"
-        }
+        color: "hsl(var(--primary))",
     },
 } satisfies ChartConfig
 
@@ -34,21 +32,26 @@ export interface PaymentMethodData {
 
 interface PaymentMethodsChartProps {
     data: PaymentMethodData[]
+    periodLabel?: string
 }
 
-export function PaymentMethodsChart({ data }: PaymentMethodsChartProps) {
+export function PaymentMethodsChart({ data, periodLabel }: PaymentMethodsChartProps) {
     const hasData = data.length > 0 && data.some((d) => d.total > 0)
+
+    // Sort by total descending for color assignment
+    const sortedData = [...data].sort((a, b) => b.total - a.total)
+    const colors = generateThemeColors(sortedData.length)
 
     return (
         <Card className="border-border/50 bg-card/60 backdrop-blur-xl">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base">Métodos de Pago</CardTitle>
-                <CardDescription>Distribución de ingresos por método</CardDescription>
+                <CardDescription>Distribución de ingresos de {periodLabel || "el período seleccionado"}</CardDescription>
             </CardHeader>
             <CardContent className="px-2 sm:px-6">
                 {hasData ? (
                     <ChartContainer config={chartConfig} className="aspect-auto h-[220px] w-full">
-                        <BarChart data={data} margin={{ left: 10, right: 10 }}>
+                        <BarChart data={sortedData} margin={{ left: 10, right: 10 }}>
                             <CartesianGrid vertical={false} />
                             <XAxis
                                 dataKey="label"
@@ -61,18 +64,25 @@ export function PaymentMethodsChart({ data }: PaymentMethodsChartProps) {
                                 cursor={false}
                                 content={
                                     <ChartTooltipContent
-                                        formatter={(value, name) => {
-                                            return `$${Number(value).toLocaleString("es-CO")}`
+                                        formatter={(value) => {
+                                            return new Intl.NumberFormat("es-CO", {
+                                                style: "currency",
+                                                currency: "COP",
+                                                maximumFractionDigits: 0,
+                                            }).format(Number(value))
                                         }}
                                     />
                                 }
                             />
                             <Bar
                                 dataKey="total"
-                                fill="var(--color-total)"
                                 radius={[6, 6, 0, 0]}
                                 barSize={48}
-                            />
+                            >
+                                {sortedData.map((_, index) => (
+                                    <Cell key={index} fill={colors[index] || colors[0]} />
+                                ))}
+                            </Bar>
                         </BarChart>
                     </ChartContainer>
                 ) : (
@@ -86,7 +96,7 @@ export function PaymentMethodsChart({ data }: PaymentMethodsChartProps) {
                 {/* Stats summary below chart */}
                 {hasData && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border/30 mt-4">
-                        {data.map((item) => (
+                        {sortedData.map((item) => (
                             <div key={item.method} className="text-center">
                                 <p className="text-lg font-bold text-foreground">{item.count}</p>
                                 <p className="text-xs text-muted-foreground">{item.label}</p>

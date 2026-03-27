@@ -55,4 +55,8 @@ export class LeadQueryDto {
   @IsInt()
   @Min(0)
   skip?: number;
+
+  @IsOptional()
+  @IsString()
+  _tenantCacheId?: string;
 }

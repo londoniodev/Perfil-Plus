@@ -15,6 +15,7 @@ import {
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
+import { generateThemeColors } from "@/lib/chart-colors"
 
 const chartConfig = {
     orders: {
@@ -22,24 +23,15 @@ const chartConfig = {
     },
     DINE_IN: {
         label: "Mesa",
-        theme: {
-            light: "hsl(12, 76%, 61%)",
-            dark: "hsl(220, 70%, 50%)"
-        }
+        color: "hsl(var(--primary))",
     },
     TAKE_AWAY: {
         label: "Para Llevar",
-        theme: {
-            light: "hsl(173, 58%, 39%)",
-            dark: "hsl(160, 60%, 45%)"
-        }
+        color: "hsl(var(--primary) / 0.60)",
     },
     DELIVERY: {
         label: "Domicilio",
-        theme: {
-            light: "hsl(197, 37%, 24%)",
-            dark: "hsl(30, 80%, 55%)"
-        }
+        color: "hsl(var(--primary) / 0.35)",
     },
 } satisfies ChartConfig
 
@@ -54,9 +46,10 @@ export interface OrderTypeData {
 
 interface OrderTypeChartProps {
     data: OrderTypeData[]
+    periodLabel?: string
 }
 
-export function OrderTypeChart({ data }: OrderTypeChartProps) {
+export function OrderTypeChart({ data, periodLabel }: OrderTypeChartProps) {
     const totalOrders = React.useMemo(
         () => data.reduce((acc, curr) => acc + curr.count, 0),
         [data]
@@ -64,11 +57,18 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
 
     const hasData = data.length > 0 && totalOrders > 0
 
+    // Sort by count descending and assign degraded colors
+    const sortedData = React.useMemo(() => {
+        const sorted = [...data].sort((a, b) => b.count - a.count)
+        const colors = generateThemeColors(sorted.length)
+        return sorted.map((item, i) => ({ ...item, fill: colors[i] }))
+    }, [data])
+
     return (
         <Card className="border-border/50 bg-card/60 backdrop-blur-xl flex flex-col">
             <CardHeader className="pb-0">
                 <CardTitle className="text-base">Tipo de Orden</CardTitle>
-                <CardDescription>Distribución del mes actual</CardDescription>
+                <CardDescription>Distribución de {periodLabel || "el período seleccionado"}</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-0">
                 {hasData ? (
@@ -96,17 +96,17 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                                 }
                             />
                             <Pie
-                                data={data}
+                                data={sortedData}
                                 dataKey="count"
                                 nameKey="label"
                                 innerRadius={60}
                                 strokeWidth={5}
                                 paddingAngle={3}
                             >
-                                {data.map((entry) => (
+                                {sortedData.map((entry) => (
                                     <Cell
                                         key={entry.type}
-                                        fill={`var(--color-${entry.type})`}
+                                        fill={entry.fill}
                                     />
                                 ))}
                                 <Label
@@ -152,11 +152,11 @@ export function OrderTypeChart({ data }: OrderTypeChartProps) {
                 {/* Legend */}
                 {hasData && (
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 pb-4 pt-2">
-                        {data.map((entry, index) => (
+                        {sortedData.map((entry) => (
                             <div key={entry.type} className="flex items-center gap-2">
                                 <div
                                     className="h-3 w-3 rounded-full shrink-0"
-                                    style={{ backgroundColor: `var(--color-${entry.type})` }}
+                                    style={{ backgroundColor: entry.fill }}
                                     aria-hidden="true"
                                 />
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">

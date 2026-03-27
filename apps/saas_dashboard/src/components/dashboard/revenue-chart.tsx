@@ -19,18 +19,16 @@ import {
 const chartConfig = {
     ingresos: {
         label: "Ingresos",
-        theme: {
-            light: "hsl(12, 76%, 61%)",
-            dark: "hsl(220, 70%, 50%)"
-        }
+        color: "hsl(var(--primary))",
     },
 } satisfies ChartConfig
 
 interface RevenueChartProps {
     data: { date: string; total: number }[]
+    periodLabel?: string
 }
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
     const hasData = data && data.length > 0 && data.some((d) => d.total > 0)
 
     return (
@@ -39,7 +37,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                 <div>
                     <CardTitle>Ingresos</CardTitle>
                     <CardDescription>
-                        Flujo de ingresos en el período seleccionado
+                        Flujo de ingresos en {periodLabel || "el período seleccionado"}
                     </CardDescription>
                 </div>
             </CardHeader>
@@ -54,12 +52,12 @@ export function RevenueChart({ data }: RevenueChartProps) {
                                 <linearGradient id="fillIngresos" x1="0" y1="0" x2="0" y2="1">
                                     <stop
                                         offset="5%"
-                                        stopColor="var(--color-ingresos)"
+                                        stopColor="hsl(var(--primary))"
                                         stopOpacity={0.8}
                                     />
                                     <stop
                                         offset="95%"
-                                        stopColor="var(--color-ingresos)"
+                                        stopColor="hsl(var(--primary))"
                                         stopOpacity={0.1}
                                     />
                                 </linearGradient>
@@ -91,7 +89,11 @@ export function RevenueChart({ data }: RevenueChartProps) {
                                             })
                                         }}
                                         formatter={(value) => {
-                                            return `$${Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2 })}`
+                                            return new Intl.NumberFormat("es-CO", {
+                                                style: "currency",
+                                                currency: "COP",
+                                                maximumFractionDigits: 0,
+                                            }).format(Number(value))
                                         }}
                                         indicator="dot"
                                     />
@@ -101,7 +103,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                                 dataKey="total"
                                 type="natural"
                                 fill="url(#fillIngresos)"
-                                stroke="var(--color-ingresos)"
+                                stroke="hsl(var(--primary))"
                                 strokeWidth={2}
                             />
                         </AreaChart>

@@ -117,7 +117,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
             const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
             
-            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod === "BOLD")
+            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod.startsWith("BOLD"))
                 ? `${API_URL}/payments/product/checkout`
                 : `${API_URL}/orders`; // Usar el endpoint estándar para pedidos directos
 

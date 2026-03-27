@@ -10,6 +10,7 @@ import { REQUEST } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
+import { ClsService } from 'nestjs-cls';
 import { OrderCreatedEvent } from './events/order.events';
 
 // ============ MOCK FACTORIES ============
@@ -55,7 +56,7 @@ const MOCK_VARIANT = {
         id: 'mg-2',
         productId: 'prod-1',
         name: 'Tamaño',
-        minSelect: 1,
+        minSelect: 0,
         maxSelect: 1,
         modifiers: [
           {
@@ -129,10 +130,33 @@ function createMockTx() {
     productVariant: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      findMany: jest.fn().mockImplementation(async ({ where }) => {
+        if (where && where.id && where.id.in) {
+           return where.id.in.map(id => {
+             if (id === 'var-1') return { ...MOCK_VARIANT, id, stock: 50 };
+             if (id === 'var-2') return { ...MOCK_VARIANT, id, price: new Decimal(5.0), stock: 30, product: { ...MOCK_VARIANT.product, id: 'prod-2', name: 'Bebida o Coca Cola', modifierGroups: [] } };
+             return { ...MOCK_VARIANT, id, stock: 50 };
+           });
+        }
+        return [];
+      }),
     },
     modifier: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      findMany: jest.fn().mockImplementation(async ({ where }) => {
+        if (where && where.id && where.id.in) {
+           return where.id.in.map(id => ({
+             id,
+             name: 'Mock Modifier',
+             priceAdjustment: new Decimal(2),
+             stock: 10,
+             isAvailable: true,
+             groupId: 'mg-1'
+           }));
+        }
+        return [];
+      }),
     },
     lead: {
       findFirst: jest.fn().mockResolvedValue(null),
@@ -180,6 +204,12 @@ describe('OrdersService', () => {
         OrdersService,
         OrderPricingService,
         OrderValidationService,
+        {
+          provide: ClsService,
+          useValue: {
+            get: jest.fn().mockReturnValue('tenant-test-1'),
+          },
+        },
         {
           provide: REQUEST,
           useValue: mockRequest,
@@ -240,7 +270,7 @@ describe('OrdersService', () => {
         .mockResolvedValueOnce({ stock: 20 })
         .mockResolvedValueOnce({ stock: 15 });
 
-      mockTx.order.create.mockResolvedValue(MOCK_ORDER);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         orderType: 'DINE_IN' as any,
@@ -289,7 +319,7 @@ describe('OrdersService', () => {
     });
 
     it('debería lanzar NotFoundException si la variante no existe', async () => {
-      mockTx.productVariant.findUnique.mockResolvedValue(null);
+      mockTx.productVariant.findMany.mockResolvedValue([]);
 
       const dto = {
         items: [{ variantId: 'no-existe', quantity: 1 }],
@@ -305,7 +335,8 @@ describe('OrdersService', () => {
         ...MOCK_VARIANT,
         stock: 2,
       };
-      mockTx.productVariant.findUnique.mockResolvedValue(lowStockVariant);
+      mockTx.productVariant.findMany.mockResolvedValue([lowStockVariant]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         items: [
@@ -330,7 +361,8 @@ describe('OrdersService', () => {
         ...MOCK_VARIANT,
         product: { ...MOCK_VARIANT.product, published: false },
       };
-      mockTx.productVariant.findUnique.mockResolvedValue(unpublishedVariant);
+      mockTx.productVariant.findMany.mockResolvedValue([unpublishedVariant]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = { items: [{ variantId: 'var-1', quantity: 1 }] };
       await expect(service.createOrder('user-1', dto as any)).rejects.toThrow(
@@ -346,7 +378,8 @@ describe('OrdersService', () => {
         ...MOCK_VARIANT,
         product: { ...MOCK_VARIANT.product, isAvailable: false },
       };
-      mockTx.productVariant.findUnique.mockResolvedValue(unavailableVariant);
+      mockTx.productVariant.findMany.mockResolvedValue([unavailableVariant]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = { items: [{ variantId: 'var-1', quantity: 1 }] };
       await expect(service.createOrder('user-1', dto as any)).rejects.toThrow(
@@ -355,8 +388,17 @@ describe('OrdersService', () => {
     });
 
     it('debería validar minSelect — lanzar error si se requiere selección mínima y no se envía', async () => {
-      // El grupo "Tamaño" tiene minSelect: 1, pero no se envían modifiers de ese grupo
-      mockTx.productVariant.findUnique.mockResolvedValue(MOCK_VARIANT);
+      mockTx.productVariant.findMany.mockResolvedValue([{
+        ...MOCK_VARIANT,
+        product: {
+          ...MOCK_VARIANT.product,
+          modifierGroups: [
+            ...MOCK_VARIANT.product.modifierGroups,
+            { id: 'mg-3', productId: 'prod-1', name: 'Required', minSelect: 1, maxSelect: 1, modifiers: [] }
+          ]
+        }
+      }]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         items: [{ variantId: 'var-1', quantity: 1 }], // sin modifiers
@@ -431,9 +473,9 @@ describe('OrdersService', () => {
         },
       };
 
-      mockTx.productVariant.findUnique.mockResolvedValue(
-        variantWithUnavailableMod,
-      );
+      // Since order pricing service fetches variants with findMany, we mock findMany here.
+      mockTx.productVariant.findMany.mockResolvedValue([variantWithUnavailableMod]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         items: [
@@ -464,8 +506,9 @@ describe('OrdersService', () => {
         },
       };
 
-      mockTx.productVariant.findUnique.mockResolvedValue(digitalVariant);
-      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, items: [] });
+      mockTx.productVariant.findMany.mockResolvedValue([digitalVariant]);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1', items: [] });
+      mockTx.productVariant.update.mockClear();
 
       const dto = {
         items: [{ variantId: 'var-1', quantity: 1 }],
@@ -491,7 +534,7 @@ describe('OrdersService', () => {
         });
 
         // @ts-ignore
-        mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, userId: null });
+        mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1', userId: null });
 
         const dto = {
           items: [
@@ -537,6 +580,7 @@ describe('OrdersService', () => {
         // @ts-ignore
         mockTx.order.create.mockResolvedValue({
           ...MOCK_ORDER,
+          id: 'order-1',
           userId: null,
           orderType: 'DELIVERY',
         });
@@ -663,6 +707,7 @@ describe('OrdersService', () => {
       mockTx.productVariant.findUnique.mockResolvedValue(variantNoModGroups);
       mockTx.order.create.mockResolvedValue({
         ...MOCK_ORDER,
+        id: 'order-1',
         status: 'PREPARING',
       });
 
@@ -690,7 +735,7 @@ describe('OrdersService', () => {
         product: { ...MOCK_VARIANT.product, modifierGroups: [] },
       };
       mockTx.productVariant.findUnique.mockResolvedValue(variantNoModGroups);
-      mockTx.order.create.mockResolvedValue(MOCK_ORDER);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         orderType: 'DINE_IN' as any,
@@ -1213,7 +1258,7 @@ describe('OrdersService', () => {
         product: { ...MOCK_VARIANT.product, modifierGroups: [] },
       };
       mockTx.productVariant.findUnique.mockResolvedValue(variantNoModGroups);
-      mockTx.order.create.mockResolvedValue(MOCK_ORDER);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         orderType: 'DINE_IN' as any,
@@ -1423,6 +1468,7 @@ describe('OrdersService', () => {
       // Total esperado: 15.99 * 1 + 5.00 * 3 = 30.99
       mockTx.order.create.mockResolvedValue({
         ...MOCK_ORDER,
+        id: 'order-1',
         totalAmount: new Decimal(30.99),
       });
 
@@ -1471,7 +1517,7 @@ describe('OrdersService', () => {
         .mockResolvedValueOnce(variant1)
         .mockResolvedValueOnce(variant2);
 
-      mockTx.order.create.mockResolvedValue(MOCK_ORDER);
+      mockTx.order.create.mockResolvedValue({ ...MOCK_ORDER, id: 'order-1' });
 
       const dto = {
         orderType: 'DINE_IN' as any,

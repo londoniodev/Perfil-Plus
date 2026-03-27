@@ -426,6 +426,7 @@ model Product {
   @@index([tenantId])
   @@index([published, productType])
   @@index([published, isAvailable])
+  @@index([tenantId, published, isAvailable])
 }
 
 model CategoriesOnProducts {

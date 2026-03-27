@@ -56,7 +56,9 @@ async function bootstrap() {
     .filter(Boolean);
 
   // Base domains for multi-tenant (Dynamic from env)
-  const baseDomain = configService.get<string>('MAIN_DOMAIN') || configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN');
+  const baseDomain =
+    configService.get<string>('MAIN_DOMAIN') ||
+    configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN');
 
   // In development, always allow localhost
   const devOrigins = [
@@ -77,7 +79,9 @@ async function bootstrap() {
   if (baseDomain) {
     logger.log(`CORS: Dynamic base domain: ${baseDomain}`);
   }
-  logger.log(`CORS: CorsCacheService activo (validación dinámica desde Redis / DB)`);
+  logger.log(
+    `CORS: CorsCacheService activo (validación dinámica desde Redis / DB)`,
+  );
 
   app.enableCors({
     origin: async (requestOrigin, callback) => {
@@ -100,7 +104,10 @@ async function bootstrap() {
       }
 
       logger.warn(`Blocked CORS request from origin: ${requestOrigin}`);
-      callback(new Error(`Not allowed by CORS: ${requestOrigin}`), false as any);
+      callback(
+        new Error(`Not allowed by CORS: ${requestOrigin}`),
+        false as any,
+      );
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: [

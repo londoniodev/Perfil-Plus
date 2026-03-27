@@ -36,7 +36,7 @@ export class WhatsappProcessor {
       // SECURITY EXCEPTION: Global query to resolve tenantId from phone number before CLS context exists.
       /* eslint-disable no-restricted-syntax */
       const storeSetting = await this.prisma.storeSettings.findFirst({
-      /* eslint-enable no-restricted-syntax */
+        /* eslint-enable no-restricted-syntax */
         where: {
           waPhoneNumberId: phone_number_id,
         },

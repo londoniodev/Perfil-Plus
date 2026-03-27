@@ -64,7 +64,7 @@ export class RestaurantContextService {
       name: p.name,
       basePrice: Number(p.basePrice),
       description: p.description || null,
-      variantId: (p as any).variants[0]?.id || p.id,
+      variantId: p.variants[0]?.id || p.id,
       images: p.images || [],
     }));
 

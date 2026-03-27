@@ -91,8 +91,9 @@ export class OrdersService {
                   if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                   if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
                   if (methodLabel === 'BOLD') methodLabel = 'Bold';
-                  if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
-                  
+                  if (methodLabel === 'MERCADOPAGO')
+                    methodLabel = 'MercadoPago';
+
                   const paymentNote = dto.paymentMethod
                     ? `Forma de pago: ${methodLabel}`
                     : null;
@@ -239,10 +240,7 @@ export class OrdersService {
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          await this.inventoryService.restoreByOrder(
-            orderId,
-            tx,
-          );
+          await this.inventoryService.restoreByOrder(orderId, tx);
         }
       }
 

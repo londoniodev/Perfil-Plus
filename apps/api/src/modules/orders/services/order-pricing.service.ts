@@ -51,7 +51,9 @@ export class OrderPricingService {
     const variantMap = new Map(variants.map((v) => [v.id, v]));
 
     // Pre-fetch fallback modifiers to avoid N+1 queries for modifiers not found in product groups
-    const allModifierIds = items.flatMap((item) => (item.modifiers || []).map((m) => m.modifierId));
+    const allModifierIds = items.flatMap((item) =>
+      (item.modifiers || []).map((m) => m.modifierId),
+    );
     let fallbackModifierMap = new Map();
 
     if (allModifierIds.length > 0) {

@@ -91,8 +91,9 @@ export class OrdersService {
                   if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                   if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
                   if (methodLabel === 'BOLD') methodLabel = 'Bold';
-                  if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
-                  
+                  if (methodLabel === 'MERCADOPAGO')
+                    methodLabel = 'MercadoPago';
+
                   const paymentNote = dto.paymentMethod
                     ? `Forma de pago: ${methodLabel}`
                     : null;
@@ -215,34 +216,69 @@ export class OrdersService {
         });
 
         if (orderWithItems) {
+          const variantIncrements = new Map<string, number>();
+          const modifierIncrements = new Map<string, number>();
+
           for (const item of orderWithItems.items) {
             if (item.variant.stock !== -1) {
-              await tx.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { increment: item.quantity } },
-              });
+              const currentInc = variantIncrements.get(item.variantId) || 0;
+              variantIncrements.set(item.variantId, currentInc + item.quantity);
             }
 
             for (const mod of item.modifiers) {
-              const originalModifier = await tx.modifier.findUnique({
-                where: { id: mod.modifierId },
-              });
-              if (originalModifier && originalModifier.stock !== null) {
-                await tx.modifier.update({
-                  where: { id: mod.modifierId },
-                  data: { stock: { increment: mod.quantity * item.quantity } },
-                });
-              }
+              const currentInc = modifierIncrements.get(mod.modifierId) || 0;
+              modifierIncrements.set(
+                mod.modifierId,
+                currentInc + mod.quantity * item.quantity,
+              );
             }
           }
+
+          const modifierIdsToFetch = Array.from(modifierIncrements.keys());
+          let modifiersToUpdate: any[] = [];
+
+          if (modifierIdsToFetch.length > 0) {
+            const originalModifiers = await tx.modifier.findMany({
+              where: { id: { in: modifierIdsToFetch } },
+              select: { id: true, stock: true },
+            });
+            modifiersToUpdate = originalModifiers.filter(
+              (m) => m.stock !== null,
+            );
+          }
+
+          const updatePromises: Promise<any>[] = [];
+
+          for (const [variantId, increment] of variantIncrements.entries()) {
+            updatePromises.push(
+              tx.productVariant.update({
+                where: { id: variantId },
+                data: { stock: { increment } },
+              }),
+            );
+          }
+
+          for (const mod of modifiersToUpdate) {
+            const increment = modifierIncrements.get(mod.id);
+            if (increment) {
+              updatePromises.push(
+                tx.modifier.update({
+                  where: { id: mod.id },
+                  data: { stock: { increment } },
+                }),
+              );
+            }
+          }
+
+          if (updatePromises.length > 0) {
+            await Promise.all(updatePromises);
+          }
+
           this.logger.log(
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );
 
-          await this.inventoryService.restoreByOrder(
-            orderId,
-            tx,
-          );
+          await this.inventoryService.restoreByOrder(orderId, tx);
         }
       }
 

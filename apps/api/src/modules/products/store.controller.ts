@@ -23,7 +23,7 @@ export class StoreController {
     @Query('limit') limit?: string,
   ) {
     return this.productsService.findAllPublished(
-      type, 
+      type,
       allVariants === 'true',
       search,
       limit ? parseInt(limit, 10) : undefined,

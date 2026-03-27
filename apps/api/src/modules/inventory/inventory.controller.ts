@@ -117,10 +117,7 @@ export class InventoryController {
   }
 
   @Post('stock/exit')
-  addStockExit(
-    @CurrentUser('sub') userId: string,
-    @Body() dto: StockExitDto,
-  ) {
+  addStockExit(@CurrentUser('sub') userId: string, @Body() dto: StockExitDto) {
     return this.inventoryService.addStockExit(userId, dto);
   }
 

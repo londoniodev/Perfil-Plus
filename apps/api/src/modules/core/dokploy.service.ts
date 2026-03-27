@@ -27,7 +27,11 @@ export class DokployService {
    * Cuenta con sistema de reintentos con Exponential Backoff para tolerar
    * reloads momentáneos de Traefik (Errores 502/504) o red inestable.
    */
-  async provisionDomain(host: string, applicationId: string, maxRetries: number = 3): Promise<boolean> {
+  async provisionDomain(
+    host: string,
+    applicationId: string,
+    maxRetries: number = 3,
+  ): Promise<boolean> {
     if (!this.apiKey || !this.apiBaseUrl) {
       this.logger.warn(
         '[Dokploy] DOKPLOY_API_KEY o DOKPLOY_API_URL no configurados. Saltando provisionamiento de dominio.',
@@ -75,7 +79,9 @@ export class DokployService {
           // Si es un error 5xx provocado por el proxy/servidor interno, hacemos backoff
           if (response.status >= 500 && attempt < maxRetries) {
             const backoff = attempt * 2000;
-            this.logger.warn(`[Dokploy] Servidor interno falló. Reintentando en ${backoff}ms...`);
+            this.logger.warn(
+              `[Dokploy] Servidor interno falló. Reintentando en ${backoff}ms...`,
+            );
             await new Promise((resolve) => setTimeout(resolve, backoff));
             continue;
           }
@@ -96,7 +102,9 @@ export class DokployService {
 
         if (attempt < maxRetries) {
           const backoff = attempt * 2000;
-          this.logger.warn(`[Dokploy] Problema de red inestable. Reintentando en ${backoff}ms...`);
+          this.logger.warn(
+            `[Dokploy] Problema de red inestable. Reintentando en ${backoff}ms...`,
+          );
           await new Promise((resolve) => setTimeout(resolve, backoff));
           continue;
         }

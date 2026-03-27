@@ -49,7 +49,9 @@ export class BoldService {
     try {
       const apiKey = boldApiKey?.trim();
       if (!apiKey) {
-        throw new BadRequestException('Bold API Key is missing for this tenant.');
+        throw new BadRequestException(
+          'Bold API Key is missing for this tenant.',
+        );
       }
 
       // Bold usa el valor real en COP (no centavos). Ej: $10.000 = 10000
@@ -72,8 +74,9 @@ export class BoldService {
           taxes: [],
         },
         reference,
-        description:
-          (orderData.description || `Orden ${orderData.orderId}`).slice(0, 100), // máx 100 chars
+        description: (
+          orderData.description || `Orden ${orderData.orderId}`
+        ).slice(0, 100), // máx 100 chars
         expiration_date: expirationDate,
         callback_url: redirectUrl,
       };
@@ -91,7 +94,7 @@ export class BoldService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `x-api-key ${apiKey}`,
+          Authorization: `x-api-key ${apiKey}`,
         },
         body: JSON.stringify(payload),
       });
@@ -110,7 +113,9 @@ export class BoldService {
 
       if (!linkPayload?.url) {
         this.logger.error('Unexpected Bold response format', data);
-        throw new BadRequestException('Formato de respuesta inesperado de Bold');
+        throw new BadRequestException(
+          'Formato de respuesta inesperado de Bold',
+        );
       }
 
       this.logger.log(
@@ -145,7 +150,7 @@ export class BoldService {
       {
         method: 'GET',
         headers: {
-          'Authorization': `x-api-key ${boldApiKey}`,
+          Authorization: `x-api-key ${boldApiKey}`,
         },
       },
     );

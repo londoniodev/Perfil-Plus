@@ -11,6 +11,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(value: number | string) {
     const amount = typeof value === 'string' ? parseFloat(value) : value;
+
+    // Handle invalid numbers
+    if (isNaN(amount)) {
+        return '$0';
+    }
+
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',

@@ -94,3 +94,4 @@ unlighthouse.config.*
 
 # Landing builder local workspace
 .local-landings/
+packages/landing-builder/inputs/

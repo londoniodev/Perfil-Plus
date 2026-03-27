@@ -412,11 +412,18 @@ export class PaymentsService {
           customerPhone: dto.customer?.phone,
           customerEmail: dto.customer?.email,
           identification: dto.customer?.identification,
-          notes: '',
+          notes: (() => {
+            let methodLabel = activeProvider;
+            if (activeProvider === 'CASH') methodLabel = 'Efectivo';
+            if (activeProvider === 'BOLD') methodLabel = 'Bold';
+            if (activeProvider === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            const paymentNote = `Forma de pago: ${methodLabel}`;
+            return dto.customer?.notes ? `${dto.customer.notes}\n\n${paymentNote}` : paymentNote;
+          })(),
           shippingData: dto.customer?.address ? {
             address: dto.customer.address,
             city: dto.customer.city || '',
-            lat: dto.customer.lng, // Cuidado con nombre lat/lng
+            lat: dto.customer.lat,
             lng: dto.customer.lng,
           } : undefined,
           items: {

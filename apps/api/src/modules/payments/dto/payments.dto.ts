@@ -84,6 +84,10 @@ export class CheckoutCustomerDto {
   @IsOptional()
   @IsString()
   identification?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }
 
 export class CreateCheckoutDto {

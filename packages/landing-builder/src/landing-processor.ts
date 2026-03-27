@@ -111,48 +111,57 @@ async function downloadExternalImages(
 ): Promise<number> {
   const s3Url = process.env.S3_PUBLIC_URL || "https://s3.xn--alvarolondoo-khb.dev";
   const allImgs = $("img");
-  log("🔍", `Total <img> found: ${allImgs.length}`);
+  let externalImgs: { el: any, src: string }[] = [];
   
-  const externalImgs = allImgs.filter((_i, el) => {
+  allImgs.each((_i, el) => {
     const src = $(el).attr("src") || "";
-    const isExt = src.startsWith("http://") || src.startsWith("https://") || src.startsWith(s3Url);
-    if (isExt) log("📍", `Found valid image src: ${src.slice(0, 60)}...`);
-    return isExt;
+    const isExt = src.startsWith("http") || src.startsWith(s3Url);
+    if (isExt) {
+      externalImgs.push({ el, src });
+    }
   });
 
-  log("📥", `Images to download: ${externalImgs.length}`);
+  // REGEX FALLBACK
+  if (externalImgs.length === 0) {
+    const htmlSnippet = $.html();
+    const regex = /src=["'](https?:\/\/[^"']+\.(?:png|jpe?g|webp|avif|svg)[^"']*)["']/gi;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(htmlSnippet)) !== null) {
+        const urlMatch = match[1];
+        if (urlMatch && (urlMatch.startsWith("http") || urlMatch.startsWith(s3Url))) {
+            const element = $(`img[src="${urlMatch}"]`);
+            if (element.length > 0) {
+                externalImgs.push({ el: element[0], src: urlMatch });
+            }
+        }
+    }
+  }
+
   let count = 0;
+  if (externalImgs.length > 0) {
+    log("📥", `Processing ${externalImgs.length} external/S3 images...`);
 
-  for (let i = 0; i < externalImgs.length; i++) {
-    const el = externalImgs[i];
-    if (!el) continue;
+    for (let i = 0; i < externalImgs.length; i++) {
+        const item = externalImgs[i];
+        if (!item) continue;
+        const { el, src } = item;
 
-    const src = $(el).attr("src");
-    if (!src) continue;
+        try {
+            const response = await axios.get<ArrayBuffer>(src, {
+                responseType: "arraybuffer",
+                timeout: 15_000,
+            });
 
-    try {
-      log("⬇️", `Downloading [${i+1}/${externalImgs.length}]: ${src.slice(0, 60)}...`);
+            const buffer = Buffer.from(response.data);
+            const filename = `img-ext-${i + 1}.webp`;
+            const outputPath = path.join(assetsDir, filename);
 
-      const response = await axios.get<ArrayBuffer>(src, {
-        responseType: "arraybuffer",
-        timeout: 30_000,
-      });
-
-      const buffer = Buffer.from(response.data);
-      const filename = `img-ext-${i + 1}.webp`;
-      const outputPath = path.join(assetsDir, filename);
-
-      log("🪄", `Optimizing ${filename}...`);
-      await sharp(buffer)
-        .webp({ quality })
-        .toFile(outputPath);
-
-      $(el).attr("src", `./assets/${filename}`);
-      count++;
-      log("✅", `Saved: ${filename}`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      log("❌", `Failed [${i+1}]: ${message}`);
+            await sharp(buffer).webp({ quality }).toFile(outputPath);
+            $(el).attr("src", `./assets/${filename}`);
+            count++;
+        } catch (error: any) {
+            log("❌", `Failed to process image ${src}:`, error.message);
+        }
     }
   }
 

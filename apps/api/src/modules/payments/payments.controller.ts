@@ -8,7 +8,6 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
-  RawBodyRequest,
   Req,
   Query,
 } from '@nestjs/common';
@@ -105,7 +104,7 @@ export class PaymentsController {
   @Public()
   @HttpCode(HttpStatus.OK)
   async handleBoldWebhook(
-    @Req() req: RawBodyRequest<express.Request>,
+    @Req() req: express.Request,
     @Body() body: any,
     @Headers('x-bold-signature') signature: string,
     @Query('tenantId') tenantId: string,
@@ -115,11 +114,12 @@ export class PaymentsController {
     }
 
     // Pasamos el rawBody para la validación de firma HMAC
+    // Casteamos a any para acceder a rawBody habilitado en main.ts
     return this.paymentsService.processBoldWebhook(
       body,
       tenantId,
       signature,
-      req.rawBody,
+      (req as any).rawBody,
     );
   }
 

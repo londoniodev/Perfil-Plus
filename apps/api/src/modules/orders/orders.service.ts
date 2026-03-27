@@ -27,8 +27,6 @@ import {
   OrderStatusChangedEvent,
 } from './events/order.events';
 
-// ✅ Scope.DEFAULT — nestjs-cls proporciona el tenantId por request context.
-// Ya no necesitamos inyectar REQUEST ni ser Scope.REQUEST.
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
@@ -44,19 +42,16 @@ export class OrdersService {
     private validationService: OrderValidationService,
   ) {}
 
-  /** Lee el tenantId de CLS (AsyncLocalStorage), que es alimentado por el guard autenticado. */
   private getTenantId(): string {
     return this.cls.get<string>('tenantId') ?? 'unknown';
   }
 
-  // ============ CREAR ORDEN (con cálculo server-side) ============
   async createOrder(userId: string | undefined, dto: CreateOrderDto) {
     const tenantId = this.getTenantId();
     this.logger.log(
       `[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`,
     );
 
-    // 1. Calcular precios y modificadores (server-side, nunca del cliente)
     const { totalAmount, orderItemsData } = await this.pricingService.calculate(
       dto.items,
     );
@@ -66,21 +61,17 @@ export class OrdersService {
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        // ✅ this.prisma.secure.$transaction propaga el contexto de tenant al tx interno
         const createdOrder = await this.prisma.secure.$transaction(
           async (tx) => {
-            // 2. Generar número de orden
             const orderCount = await tx.order.count();
             const year = new Date().getFullYear();
             const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
 
-            // 3. Validar y deducir stock de variantes (delegado al sub-servicio)
             await this.validationService.validateAndDeductStock(
               orderItemsData,
               tx,
             );
 
-            // 4. Crear la orden — SIN tenantId manual, el secure context lo inyecta
             const order = await tx.order.create({
               data: {
                 tenantId: this.getTenantId(),
@@ -99,6 +90,9 @@ export class OrdersService {
                   if (methodLabel === 'CASH') methodLabel = 'Efectivo';
                   if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
                   if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
+                  if (methodLabel === 'BOLD') methodLabel = 'Bold';
+                  if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
+                  
                   const paymentNote = dto.paymentMethod
                     ? `Forma de pago: ${methodLabel}`
                     : null;
@@ -136,7 +130,6 @@ export class OrdersService {
               },
             });
 
-            // 5. Deducir ingredientes de inventario (recetas)
             const productItems = orderItemsData.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
@@ -191,7 +184,6 @@ export class OrdersService {
     throw lastError;
   }
 
-  // ============ CAMBIO DE ESTADO (Kitchen Display / Mesero) ============
   async updateStatus(
     orderId: string,
     dto: UpdateOrderStatusDto,
@@ -207,7 +199,6 @@ export class OrdersService {
 
     validateOrderTransition(order.status, dto.status, userRole);
 
-    // ✅ secure.$transaction propaga contexto de tenant al tx interno
     return await this.prisma.secure.$transaction(async (tx) => {
       if (order.status === 'CANCELLED') {
         throw new BadRequestException(
@@ -215,7 +206,6 @@ export class OrdersService {
         );
       }
 
-      // Restaurar stock si se cancela
       if (dto.status === 'CANCELLED') {
         const orderWithItems = await tx.order.findUnique({
           where: { id: orderId },
@@ -256,7 +246,6 @@ export class OrdersService {
         }
       }
 
-      // Actualizar estado
       const updated = await tx.order.update({
         where: { id: orderId },
         data: { status: dto.status },
@@ -265,7 +254,6 @@ export class OrdersService {
         },
       });
 
-      // Analytics Updates
       const analytics = await tx.orderDeliveryAnalytics.findUnique({
         where: { orderId },
       });
@@ -330,7 +318,6 @@ export class OrdersService {
         }
       }
 
-      // Liberar domiciliario al completar o cancelar
       if (
         (dto.status === 'DELIVERED' || dto.status === 'CANCELLED') &&
         order.driverId
@@ -355,7 +342,6 @@ export class OrdersService {
         }
       }
 
-      // SSE — notificar cambio de estado
       this.ordersGateway.emit(this.getTenantId(), {
         type: 'status_changed',
         orderId,
@@ -366,7 +352,6 @@ export class OrdersService {
     });
   }
 
-  // ============ MIS ÓRDENES ============
   async findMyOrders(userId: string, take = 20, skip = 0) {
     return await this.prisma.secure.order.findMany({
       where: {
@@ -397,7 +382,6 @@ export class OrdersService {
     });
   }
 
-  // ============ TRACKING PÚBLICO ============
   async getOrderForTracking(orderId: string) {
     const order = await this.prisma.secure.order.findUnique({
       where: { id: orderId },
@@ -416,7 +400,6 @@ export class OrdersService {
     return order;
   }
 
-  // ============ OBTENER UNA ORDEN (Pública/Segura) ============
   async findOne(id: string) {
     const order = await this.prisma.secure.order.findUnique({
       where: { id },
@@ -456,7 +439,6 @@ export class OrdersService {
     return order;
   }
 
-  // ============ ADMIN: LISTAR ÓRDENES ============
   async findAllAdmin(
     status?: OrderStatus,
     activeOnly: boolean = false,
@@ -518,7 +500,6 @@ export class OrdersService {
     });
   }
 
-  // ============ DESCARGAS DIGITALES ============
   async getDownloadUrl(
     userId: string,
     orderId: string | null,
@@ -572,9 +553,7 @@ export class OrdersService {
     return { downloadUrl: signedUrl };
   }
 
-  // ============ PAGOS (CAJA) ============
   async createPayment(orderId: string, dto: CreatePaymentDto) {
-    // ✅ secure.$transaction propaga contexto de tenant a todo el tx
     return await this.prisma.secure.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
@@ -583,7 +562,6 @@ export class OrdersService {
 
       if (!order) throw new NotFoundException('Orden no encontrada');
 
-      // 1. Crear Pago
       const payment = await tx.payment.create({
         data: {
           orderId,
@@ -593,7 +571,6 @@ export class OrdersService {
         },
       });
 
-      // 2. Marcar ítems como pagados
       if (dto.itemIds && dto.itemIds.length > 0) {
         await tx.orderItem.updateMany({
           where: { id: { in: dto.itemIds }, orderId },
@@ -601,7 +578,6 @@ export class OrdersService {
         });
       }
 
-      // 3. Verificar cierre de orden
       let shouldClose = dto.closeOrder;
 
       if (!shouldClose) {
@@ -618,7 +594,6 @@ export class OrdersService {
         });
       }
 
-      // SSE — notificar pago recibido
       const updatedOrder = await tx.order.findUnique({
         where: { id: orderId },
         include: {
@@ -647,13 +622,11 @@ export class OrdersService {
     });
   }
 
-  // ============ KITCHEN CONTROL (isPrepared) ============
   async toggleItemPrepared(
     orderId: string,
     itemId: string,
     isPrepared: boolean,
   ) {
-    // ✅ Usar this.prisma.secure.orderItem en lugar del cliente crudo
     const item = await this.prisma.secure.orderItem.findFirst({
       where: { id: itemId, orderId },
     });
@@ -678,9 +651,7 @@ export class OrdersService {
     return updatedItem;
   }
 
-  // ============ ASIGNACIÓN DE DOMICILIARIO ============
   async assignDriver(orderId: string, driverId: string, userRole: Role) {
-    // ✅ secure.$transaction — el tx interno propaga el tenant context
     return await this.prisma.secure.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } });
 
@@ -731,7 +702,6 @@ export class OrdersService {
         },
       });
 
-      // Actualizar capacidad del driver
       const newActiveOrders = driver.currentActiveOrders + 1;
       const newStatus =
         newActiveOrders >= driver.maxCapacity ? 'AT_CAPACITY' : driver.status;
@@ -741,7 +711,6 @@ export class OrdersService {
         data: { currentActiveOrders: newActiveOrders, status: newStatus },
       });
 
-      // Analytics
       const analytics = await tx.orderDeliveryAnalytics.findUnique({
         where: { orderId },
       });
@@ -775,7 +744,6 @@ export class OrdersService {
     });
   }
 
-  // ============ ÓRDENES DEL DOMICILIARIO ============
   async getDriverOrders(driverId: string) {
     return this.prisma.secure.order.findMany({
       where: { driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },

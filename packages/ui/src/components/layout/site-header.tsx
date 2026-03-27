@@ -74,10 +74,19 @@ export function SiteHeader({
             !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className
         )}>
+            {/* Critical: inline CSS ensures responsive visibility even if Tailwind CSS chunks are not fully loaded */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                [data-header-mobile] { display: block !important; }
+                [data-header-desktop] { display: none !important; }
+                @media (min-width: 1024px) {
+                    [data-header-mobile] { display: none !important; }
+                    [data-header-desktop] { display: flex !important; }
+                }
+            `}} />
             <div className="w-full px-4 md:px-8 flex items-center justify-between">
 
                 {/* Mobile Trigger (Left) */}
-                <div className="lg:hidden ml-2">
+                <div className="ml-2" style={{ display: 'block' }} data-header-mobile>
                     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon" className={cn(isScrolled ? "text-black" : (isWhiteText ? "text-white" : "text-foreground"))}>
@@ -119,7 +128,7 @@ export function SiteHeader({
                 </Link>
 
                 {/* Desktop Nav */}
-                <nav className="hidden lg:flex flex-none items-center justify-center gap-8">
+                <nav className="flex-none items-center justify-center gap-8" style={{ display: 'none' }} data-header-desktop>
                     <DesktopNavLinks
                         links={links}
                         isLoggedIn={isAuthenticated}

@@ -528,32 +528,42 @@ export class TenantService {
 
   private async triggerFrontendRevalidation(tags: string[]) {
     try {
-      for (const tag of tags) {
-        try {
-          const response = await fetch(this.nextjsRevalidationUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-revalidate-secret': this.internalApiKey,
-            },
-            body: JSON.stringify({ tag }),
-            signal: AbortSignal.timeout(5000), // Timeout único
-          });
+      await Promise.all(
+        tags.map(async (tag) => {
+          try {
+            const response = await fetch(this.nextjsRevalidationUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-revalidate-secret': this.internalApiKey,
+              },
+              body: JSON.stringify({ tag }),
+              signal: AbortSignal.timeout(5000),
+            });
 
-          if (response.ok) {
-            this.logger.log(`Caché purgado exitosamente en Next.js para tag: [${tag}]`);
-          } else {
-            const errBody = await response.text();
-            this.logger.error(`Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`);
+            if (response.ok) {
+              this.logger.log(
+                `Caché purgado exitosamente en Next.js para tag: [${tag}]`,
+              );
+            } else {
+              const errBody = await response.text();
+              this.logger.error(
+                `Revalidación Next.js falló en ${this.nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`,
+              );
+            }
+          } catch (e: unknown) {
+            const error = e as Error;
+            // Captura silenciosa para no bloquear el proceso principal
+            this.logger.warn(
+              `[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${error.message}`,
+            );
           }
-        } catch (e: any) {
-          // Captura silenciosa para no bloquear el proceso principal
-          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${this.nextjsRevalidationUrl}: ${e.message}`);
-        }
-      }
-    } catch (error: any) {
+        }),
+      );
+    } catch (error: unknown) {
+      const err = error as Error;
       this.logger.error(
-        `[Next.js ISR] Error crítico en el orquestador de revalidación: ${error.message}`,
+        `[Next.js ISR] Error crítico en el orquestador de revalidación: ${err.message}`,
       );
     }
   }

@@ -536,29 +536,39 @@ export class StorageService {
     ];
 
     try {
-      for (const tag of tags) {
-        try {
-          const response = await fetch(nextjsRevalidationUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-revalidate-secret': internalApiKey,
-            },
-            body: JSON.stringify({ tag }),
-            signal: AbortSignal.timeout(5000),
-          });
+      await Promise.all(
+        tags.map(async (tag) => {
+          try {
+            const response = await fetch(nextjsRevalidationUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-revalidate-secret': internalApiKey,
+              },
+              body: JSON.stringify({ tag }),
+              signal: AbortSignal.timeout(5000),
+            });
 
-          if (response.ok) {
-            this.logger.log(`[Landing Sync] Caché purgado para tag: [${tag}]`);
-          } else {
-            this.logger.error(`[Landing Sync] Revalidación fallida para ${tag} (${response.status})`);
+            if (response.ok) {
+              this.logger.log(`[Landing Sync] Caché purgado para tag: [${tag}]`);
+            } else {
+              this.logger.error(
+                `[Landing Sync] Revalidación fallida para ${tag} (${response.status})`,
+              );
+            }
+          } catch (e: unknown) {
+            const error = e as Error;
+            this.logger.warn(
+              `[Next.js ISR] Fallo de conexión en ${nextjsRevalidationUrl}: ${error.message}`,
+            );
           }
-        } catch (e: any) {
-          this.logger.warn(`[Next.js ISR] Fallo de conexión en ${nextjsRevalidationUrl}: ${e.message}`);
-        }
-      }
-    } catch (error: any) {
-      this.logger.error(`[Next.js ISR] Error crítico en el orquestador: ${error.message}`);
+        }),
+      );
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        `[Next.js ISR] Error crítico en el orquestador: ${err.message}`,
+      );
     }
   }
 

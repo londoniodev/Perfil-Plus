@@ -244,33 +244,33 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                     <RadioGroup
                         value={form.watch("paymentMethod")}
                         onValueChange={(val) => form.setValue("paymentMethod", val as any)}
-                        className="grid grid-cols-1 gap-2"
+                        className="grid gap-3"
                     >
-                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                            <RadioGroupItem value="CASH" />
-                            <div className="flex-1">
-                                <p className="font-medium text-sm">Efectivo / Contraentrega</p>
-                                <p className="text-xs text-muted-foreground">Pagas al recibir tu pedido</p>
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label htmlFor="pm-bold-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="BOLD" id="pm-bold-express" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea Seguro (Bold)</span>
+                                    <span className="text-xs text-muted-foreground">Nequi, Tarjetas, Daviplata, PSE</span>
+                                </div>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label htmlFor="pm-mp-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="MERCADOPAGO" id="pm-mp-express" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                    <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                </div>
+                            </Label>
+                        )}
+                        <Label htmlFor="pm-cash-express" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroupItem value="CASH" id="pm-cash-express" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Efectivo / Contraentrega</span>
+                                <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
                             </div>
                         </Label>
-                        {activePaymentProvider === 'MERCADO_PAGO' && (
-                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                                <RadioGroupItem value="MERCADOPAGO" />
-                                <div className="flex-1">
-                                    <p className="font-medium text-sm">Mercado Pago</p>
-                                    <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
-                                </div>
-                            </Label>
-                        )}
-                        {activePaymentProvider === 'BOLD' && (
-                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                                <RadioGroupItem value="BOLD" />
-                                <div className="flex-1">
-                                    <p className="font-medium text-sm">Pago en línea Seguro (Bold)</p>
-                                    <p className="text-xs text-muted-foreground">Tarjetas, PSE, Nequi</p>
-                                </div>
-                            </Label>
-                        )}
                     </RadioGroup>
                 </div>
 
@@ -420,33 +420,33 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                     <RadioGroup
                         value={form.watch("paymentMethod")}
                         onValueChange={(val) => form.setValue("paymentMethod", val as any)}
-                        className="grid grid-cols-1 gap-2"
+                        className="grid gap-3"
                     >
-                        <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                            <RadioGroupItem value="CASH" />
-                            <div className="flex-1">
-                                <p className="font-medium text-sm">Efectivo / Contraentrega</p>
-                                <p className="text-xs text-muted-foreground">Pagas al recibir tu pedido</p>
+                        {activePaymentProvider === 'BOLD' && (
+                            <Label htmlFor="pm-bold" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="BOLD" id="pm-bold" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea Seguro (Bold)</span>
+                                    <span className="text-xs text-muted-foreground">Nequi, Tarjetas, Daviplata, PSE</span>
+                                </div>
+                            </Label>
+                        )}
+                        {activePaymentProvider === 'MERCADO_PAGO' && (
+                            <Label htmlFor="pm-mp" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                <RadioGroupItem value="MERCADOPAGO" id="pm-mp" />
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Pago en línea (Mercado Pago)</span>
+                                    <span className="text-xs text-muted-foreground">Tarjetas, PSE, Efecty</span>
+                                </div>
+                            </Label>
+                        )}
+                        <Label htmlFor="pm-cash" className="flex items-center space-x-3 border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                            <RadioGroupItem value="CASH" id="pm-cash" />
+                            <div className="flex flex-col">
+                                <span className="font-medium">Efectivo / Contraentrega</span>
+                                <span className="text-xs text-muted-foreground">Pagas al recibir tu pedido</span>
                             </div>
                         </Label>
-                        {activePaymentProvider === 'MERCADO_PAGO' && (
-                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                                <RadioGroupItem value="MERCADOPAGO" />
-                                <div className="flex-1">
-                                    <p className="font-medium text-sm">Mercado Pago</p>
-                                    <p className="text-xs text-muted-foreground">Tarjeta, PSE, Efecty</p>
-                                </div>
-                            </Label>
-                        )}
-                        {activePaymentProvider === 'BOLD' && (
-                            <Label className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer">
-                                <RadioGroupItem value="BOLD" />
-                                <div className="flex-1">
-                                    <p className="font-medium text-sm">Pago en línea Seguro (Bold)</p>
-                                    <p className="text-xs text-muted-foreground">Tarjetas, PSE, Nequi</p>
-                                </div>
-                            </Label>
-                        )}
                     </RadioGroup>
                 </div>
 

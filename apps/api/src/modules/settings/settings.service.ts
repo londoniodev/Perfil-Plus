@@ -20,6 +20,7 @@ export class SettingsService {
     const settings = await this.prisma.secure.systemSetting.findMany({
       where: {
         tenantId,
+        isPublic: true,
       },
     });
 

@@ -61,6 +61,7 @@ export function CartSheet() {
     return (
         <SharedCartSheet
             items={cart.items.map(item => ({
+                cartItemId: item.variantId,
                 variantId: item.variantId,
                 title: item.title,
                 subtitle: [item.subtitle, item.modifiers?.map(m => `+ ${m.name}`).join(", ")].filter(Boolean).join(" | "),

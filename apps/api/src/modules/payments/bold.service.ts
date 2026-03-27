@@ -81,7 +81,7 @@ export class BoldService {
         callback_url: redirectUrl,
       };
 
-      // Email del pagador (opcional)
+      // Email del pagador (único campo de pre-fill soportado por Bold)
       if (orderData.customerEmail) {
         payload.payer_email = orderData.customerEmail;
       }

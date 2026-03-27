@@ -427,10 +427,11 @@ export class PaymentsService {
           customerEmail: dto.customer?.email,
           identification: dto.customer?.identification,
           notes: (() => {
-            let methodLabel = activeProvider;
-            if (activeProvider === 'CASH') methodLabel = 'Efectivo';
-            if (activeProvider === 'BOLD') methodLabel = 'Bold';
-            if (activeProvider === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            let methodLabel = dto.paymentMethod || activeProvider;
+            if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            if (methodLabel === 'BOLD') methodLabel = 'Bold';
+            
             const paymentNote = `Forma de pago: ${methodLabel}`;
             return dto.customer?.notes
               ? `${dto.customer.notes}\n\n${paymentNote}`

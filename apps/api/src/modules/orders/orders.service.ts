@@ -231,26 +231,60 @@ export class OrdersService {
         });
 
         if (orderWithItems) {
+          const variantIncrements = new Map<string, number>();
+          const modifierIncrements = new Map<string, number>();
+
           for (const item of orderWithItems.items) {
             if (item.variant.stock !== -1) {
-              await tx.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { increment: item.quantity } },
-              });
+              variantIncrements.set(
+                item.variantId,
+                (variantIncrements.get(item.variantId) || 0) + item.quantity
+              );
             }
 
             for (const mod of item.modifiers) {
-              const originalModifier = await tx.modifier.findUnique({
-                where: { id: mod.modifierId },
-              });
-              if (originalModifier && originalModifier.stock !== null) {
-                await tx.modifier.update({
-                  where: { id: mod.modifierId },
-                  data: { stock: { increment: mod.quantity * item.quantity } },
-                });
+              modifierIncrements.set(
+                mod.modifierId,
+                (modifierIncrements.get(mod.modifierId) || 0) + mod.quantity * item.quantity
+              );
+            }
+          }
+
+          const updatePromises: any[] = [];
+
+          for (const [variantId, increment] of variantIncrements.entries()) {
+            updatePromises.push(
+              tx.productVariant.update({
+                where: { id: variantId },
+                data: { stock: { increment } },
+              })
+            );
+          }
+
+          if (modifierIncrements.size > 0) {
+            const modifierIds = Array.from(modifierIncrements.keys());
+            const modifiersToUpdate = await tx.modifier.findMany({
+              where: {
+                id: { in: modifierIds },
+                stock: { not: null },
+              },
+              select: { id: true },
+            });
+
+            for (const mod of modifiersToUpdate) {
+              const increment = modifierIncrements.get(mod.id);
+              if (increment) {
+                updatePromises.push(
+                  tx.modifier.update({
+                    where: { id: mod.id },
+                    data: { stock: { increment } },
+                  })
+                );
               }
             }
           }
+
+          await Promise.all(updatePromises);
           this.logger.log(
             `Stock de variantes restaurado para orden cancelada: ${orderId}`,
           );

@@ -294,12 +294,13 @@ describe('AdminOrdersController', () => {
       const updatedOrder = { ...mockOrder, status: 'PREPARING' };
       mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-      const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
+      const result = await controller.updateStatus('order-1', dto, Role.ADMIN, 'user-1');
 
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         'order-1',
         dto,
         Role.ADMIN,
+        'user-1',
       );
       expect(result.status).toBe('PREPARING');
     });
@@ -309,12 +310,13 @@ describe('AdminOrdersController', () => {
       const updatedOrder = { ...mockOrder, status: 'READY' };
       mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-      const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
+      const result = await controller.updateStatus('order-1', dto, Role.ADMIN, 'user-1');
 
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         'order-1',
         dto,
         Role.ADMIN,
+        'user-1',
       );
       expect(result.status).toBe('READY');
     });
@@ -324,12 +326,13 @@ describe('AdminOrdersController', () => {
       const updatedOrder = { ...mockOrder, status: 'SERVED' };
       mockOrdersService.updateStatus.mockResolvedValue(updatedOrder);
 
-      const result = await controller.updateStatus('order-1', dto, Role.ADMIN);
+      const result = await controller.updateStatus('order-1', dto, Role.ADMIN, 'user-1');
 
       expect(mockOrdersService.updateStatus).toHaveBeenCalledWith(
         'order-1',
         dto,
         Role.ADMIN,
+        'user-1',
       );
       expect(result.status).toBe('SERVED');
     });

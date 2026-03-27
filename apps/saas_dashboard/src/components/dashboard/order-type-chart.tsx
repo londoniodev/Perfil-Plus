@@ -74,7 +74,7 @@ export function OrderTypeChart({ data, periodLabel }: OrderTypeChartProps) {
                 {hasData ? (
                     <ChartContainer
                         config={chartConfig}
-                        className="mx-auto aspect-square max-h-[280px]"
+                        className="mx-auto aspect-square w-full max-w-[280px]"
                     >
                         <PieChart>
                             <ChartTooltip

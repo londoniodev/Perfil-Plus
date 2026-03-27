@@ -59,9 +59,11 @@ export function ProductionTimeChart({ data }: ProductionTimeChartProps) {
                                 dataKey="step"
                                 type="category"
                                 tickLine={false}
-                                tickMargin={10}
+                                tickMargin={8}
                                 axisLine={false}
-                                width={80}
+                                width={70}
+                                fontSize={11}
+                                tickFormatter={(value: string) => value.length > 12 ? value.slice(0, 10) + '…' : value}
                             />
                             <XAxis
                                 dataKey="time"

@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth-server";
 import { getTenantId } from "@/lib/config-server";
 import { serverFetch } from "@/lib/api-server";
 import { getDashboardStats, type DashboardStats } from "@/actions/admin/dashboard";
+import { getDashboardMetrics, type DashboardMetrics } from "@/actions/admin/inventory";
 import { getPeriodLabel } from "@/lib/chart-colors";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
@@ -12,6 +13,7 @@ import { OrderTypeChart, type OrderTypeData } from "@/components/dashboard/order
 import { PaymentMethodsChart, type PaymentMethodData } from "@/components/dashboard/payment-methods-chart";
 import { ProductionTimeChart, type ProductionTimeData } from "@/components/dashboard/production-time-chart";
 import { ProductionByProductTable } from "@/components/dashboard/production-by-product-table";
+import { RecentOrdersTable, type RecentOrderData } from "@/components/dashboard/recent-orders-table";
 import { MarginCostChart } from "@/components/dashboard/margin-cost-chart";
 import { CostingSummaryCards } from "@/components/dashboard/costing-summary-cards";
 import { DashboardTimeSelector } from "@/components/dashboard/dashboard-time-selector";
@@ -88,7 +90,14 @@ function DashboardSkeleton() {
 
 // Extracted metrics component to allow Suspense streaming
 async function DashboardMetrics({ tenant, period }: { tenant: any, period: string }) {
-    const stats = await getDashboardStats(tenant.features || [], period);
+    const hasRestaurant = tenant.features?.includes("restaurant");
+
+    // Single parallel fetch: dashboard stats + inventory metrics (only for restaurants)
+    const [stats, inventoryMetrics] = await Promise.all([
+        getDashboardStats(tenant.features || [], period),
+        hasRestaurant ? getDashboardMetrics() : Promise.resolve({ lowStockCount: 0, avgMargin: 0, topExpensiveIngredients: [] } as DashboardMetrics),
+    ]);
+
     const periodLabel = getPeriodLabel(period);
 
     const mappedTopProducts: TopProductData[] = (stats.topProducts || []).map(p => ({
@@ -117,28 +126,35 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
         time: p.minutes
     }));
 
+    const mappedRecentOrders: RecentOrderData[] = (stats.recentOrders || []).map((o: any) => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customerName: o.customerName,
+        totalAmount: o.totalAmount,
+        status: o.status,
+        orderType: o.orderType,
+        tableNumber: o.tableNumber,
+        createdAt: o.createdAt,
+        itemCount: o.itemCount,
+    }));
+
     // Ticket promedio global
     const avgTicketAll = (stats.avgTicketByType || []);
     const totalTicketSum = avgTicketAll.reduce((acc: number, t: any) => acc + (t.avgTicket || 0), 0);
     const avgTicket = avgTicketAll.length > 0 ? totalTicketSum / avgTicketAll.length : 0;
 
-
-
     const hasLMS = tenant.features?.includes("lms");
     const hasShop = tenant.features?.includes("shop");
     const hasBlog = tenant.features?.includes("blog");
-    const hasRestaurant = tenant.features?.includes("restaurant");
 
     const userTrend = formatTrend(stats.userGrowthPercent);
     const revTrend = formatTrend(stats.revenueGrowthPercent);
 
-    // Cleaned up unused mock recent orders.
-
     return (
         <>
-            <div className="space-y-4">
+            <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold tracking-tight">Período Actual</h2>
+                    <h2 className="text-xl font-bold tracking-tight capitalize">{periodLabel}</h2>
                 </div>
                 <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Usuarios totales */}
@@ -209,9 +225,9 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                         </>
                     )}
                 </div>
-            </div>
+            </section>
 
-            <Separator className="opacity-50" />
+            <Separator className="opacity-50 my-2" />
 
             {/* Revenue Chart - shadcn/recharts */}
             {(hasShop || hasRestaurant) && (
@@ -222,7 +238,10 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
             )}
 
             {hasRestaurant && (
-                <div className="space-y-4 pt-4">
+                <>
+                <Separator className="opacity-50 my-2" />
+
+                <section className="space-y-4">
                     <h2 className="text-xl font-bold tracking-tight">Métricas Operativas (Restaurante)</h2>
 
                     {/* Fila 1: Tipos de Orden, Métodos de Pago y Tiempos de Entrega */}
@@ -232,26 +251,33 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                         <ProductionTimeChart data={mappedProductionTimes} />
                     </div>
 
-                    {/* Fila 2: Productos Más Vendidos */}
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 mt-4 sm:mt-6">
+                    {/* Fila 2: Top Products + Órdenes Recientes */}
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 mt-4 sm:mt-6">
                         <TopProductsChart data={mappedTopProducts} periodLabel={periodLabel} />
+                        <RecentOrdersTable data={mappedRecentOrders} />
                     </div>
 
                     {/* Fila 3: Tiempos de Producción por Producto */}
                     <div className="grid gap-4 sm:gap-6 grid-cols-1 mt-4 sm:mt-6">
                         <ProductionByProductTable data={stats.productionTimesByProduct || []} />
                     </div>
-                </div>
+                </section>
+                </>
             )}
 
             {hasRestaurant && (
-                <div className="space-y-4 pt-4">
+                <>
+                <Separator className="opacity-50 my-2" />
+
+                <section className="space-y-4">
                     <h2 className="text-xl font-bold tracking-tight">Finanzas y Costeo</h2>
-                    <CostingSummaryCards tenantId={tenant.id} />
-                    <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-1">
-                        <MarginCostChart tenantId={tenant.id} />
-                    </div>
-                </div>
+                    <CostingSummaryCards
+                        avgMargin={inventoryMetrics.avgMargin}
+                        lowStockCount={inventoryMetrics.lowStockCount}
+                    />
+                    <MarginCostChart data={inventoryMetrics.topExpensiveIngredients} />
+                </section>
+                </>
             )}
 
             {/* Quick Actions removed per user request */}

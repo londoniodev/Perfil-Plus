@@ -160,7 +160,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                     {/* Usuarios totales */}
                     <StatsCard
                         title="Usuarios Totales"
-                        value={stats.totalUsers.toLocaleString("es-ES")}
+                        value={(stats.totalUsers || 0).toLocaleString("es-ES")}
                         icon={Users}
                         trend={userTrend?.text}
                         trendUp={userTrend?.up}
@@ -188,7 +188,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                     {hasBlog && (
                         <StatsCard
                             title="Artículos Publicados"
-                            value={stats.publishedPosts.toLocaleString("es-ES")}
+                            value={(stats.publishedPosts || 0).toLocaleString("es-ES")}
                             icon={BookOpen}
                         />
                     )}
@@ -198,12 +198,12 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                         <>
                             <StatsCard
                                 title="Temas Publicados"
-                                value={stats.publishedThemes.toLocaleString("es-ES")}
+                                value={(stats.publishedThemes || 0).toLocaleString("es-ES")}
                                 icon={GraduationCap}
                             />
                             <StatsCard
                                 title="Lecciones Activas"
-                                value={stats.totalLessons.toLocaleString("es-ES")}
+                                value={(stats.totalLessons || 0).toLocaleString("es-ES")}
                                 icon={BookOpen}
                             />
                         </>
@@ -214,7 +214,7 @@ async function DashboardMetrics({ tenant, period }: { tenant: any, period: strin
                         <>
                             <StatsCard
                                 title="Órdenes Hoy"
-                                value={stats.restaurantOrdersToday.toLocaleString("es-ES")}
+                                value={(stats.restaurantOrdersToday || 0).toLocaleString("es-ES")}
                                 icon={UtensilsCrossed}
                             />
                             <StatsCard

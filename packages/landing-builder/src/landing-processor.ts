@@ -160,7 +160,7 @@ async function downloadExternalImages(
             $(el).attr("src", `./assets/${filename}`);
             count++;
         } catch (error: any) {
-            log("❌", `Failed to process image ${src}:`, error.message);
+            log("❌", `Failed to process image ${src}: ${error.message}`);
         }
     }
   }
@@ -176,13 +176,16 @@ async function processLocalImages(
   $: cheerio.CheerioAPI,
   assetsDir: string,
   quality: number,
+  inputHtmlPath: string,
 ): Promise<number> {
   const localImgs = $("img").filter((_i, el) => {
     const src = $(el).attr("src") || "";
-    return src.startsWith("/");
+    // Handle both absolute (from public/) and relative paths
+    return src.startsWith("/") || src.startsWith("./") || src.startsWith("../");
   });
 
   const PUBLIC_DIR = path.resolve(__dirname, "../../../apps/_template/public");
+  const INPUT_DIR = path.dirname(inputHtmlPath);
   let count = 0;
 
   for (let i = 0; i < localImgs.length; i++) {
@@ -193,7 +196,11 @@ async function processLocalImages(
     if (!src) continue;
 
     try {
-      const sourcePath = path.join(PUBLIC_DIR, src);
+      // Resolve path: if starts with / it's in template public, otherwise relative to HTML input
+      const sourcePath = src.startsWith("/") 
+        ? path.join(PUBLIC_DIR, src)
+        : path.resolve(INPUT_DIR, src);
+
       const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
       
       if (!exists) {
@@ -488,7 +495,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   const externalCount = await downloadExternalImages($, assetsDir, webpQuality);
 
   // ── Step 2.5: Process local images ──
-  const localCount = await processLocalImages($, assetsDir, webpQuality);
+  const localCount = await processLocalImages($, assetsDir, webpQuality, inputHtmlPath);
 
   // ── Step 3a: Extract Tailwind config from inline script (BEFORE removing it) ──
   const extractedConfig = extractTailwindConfig($);

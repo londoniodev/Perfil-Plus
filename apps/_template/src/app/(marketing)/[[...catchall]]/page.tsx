@@ -35,7 +35,7 @@ async function fetchLandingFromS3(tenantId: string, tenantSlug: string, pageSlug
 
     // 1. Fetch Body con Tags
     const bodyRes = await fetch(bodyUrl, {
-      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`] },
+      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`, `landings-${tenantSlug}`] },
       cache: 'force-cache'
     });
     if (!bodyRes.ok) return null;
@@ -43,7 +43,7 @@ async function fetchLandingFromS3(tenantId: string, tenantSlug: string, pageSlug
 
     // 2. Fetch Meta con Tags
     const metaRes = await fetch(metaUrl, {
-      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`] },
+      next: { tags: [`tenant-${tenantId}-${pageSlug}`, `tenant-${tenantId}-store`, `landings-${tenantSlug}`] },
       cache: 'force-cache'
     });
     if (!metaRes.ok) return null;

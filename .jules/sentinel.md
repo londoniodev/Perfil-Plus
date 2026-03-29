@@ -1,8 +1,4 @@
-## 2024-03-26 - [Tenant Isolation Gap in Branding Updates]
-**Vulnerability:** IDOR (Insecure Direct Object Reference) combined with RLS Bypass.
-**Learning:** Updates to a tenant's BrandSettings were using the non-secure Prisma client (`this.prisma.brandSettings.upsert()`). Even though `tenantId` was supplied, it bypassed Row-Level Security, allowing a user from one tenant to modify another tenant's branding if they manipulated the ID.
-**Prevention:** Always use the injected `this.prisma.secure` client for operations scoped to a tenant. Only use the standard or `raw` clients for explicit global operations (like resolving the tenant context initially or global CRON jobs).
-## 2025-02-18 - Fix Sensitive Data Exposure in Tenant Config
-**Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
-**Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
-**Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+## 2025-01-31 - [High] Fix IDOR vulnerabilities in blog module
+ **Vulnerability:** [IDOR on update and delete blog endpoints]
+ **Learning:** [Blog endpoints for updating and deleting posts, categories, and tags did not explicitly validate the `tenantId` of the entity being modified, allowing users from one tenant to modify or delete resources belonging to another tenant if they guessed the ID. Although the `secure` client appends `tenantId` if available, explicit checks are safer, especially when `findUnique` is used which fails if `tenantId` is added implicitly by the extension.]
+ **Prevention:** [Use `@CurrentTenant() tenantId: string` in the controller and pass it down. In the service layer, use `findFirst({ where: { id, tenantId } })` instead of `findUnique({ where: { id } })` before performing update/delete operations.]

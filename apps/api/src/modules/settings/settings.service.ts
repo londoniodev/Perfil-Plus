@@ -236,7 +236,9 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider,
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
-            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
+            ...(updateDto.businessHours !== undefined && {
+              businessHours: updateDto.businessHours,
+            }),
           },
         });
       } else {
@@ -256,7 +258,9 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider || 'NONE',
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
-            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
+            ...(updateDto.businessHours !== undefined && {
+              businessHours: updateDto.businessHours,
+            }),
           },
         });
       }

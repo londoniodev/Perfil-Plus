@@ -61,9 +61,9 @@ export class BlogService {
     return this.findPostById(post.id);
   }
 
-  async updatePost(id: string, dto: UpdatePostDto) {
-    const existingPost = await this.prisma.secure.post.findUnique({
-      where: { id },
+  async updatePost(id: string, dto: UpdatePostDto, tenantId: string) {
+    const existingPost = await this.prisma.secure.post.findFirst({
+      where: { id, tenantId },
     });
     if (!existingPost) {
       throw new NotFoundException('Post no encontrado');
@@ -125,8 +125,10 @@ export class BlogService {
     return this.findPostById(id);
   }
 
-  async deletePost(id: string) {
-    const post = await this.prisma.secure.post.findUnique({ where: { id } });
+  async deletePost(id: string, tenantId: string) {
+    const post = await this.prisma.secure.post.findFirst({
+      where: { id, tenantId },
+    });
     if (!post) {
       throw new NotFoundException('Post no encontrado');
     }
@@ -361,9 +363,9 @@ export class BlogService {
     });
   }
 
-  async deleteCategory(id: string) {
+  async deleteCategory(id: string, tenantId: string) {
     const category = await this.prisma.secure.category.findFirst({
-      where: { id, type: 'BLOG' },
+      where: { id, tenantId, type: 'BLOG' },
     });
     if (!category) {
       throw new NotFoundException('Categoría no encontrada');
@@ -393,8 +395,10 @@ export class BlogService {
     });
   }
 
-  async deleteTag(id: string) {
-    const tag = await this.prisma.secure.tag.findUnique({ where: { id } });
+  async deleteTag(id: string, tenantId: string) {
+    const tag = await this.prisma.secure.tag.findFirst({
+      where: { id, tenantId },
+    });
     if (!tag) {
       throw new NotFoundException('Tag no encontrado');
     }

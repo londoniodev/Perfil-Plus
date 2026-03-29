@@ -97,9 +97,7 @@ export class OrderValidationService {
     const schedule = businessHours.schedule;
     if (!Array.isArray(schedule)) return true;
 
-    const todaySchedule = schedule.find(
-      (s: any) => s.day === currentDay,
-    );
+    const todaySchedule = schedule.find((s: any) => s.day === currentDay);
 
     if (!todaySchedule || !todaySchedule.isOpen) {
       throw new BadRequestException(
@@ -130,4 +128,3 @@ export class OrderValidationService {
     return true;
   }
 }
-

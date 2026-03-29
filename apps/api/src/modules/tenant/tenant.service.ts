@@ -412,7 +412,9 @@ export class TenantService {
       });
     } catch (error) {
       dbQueryFailed = true;
-      this.logger.error(`Error en identifyTenant (query primario): ${error.message}`);
+      this.logger.error(
+        `Error en identifyTenant (query primario): ${error.message}`,
+      );
     }
 
     if (!tenant) {
@@ -436,7 +438,9 @@ export class TenantService {
         });
       } catch (error) {
         dbQueryFailed = true;
-        this.logger.error(`Error en identifyTenant (query fallback): ${error.message}`);
+        this.logger.error(
+          `Error en identifyTenant (query fallback): ${error.message}`,
+        );
       }
     }
 

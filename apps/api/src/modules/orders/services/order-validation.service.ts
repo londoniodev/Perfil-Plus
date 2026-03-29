@@ -6,6 +6,8 @@ export class OrderValidationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateAndDeductStock(orderItemsData: any[], tx: any) {
+    const stockDeductions = new Map<string, number>();
+
     for (const item of orderItemsData) {
       // -1 indica stock ilimitado (infinito). Solo validamos y deducimos si es >= 0.
       if (item.stockType >= 0) {
@@ -14,11 +16,10 @@ export class OrderValidationService {
             `Stock insuficiente para ${item.productName} (${item.variantName})`,
           );
         }
-        // Deducción atómica dentro de la transacción
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: { stock: { decrement: item.quantity } },
-        });
+
+        // Agregar a las deducciones
+        const currentDeduction = stockDeductions.get(item.variantId) || 0;
+        stockDeductions.set(item.variantId, currentDeduction + item.quantity);
       }
 
       for (const mod of item.modifiers) {
@@ -33,6 +34,19 @@ export class OrderValidationService {
           );
         }
       }
+    }
+
+    // Ejecutar todas las deducciones de stock de manera concurrente
+    const updatePromises = Array.from(stockDeductions.entries()).map(
+      ([variantId, quantity]) =>
+        tx.productVariant.update({
+          where: { id: variantId },
+          data: { stock: { decrement: quantity } },
+        }),
+    );
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
   }
 
@@ -97,9 +111,7 @@ export class OrderValidationService {
     const schedule = businessHours.schedule;
     if (!Array.isArray(schedule)) return true;
 
-    const todaySchedule = schedule.find(
-      (s: any) => s.day === currentDay,
-    );
+    const todaySchedule = schedule.find((s: any) => s.day === currentDay);
 
     if (!todaySchedule || !todaySchedule.isOpen) {
       throw new BadRequestException(
@@ -130,4 +142,3 @@ export class OrderValidationService {
     return true;
   }
 }
-

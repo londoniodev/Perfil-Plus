@@ -429,9 +429,10 @@ export class PaymentsService {
           notes: (() => {
             let methodLabel = dto.paymentMethod || activeProvider;
             if (methodLabel === 'CASH') methodLabel = 'Efectivo';
-            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO')
+              methodLabel = 'MercadoPago';
             if (methodLabel === 'BOLD') methodLabel = 'Bold';
-            
+
             const paymentNote = `Forma de pago: ${methodLabel}`;
             return dto.customer?.notes
               ? `${dto.customer.notes}\n\n${paymentNote}`

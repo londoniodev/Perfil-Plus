@@ -134,6 +134,17 @@ function createMockTx() {
     },
     modifier: {
       findUnique: jest.fn(),
+      findMany: jest.fn().mockImplementation(async ({ where }) => {
+        const idIn = where?.id?.in || [];
+        const results = [];
+        for (const id of idIn) {
+          try {
+            const res = await tx.modifier.findUnique({ where: { id }});
+            if(res) results.push(res);
+          } catch(e) {}
+        }
+        return results;
+      }),
       update: jest.fn(),
     },
     lead: {

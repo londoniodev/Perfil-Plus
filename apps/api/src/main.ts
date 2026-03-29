@@ -47,7 +47,7 @@ async function bootstrap() {
   // CORS configuration - Multi-tenant DYNAMIC
   // Capas de validación (en orden de prioridad):
   //   1. CorsCacheService (RAM cache con dominios de la DB)
-  //   2. Subdomain wildcard (*.alvarolondoño.dev, *.alvarolondoño.com)
+  //   2. Subdomain wildcard (*.perfil.plus)
   //   3. Lista explícita (CORS_ORIGINS env + localhost en dev)
   const corsOriginsEnv = configService.get<string>('CORS_ORIGINS', '');
   const corsOriginsList = corsOriginsEnv
@@ -55,10 +55,12 @@ async function bootstrap() {
     .map((o) => o.trim())
     .filter(Boolean);
 
-  // Base domains for multi-tenant (Dynamic from env)
+  // Base domain for multi-tenant (perfil.plus)
   const baseDomain =
+    configService.get<string>('BASE_DOMAIN') ||
     configService.get<string>('MAIN_DOMAIN') ||
-    configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN');
+    configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
+    'perfil.plus';
 
   // In development, always allow localhost
   const devOrigins = [

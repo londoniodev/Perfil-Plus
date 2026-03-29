@@ -96,6 +96,7 @@ import { CoreModule } from './modules/core';
         REDIS_PASSWORD: Joi.string().optional().allow(''),
 
         // CORS & Dokploy Provisioning
+        BASE_DOMAIN: Joi.string().default('perfil.plus'),
         NEXT_PUBLIC_BASE_DOMAIN: Joi.string().optional(),
         DOKPLOY_API_KEY: Joi.string().optional().allow(''),
         DOKPLOY_API_URL: Joi.string().optional(),

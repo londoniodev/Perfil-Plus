@@ -84,7 +84,7 @@ export async function updateTenantSettingsAction(tenantSlug: string, settings: a
 
         // 3. Invocar revalidación remota en el storefront del tenant
         // Intentamos obtener el dominio desde config o slug
-        const tenantDomain = tenant.config?.domain || `${tenant.slug}.alvarolondono.dev`;
+        const tenantDomain = tenant.config?.domain || `${tenant.slug}.perfil.plus`;
         
         await revalidateStorefront({ 
             tag: `tenant-branding-${tenant.id}`,
@@ -122,7 +122,7 @@ export async function updateTenantFeatures(input: UpdateFeaturesInput): Promise<
         })
 
         // 3. Invocar revalidación remota en el storefront
-        const tenantDomain = tenant.config?.domain || `${tenant.slug}.alvarolondono.dev`;
+        const tenantDomain = tenant.config?.domain || `${tenant.slug}.perfil.plus`;
 
         await revalidateStorefront({ 
             tag: `tenant-branding-${tenant.id}`,

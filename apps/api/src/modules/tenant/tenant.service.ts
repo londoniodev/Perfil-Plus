@@ -387,8 +387,9 @@ export class TenantService {
     let tenant: any = null;
     let dbQueryFailed = false;
     const baseDomain =
+      this.configService.get<string>('BASE_DOMAIN') ||
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
-      'xn--alvarolondoo-khb.dev';
+      'perfil.plus';
     const slugFromDomain = lowercaseDomain.endsWith(`.${baseDomain}`)
       ? lowercaseDomain.replace(`.${baseDomain}`, '')
       : lowercaseDomain;
@@ -711,8 +712,9 @@ export class TenantService {
   private async invalidateTenantCache(slug?: string, domain?: string) {
     const keys = new Set<string>();
     const baseDomain =
+      this.configService.get<string>('BASE_DOMAIN') ||
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
-      'alvarolondono.dev';
+      'perfil.plus';
 
     if (slug) {
       const lowerSlug = slug.toLowerCase();
@@ -772,8 +774,9 @@ export class TenantService {
     });
 
     const baseDomain =
+      this.configService.get<string>('BASE_DOMAIN') ||
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
-      'xn--alvarolondoo-khb.dev';
+      'perfil.plus';
 
     const keys = new Set<string>();
     for (const t of tenants) {

@@ -34,7 +34,7 @@ export async function uploadLandingHtmlAction(formData: FormData) {
         try {
             const revalidateUrl = process.env.NEXT_PUBLIC_TEMPLATE_URL 
                 ? `${process.env.NEXT_PUBLIC_TEMPLATE_URL}/api/revalidate`
-                : `https://${tenantSlug}.alvarolondono.dev/api/revalidate`;
+                : `https://${tenantSlug}.${process.env.BASE_DOMAIN || 'perfil.plus'}/api/revalidate`;
 
             await fetch(revalidateUrl, {
                 method: "POST",

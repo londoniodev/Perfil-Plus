@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const apiDomain = new URL(apiUrl).origin;
-const s3Domain = 's3.xn--alvarolondoo-khb.dev'; // From user provided info, could also be env var
+const s3Domain = process.env.S3_PUBLIC_DOMAIN || 's3.xn--alvarolondoo-khb.dev';
 
 const ContentSecurityPolicy = `
   default-src 'self';
@@ -82,16 +82,16 @@ const nextConfig: NextConfig = {
         'localhost:3000',
         'localhost:3001',
         'localhost:3002',
+        'perfil.plus',
+        '*.perfil.plus',
         'cocinasiete.com',
         '*.cocinasiete.com',
         'mauromera.com',
         'deborahmoscoso.com',
+        'bocata-artesanal.com',
+        '*.bocata-artesanal.com',
         'xn--alvarolondoo-khb.dev',
         '*.xn--alvarolondoo-khb.dev',
-        'alvarolondoo-khb.dev',
-        '*.alvarolondoo-khb.dev',
-        'alvarolondoño.dev',
-        '*.alvarolondoño.dev',
         ...allowedTenantDomains
       ],
     },

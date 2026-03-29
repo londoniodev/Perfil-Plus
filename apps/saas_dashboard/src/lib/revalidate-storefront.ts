@@ -36,7 +36,7 @@ export async function revalidateStorefront(options: { tag?: string, path?: strin
                 }
             }
             if (tenant?.slug) {
-                const mainDomain = process.env.MAIN_DOMAIN || "alvarolondono.dev";
+                const mainDomain = process.env.BASE_DOMAIN || process.env.MAIN_DOMAIN || "perfil.plus";
                 targetUrl = `https://${tenant.slug}.${mainDomain}/api/revalidate`;
             }
         }

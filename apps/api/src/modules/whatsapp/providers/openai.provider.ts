@@ -180,7 +180,7 @@ export class OpenAiProvider implements AiProvider {
             } else {
               toolResponseText = JSON.stringify({
                 error: 'No active or past orders found for this customer.',
-                actionRequired: `Invitar al cliente a su primer pedido usando amablemente el link del menú: https://${tenantSlug || 'demo'}.alvarolondoño.dev`,
+                actionRequired: `Invitar al cliente a su primer pedido usando amablemente el link del menú: https://${tenantSlug || 'demo'}.${process.env.BASE_DOMAIN || 'perfil.plus'}`,
               });
             }
 
@@ -323,8 +323,9 @@ export class OpenAiProvider implements AiProvider {
                     `[CART_SAVE] === FIN GUARDADO POSTGRESQL ===`,
                   );
 
-                  // Usamos el Punycode correcto (khb) para compatibilidad universal con móviles (Android/WhatsApp)
-                  const checkoutUrl = `https://${tenantSlug || 'demo'}.xn--alvarolondoo-khb.dev/checkout?wa=${cartId}`;
+                  // Dominio base dinámico para compatibilidad universal con móviles (Android/WhatsApp)
+                  const baseDomain = process.env.BASE_DOMAIN || 'perfil.plus';
+                  const checkoutUrl = `https://${tenantSlug || 'demo'}.${baseDomain}/checkout?wa=${cartId}`;
                   detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
 
                   // Generar recibo determinista consultando la DB (deliveryFee)

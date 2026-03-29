@@ -16,9 +16,10 @@ export class CorsCacheService implements OnModuleInit {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.baseDomain =
+      this.configService.get<string>('BASE_DOMAIN') ||
       this.configService.get<string>('MAIN_DOMAIN') ||
       this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') ||
-      '';
+      'perfil.plus';
   }
 
   async onModuleInit() {

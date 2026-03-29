@@ -82,7 +82,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Fallback metadata
-  if (tenantSlug === "alvarolondono" || tenantSlug === "xn--alvarolondoo-khb.dev") {
+  if (tenantSlug === "alvarolondono") {
     return {
       title: "Álvaro Londoño | Consultoría Tech & SaaS",
     };

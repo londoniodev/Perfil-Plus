@@ -12,7 +12,7 @@ import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 
 // ── Config ──
-const S3_ENDPOINT = 'https://s3.xn--alvarolondoo-khb.dev';
+const S3_ENDPOINT = process.env.S3_ENDPOINT || 'https://s3.perfil.plus';
 const S3_REGION = 'us-east-1';
 const S3_ACCESS_KEY = 'minioadmin';
 const S3_SECRET_KEY = 'KJ<?k53Q8XG5Tj5sV2CXe}R4t$*ZgVBi';

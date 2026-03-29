@@ -168,7 +168,7 @@ export default function LinktreeFallback({
             <p className="text-[10px] text-white uppercase tracking-[0.3em] font-light">
                 {tenantName} © {new Date().getFullYear()}
             </p>
-            <a href="https://alvarolondono.dev" target="_blank" rel="noopener noreferrer" className="text-[11px] text-white font-bold tracking-widest hover:underline transition-all">
+            <a href="https://perfil.plus" target="_blank" rel="noopener noreferrer" className="text-[11px] text-white font-bold tracking-widest hover:underline transition-all">
                 Alvaro Londoño Developer
             </a>
         </div>

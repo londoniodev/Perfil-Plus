@@ -13,11 +13,11 @@ const DB_URL = 'postgresql://postgres:alvarojose1998@72.62.161.199:5432/web-proj
 
 // S3 Credentials
 const S3_CONFIG = {
-  endpoint: 'https://s3.xn--alvarolondoo-khb.dev',
+  endpoint: process.env.S3_ENDPOINT || 'https://s3.perfil.plus',
   region: 'us-east-1',
   accessKeyId: 'minioadmin',
   secretAccessKey: 'KJ<?k53Q8XG5Tj5sV2CXe}R4t$*ZgVBi',
-  publicUrl: 'https://s3.xn--alvarolondoo-khb.dev',
+  publicUrl: process.env.S3_PUBLIC_URL || 'https://s3.perfil.plus',
 };
 
 const s3 = new S3Client({

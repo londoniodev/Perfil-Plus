@@ -109,7 +109,7 @@ async function downloadExternalImages(
   assetsDir: string,
   quality: number,
 ): Promise<number> {
-  const s3Url = process.env.S3_PUBLIC_URL || "https://s3.xn--alvarolondoo-khb.dev";
+  const s3Url = process.env.S3_PUBLIC_URL || "https://s3.perfil.plus";
   const allImgs = $("img");
   let externalImgs: { el: any, src: string }[] = [];
   

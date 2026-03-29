@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const apiDomain = new URL(apiUrl).origin;
-const s3Domain = process.env.S3_PUBLIC_DOMAIN || 's3.xn--alvarolondoo-khb.dev';
+const s3Domain = process.env.S3_PUBLIC_DOMAIN || 's3.perfil.plus';
 
 const ContentSecurityPolicy = `
   default-src 'self';
@@ -90,8 +90,6 @@ const nextConfig: NextConfig = {
         'deborahmoscoso.com',
         'bocata-artesanal.com',
         '*.bocata-artesanal.com',
-        'xn--alvarolondoo-khb.dev',
-        '*.xn--alvarolondoo-khb.dev',
         ...allowedTenantDomains
       ],
     },

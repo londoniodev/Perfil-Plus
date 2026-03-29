@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const s3Url = 'https://s3.xn--alvarolondoo-khb.dev';
+const s3Url = process.env.S3_PUBLIC_URL || 'https://s3.perfil.plus';
 const dirs = [
   'c:/Users/Pc/Desktop/ALVARO/REPOSITORIOS/Web Projects/packages/landing-builder/inputs/mauromera',
   'c:/Users/Pc/Desktop/ALVARO/REPOSITORIOS/Web Projects/packages/landing-builder/inputs/mauro'

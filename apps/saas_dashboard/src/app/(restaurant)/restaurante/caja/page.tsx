@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Accordion,
     AccordionContent,
@@ -37,8 +37,56 @@ import { getTables } from "@/actions/admin/tables";
 
 // ─── ZReportContent (Module-scope for React Doctor compliance) ───
 function ZReportContent({ report }: { report: ZReport }) {
+    const [printMode, setPrintMode] = useState<'ALL' | 'PRODUCTS'>('ALL');
+
+    const handlePrint = (mode: 'ALL' | 'PRODUCTS') => {
+        setPrintMode(mode);
+        // Pequeño timeout para permitir que React renderice la nueva clase antes de invocar el print del navegador
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    };
+
+    const handleExportCSV = () => {
+        if (!report.productSummary) return;
+
+        // Cabeceras
+        const headers = ['Categoría', 'Producto', 'Variante', 'Cantidad', 'Ingreso', 'Costo', 'Margen (%)'];
+        
+        // Filas de datos
+        const rows = report.productSummary.map(p => [
+            `"${p.categoryName || 'General'}"`,
+            `"${p.productName}"`,
+            `"${p.variantName || 'Regular'}"`,
+            p.qty,
+            p.totalSales,
+            p.totalCost,
+            p.margin.toFixed(2),
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + headers.join(',') + '\n'
+            + rows.map(e => e.join(',')).join('\n');
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Reporte_Z_Productos_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    // Agrupar productos por categoría
+    const groupedProducts = report.productSummary?.reduce((acc, current) => {
+        const cat = current.categoryName || 'Sin Categoría';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(current);
+        return acc;
+    }, {} as Record<string, typeof report.productSummary>);
+
     return (
-        <div className="space-y-5 pt-2 print-area print:bg-white print:text-black print:p-8">
+        <div className={`space-y-5 pt-2 print-area print:bg-white print:text-black print:p-8 ${printMode === 'PRODUCTS' ? 'is-printing-products' : ''}`}>
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @media print {
@@ -60,15 +108,32 @@ function ZReportContent({ report }: { report: ZReport }) {
                     .print-hide {
                         display: none !important;
                     }
+
+                    /* Si estamos en modo de 'Solo Productos' ocultamos las otras secciones */
+                    .is-printing-products .z-report-header,
+                    .is-printing-products .z-report-methods,
+                    .is-printing-products .z-report-balance {
+                        display: none !important;
+                    }
+                    
+                    /* Ocultamos la columna de margen en la impresión de productos (opcional, pero sugerido) */
+                    .is-printing-products .print-hide-margin {
+                        display: none !important;
+                    }
+
+                    /* Ensure background styling behaves well */
+                    .bg-muted\\/30 { background: transparent !important; }
+                    .border { border: 1px solid #ccc !important; }
                 }
             `}} />
+            
             {/* Ventas Totales */}
-            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
+            <div className="z-report-header bg-primary/5 p-4 rounded-xl border border-primary/10 text-center">
                 <p className="text-sm text-muted-foreground uppercase font-bold tracking-wider">Ventas Totales</p>
                 <p className="text-4xl font-black text-primary">{formatCurrency(report.totalSales)}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="z-report-header grid grid-cols-2 gap-4">
                 <div className="p-3 bg-muted/30 rounded-lg border">
                     <p className="text-xs text-muted-foreground uppercase font-bold">Órdenes</p>
                     <p className="text-xl font-bold">{report.orderCount}</p>
@@ -80,13 +145,14 @@ function ZReportContent({ report }: { report: ZReport }) {
             </div>
 
             {/* Desglose por Método */}
-            <div className="space-y-3">
+            <div className="z-report-methods space-y-3">
                 <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b">Desglose por Método</h4>
                 {report.byMethod.map((m) => (
                     <div key={m.method} className="flex justify-between items-center py-1">
                         <div className="flex items-center gap-2">
                             {m.method === 'CASH' && <Banknote className="w-4 h-4 text-green-600" aria-hidden="true" />}
                             {m.method === 'CARD' && <CreditCard className="w-4 h-4 text-blue-600" aria-hidden="true" />}
+                            {m.method === 'TRANSFER' && <RefreshCcw className="w-4 h-4 text-purple-600" aria-hidden="true" />}
                             <span className="font-medium">{m.method} ({m.count})</span>
                         </div>
                         <span className="font-bold font-mono">{formatCurrency(m.amount)}</span>
@@ -96,48 +162,65 @@ function ZReportContent({ report }: { report: ZReport }) {
 
             {/* Productos Vendidos */}
             {report.productSummary && report.productSummary.length > 0 && (
-                <section>
-                    <h4 className="text-sm font-bold uppercase text-muted-foreground pb-1 border-b mb-2">
-                        Productos Vendidos
-                    </h4>
-                    <div className="max-h-[300px] overflow-y-auto pr-2 print:max-h-none print:overflow-visible">
+                <section className="products-table-container">
+                    <div className="flex justify-between items-end pb-1 border-b mb-2">
+                        <h4 className="text-sm font-bold uppercase text-muted-foreground">
+                            Productos Vendidos
+                        </h4>
+                        <Button variant="ghost" size="sm" onClick={handleExportCSV} className="print-hide h-8 text-xs text-primary hover:text-primary/80">
+                            Descargar CSV
+                        </Button>
+                    </div>
+                    {/* Hacemos scroll de hasta 40vh para mejor uso del modal en pantallas pequeñas y grandes */}
+                    <ScrollArea className="h-max max-h-[40vh] pr-4 print:max-h-[none] print:overflow-visible rounded-lg border">
                         <table className="w-full text-sm">
-                            <thead>
+                            <thead className="sticky top-0 bg-background print:bg-transparent z-10">
                                 <tr className="text-xs text-muted-foreground uppercase border-b print:text-black">
-                                    <th className="text-left py-2 pr-2 font-bold">Producto</th>
-                                    <th className="text-right py-2 px-1 font-bold">Cant.</th>
-                                    <th className="text-right py-2 px-1 font-bold">Venta</th>
-                                    <th className="text-right py-2 px-1 font-bold">Costo</th>
-                                    <th className="text-right py-2 pl-1 font-bold">Margen</th>
+                                    <th className="text-left py-3 px-2 font-bold">Producto</th>
+                                    <th className="text-right py-3 px-2 font-bold">Cant.</th>
+                                    <th className="text-right py-3 px-2 font-bold">Ingreso</th>
+                                    <th className="text-right py-3 px-2 font-bold">Costo</th>
+                                    <th className="text-right py-3 pr-2 pl-2 font-bold print-hide-margin">Margen</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {report.productSummary.map((p, idx) => (
-                                    <tr key={`${p.productName}-${idx}`} className="border-b border-muted/30 last:border-0">
-                                        <td className="py-1.5 pr-2">
-                                            <span className="font-medium">{p.productName}</span>
-                                            {p.variantName && p.variantName !== "Regular" && (
-                                                <span className="text-xs text-muted-foreground ml-1 print:text-gray-600">({p.variantName})</span>
-                                            )}
-                                        </td>
-                                        <td className="text-right py-1.5 px-1 font-mono">{p.qty}</td>
-                                        <td className="text-right py-1.5 px-1 font-mono">{formatCurrency(p.totalSales)}</td>
-                                        <td className="text-right py-1.5 px-1 font-mono text-muted-foreground">{formatCurrency(p.totalCost)}</td>
-                                        <td className="text-right py-1.5 pl-1">
-                                            <span className={`font-mono font-bold ${p.margin >= 50 ? 'text-green-600' : p.margin >= 25 ? 'text-yellow-600' : 'text-red-500'}`}>
-                                                {p.margin.toFixed(1)}%
-                                            </span>
-                                        </td>
-                                    </tr>
+                            <tbody className="divide-y divide-muted/30">
+                                {Object.entries(groupedProducts || {}).map(([category, products]) => (
+                                    <React.Fragment key={category}>
+                                        {/* Fila de Categoría */}
+                                        <tr className="bg-muted/30">
+                                            <td colSpan={5} className="py-1 px-2 font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                                                {category}
+                                            </td>
+                                        </tr>
+                                        {/* Filas de Productos */}
+                                        {products.map((p, idx) => (
+                                            <tr key={`${p.productName}-${idx}`} className="hover:bg-muted/10 transition-colors">
+                                                <td className="py-2.5 px-2 pl-4">
+                                                    <span className="font-medium">{p.productName}</span>
+                                                    {p.variantName && p.variantName !== "Regular" && (
+                                                        <span className="text-xs text-muted-foreground ml-1 print:text-gray-600 block sm:inline">({p.variantName})</span>
+                                                    )}
+                                                </td>
+                                                <td className="text-right py-2.5 px-2 font-mono">{p.qty}</td>
+                                                <td className="text-right py-2.5 px-2 font-mono">{formatCurrency(p.totalSales)}</td>
+                                                <td className="text-right py-2.5 px-2 font-mono text-muted-foreground">{formatCurrency(p.totalCost)}</td>
+                                                <td className="text-right py-2.5 pr-2 pl-2 print-hide-margin">
+                                                    <Badge variant="outline" className={`font-mono font-bold border-transparent bg-transparent px-0 ${p.margin >= 50 ? 'text-green-600' : p.margin >= 25 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                                        {p.margin.toFixed(1)}%
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
+                    </ScrollArea>
                 </section>
             )}
 
             {/* Balance Final */}
-            <section className="bg-muted/20 p-4 rounded-xl border space-y-2">
+            <section className="z-report-balance bg-muted/20 p-4 rounded-xl border space-y-2">
                 <h4 className="text-sm font-bold uppercase text-muted-foreground">Balance Final</h4>
                 <Separator />
                 <div className="flex justify-between items-center">
@@ -145,7 +228,7 @@ function ZReportContent({ report }: { report: ZReport }) {
                     <span className="font-bold font-mono">{formatCurrency(report.totalSales)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-sm">Costo Total</span>
+                    <span className="text-sm">Costo Total Producción</span>
                     <span className="font-bold font-mono text-red-500">−{formatCurrency(report.totalCost)}</span>
                 </div>
                 <Separator />
@@ -162,9 +245,14 @@ function ZReportContent({ report }: { report: ZReport }) {
                 </div>
             </section>
 
-            <Button className="w-full print-hide" variant="outline" onClick={() => window.print()}>
-                Imprimir Reporte
-            </Button>
+            <div className="flex items-center gap-2 print-hide">
+                <Button className="w-1/2" variant="outline" onClick={() => handlePrint('PRODUCTS')}>
+                    🖨️ Imprimir Lista
+                </Button>
+                <Button className="w-1/2" variant="default" onClick={() => handlePrint('ALL')}>
+                    🖨️ Imprimir Reporte Z
+                </Button>
+            </div>
         </div>
     );
 }

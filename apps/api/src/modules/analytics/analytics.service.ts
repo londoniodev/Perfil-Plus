@@ -336,6 +336,7 @@ export class AnalyticsService {
         productName: string;
         variantId: string;
         variantName: string | null;
+        categoryName: string | null;
         qty: number;
         totalSales: number;
       }[]
@@ -344,10 +345,19 @@ export class AnalyticsService {
         oi."productName",
         oi."variantId",
         oi."variantName",
+        MAX(c."name") as "categoryName",
         SUM(oi."quantity")::int as qty,
         SUM(oi."price" * oi."quantity")::float as "totalSales"
       FROM "OrderItem" oi
       JOIN "Order" o ON o.id = oi."orderId"
+      LEFT JOIN "ProductVariant" pv ON pv."id" = oi."variantId"
+      LEFT JOIN "Product" p ON p."id" = pv."productId"
+      LEFT JOIN (
+          SELECT "productId", MIN("categoryId") as "categoryId" 
+          FROM "CategoriesOnProducts" 
+          GROUP BY "productId"
+      ) cop ON cop."productId" = p."id"
+      LEFT JOIN "Category" c ON c."id" = cop."categoryId"
       WHERE o."tenantId" = ${tenantId}
         AND o."status" = 'DELIVERED'
         AND o."createdAt" >= ${startObj}
@@ -399,6 +409,7 @@ export class AnalyticsService {
       return {
         productName: p.productName,
         variantName: p.variantName,
+        categoryName: p.categoryName || 'Sin Categoría',
         qty: p.qty,
         totalSales: sales,
         unitCost: Math.round(unitCost * 100) / 100,

@@ -7,6 +7,7 @@ import { startOfDay, endOfDay } from "date-fns"
 export interface ZReportProduct {
     productName: string
     variantName: string | null
+    categoryName: string
     qty: number
     totalSales: number
     unitCost: number

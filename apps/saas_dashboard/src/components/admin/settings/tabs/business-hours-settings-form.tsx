@@ -251,7 +251,7 @@ export function BusinessHoursSettingsForm({ initialData }: BusinessHoursSettings
                                                                                     <Input
                                                                                         {...field}
                                                                                         type="time"
-                                                                                        className="w-[120px] h-9 text-sm"
+                                                                                        className="w-[150px] h-9 text-sm"
                                                                                         aria-label={`${DAY_NAMES[dayIndex]} hora de apertura rango ${rangeIndex + 1}`}
                                                                                     />
                                                                                 </FormControl>
@@ -268,7 +268,7 @@ export function BusinessHoursSettingsForm({ initialData }: BusinessHoursSettings
                                                                                     <Input
                                                                                         {...field}
                                                                                         type="time"
-                                                                                        className="w-[120px] h-9 text-sm"
+                                                                                        className="w-[150px] h-9 text-sm"
                                                                                         aria-label={`${DAY_NAMES[dayIndex]} hora de cierre rango ${rangeIndex + 1}`}
                                                                                     />
                                                                                 </FormControl>

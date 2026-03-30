@@ -42,6 +42,26 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
         },
     })
 
+    // Hidratar formulario cuando cambian los valores iniciales
+    useEffect(() => {
+        if (initialData) {
+            form.reset({
+                storeName: initialData.storeName || "",
+                storeEmail: initialData.storeEmail || "",
+                whatsapp: initialData.whatsapp || "",
+                instagram: initialData.instagram || "",
+                facebook: initialData.facebook || "",
+                address: initialData.address || "",
+                menuSlogan: initialData.menuSlogan || "",
+                enableBlog: initialData.enableBlog ?? true,
+                enableStore: initialData.enableStore ?? true,
+                enableLMS: initialData.enableLMS ?? false,
+                orderTrackingEnabled: initialData.orderTrackingEnabled ?? true,
+                heroImage: initialData.heroImage || "",
+            })
+        }
+    }, [initialData, form])
+
     const onSubmit = async (data: GeneralSettingsValues) => {
         try {
             const result = await updateGeneralSettings(data)

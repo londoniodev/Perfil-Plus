@@ -26,7 +26,8 @@ export async function updateTenantBranding(data: any) {
         }
 
         return { success: true };
-    } catch (e) {
+    } catch (e: any) {
+        if (e.message?.includes("NEXT_REDIRECT")) throw e;
         console.error("[Branding Action] ERROR FATAL:", e);
         throw new Error("Failed to update branding");
     }

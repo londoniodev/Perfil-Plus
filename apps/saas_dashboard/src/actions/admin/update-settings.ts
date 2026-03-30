@@ -62,6 +62,7 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
         
         return { success: true }
     } catch (error: any) {
+        if (error.message?.includes("NEXT_REDIRECT")) throw error;
         return { success: false, error: error.message || "Error al actualizar configuración general" }
     }
 }

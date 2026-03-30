@@ -15,7 +15,7 @@ import {
     cn,
     SingleImageDropzone
 } from "@alvarosky/ui";
-import { Loader2 } from "lucide-react";
+import { Loader2, Globe } from "lucide-react";
 import { updateTenantBranding } from "@/actions/branding-actions";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 import { toast } from "sonner";
@@ -135,9 +135,9 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
             faviconUrl: "",
             secondaryColor: "",
             fontFamily: "Inter",
-            metaTitle: "",
-            metaDescription: "",
-            ...(defaultValues as any),
+            metaTitle: defaultValues?.metaTitle || "",
+            metaDescription: defaultValues?.metaDescription || "",
+            ...defaultValues,
         },
     });
 
@@ -170,7 +170,7 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                 fontFamily: "Inter",
                 metaTitle: "",
                 metaDescription: "",
-                ...(defaultValues as any),
+                ...defaultValues,
             })
         }
     }, [defaultValues, form])
@@ -362,8 +362,8 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
 
                             {/* --- SEO y Metadatos --- */}
                             <div className="space-y-4 pt-4">
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
-                                    <span className="p-1 rounded bg-primary/10 text-primary">🔍</span>
+                                <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
+                                    <Globe className="h-5 w-5" />
                                     SEO y Metadatos
                                 </h3>
                                 <p className="text-sm text-muted-foreground">

@@ -30,6 +30,8 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
             faviconUrl: bs.faviconUrl || "",
             secondaryColor: bs.secondaryColor || "",
             fontFamily: bs.fontFamily?.split(",")[0]?.trim() || "Inter",
+            metaTitle: bs.metaTitle || "",
+            metaDescription: bs.metaDescription || "",
         };
     }, [brandingData]);
 

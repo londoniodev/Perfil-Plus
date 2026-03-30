@@ -64,7 +64,7 @@ import { CoreModule } from './modules/core';
 
         // JWT
         JWT_SECRET: Joi.string().required(),
-        JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+        JWT_ACCESS_EXPIRES_IN: Joi.string().default('7d'),
         JWT_REFRESH_EXPIRES_IN_DAYS: Joi.number().default(7),
 
         // S3/Minio
@@ -217,7 +217,7 @@ import { CoreModule } from './modules/core';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN', '1h'),
+          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN', '7d'),
         },
       }),
     }),

@@ -200,7 +200,9 @@ describe('OrdersService', () => {
                   for (const id of idIn) {
                     try {
                       // Attempt to retrieve using the existing mock logic for findUnique
-                      const res = await mockClient.productVariant.findUnique({ where: { id } });
+                      const res = await mockClient.productVariant.findUnique({
+                        where: { id },
+                      });
                       if (res) {
                         res.id = id;
                         results.push(res);
@@ -214,30 +216,47 @@ describe('OrdersService', () => {
                 ...mockClient.modifier,
                 findMany: jest.fn().mockImplementation(async ({ where }) => {
                   const idIn = where?.id?.in || [];
-                  if (mockTx.modifier.findUnique.mock.results && mockTx.modifier.findUnique.mock.results.length > 0) {
-                     const results = [];
-                     for (const id of idIn) {
-                        try {
-                          const res = await mockTx.modifier.findUnique({ where: { id }});
-                          if(res) results.push(res);
-                        } catch(e) {}
-                     }
-                     return results;
+                  if (
+                    mockTx.modifier.findUnique.mock.results &&
+                    mockTx.modifier.findUnique.mock.results.length > 0
+                  ) {
+                    const results = [];
+                    for (const id of idIn) {
+                      try {
+                        const res = await mockTx.modifier.findUnique({
+                          where: { id },
+                        });
+                        if (res) results.push(res);
+                      } catch (e) {}
+                    }
+                    return results;
                   }
                   return [];
                 }),
               },
               order: {
                 ...mockClient.order,
-                findFirst: jest.fn().mockImplementation((...args) => mockClient.order.findFirst(...args)),
+                findFirst: jest
+                  .fn()
+                  .mockImplementation((...args) =>
+                    mockClient.order.findFirst(...args),
+                  ),
               },
               deliveryDriver: {
                 ...mockClient.deliveryDriver,
-                findUnique: jest.fn().mockImplementation((...args) => mockClient.deliveryDriver.findUnique(...args)),
+                findUnique: jest
+                  .fn()
+                  .mockImplementation((...args) =>
+                    mockClient.deliveryDriver.findUnique(...args),
+                  ),
               },
               product: {
                 ...mockClient.product,
-                findUnique: jest.fn().mockImplementation((...args) => mockClient.product.findUnique(...args)),
+                findUnique: jest
+                  .fn()
+                  .mockImplementation((...args) =>
+                    mockClient.product.findUnique(...args),
+                  ),
               },
             },
             $transaction: mockClient.$transaction,

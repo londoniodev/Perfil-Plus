@@ -1,4 +1,10 @@
-import { IsObject, IsOptional, IsString, IsBoolean, IsNumber } from 'class-validator';
+import {
+  IsObject,
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsNumber,
+} from 'class-validator';
 
 export class UpdateTenantConfigDto {
   // Store Info

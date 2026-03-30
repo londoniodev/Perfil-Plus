@@ -151,6 +151,7 @@ model Post {
   @@unique([tenantId, slug])
   @@index([tenantId])
   @@index([published, isPremium])
+  @@index([tenantId, published, createdAt])
 }
 
 model Category {

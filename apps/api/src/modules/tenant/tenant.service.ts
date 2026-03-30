@@ -48,7 +48,9 @@ export class TenantService {
       ? `${process.env.STOREFRONT_URL}/api/revalidate`
       : 'http://web-storefront:3000/api/revalidate');
   private readonly internalApiKey =
-    process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    process.env.REVALIDATION_SECRET ||
+    process.env.INTERNAL_API_KEY ||
+    'default_dev_secret_key';
 
   constructor(
     private readonly prisma: PrismaService,
@@ -413,7 +415,9 @@ export class TenantService {
       });
     } catch (error) {
       dbQueryFailed = true;
-      this.logger.error(`Error en identifyTenant (query primario): ${error.message}`);
+      this.logger.error(
+        `Error en identifyTenant (query primario): ${error.message}`,
+      );
     }
 
     if (!tenant) {
@@ -437,7 +441,9 @@ export class TenantService {
         });
       } catch (error) {
         dbQueryFailed = true;
-        this.logger.error(`Error en identifyTenant (query fallback): ${error.message}`);
+        this.logger.error(
+          `Error en identifyTenant (query fallback): ${error.message}`,
+        );
       }
     }
 

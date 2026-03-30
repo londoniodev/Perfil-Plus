@@ -238,14 +238,15 @@ export class OrdersService {
             if (item.variant.stock !== -1) {
               variantIncrements.set(
                 item.variantId,
-                (variantIncrements.get(item.variantId) || 0) + item.quantity
+                (variantIncrements.get(item.variantId) || 0) + item.quantity,
               );
             }
 
             for (const mod of item.modifiers) {
               modifierIncrements.set(
                 mod.modifierId,
-                (modifierIncrements.get(mod.modifierId) || 0) + mod.quantity * item.quantity
+                (modifierIncrements.get(mod.modifierId) || 0) +
+                  mod.quantity * item.quantity,
               );
             }
           }
@@ -257,7 +258,7 @@ export class OrdersService {
               tx.productVariant.update({
                 where: { id: variantId },
                 data: { stock: { increment } },
-              })
+              }),
             );
           }
 
@@ -278,7 +279,7 @@ export class OrdersService {
                   tx.modifier.update({
                     where: { id: mod.id },
                     data: { stock: { increment } },
-                  })
+                  }),
                 );
               }
             }

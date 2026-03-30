@@ -151,7 +151,10 @@ describe('RestaurantService', () => {
       providers: [
         RestaurantService,
         { provide: PrismaService, useValue: mockPrisma },
-        { provide: 'CACHE_MANAGER', useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
+        {
+          provide: 'CACHE_MANAGER',
+          useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() },
+        },
         { provide: ClsService, useValue: { get: jest.fn() } },
       ],
     }).compile();

@@ -13,7 +13,8 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
 
   // Mock environment variables for services that crash on init or required by ConfigModule
   process.env.OPENAI_API_KEY = 'sk-test-dummy-key-for-e2e-isolation-tests';
-  process.env.DATABASE_URL = 'postgresql://admin:password123@localhost:5432/mauromera_local';
+  process.env.DATABASE_URL =
+    'postgresql://admin:password123@localhost:5432/mauromera_local';
   process.env.JWT_SECRET = 'super-secret-jwt-key-development-only';
   process.env.S3_ENDPOINT = 'http://localhost:9000';
   process.env.S3_ACCESS_KEY = 'minioadmin';
@@ -25,10 +26,10 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
   // Fixtures IDs
   const TENANT_ALPHA_ID = 'e2e-alpha-' + randomBytes(4).toString('hex');
   const TENANT_BETA_ID = 'e2e-beta-' + randomBytes(4).toString('hex');
-  
+
   let USER_ALPHA_ID: string;
   let USER_BETA_ID: string;
-  
+
   let ORDER_ALPHA_ID: string;
   let PRODUCT_ALPHA_ID: string;
 
@@ -50,16 +51,28 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
       jwtService = app.get<JwtService>(JwtService);
 
       process.stdout.write('--- SETTING UP FIXTURES ---\n');
-      
+
       // Crear Tenants de forma individual para asegurar consistencia
       process.stdout.write(`Creating Tenant ALPHA: ${TENANT_ALPHA_ID}\n`);
       await prisma.tenant.create({
-        data: { id: TENANT_ALPHA_ID, name: 'Tenant Alpha', slug: TENANT_ALPHA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
+        data: {
+          id: TENANT_ALPHA_ID,
+          name: 'Tenant Alpha',
+          slug: TENANT_ALPHA_ID,
+          dbName: 'test-db',
+          features: ['SHOP', 'RESTAURANT'],
+        },
       });
 
       process.stdout.write(`Creating Tenant BETA: ${TENANT_BETA_ID}\n`);
       await prisma.tenant.create({
-        data: { id: TENANT_BETA_ID, name: 'Tenant Beta', slug: TENANT_BETA_ID, dbName: 'test-db', features: ['SHOP', 'RESTAURANT'] },
+        data: {
+          id: TENANT_BETA_ID,
+          name: 'Tenant Beta',
+          slug: TENANT_BETA_ID,
+          dbName: 'test-db',
+          features: ['SHOP', 'RESTAURANT'],
+        },
       });
 
       // Crear Users
@@ -118,7 +131,7 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
           sku: 'SKU-ALPHA-' + randomBytes(2).toString('hex'),
           price: 100,
           name: 'Standard',
-        }
+        },
       });
 
       process.stdout.write('Creating Order Alpha...\n');
@@ -134,39 +147,39 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
               price: 100,
               quantity: 1,
               variantId: variantAlpha.id,
-            }
-          }
+            },
+          },
         },
       });
       ORDER_ALPHA_ID = orderAlpha.id;
 
       // 2. GENERATE JWTs
-      JWT_ALPHA = jwtService.sign({ 
-        sub: USER_ALPHA_ID, 
+      JWT_ALPHA = jwtService.sign({
+        sub: USER_ALPHA_ID,
         email: userAlpha.email,
-        role: 'ADMIN', 
+        role: 'ADMIN',
         name: 'Admin Alpha',
-        tenantId: TENANT_ALPHA_ID, 
+        tenantId: TENANT_ALPHA_ID,
         subscriptionStatus: 'ACTIVE',
-        subscriptionEndDate: null
+        subscriptionEndDate: null,
       });
-      JWT_BETA = jwtService.sign({ 
-        sub: USER_BETA_ID, 
+      JWT_BETA = jwtService.sign({
+        sub: USER_BETA_ID,
         email: userBeta.email,
-        role: 'ADMIN', 
+        role: 'ADMIN',
         name: 'Admin Beta',
-        tenantId: TENANT_BETA_ID, 
+        tenantId: TENANT_BETA_ID,
         subscriptionStatus: 'ACTIVE',
-        subscriptionEndDate: null
+        subscriptionEndDate: null,
       });
-      JWT_SUPERADMIN = jwtService.sign({ 
-        sub: superAdmin.id, 
+      JWT_SUPERADMIN = jwtService.sign({
+        sub: superAdmin.id,
         email: superAdmin.email,
-        role: 'SUPERADMIN', 
+        role: 'SUPERADMIN',
         name: 'Super Admin',
         tenantId: TENANT_ALPHA_ID,
         subscriptionStatus: 'ACTIVE',
-        subscriptionEndDate: null
+        subscriptionEndDate: null,
       });
       process.stdout.write('--- E2E SETUP COMPLETE ---\n');
     } catch (err) {
@@ -180,13 +193,29 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
     // Cleanup
     if (prisma) {
       try {
-        await prisma.orderItem.deleteMany({ where: { order: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } } });
-        await prisma.order.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-        await prisma.productVariant.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-        await prisma.product.deleteMany({ where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
-        await prisma.user.deleteMany({ where: { email: { contains: TENANT_ALPHA_ID } } });
-        await prisma.user.deleteMany({ where: { email: { contains: TENANT_BETA_ID } } });
-        await prisma.tenant.deleteMany({ where: { id: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } } });
+        await prisma.orderItem.deleteMany({
+          where: {
+            order: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } },
+          },
+        });
+        await prisma.order.deleteMany({
+          where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } },
+        });
+        await prisma.productVariant.deleteMany({
+          where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } },
+        });
+        await prisma.product.deleteMany({
+          where: { tenantId: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } },
+        });
+        await prisma.user.deleteMany({
+          where: { email: { contains: TENANT_ALPHA_ID } },
+        });
+        await prisma.user.deleteMany({
+          where: { email: { contains: TENANT_BETA_ID } },
+        });
+        await prisma.tenant.deleteMany({
+          where: { id: { in: [TENANT_ALPHA_ID, TENANT_BETA_ID] } },
+        });
       } catch (e) {
         process.stdout.write(`CLEANUP ERROR: ${e.message}\n`);
       }
@@ -203,7 +232,6 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
   });
 
   describe('Infiltration Tests', () => {
-    
     it('SCENARIO 1: SUCCESSFUL ACCESS (Control) - Admin Alpha reads its own order', async () => {
       const response = await request(app.getHttpServer())
         .get(`/orders/${ORDER_ALPHA_ID}`)
@@ -227,7 +255,9 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
         .set('Authorization', `Bearer ${JWT_BETA}`)
         .expect(HttpStatus.OK);
 
-      const hasAlphaOrder = response.body.some((o: any) => o.id === ORDER_ALPHA_ID);
+      const hasAlphaOrder = response.body.some(
+        (o: any) => o.id === ORDER_ALPHA_ID,
+      );
       expect(hasAlphaOrder).toBe(false);
     });
 
@@ -238,7 +268,9 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
         .send({ status: 'CANCELLED' })
         .expect(HttpStatus.NOT_FOUND);
 
-      const order = await prisma.order.findUnique({ where: { id: ORDER_ALPHA_ID } });
+      const order = await prisma.order.findUnique({
+        where: { id: ORDER_ALPHA_ID },
+      });
       expect(order?.status).toBe('PENDING');
     });
 
@@ -251,28 +283,30 @@ describe('Zero-Trust Multi-tenant Isolation (e2e)', () => {
           slug: 'hacker-product-' + randomBytes(2).toString('hex'),
           description: 'Hacked description',
           basePrice: 1,
-          tenantId: TENANT_ALPHA_ID, 
-          productType: 'PHYSICAL'
+          tenantId: TENANT_ALPHA_ID,
+          productType: 'PHYSICAL',
         })
         .expect(HttpStatus.CREATED);
 
       expect(response.body.tenantId).toBe(TENANT_BETA_ID);
-      
-      const dbProduct = await prisma.product.findUnique({ where: { id: response.body.id } });
+
+      const dbProduct = await prisma.product.findUnique({
+        where: { id: response.body.id },
+      });
       expect(dbProduct?.tenantId).toBe(TENANT_BETA_ID);
     });
 
     it('SCENARIO 6: INFRASTRUCTURE VALIDATION - SuperAdmin can see all tenants', async () => {
-        const response = await request(app.getHttpServer())
-          .get('/tenant')
-          .set('Authorization', `Bearer ${JWT_SUPERADMIN}`)
-          .expect(HttpStatus.OK);
-  
-        const hasAlpha = response.body.some((t: any) => t.id === TENANT_ALPHA_ID);
-        const hasBeta = response.body.some((t: any) => t.id === TENANT_BETA_ID);
-        
-        expect(hasAlpha).toBe(true);
-        expect(hasBeta).toBe(true);
-      });
+      const response = await request(app.getHttpServer())
+        .get('/tenant')
+        .set('Authorization', `Bearer ${JWT_SUPERADMIN}`)
+        .expect(HttpStatus.OK);
+
+      const hasAlpha = response.body.some((t: any) => t.id === TENANT_ALPHA_ID);
+      const hasBeta = response.body.some((t: any) => t.id === TENANT_BETA_ID);
+
+      expect(hasAlpha).toBe(true);
+      expect(hasBeta).toBe(true);
+    });
   });
 });

@@ -357,7 +357,9 @@ describe('ProductsService', () => {
       mockClient.product.findUnique
         .mockResolvedValueOnce(mockProduct) // exists check
         .mockResolvedValueOnce(mockProductComplete); // final find
-      mockClient.modifierGroup.findMany.mockResolvedValueOnce([mockModifierGroup]);
+      mockClient.modifierGroup.findMany.mockResolvedValueOnce([
+        mockModifierGroup,
+      ]);
       mockClient.product.update.mockResolvedValue(mockProduct);
       mockClient.modifierGroup.deleteMany.mockResolvedValue({ count: 1 });
       mockClient.modifierGroup.create.mockResolvedValue({});
@@ -383,12 +385,12 @@ describe('ProductsService', () => {
     it('debería lanzar NotFoundException si el producto no existe', async () => {
       mockClient.product.findUnique.mockResolvedValueOnce(null);
 
-      await expect(
-        service.update('no-existe', updateDto),
-      ).rejects.toThrow(NotFoundException);
-      await expect(
-        service.update('no-existe', updateDto),
-      ).rejects.toThrow('Producto no encontrado');
+      await expect(service.update('no-existe', updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.update('no-existe', updateDto)).rejects.toThrow(
+        'Producto no encontrado',
+      );
     });
   });
 
@@ -483,9 +485,7 @@ describe('ProductsService', () => {
     it('debería retornar producto publicado por slug', async () => {
       mockClient.product.findFirst.mockResolvedValue(mockProductComplete);
 
-      const result = await service.findOnePublished(
-        'hamburguesa-clasica',
-      );
+      const result = await service.findOnePublished('hamburguesa-clasica');
 
       expect(result).toEqual(mockProductComplete);
       expect(mockClient.product.findFirst).toHaveBeenCalledWith(
@@ -498,9 +498,9 @@ describe('ProductsService', () => {
     it('debería lanzar NotFoundException si el producto no existe', async () => {
       mockClient.product.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.findOnePublished('no-existe'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findOnePublished('no-existe')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('debería lanzar NotFoundException si el producto no está publicado', async () => {

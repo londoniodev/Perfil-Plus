@@ -48,7 +48,7 @@ export class TenantService {
       ? `${process.env.STOREFRONT_URL}/api/revalidate`
       : 'http://web-storefront:3000/api/revalidate');
   private readonly internalApiKey =
-    process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
   constructor(
     private readonly prisma: PrismaService,

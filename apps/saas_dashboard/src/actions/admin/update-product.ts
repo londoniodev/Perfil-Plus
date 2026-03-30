@@ -36,7 +36,7 @@ export async function updateProduct(data: UpdateProductInput): Promise<UpdatePro
             published: validated.published,
             modifierGroups: validated.modifierGroups,
             categories: validated.categories,
-            variants: validated.variants?.map(({ id, ...v }: any) => v)
+            variants: validated.variants
         }
 
         // El DTO de NestJS requiere slug

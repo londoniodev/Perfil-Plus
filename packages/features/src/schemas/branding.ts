@@ -12,6 +12,8 @@ export const brandingSchema = z.object({
     fontFamily: z.enum(FONT_VALUES).default("Inter"),
     metaTitle: z.string().optional().or(z.literal("")),
     metaDescription: z.string().optional().or(z.literal("")),
+    authBgUrl: z.string().optional().or(z.literal("")),
+    authQuote: z.string().optional().or(z.literal("")),
 });
 
 export type BrandingFormValues = z.infer<typeof brandingSchema>;

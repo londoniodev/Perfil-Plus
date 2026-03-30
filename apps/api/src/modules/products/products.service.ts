@@ -184,7 +184,7 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    const { sku, stock, modifierGroups, categories, ...productData } = data;
+    const { sku, stock, modifierGroups, categories, variants, ...productData } = data;
 
     return await this.prisma.secure.$transaction(async (tx) => {
       await tx.product.update({
@@ -202,6 +202,55 @@ export class ProductsService {
           previewUrl: productData.previewUrl,
         },
       });
+
+      // Sync Variants
+      if (variants !== undefined && Array.isArray(variants)) {
+        const incomingIds = variants.map((v) => v.id).filter(Boolean);
+        
+        // Remove variants not in payload (only if not referenced by orders yet)
+        try {
+          await tx.productVariant.deleteMany({
+            where: {
+              productId: id,
+              ...(incomingIds.length > 0 ? { id: { notIn: incomingIds as string[] } } : {}),
+              orderItems: { none: {} }
+            }
+          });
+        } catch (e) {
+          // Ignore if foreign key constraint or other deletion error
+        }
+
+        for (const [index, v] of variants.entries()) {
+          const skuVal = v.sku || `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
+          
+          if (v.id) {
+            await tx.productVariant.update({
+              where: { id: v.id },
+              data: {
+                name: v.name || 'Standard',
+                sku: skuVal,
+                price: v.price ?? productData.basePrice,
+                stock: v.stock ?? 0,
+                isDefault: v.isDefault ?? index === 0,
+                attributes: v.attributes ?? undefined,
+              }
+            });
+          } else {
+            await tx.productVariant.create({
+              data: {
+                tenantId: this.cls.get('tenantId'),
+                productId: id,
+                name: v.name || 'Standard',
+                sku: skuVal,
+                price: v.price ?? productData.basePrice,
+                stock: v.stock ?? 0,
+                isDefault: v.isDefault ?? index === 0,
+                attributes: v.attributes ?? undefined,
+              }
+            });
+          }
+        }
+      }
 
       // Sync Categories
       if (categories !== undefined) {
@@ -439,6 +488,7 @@ export class ProductsService {
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
+        categories: { include: { category: true } },
       },
     });
 
@@ -455,6 +505,7 @@ export class ProductsService {
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
+        categories: { include: { category: true } },
       },
     });
     if (!product) throw new NotFoundException('Producto no encontrado');

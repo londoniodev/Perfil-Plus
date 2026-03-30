@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -32,6 +32,7 @@ function LoginForm() {
   const { tenantId } = useTenant();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const hasCleanedUp = useRef(false);
 
   const form = useForm<LoginValues>({
     resolver: standardSchemaResolver(LoginSchema),
@@ -43,9 +44,12 @@ function LoginForm() {
 
   const { isSubmitting } = form.formState;
 
-  // Limpieza de sesión previa al montar la página de login
+  // Limpieza de sesión previa al montar la página de login (UNA SOLA VEZ)
   // Esto asegura que NO queden cookies/localStorage "fantasma" que bloqueen el re-login
   useEffect(() => {
+    if (hasCleanedUp.current) return;
+    hasCleanedUp.current = true;
+
     const reasonParam = searchParams.get("reason");
 
     // Función para borrar cookies del frontend (no puede borrar HttpOnly del API)
@@ -64,7 +68,7 @@ function LoginForm() {
     deleteCookie("accessToken");
     deleteCookie("Authentication");
 
-    // 3. Llamar al backend para borrar cookies HttpOnly (fire-and-forget)
+    // 3. Llamar al backend para borrar cookies HttpOnly (fire-and-forget, UNA sola vez)
     fetch(`${API_BASE}/auth/logout`, {
       method: "POST",
       credentials: "include",
@@ -79,7 +83,8 @@ function LoginForm() {
     if (reasonParam === 'session_expired') {
       toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
     }
-  }, [searchParams, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper simple para cookies (ya que no tenemos js-cookie)
   const setCookie = (name: string, value: string, days: number) => {

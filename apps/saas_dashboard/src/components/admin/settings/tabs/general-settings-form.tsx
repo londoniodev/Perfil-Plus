@@ -33,12 +33,10 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
             instagram: initialData?.instagram || "",
             facebook: initialData?.facebook || "",
             address: initialData?.address || "",
-            menuSlogan: initialData?.menuSlogan || "",
             enableBlog: initialData?.enableBlog ?? true,
             enableStore: initialData?.enableStore ?? true,
             enableLMS: initialData?.enableLMS ?? false,
             orderTrackingEnabled: initialData?.orderTrackingEnabled ?? true,
-            heroImage: initialData?.heroImage || "",
         },
     })
 
@@ -52,12 +50,10 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                 instagram: initialData.instagram || "",
                 facebook: initialData.facebook || "",
                 address: initialData.address || "",
-                menuSlogan: initialData.menuSlogan || "",
                 enableBlog: initialData.enableBlog ?? true,
                 enableStore: initialData.enableStore ?? true,
                 enableLMS: initialData.enableLMS ?? false,
                 orderTrackingEnabled: initialData.orderTrackingEnabled ?? true,
-                heroImage: initialData.heroImage || "",
             })
         }
     }, [initialData, form])
@@ -231,59 +227,6 @@ export function GeneralSettingsForm({ initialData }: GeneralSettingsFormProps) {
                                 />
                             </div>
                         </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6">
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-semibold">Identidad Visual</h3>
-                        <FormField
-                            control={form.control}
-                            name="heroImage"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Imagen de Portada (Hero / Background)</FormLabel>
-                                    <FormControl>
-                                        <SingleImageDropzone
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            endpoint={`${API_BASE}/storage/upload/image`}
-                                            token={authToken}
-                                            tenantId={TENANT_ID}
-                                            folder="branding"
-                                            onUploadSuccess={(url) => {
-                                                toast.success("Imagen de portada subida");
-                                                field.onChange(url);
-                                            }}
-                                            onUploadError={(err) => toast.error(`Error: ${err}`)}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Esta imagen se usa como fondo en las páginas de login, registro y en tu perfil público (Linktree).
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </Card>
-
-                <Card className="p-6">
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Mensaje de Bienvenida</h3>
-                        <FormField
-                            control={form.control}
-                            name="menuSlogan"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Slogan del Menú Digital</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="Bienvenido a nuestro menú digital" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                     </div>
                 </Card>
 

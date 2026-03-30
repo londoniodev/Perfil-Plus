@@ -137,6 +137,8 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
             fontFamily: "Inter",
             metaTitle: defaultValues?.metaTitle || "",
             metaDescription: defaultValues?.metaDescription || "",
+            authBgUrl: defaultValues?.authBgUrl || "",
+            authQuote: defaultValues?.authQuote || "",
             ...defaultValues,
         },
     });
@@ -170,6 +172,8 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                 fontFamily: "Inter",
                 metaTitle: "",
                 metaDescription: "",
+                authBgUrl: "",
+                authQuote: "",
                 ...defaultValues,
             })
         }
@@ -395,6 +399,62 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                                     <Input {...field} placeholder="Ej: Disfruta de la mejor comida artesanal con ingredientes frescos..." />
                                                 </FormControl>
                                                 <FormDescription>Máximo 160 caracteres recomendados.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                            
+                            <Separator />
+
+                            {/* --- Páginas Públicas --- */}
+                            <div className="space-y-4 pt-4">
+                                <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
+                                    <Globe className="h-5 w-5" />
+                                    Páginas Públicas y Login
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Personaliza el aspecto de tu Menú Digital y del portal de acceso.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="authBgUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Imagen de Portada (Fondo)</FormLabel>
+                                                <FormControl>
+                                                    <SingleImageDropzone
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        endpoint={`${API_BASE}/storage/upload/image`}
+                                                        token={authToken}
+                                                        tenantId={TENANT_ID}
+                                                        folder="branding"
+                                                        onUploadSuccess={(url) => {
+                                                            toast.success("Imagen de portada subida");
+                                                            field.onChange(url);
+                                                        }}
+                                                        onUploadError={(err) => toast.error(`Error: ${err}`)}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>Se muestra de fondo en el Login y Linktree.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="authQuote"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Slogan del Menú Digital</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} placeholder="P. ej: El verdadero sabor artesanal..." />
+                                                </FormControl>
+                                                <FormDescription>Mensaje corto que se muestra bajo el logo.</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

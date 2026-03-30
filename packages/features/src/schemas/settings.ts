@@ -8,12 +8,10 @@ export const generalSettingsSchema = z.object({
     instagram: z.string().optional().or(z.literal("")),
     facebook: z.string().optional().or(z.literal("")),
     address: z.string().optional().or(z.literal("")),
-    menuSlogan: z.string().optional().or(z.literal("")),
     enableBlog: z.boolean().optional(),
     enableStore: z.boolean().optional(),
     enableLMS: z.boolean().optional(),
     orderTrackingEnabled: z.boolean().optional(),
-    heroImage: z.string().optional().or(z.literal("")),
 });
 
 export type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;

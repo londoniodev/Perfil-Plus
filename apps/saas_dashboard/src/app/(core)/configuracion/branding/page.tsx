@@ -36,6 +36,10 @@ function mapApiToFormValues(apiData: any) {
         faviconUrl: bs.faviconUrl || "",
         secondaryColor: bs.secondaryColor || "",
         fontFamily: bs.fontFamily?.split(",")[0]?.trim() || "Inter",
+        metaTitle: bs.metaTitle || "",
+        metaDescription: bs.metaDescription || "",
+        authBgUrl: bs.authBgUrl || "",
+        authQuote: bs.authQuote || "",
     };
 }
 

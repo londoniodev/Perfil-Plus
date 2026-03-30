@@ -28,7 +28,7 @@ const API_BASE_URL = getApiBaseUrl();
 export async function serverFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const tenantId = await getTenantId();
     const cookieStore = await cookies();
-    const token = cookieStore.get("Authentication")?.value || cookieStore.get("accessToken")?.value;
+    const token = cookieStore.get("accessToken")?.value || cookieStore.get("Authentication")?.value;
 
     const headers = new Headers(options?.headers);
 

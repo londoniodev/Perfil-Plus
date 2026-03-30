@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { API_BASE } from "@/lib/config";
@@ -30,7 +30,6 @@ import { LoginSchema, type LoginValues } from "@/schemas/auth";
 
 function LoginForm() {
   const { tenantId } = useTenant();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
 
@@ -44,27 +43,43 @@ function LoginForm() {
 
   const { isSubmitting } = form.formState;
 
-  // Redirigir si ya está logueado
+  // Limpieza de sesión previa al montar la página de login
+  // Esto asegura que NO queden cookies/localStorage "fantasma" que bloqueen el re-login
   useEffect(() => {
-    const errorParam = searchParams.get("error");
     const reasonParam = searchParams.get("reason");
-    const user = localStorage.getItem("user");
 
-    if (errorParam === 'session_missing' || reasonParam === 'session_expired') {
-      if (user) {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        window.dispatchEvent(new Event("user-login"));
-      }
-      if (reasonParam === 'session_expired') {
-        toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
-      }
-      return;
+    // Función para borrar cookies del frontend (no puede borrar HttpOnly del API)
+    const deleteCookie = (name: string) => {
+      document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+      // Intento adicional con Secure (para cookies creadas con Secure=true)
+      document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure`;
+    };
+
+    // 1. SIEMPRE limpiar localStorage (si estás en el login, no debe haber sesión activa)
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
+    // 2. SIEMPRE borrar cookies del frontend
+    deleteCookie("accessToken");
+    deleteCookie("Authentication");
+
+    // 3. Llamar al backend para borrar cookies HttpOnly (fire-and-forget)
+    fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => {
+      // Silencioso — si falla, no bloquea el login
+    });
+
+    // 4. Notificar a otros componentes que no hay sesión
+    window.dispatchEvent(new Event("user-login"));
+
+    // 5. Mostrar mensaje si aplica
+    if (reasonParam === 'session_expired') {
+      toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
     }
-
-
-  }, [router, searchParams]);
+  }, [searchParams, toast]);
 
   // Helper simple para cookies (ya que no tenemos js-cookie)
   const setCookie = (name: string, value: string, days: number) => {

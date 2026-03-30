@@ -703,6 +703,7 @@ model InventoryItem {
   name        String
   sku         String?
   unit        InventoryUnit        @default(UN)
+  category    InventoryCategory    @default(INGREDIENT)
   avgCost     Decimal              @default(0) @db.Decimal(10, 4)
   lastCost    Decimal              @default(0) @db.Decimal(10, 4)
   minStock    Decimal              @default(0) @db.Decimal(10, 3)
@@ -755,16 +756,18 @@ model InventoryMovement {
 }
 
 model Recipe {
-  id          String             @id @default(cuid())
-  tenantId    String
-  productId   String             @unique
-  yield       Int                @default(1)
-  notes       String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  product     Product            @relation(fields: [productId], references: [id])
-  tenant      Tenant             @relation(fields: [tenantId], references: [id])
-  ingredients RecipeIngredient[]
+  id           String             @id @default(cuid())
+  tenantId     String
+  productId    String             @unique
+  yield        Int                @default(1)
+  laborCost    Decimal?           @db.Decimal(10, 2)
+  targetMargin Decimal?           @db.Decimal(4, 2)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  product      Product            @relation(fields: [productId], references: [id])
+  tenant       Tenant             @relation(fields: [tenantId], references: [id])
+  ingredients  RecipeIngredient[]
 
   @@index([tenantId])
 }
@@ -956,6 +959,13 @@ enum InventoryUnit {
   LT
   ML
   UN
+}
+
+enum InventoryCategory {
+  INGREDIENT
+  PACKAGING
+  CONSUMABLE
+  LABOR
 }
 
 enum MovementType {

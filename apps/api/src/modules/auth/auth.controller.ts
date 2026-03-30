@@ -213,20 +213,20 @@ export class AuthController {
   }
 
   private clearAuthCookies(res: Response, hostname?: string) {
-    const isProd = this.isProduction();
-
+    // CRÍTICO: Los atributos DEBEN coincidir con los de setAuthCookies (getCookieOptions)
+    // Si no coinciden, el navegador NO borra la cookie original
     const clearOptions = {
       httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? ('none' as const) : ('lax' as const),
+      secure: true,              // Mismo que getCookieOptions
+      sameSite: 'none' as const, // Mismo que getCookieOptions
       path: '/',
     };
 
-    // Clear without domain (Host Only match)
+    // Clear con atributos idénticos a la creación
     res.clearCookie('accessToken', clearOptions);
     res.clearCookie('refreshToken', clearOptions);
 
-    // Extra safely: set expired cookies with maxAge=0
+    // Seguridad extra: sobreescribir con valor vacío y maxAge=0
     res.cookie('accessToken', '', { ...clearOptions, maxAge: 0 });
     res.cookie('refreshToken', '', { ...clearOptions, maxAge: 0 });
   }

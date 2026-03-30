@@ -15,7 +15,7 @@ export async function getTenantId(): Promise<string> {
     // 1. Intentar extraer tenantId del JWT del usuario autenticado
     try {
         const cookieStore = await cookies();
-        const token = cookieStore.get('Authentication')?.value || cookieStore.get('accessToken')?.value;
+        const token = cookieStore.get('accessToken')?.value || cookieStore.get('Authentication')?.value;
 
         if (token) {
             // Decodificar JWT sin verificar firma (solo lectura del payload)

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { API_BASE, TENANT_ID } from "@/lib/config";
 
 import { User, AuthContextType, STAFF_ROLES } from "@/types/auth";
@@ -20,7 +19,10 @@ function setCookie(name: string, value: string, days: number) {
 }
 
 function deleteCookie(name: string) {
-    document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    // Borrar con múltiples combinaciones de SameSite para cubrir
+    // cookies creadas con distintos atributos (Lax por JS, None por API)
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure`;
 }
 
 // Helper function to clear ALL auth data from localStorage
@@ -28,7 +30,8 @@ function clearAllAuthData() {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
-    deleteCookie("accessToken"); // Clear middleware cookie
+    deleteCookie("accessToken");
+    deleteCookie("Authentication"); // Fallback por compatibilidad
     // Dispatch event to notify other components
     window.dispatchEvent(new Event("user-login"));
 }
@@ -75,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const isRefreshingRef = useRef(false); // Concurrency lock
-    const router = useRouter();
 
     const refreshUser = useCallback(async () => {
         try {
@@ -160,9 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(null);
                 clearAllAuthData();
 
-                // Si es 401, redirigir explícitamente a login con mensaje
+                // Si es 401, redirigir con full page reload (cross-app navigation)
+                // router.replace no funciona entre apps Next.js separadas
                 if (res.status === 401) {
-                    router.replace("/login?reason=session_expired");
+                    window.location.href = "/login?reason=session_expired";
                 }
                 return;
             }
@@ -232,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (refreshRes.status === 401 || refreshRes.status === 403) {
                     setUser(null);
                     clearAllAuthData();
-                    router.replace("/login?reason=session_expired");
+                    window.location.href = "/login?reason=session_expired";
                 }
             }
         } catch (error) {

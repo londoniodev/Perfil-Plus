@@ -13,6 +13,28 @@ import LinktreeFallback from "@/components/marketing/LinktreeFallback";
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
 const S3_PUBLIC_ENDPOINT = (process.env.S3_ENDPOINT || "http://127.0.0.1:9000").replace(/\/+$/, "");
 
+// ── Domain Resilience ──
+// Dominios S3 históricos/legados que pueden estar quemados en archivos body.html almacenados.
+// Al añadir la URL actual también, nos aseguramos de que la regex no haga reemplazos rotos.
+const LEGACY_S3_DOMAINS = [
+  /https?:\/\/s3\.xn--alvarolondoo-khb\.dev/g,   // Punycode del dominio anterior
+  /https?:\/\/s3\.alvarolondo[ñn]o\.dev/g,        // Unicode del dominio anterior
+  /https?:\/\/localhost:9000/g,                     // Entorno de desarrollo local
+];
+
+/**
+ * Reescribe cualquier referencia a un dominio S3 legacy/anterior en el HTML
+ * por el endpoint S3 actual configurado en la variable de entorno.
+ * Esto hace al renderer inmune a futuras migraciones de dominio.
+ */
+function rebaseAssetUrls(html: string, currentEndpoint: string): string {
+  let result = html;
+  for (const pattern of LEGACY_S3_DOMAINS) {
+    result = result.replace(pattern, currentEndpoint);
+  }
+  return result;
+}
+
 // ── Types ──
 interface LandingData {
   body: string;
@@ -180,8 +202,11 @@ export default async function MarketingHubPage({ params }: Props) {
   const landing = await fetchLandingFromS3(tenantId, tenantSlug, pageSlug);
 
   if (landing?.body) {
-    // Sanitizar HTML de S3
-    const sanitizedBody = landing.body
+    // 1. Rebase: normalizar URLs de S3 legadas al endpoint actual
+    const rebasedBody = rebaseAssetUrls(landing.body, S3_PUBLIC_ENDPOINT);
+
+    // 2. Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
+    const sanitizedBody = rebasedBody
       .replace(/<nav[\s\S]*?<\/nav>/gi, '') 
       .replace(/<header[^>]*?class="[^"]*?(?:navbar|nav-container|menu)[^"]*"[\s\S]*?<\/header>/gi, '')
       .replace(/<footer[\s\S]*?<\/footer>/gi, '');

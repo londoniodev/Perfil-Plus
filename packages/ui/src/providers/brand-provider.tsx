@@ -16,25 +16,46 @@ interface BrandProviderProps {
     defaultSettings?: BrandSettings
 }
 
+function getBrandVariants(hsl: string, isDark: boolean) {
+    const parts = hsl.split(' ');
+    if (parts.length < 3) return null;
+    const h = parts[0];
+    const s = parts[1];
+    const lValue = parseFloat(parts[2].replace('%', ''));
+
+    // Soft version (10-15% of the color)
+    const softLightness = isDark ? "15%" : "95%";
+    
+    // Foreground contrast: If color is too light, use a very dark shade of it.
+    // Threshold usually around 60% lightness.
+    const useDarkForeground = lValue > 60;
+    const foreground = useDarkForeground 
+        ? `${h} ${s} 12%` // Dark shade
+        : "0 0% 100%";    // White
+
+    return {
+        "--primary-soft": `${h} ${s} ${softLightness}`,
+        "--primary-foreground": foreground,
+        "--primary-muted-foreground": `${h} ${parseFloat(s) / 2}% ${isDark ? "70%" : "35%"}`,
+    };
+}
+
 function getSidebarColors(hsl: string) {
     const parts = hsl.split(' ');
     if (parts.length < 3) return null;
     const h = parts[0];
     const s = parts[1];
 
-    // Light Mode: Very light background (96%), dark text
-    // Dark Mode: Dark background (15%), light text
-
     return {
         light: {
             "--sidebar-accent": `${h} ${s} 96%`,
-            "--sidebar-accent-foreground": `${h} ${s} 40%`,
+            "--sidebar-accent-foreground": `${h} ${s} 30%`,
             "--sidebar-ring": hsl,
             "--sidebar-primary": hsl,
             "--sidebar-primary-foreground": "0 0% 98%",
         },
         dark: {
-            "--sidebar-accent": `${h} ${s} 15%`,
+            "--sidebar-accent": `${h} ${s} 12%`,
             "--sidebar-accent-foreground": `${h} ${s} 90%`,
             "--sidebar-ring": hsl,
             "--sidebar-primary": hsl,
@@ -101,25 +122,27 @@ export function BrandProvider({
         : "zinc"
 
     // Determine theme payload
-    let theme = themes[primaryThemeKey];
-    if (isCustomColor && finalCustomColor) {
-        const base = themes.zinc;
-        const custom = finalCustomColor;
+    let theme = { ...themes[primaryThemeKey] };
+    const custom = isCustomColor && finalCustomColor ? finalCustomColor : (theme.light as any)["--primary"];
+
+    if (custom) {
         const sidebarColors = getSidebarColors(custom);
+        const variantsLight = getBrandVariants(custom, false);
+        const variantsDark = getBrandVariants(custom, true);
 
         theme = {
             light: {
-                ...base.light,
+                ...theme.light,
                 "--primary": custom,
-                "--primary-foreground": "0 0% 100%",
                 "--ring": custom,
+                ...variantsLight,
                 ...(sidebarColors ? sidebarColors.light : {})
             } as any,
             dark: {
-                ...base.dark,
+                ...theme.dark,
                 "--primary": custom,
-                "--primary-foreground": "0 0% 100%",
                 "--ring": custom,
+                ...variantsDark,
                 ...(sidebarColors ? sidebarColors.dark : {})
             } as any
         };

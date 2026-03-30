@@ -87,10 +87,10 @@ export function WarehousesClient({ warehouses }: { warehouses: Warehouse[] }) {
 
     return (
         <section className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-center flex-wrap gap-2">
                 <Button
                     onClick={openCreateModal}
-                    className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]"
+                    className="bg-amber-500 text-amber-950 hover:bg-amber-600 transition duration-200 hover:scale-[1.01] active:scale-[0.98]"
                 >
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                     Nuevo Almacén

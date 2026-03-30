@@ -138,7 +138,7 @@ export function InventoryCountsClient({
     return (
         <section className="space-y-6">
             {/* Create button */}
-            <div className="flex justify-end">
+            <div className="flex justify-center flex-wrap gap-2">
                 <Button
                     onClick={() => setCreateDialogOpen(true)}
                     className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]"

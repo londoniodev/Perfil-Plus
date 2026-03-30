@@ -1,4 +1,4 @@
-import { IsObject, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsBoolean, IsNumber } from 'class-validator';
 
 export class UpdateTenantConfigDto {
   // Store Info
@@ -258,4 +258,12 @@ export class UpdateTenantConfigDto {
   @IsObject()
   @IsOptional()
   businessHours?: Record<string, any>;
+
+  @IsNumber()
+  @IsOptional()
+  costingMarginGood?: number;
+
+  @IsNumber()
+  @IsOptional()
+  costingMarginLow?: number;
 }

@@ -493,3 +493,19 @@ export async function completeInventoryCount(id: string, data: {
         return { success: false, error: error.message || "Error al completar conteo" }
     }
 }
+
+export async function updateCostingMargins(marginGood: number, marginLow: number) {
+    try {
+        const user = await getSessionUser()
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) return { success: false, error: "No autorizado" }
+
+        const newConfig = { costingMarginGood: marginGood, costingMarginLow: marginLow }
+
+        await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
+        revalidateTag(`tenant-${user.tenantId}`, "default")
+
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Error al actualizar márgenes de costeo" }
+    }
+}

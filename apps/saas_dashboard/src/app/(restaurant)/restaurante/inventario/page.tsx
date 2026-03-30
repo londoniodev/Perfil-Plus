@@ -21,14 +21,6 @@ export default async function InventoryItemsPage() {
         <AdminPageWrapper
             title="Ingredientes"
             description="Gestiona los ingredientes e insumos de tu restaurante"
-            actions={
-                <Button asChild className="transition duration-200 hover:scale-[1.01] active:scale-[0.98]">
-                    <Link href="/restaurante/inventario/nuevo">
-                        <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                        Nuevo Ingrediente
-                    </Link>
-                </Button>
-            }
         >
             <InventoryClient items={items} warehouses={warehouses} alerts={alerts} />
         </AdminPageWrapper>

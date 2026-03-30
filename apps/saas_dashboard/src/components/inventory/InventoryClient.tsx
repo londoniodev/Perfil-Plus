@@ -30,7 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@alvarosky/ui"
-import { Plus, ArrowUpCircle, ArrowDownCircle, ArrowRightLeft, AlertTriangle, Trash2 } from "lucide-react"
+import { Plus, ArrowUpCircle, ArrowDownCircle, ArrowRightLeft, AlertTriangle, Trash2, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import type { InventoryItem, Warehouse, LowStockAlert } from "@/actions/admin/inventory"
 import {
@@ -39,6 +39,7 @@ import {
     transferStock,
     deleteInventoryItem,
     createInventoryItem, // Added import
+    updateInventoryItem,
 } from "@/actions/admin/inventory"
 
 const UNITS = [
@@ -68,7 +69,7 @@ export function InventoryClient({
 }) {
     const [isPending, startTransition] = useTransition()
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [dialogType, setDialogType] = useState<"entry" | "exit" | "transfer" | "create">("entry")
+    const [dialogType, setDialogType] = useState<"entry" | "exit" | "transfer" | "create" | "edit">("entry")
     const [selectedItem, setSelectedItem] = useState<string>("")
     const [selectedWarehouse, setSelectedWarehouse] = useState<string>(warehouses[0]?.id || "")
     const [toWarehouse, setToWarehouse] = useState<string>("")
@@ -84,34 +85,51 @@ export function InventoryClient({
 
     const alertItemIds = new Set(alerts.map((a) => a.id))
 
-    function openDialog(type: "entry" | "exit" | "transfer" | "create", itemId?: string) {
+    function openDialog(type: "entry" | "exit" | "transfer" | "create" | "edit", itemId?: string) {
         setDialogType(type)
-        if (itemId) setSelectedItem(itemId)
+        if (itemId) {
+            setSelectedItem(itemId)
+            if (type === "edit") {
+                const item = items.find(i => i.id === itemId)
+                if (item) {
+                    setCreateName(item.name)
+                    setCreateSku(item.sku || "")
+                    setCreateUnit(item.unit)
+                    setCreateMinStock(item.minStock.toString())
+                }
+            }
+        }
+        if (type !== "edit") {
+            setCreateName("")
+            setCreateSku("")
+            setCreateUnit("UN")
+            setCreateMinStock("")
+        }
         setQuantity("")
         setUnitCost("")
         setReason("")
-        setCreateName("")
-        setCreateSku("")
-        setCreateUnit("UN")
-        setCreateMinStock("")
         setDialogOpen(true)
     }
 
     function handleSubmit() {
-        if (dialogType === "create") {
+        if (dialogType === "create" || dialogType === "edit") {
             if (!createName.trim()) {
                 toast.error("El nombre es requerido")
                 return
             }
             startTransition(async () => {
-                const result = await createInventoryItem({
+                const payload = {
                     name: createName.trim(),
                     sku: createSku.trim() || undefined,
                     unit: createUnit,
                     minStock: createMinStock ? parseFloat(createMinStock) : 0,
-                })
+                }
+                const result = dialogType === "create" 
+                    ? await createInventoryItem(payload)
+                    : await updateInventoryItem(selectedItem, payload)
+
                 if (result.success) {
-                    toast.success("Ingrediente creado correctamente")
+                    toast.success(dialogType === "create" ? "Ingrediente creado correctamente" : "Ingrediente actualizado correctamente")
                     setDialogOpen(false)
                 } else {
                     toast.error(result.error)
@@ -184,6 +202,7 @@ export function InventoryClient({
         exit: "Registrar Salida",
         transfer: "Traspasar Stock",
         create: "Nuevo Ingrediente",
+        edit: "Editar Ingrediente",
     }
 
     return (
@@ -213,7 +232,7 @@ export function InventoryClient({
                 <Button
                     size="sm"
                     onClick={() => openDialog("create")}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-amber-500 text-amber-950 hover:bg-amber-600"
                 >
                     <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
                     Nuevo Ingrediente
@@ -221,14 +240,14 @@ export function InventoryClient({
                 <Button
                     size="sm"
                     onClick={() => openDialog("entry")}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    className="bg-emerald-600 text-white hover:bg-emerald-700"
                 >
                     <ArrowUpCircle className="mr-2 h-4 w-4" aria-hidden="true" />
                     Entrada de Stock
                 </Button>
                 <Button
                     size="sm"
-                    variant="outline"
+                    variant="destructive"
                     onClick={() => openDialog("exit")}
                 >
                     <ArrowDownCircle className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -317,6 +336,15 @@ export function InventoryClient({
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
+                                                    className="h-8 w-8 hover:bg-amber-500/10"
+                                                    onClick={() => openDialog("edit", item.id)}
+                                                    aria-label={`Editar ${item.name}`}
+                                                >
+                                                    <Pencil className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
                                                     className="h-8 w-8 hover:bg-emerald-500/10"
                                                     onClick={() => openDialog("entry", item.id)}
                                                     aria-label={`Agregar stock a ${item.name}`}
@@ -349,7 +377,7 @@ export function InventoryClient({
                         <DialogTitle>{dialogTitles[dialogType]}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                        {dialogType === "create" ? (
+                        {dialogType === "create" || dialogType === "edit" ? (
                             <>
                                 <div className="space-y-2">
                                     <Label htmlFor="create-name">Nombre *</Label>

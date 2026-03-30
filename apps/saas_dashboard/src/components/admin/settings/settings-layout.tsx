@@ -32,6 +32,8 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
             fontFamily: bs.fontFamily?.split(",")[0]?.trim() || "Inter",
             metaTitle: bs.metaTitle || "",
             metaDescription: bs.metaDescription || "",
+            authBgUrl: bs.authBgUrl || "",
+            authQuote: bs.authQuote || "",
         };
     }, [brandingData]);
 

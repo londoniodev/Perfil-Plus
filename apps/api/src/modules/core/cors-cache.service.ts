@@ -1,19 +1,87 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
+/**
+ * ╔═══════════════════════════════════════════════════════════════════════╗
+ * ║                     CORS CACHE SERVICE                               ║
+ * ║  Servicio de caché de orígenes CORS para arquitectura Multi-Tenant.  ║
+ * ╚═══════════════════════════════════════════════════════════════════════╝
+ *
+ * ## ¿POR QUÉ EXISTE ESTE SERVICIO?
+ *
+ * En una arquitectura multi-tenant con dominios dinámicos (subdominios y
+ * dominios custom), la lista de orígenes CORS permitidos cambia cada vez
+ * que se crea, edita o elimina un tenant. Consultar la base de datos en
+ * cada preflight request (OPTIONS) y cada petición real sería ineficiente
+ * y saturaría PostgreSQL con queries repetitivas.
+ *
+ * Este servicio mantiene un Redis SET (`cors_allowed_origins`) con todos
+ * los orígenes válidos. La verificación CORS se hace en O(1) contra Redis.
+ *
+ * ## ARQUITECTURA DE CACHÉ
+ *
+ * ```
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │  Petición HTTP con Origin header                                │
+ * │      ↓                                                          │
+ * │  main.ts → enableCors({ origin: callback })                     │
+ * │      ↓                                                          │
+ * │  CorsCacheService.checkOrigin(origin)                           │
+ * │      ↓                                                          │
+ * │  1. Redis SISMEMBER "cors_allowed_origins" origin   [O(1)]      │
+ * │      ↓ (si Redis no disponible o no encontrado)                 │
+ * │  2. Fallback a PostgreSQL query por slug/domain     [O(n)]      │
+ * │      ↓                                                          │
+ * │  Resultado: true/false                                          │
+ * └─────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * ## ¿POR QUÉ CONEXIÓN REDIS PROPIA?
+ *
+ * NestJS CacheModule (v3) + cache-manager (v7) usan Keyv como wrapper
+ * interno. Keyv encapsula el store de Redis en un KeyvStoreAdapter
+ * completamente cerrado, haciendo IMPOSIBLE acceder al cliente nativo
+ * de Redis para operaciones avanzadas (SADD, SISMEMBER, SREM).
+ *
+ * Por eso, este servicio crea su PROPIA conexión Redis dedicada,
+ * usando la misma configuración (REDIS_HOST, REDIS_PORT, REDIS_PASSWORD)
+ * del entorno. Esto es:
+ *   - Más limpio: sin depender de internals de cache-manager/Keyv
+ *   - Más robusto: inmune a cambios de versión de cache-manager
+ *   - Eficiente: una sola conexión persistente para operaciones CORS
+ *
+ * ## FLUJO DE VIDA
+ *
+ * 1. onModuleInit() → Conecta a Redis y carga todos los orígenes
+ * 2. checkOrigin()  → Verifica en Redis (O(1)), fallback a DB
+ * 3. addOrigin()    → Llamado al crear un Tenant (hot-add sin restart)
+ * 4. removeOrigin() → Llamado al eliminar un Tenant
+ * 5. onModuleDestroy() → Cierra la conexión Redis limpiamente
+ */
+
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Cache } from 'cache-manager';
+import { createClient, RedisClientType } from 'redis';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class CorsCacheService implements OnModuleInit {
+export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CorsCacheService.name);
   private readonly baseDomain: string;
   private readonly REDIS_KEY = 'cors_allowed_origins';
 
+  /**
+   * Cliente Redis dedicado para operaciones CORS (Sets).
+   * Separado del CacheModule de NestJS intencionalmente.
+   * Ver documentación del módulo para entender por qué.
+   */
+  private redisClient: RedisClientType | null = null;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.baseDomain =
       this.configService.get<string>('BASE_DOMAIN') ||
@@ -22,101 +90,104 @@ export class CorsCacheService implements OnModuleInit {
       'perfil.plus';
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // LIFECYCLE
+  // ─────────────────────────────────────────────────────────────────
+
   async onModuleInit() {
+    await this.connectRedis();
     await this.loadOriginsToRedis();
   }
 
-  private getRedisClient() {
-    const manager = this.cacheManager as any;
-    let client: any = null;
-
-    // Con cache-manager v6+, el store principal suele estar en el array "stores"
-    const firstStore = manager?.stores ? manager.stores[0] : null;
-
-    // Dependiendo de la versión de cache-manager y nestjs/cache-manager, el store se anida diferente
-    const possibleStores = [
-      firstStore, // Nuevo wrapper de Multi-store (Keyv instance)
-      firstStore?.store,
-      firstStore?._store, // Keyv internal adapter (Aquí debería estar RedisStore)
-      firstStore?.opts?.store, // Keyv options store
-      manager?.store,
-      manager?.store?.store,
-      manager?._store,
-      manager?.md?.store
-    ];
-
-    for (const s of possibleStores) {
-      if (!s) continue;
-      
-      // Buscar cliente de Redis (Node-redis o Ioredis)
-      client =
-        s.client ||
-        s.redisCache || // cache-manager-redis-yet a veces expone redisCache
-        s._client ||
-        s.redis ||
-        s.redisClient;
-
-      if (client && typeof client.sAdd === 'function') {
-        break; // Cliente válido para Set operations (Redis) encontrado
-      }
+  async onModuleDestroy() {
+    if (this.redisClient) {
+      await this.redisClient.quit().catch(() => {});
+      this.logger.log('Conexión Redis CORS cerrada correctamente');
     }
-
-    if (!client || typeof client.sAdd !== 'function') {
-      this.logger.warn(`[DEBUG CORS] No se pudo extraer el cliente Redis de CacheManager. Volcando estructura...`);
-      this.logger.warn(`[DEBUG CORS] CacheManager keys: ${Object.keys(manager || {}).join(', ')}`);
-      
-      if (manager?.stores && manager.stores.length > 0) {
-        const s = manager.stores[0];
-        this.logger.warn(`[DEBUG CORS] stores[0] keys: ${Object.keys(s || {}).join(', ')}`);
-        if (s?._store) {
-           this.logger.warn(`[DEBUG CORS] stores[0]._store keys: ${Object.keys(s._store || {}).join(', ')}`);
-           this.logger.warn(`[DEBUG CORS] type of _store: ${typeof s._store}`);
-        }
-        if (s?.opts?.store) {
-           this.logger.warn(`[DEBUG CORS] stores[0].opts.store keys: ${Object.keys(s.opts.store || {}).join(', ')}`);
-        }
-      } else if (manager?.store) {
-        this.logger.warn(`[DEBUG CORS] Store keys: ${Object.keys(manager.store || {}).join(', ')}`);
-        this.logger.warn(`[DEBUG CORS] Store name: ${manager.store.name || 'unknown'}`);
-        if ((manager.store as any).store) {
-          this.logger.warn(`[DEBUG CORS] Store.Store keys: ${Object.keys((manager.store as any).store).join(', ')}`);
-        }
-      }
-      
-      return null;
-    }
-
-    return client;
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // CONEXIÓN REDIS DEDICADA
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Carga todos los dominios existentes de tenants en Redis.
-   * Se ejecuta una sola vez al iniciar el módulo.
+   * Crea una conexión Redis dedicada para operaciones CORS.
+   * Usa las mismas variables de entorno que el CacheModule global:
+   *   - REDIS_HOST (default: 'redis')
+   *   - REDIS_PORT (default: 6379)
+   *   - REDIS_PASSWORD (opcional)
    */
-  private async loadOriginsToRedis(): Promise<void> {
-    const redisClient = this.getRedisClient();
-    if (!redisClient) {
-      this.logger.warn(
-        `Redis client NOT found in CacheManager. CORS will fallback to Database queries!`,
-      );
-      return;
-    }
+  private async connectRedis(): Promise<void> {
+    const host = this.configService.get('REDIS_HOST') || 'localhost';
+    const port =
+      parseInt(this.configService.get('REDIS_PORT') || '6379') || 6379;
+    const password = this.configService.get('REDIS_PASSWORD') || undefined;
 
     try {
-      // Borrar el SET existente
-      await redisClient.del(this.REDIS_KEY);
+      this.redisClient = createClient({
+        socket: {
+          host,
+          port,
+          connectTimeout: 5000,
+          reconnectStrategy: (retries) => {
+            if (retries > 3) {
+              this.logger.warn(
+                'Redis CORS: Máximo de reintentos alcanzado. Operando sin caché.',
+              );
+              return false; // Dejar de reintentar
+            }
+            return Math.min(retries * 500, 3000);
+          },
+        },
+        password,
+      }) as RedisClientType;
 
-      // SECURITY EXCEPTION: Global infrastructure query for CORS. Does not leak tenant data.
-      /* eslint-disable no-restricted-syntax */
+      // Listener de errores para evitar crash del proceso
+      this.redisClient.on('error', (err) => {
+        this.logger.error(`Redis CORS error: ${err.message}`);
+      });
+
+      await this.redisClient.connect();
+      this.logger.log(
+        `✅ Redis CORS conectado (${host}:${port}) — Conexión dedicada para validación de orígenes`,
+      );
+    } catch (error: any) {
+      this.logger.warn(
+        `⚠️ Redis CORS no disponible (${host}:${port}): ${error.message}. ` +
+          `CORS hará fallback a consultas PostgreSQL.`,
+      );
+      this.redisClient = null;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // CARGA INICIAL DE ORÍGENES
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Carga todos los dominios de tenants en un Redis SET.
+   * Se ejecuta UNA sola vez al arrancar el módulo.
+   *
+   * Genera orígenes en formato: https://{slug}.{baseDomain}
+   * y https://{customDomain} para tenants con dominio propio.
+   */
+  private async loadOriginsToRedis(): Promise<void> {
+    if (!this.redisClient) return;
+
+    try {
+      // Limpiar SET existente para reconstruirlo desde cero
+      await this.redisClient.del(this.REDIS_KEY);
+
+      // SECURITY EXCEPTION: Query global de infraestructura.
+      // No filtra por tenant porque necesita TODOS los orígenes del sistema.
       const tenants = await this.prisma.tenant.findMany({
         select: { slug: true, domain: true },
       });
-      /* eslint-enable no-restricted-syntax */
 
       const originsToAdd: string[] = [];
 
       for (const tenant of tenants) {
-        // Subdomain origin: https://{slug}.{baseDomain}
+        // Subdominio: https://{slug}.perfil.plus
         if (tenant.slug && this.baseDomain) {
           const origin = this.normalizeDomain(
             `${tenant.slug}.${this.baseDomain}`,
@@ -124,7 +195,7 @@ export class CorsCacheService implements OnModuleInit {
           if (origin) originsToAdd.push(`https://${origin}`);
         }
 
-        // Custom domain origin: https://{domain}
+        // Dominio custom: https://{domain}
         if (tenant.domain) {
           const origin = this.normalizeDomain(tenant.domain);
           if (origin) originsToAdd.push(`https://${origin}`);
@@ -132,11 +203,12 @@ export class CorsCacheService implements OnModuleInit {
       }
 
       if (originsToAdd.length > 0) {
-        await redisClient.sAdd(this.REDIS_KEY, originsToAdd);
+        await this.redisClient.sAdd(this.REDIS_KEY, originsToAdd);
       }
 
       this.logger.log(
-        `CORS Cache inicializado en Redis con ${originsToAdd.length} orígenes correspondientes a ${tenants.length} tenants`,
+        `CORS Cache inicializado con ${originsToAdd.length} orígenes ` +
+          `de ${tenants.length} tenants`,
       );
     } catch (error: any) {
       this.logger.error(
@@ -145,81 +217,110 @@ export class CorsCacheService implements OnModuleInit {
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // OPERACIONES PÚBLICAS (CRUD de orígenes)
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Agrega un nuevo origen a Redis (sin reiniciar el servidor).
-   * Se llama después de crear un nuevo Tenant.
+   * Agrega un nuevo origen al SET de Redis.
+   * Llamar después de crear un nuevo Tenant (hot-add sin restart).
    */
   async addOrigin(origin: string): Promise<void> {
-    const redisClient = this.getRedisClient();
-    if (redisClient) {
-      try {
-        await redisClient.sAdd(this.REDIS_KEY, origin);
-        this.logger.log(`Nuevo origen CORS agregado a Redis: ${origin}`);
-      } catch (error: any) {
-        this.logger.error(`Error agregando origen a Redis: ${error.message}`);
-      }
+    if (!this.redisClient) return;
+
+    try {
+      await this.redisClient.sAdd(this.REDIS_KEY, origin);
+      this.logger.log(`Nuevo origen CORS agregado: ${origin}`);
+    } catch (error: any) {
+      this.logger.error(`Error agregando origen CORS: ${error.message}`);
     }
   }
 
   /**
-   * Elimina un origen de Redis.
+   * Elimina un origen del SET de Redis.
+   * Llamar después de eliminar un Tenant.
    */
   async removeOrigin(origin: string): Promise<void> {
-    const redisClient = this.getRedisClient();
-    if (redisClient) {
-      try {
-        await redisClient.sRem(this.REDIS_KEY, origin);
-        this.logger.log(`Origen CORS eliminado de Redis: ${origin}`);
-      } catch (error: any) {
-        this.logger.error(`Error eliminando origen de Redis: ${error.message}`);
-      }
+    if (!this.redisClient) return;
+
+    try {
+      await this.redisClient.sRem(this.REDIS_KEY, origin);
+      this.logger.log(`Origen CORS eliminado: ${origin}`);
+    } catch (error: any) {
+      this.logger.error(`Error eliminando origen CORS: ${error.message}`);
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // VERIFICACIÓN DE ORIGEN (HOT PATH)
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Verifica asíncronamente si un origen está permitido en Redis o mediante Fallback a DB
+   * Verifica si un origen está permitido.
+   *
+   * Estrategia de 2 capas:
+   *   1. Redis SISMEMBER — O(1), ultra rápido
+   *   2. PostgreSQL query — Fallback si Redis no disponible
+   *
+   * @param origin - El header Origin de la petición HTTP (ej: "https://bocata.perfil.plus")
+   * @returns true si el origen está permitido
    */
   async checkOrigin(origin: string): Promise<boolean> {
-    const redisClient = this.getRedisClient();
+    // Normalizar el origen (Unicode → Punycode)
+    const normalizedHostname = this.normalizeDomain(origin);
+    const normalizedOrigin = `https://${normalizedHostname}`;
 
-    // Normalizar el origen recibido (de Unicode a Punycode si es necesario)
-    const normalizedOriginName = this.normalizeDomain(origin);
-    const normalizedOrigin = `https://${normalizedOriginName}`;
-
-    // Validar en Redis primero si está disponible
-    if (redisClient) {
+    // ── Capa 1: Redis (O(1)) ──
+    if (this.redisClient) {
       try {
-        const isAllowed = await redisClient.sIsMember(
+        const isAllowed = await this.redisClient.sIsMember(
           this.REDIS_KEY,
           normalizedOrigin,
         );
         if (isAllowed) return true;
       } catch (error: any) {
         this.logger.warn(
-          `Redis falló al verificar CORS para ${origin}, haciendo fallback a BD: ${error.message}`,
+          `Redis CORS falló para ${origin}, fallback a BD: ${error.message}`,
         );
       }
     }
 
-    // SILENT FALLBACK A BD
-    try {
-      const matchDomain = normalizedOriginName;
+    // ── Capa 2: PostgreSQL (fallback) ──
+    return this.checkOriginFromDatabase(normalizedHostname);
+  }
 
-      const baseDomainCheck = this.normalizeDomain(this.baseDomain);
+  // ─────────────────────────────────────────────────────────────────
+  // FALLBACK A BASE DE DATOS
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Busca el origen directamente en PostgreSQL.
+   * Se usa cuando Redis no está disponible o el origen no fue
+   * encontrado en el SET (puede ser un tenant recién creado
+   * por otro pod/instancia que aún no sincronizó).
+   */
+  private async checkOriginFromDatabase(
+    hostname: string,
+  ): Promise<boolean> {
+    try {
+      const baseDomainNormalized = this.normalizeDomain(this.baseDomain);
       let slugCheck = '';
-      if (baseDomainCheck && matchDomain.endsWith(`.${baseDomainCheck}`)) {
-        slugCheck = matchDomain.replace(`.${baseDomainCheck}`, '');
+
+      // Extraer slug del subdominio: "bocata.perfil.plus" → "bocata"
+      if (
+        baseDomainNormalized &&
+        hostname.endsWith(`.${baseDomainNormalized}`)
+      ) {
+        slugCheck = hostname.replace(`.${baseDomainNormalized}`, '');
       }
 
-      // IMPORTANTE: Buscamos todos los tenants y normalizamos en memoria o
-      // confiamos en que al menos uno coincida.
-      // Optimización: Buscamos por slug si coincide con el patrón del baseDomain.
+      // Búsqueda optimizada: primero por slug (indexed), luego por dominio custom
       const tenants = await this.prisma.tenant.findMany({
         where: {
           OR: [
             { slug: slugCheck || undefined },
-            // No buscamos directamente por domain porque puede estar en Unicode en la DB
-            // mientras que matchDomain es Punycode.
+            // No buscamos por domain directamente porque puede estar en
+            // Unicode en la DB mientras que hostname ya es Punycode.
           ],
         },
         select: { id: true, domain: true },
@@ -227,42 +328,50 @@ export class CorsCacheService implements OnModuleInit {
 
       for (const t of tenants) {
         if (slugCheck && t.id) return true; // Match por slug
-        if (t.domain && this.normalizeDomain(t.domain) === matchDomain)
-          return true; // Match por dominio normalizado
+        if (t.domain && this.normalizeDomain(t.domain) === hostname)
+          return true;
       }
 
-      // Si no hubo match por slug, buscamos por dominio (lento pero seguro si hay pocos tenants)
+      // Búsqueda exhaustiva por dominio custom (lento, pero necesario)
       if (tenants.length === 0) {
         const allCustomDomains = await this.prisma.tenant.findMany({
           where: { domain: { not: null } },
           select: { domain: true },
         });
         for (const t of allCustomDomains) {
-          if (t.domain && this.normalizeDomain(t.domain) === matchDomain)
+          if (t.domain && this.normalizeDomain(t.domain) === hostname)
             return true;
         }
       }
-    } catch (err: any) {
-      // Ignore invalid URLs or DB query errors silently
+    } catch {
+      // Ignorar errores de URL inválidas o queries fallidas silenciosamente
     }
 
     return false;
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // UTILIDADES
+  // ─────────────────────────────────────────────────────────────────
+
   /**
-   * Normaliza un dominio a su versión Punycode (ASCII) segura para comparaciones CORS.
+   * Normaliza un dominio a Punycode (ASCII) para comparaciones seguras.
+   *
+   * Ejemplos:
+   *   "https://álvaro.perfil.plus" → "xn--lvaro-gra.perfil.plus"
+   *   "bocata.perfil.plus"         → "bocata.perfil.plus"
+   *   "BOCATA.Perfil.PLUS"         → "bocata.perfil.plus"
    */
   private normalizeDomain(domain: string): string {
     if (!domain) return '';
     try {
-      // Si ya tiene protocolo, lo usamos. Si no, lo agregamos para que URL() funcione.
       const urlString = domain.startsWith('http')
         ? domain
         : `https://${domain}`;
       const url = new URL(urlString.toLowerCase());
       return url.hostname;
-    } catch (e) {
-      // Fallback básico si URL falla
+    } catch {
+      // Fallback básico si URL() no puede parsear
       return domain
         .toLowerCase()
         .trim()
@@ -271,9 +380,7 @@ export class CorsCacheService implements OnModuleInit {
     }
   }
 
-  /**
-   * Devuelve el dominio base configurado.
-   */
+  /** Devuelve el dominio base configurado (ej: "perfil.plus"). */
   getBaseDomain(): string {
     return this.baseDomain;
   }

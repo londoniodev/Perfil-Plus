@@ -190,7 +190,18 @@ export default function AdminOrdersPage() {
     }
 
     const getGroupedOrders = (group: OrderStatus[]) => {
-        return orders.filter(o => group.includes(o.status))
+        return orders.filter(o => {
+            const isInStatusGroup = group.includes(o.status);
+            
+            // Si estamos en la pestaña NUEVOS, ocultamos los que ya están pagados online
+            // para que no requieran aprobación manual del mesero.
+            if (group === STATUS_GROUPS.NEW) {
+                const isPaidOnline = o.paymentProvider && ONLINE_PROVIDERS.includes(o.paymentProvider);
+                return isInStatusGroup && !isPaidOnline;
+            }
+
+            return isInStatusGroup;
+        });
     }
 
     return (

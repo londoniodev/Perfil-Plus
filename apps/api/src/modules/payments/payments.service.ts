@@ -978,11 +978,12 @@ export class PaymentsService {
     }
   }
 
-  private async approveOrder(orderId: string, mpPaymentId: string) {
+  private async approveOrder(orderId: string, mpPaymentId: string, explicitTenantId?: string) {
     // 1. Update Order Status
-    const tenantId = this.getTenantId();
+    // Para webhooks (Bold/MP), el CLS no tiene el tenant correcto → usar el tenantId explícito
+    const tenantId = explicitTenantId || this.getTenantId();
     const order = await this.prisma.secure.order.findUnique({
-      where: { id: orderId }, // Si tienes @@unique compuesto, asegúrate de ajustarlo aquí (ej. tenantId_id)
+      where: { id: orderId },
       include: { user: true, items: true },
     });
 
@@ -1240,7 +1241,7 @@ export class PaymentsService {
       this.logger.log(`Order ${orderId} PAID via Bold → sent directly to KITCHEN`);
 
       // Fulfillment (emails de productos digitales si aplica)
-      await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT');
+      await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT', tenantId);
     } else if (
       paymentStatus === 'SALE_REJECTED' ||
       paymentStatus === 'VOID_APPROVED' ||

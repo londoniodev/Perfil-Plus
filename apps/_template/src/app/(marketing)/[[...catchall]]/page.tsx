@@ -207,13 +207,23 @@ export default async function MarketingHubPage({ params }: Props) {
     // 1. Rebase: normalizar URLs de S3 legadas al endpoint actual
     const rebasedBody = rebaseAssetUrls(landing.body, S3_PUBLIC_ENDPOINT);
 
-    // 2. Pre-Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
-    let preSanitizedBody = rebasedBody
+    // 2. Convertir rutas RELATIVAS (./assets/...) a URLs absolutas de S3
+    //    El body.html usa href="./assets/styles.min.css" que en el contexto de Next.js
+    //    se resolvería como mauromera.com/assets/... (inexistente).
+    //    Debemos reescribirlas al bucket real en S3.
+    const bucket = getBucketName(tenantSlug!, false);
+    const s3AssetsBase = `${S3_PUBLIC_ENDPOINT}/${bucket}/landings/${pageSlug}`;
+    const absoluteBody = rebasedBody
+      .replace(/href=["']\.\//g, `href="${s3AssetsBase}/`)
+      .replace(/src=["']\.\//g, `src="${s3AssetsBase}/`);
+
+    // 3. Pre-Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
+    let preSanitizedBody = absoluteBody
       .replace(/<nav[\s\S]*?<\/nav>/gi, '') 
       .replace(/<header[^>]*?class="[^"]*?(?:navbar|nav-container|menu)[^"]*"[\s\S]*?<\/header>/gi, '')
       .replace(/<footer[\s\S]*?<\/footer>/gi, '');
 
-    // 3. Purificación estricta (XSS Shield)
+    // 4. Purificación estricta (XSS Shield)
     // Permite HTML, SVG (para iconos) pero remueve cualquier script o atributo peligroso
     const finalCleanBody = DOMPurify.sanitize(preSanitizedBody, {
       USE_PROFILES: { html: true, svg: true },

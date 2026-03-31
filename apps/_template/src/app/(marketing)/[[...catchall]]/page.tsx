@@ -6,8 +6,10 @@ import { FEATURE_ROUTES } from "@alvarosky/types";
 import { TenantMarketingData } from "@/types/marketing";
 import { getBucketName } from "@alvarosky/shared";
 import { Metadata } from "next";
+import DOMPurify from "isomorphic-dompurify";
 import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront";
 import LinktreeFallback from "@/components/marketing/LinktreeFallback";
+import LandingRenderer from "@/components/marketing/LandingRenderer";
 
 // ── Constants ──
 const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
@@ -205,18 +207,19 @@ export default async function MarketingHubPage({ params }: Props) {
     // 1. Rebase: normalizar URLs de S3 legadas al endpoint actual
     const rebasedBody = rebaseAssetUrls(landing.body, S3_PUBLIC_ENDPOINT);
 
-    // 2. Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
-    const sanitizedBody = rebasedBody
+    // 2. Pre-Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
+    let preSanitizedBody = rebasedBody
       .replace(/<nav[\s\S]*?<\/nav>/gi, '') 
       .replace(/<header[^>]*?class="[^"]*?(?:navbar|nav-container|menu)[^"]*"[\s\S]*?<\/header>/gi, '')
       .replace(/<footer[\s\S]*?<\/footer>/gi, '');
 
-    return (
-      <div
-        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0"
-        dangerouslySetInnerHTML={{ __html: sanitizedBody }}
-      />
-    );
+    // 3. Purificación estricta (XSS Shield)
+    // Permite HTML, SVG (para iconos) pero remueve cualquier script o atributo peligroso
+    const finalCleanBody = DOMPurify.sanitize(preSanitizedBody, {
+      USE_PROFILES: { html: true, svg: true },
+    });
+
+    return <LandingRenderer html={finalCleanBody} />;
   }
 
   // 2. Si no hay landing en S3 y es la raíz, aplicar Lógica DefaultStorefront / Olympo SaaS

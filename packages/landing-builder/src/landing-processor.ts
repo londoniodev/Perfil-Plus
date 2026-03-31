@@ -188,6 +188,7 @@ async function processLocalImages(
   const INPUT_DIR = path.dirname(inputHtmlPath);
   let count = 0;
 
+  // 1. Process standard <img> tags
   for (let i = 0; i < localImgs.length; i++) {
     const el = localImgs[i];
     if (!el) continue;
@@ -196,13 +197,11 @@ async function processLocalImages(
     if (!src) continue;
 
     try {
-      // Resolve path: if starts with / it's in template public, otherwise relative to HTML input
       const sourcePath = src.startsWith("/") 
         ? path.join(PUBLIC_DIR, src)
         : path.resolve(INPUT_DIR, src);
 
       const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
-      
       if (!exists) {
         log("⚠️", `Local asset not found: ${sourcePath} — skipping optimization`);
         continue;
@@ -215,16 +214,68 @@ async function processLocalImages(
       const outputPath = path.join(assetsDir, filename);
 
       log("🖼️  (Local)", `Optimizing: ${src} → ${filename}`);
-
-      await sharp(buffer)
-        .webp({ quality })
-        .toFile(outputPath);
+      await sharp(buffer).webp({ quality }).toFile(outputPath);
 
       $(el).attr("src", `./assets/${filename}`);
       count++;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       log("❌", `Failed to process local image ${src}: ${message}`);
+    }
+  }
+
+  // 2. Process Tailwind arbitrary bg urls: bg-[url('...')]
+  const bgElements = $("[class*='bg-\\[url']");
+  for (let i = 0; i < bgElements.length; i++) {
+    const el = bgElements[i];
+    if (!el) continue;
+    
+    let cls = $(el).attr("class") || "";
+    const regex = /bg-\[url\(['"]([^'"]+)['"]\)\]/g;
+    let match;
+    let modifiedCls = cls;
+    let processCount = 0;
+
+    while ((match = regex.exec(cls)) !== null) {
+      const src = match[1];
+      if (!src || (!src.startsWith("/") && !src.startsWith("./") && !src.startsWith("../"))) {
+        continue; 
+      }
+
+      try {
+        const sourcePath = src.startsWith("/") 
+          ? path.join(PUBLIC_DIR, src)
+          : path.resolve(INPUT_DIR, src);
+
+        const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
+        if (!exists) {
+          log("⚠️", `Local background asset not found: ${sourcePath} — skipping`);
+          continue;
+        }
+
+        const buffer = await fs.readFile(sourcePath);
+        const originalExt = path.extname(src).replace(".", "");
+        const baseName = path.basename(src, path.extname(src));
+        const filename = `${baseName}-${originalExt}.webp`;
+        const outputPath = path.join(assetsDir, filename);
+
+        log("🖼️  (Local BG)", `Optimizing: ${src} → ${filename}`);
+        await sharp(buffer).webp({ quality }).toFile(outputPath);
+
+        // Replace the old src in the class with the new ./assets/ path
+        modifiedCls = modifiedCls.replace(`bg-[url('${src}')]`, `bg-[url('./assets/${filename}')]`);
+        modifiedCls = modifiedCls.replace(`bg-[url("${src}")]`, `bg-[url('./assets/${filename}')]`);
+        modifiedCls = modifiedCls.replace(`bg-[url(${src})]`, `bg-[url('./assets/${filename}')]`);
+        
+        processCount++;
+        count++;
+      } catch (error: unknown) {
+         log("❌", `Failed to process local background ${src}: ${error}`);
+      }
+    }
+
+    if (processCount > 0) {
+      $(el).attr("class", modifiedCls);
     }
   }
 

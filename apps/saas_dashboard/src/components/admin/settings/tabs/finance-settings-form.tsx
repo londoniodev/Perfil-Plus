@@ -6,6 +6,7 @@ import { financeSettingsSchema, FinanceSettingsValues } from "@alvarosky/feature
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@alvarosky/ui"
 import { Loader2, CreditCard, Banknote, ShieldCheck } from "lucide-react"
 import { updateFinanceSettings } from "@/actions/admin/update-settings"
+import { BoldWebhookSection } from "./bold-webhook-section"
 
 interface FinanceSettingsFormProps {
     initialData?: FinanceSettingsValues
@@ -214,6 +215,9 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                     )}
                                 />
                             </div>
+
+                            {/* Webhook URL Generator */}
+                            <BoldWebhookSection />
                         </section>
                     </Card>
                 )}

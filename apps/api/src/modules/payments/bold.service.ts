@@ -169,9 +169,15 @@ export class BoldService {
 
   /**
    * Verifica la firma HMAC-SHA256 de un webhook de Bold.
+   *
+   * Según docs oficiales de Bold (https://developers.bold.co/webhook):
+   * 1. Convertir el cuerpo recibido a formato Base64
+   * 2. HMAC-SHA256 del body en Base64 usando la llave secreta
+   * 3. Comparar el hex resultante con el header x-bold-signature
+   *
    * @param rawBody El buffer o string crudo del body
-   * @param signature La firma recibida (ej. del header x-bold-signature)
-   * @param secret El secreto de webhook del tenant
+   * @param signature La firma recibida del header x-bold-signature
+   * @param secret El secreto de webhook del tenant (llave secreta de Bold)
    */
   verifyWebhookSignature(
     rawBody: string | Buffer,
@@ -181,12 +187,25 @@ export class BoldService {
     if (!signature || !secret) return false;
 
     try {
+      // 1. Convertir body a string si es Buffer
+      const bodyString =
+        Buffer.isBuffer(rawBody) ? rawBody.toString('utf-8') : rawBody;
+
+      // 2. Codificar en Base64 (requisito de Bold)
+      const encodedBody = Buffer.from(bodyString, 'utf-8').toString('base64');
+
+      // 3. HMAC-SHA256 del body en Base64 con la llave secreta
       const hash = crypto
         .createHmac('sha256', secret)
-        .update(rawBody)
+        .update(encodedBody)
         .digest('hex');
 
-      return hash === signature;
+      // 4. Comparación segura contra timing attacks
+      if (hash.length !== signature.length) return false;
+      return crypto.timingSafeEqual(
+        Buffer.from(hash),
+        Buffer.from(signature),
+      );
     } catch (error) {
       this.logger.error('Error verifying Bold webhook signature', error);
       return false;

@@ -799,7 +799,7 @@ export class PaymentsService {
               newOrder = await tx.order.update({
                 where: { id: existingOrderId },
                 data: {
-                  status: 'APPROVED',
+                  status: 'PREPARING', // Directo a cocina, ya está pagado
                   mpPaymentId: dataId,
                   // Actualizar envío en caso de haberlo incluido
                   shippingData: address
@@ -828,7 +828,7 @@ export class PaymentsService {
                   tenantId: resolvedTenantId,
                   orderNumber,
                   totalAmount,
-                  status: 'APPROVED',
+                  status: 'PREPARING', // Directo a cocina, ya está pagado
                   orderType: 'DELIVERY', // o 'DINE_IN' según modelo, asumiendo e-commerce
                   mpPaymentId: dataId,
                   customerName,
@@ -994,20 +994,23 @@ export class PaymentsService {
       return;
     }
 
-    if (!order || order.status === 'APPROVED' || order.status === 'DELIVERED') {
-      this.logger.warn(`Order ${orderId} already approved or not found.`);
+    if (!order || order.status === 'DELIVERED') {
+      this.logger.warn(`Order ${orderId} already delivered or not found.`);
       return;
     }
 
-    await this.prisma.secure.order.update({
-      where: { id: orderId }, // Asume que ID es primary key aislada, el check previo protege el Row-Level
-      data: {
-        status: 'APPROVED',
-        mpPaymentId,
-      },
-    });
+    // Si el webhook ya actualizó el status a PREPARING, no lo sobreescribimos
+    if (order.status !== 'PREPARING' && order.status !== 'APPROVED') {
+      await this.prisma.secure.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'PREPARING',
+          mpPaymentId,
+        },
+      });
+    }
 
-    this.logger.log(`Order ${orderId} approved.`);
+    this.logger.log(`Order ${orderId} approved and sent to kitchen.`);
 
     // 2. Reduce Stock (if physical/tracked)
     // Note: For now we are focusing on digital flow, but good to add TODO for stock management
@@ -1127,8 +1130,10 @@ export class PaymentsService {
     rawBody?: Buffer,
   ) {
     this.logger.log(`Received Bold Webhook for tenant ${tenantId}`, {
-      event: body.event,
-      status: body.payment?.status || body.status,
+      type: body?.type,
+      subject: body?.subject,
+      source: body?.source,
+      reference: body?.data?.metadata?.reference,
     });
 
     // 1. Obtener el secreto del tenant para validar la firma
@@ -1158,21 +1163,40 @@ export class PaymentsService {
       );
     }
 
-    const payment = body?.payment || body;
-    if (!payment || !payment.reference) {
+    // ── Bold CloudEvents Payload Parsing ──
+    // Formato real de Bold (CloudEvents spec):
+    // {
+    //   "type": "SALE_APPROVED" | "SALE_REJECTED" | "VOID_APPROVED" | "VOID_REJECTED",
+    //   "data": {
+    //     "payment_id": "F8A5D6B7G2H1",
+    //     "metadata": { "reference": "orderId-timestamp" },
+    //     ...
+    //   }
+    // }
+    const eventType = body?.type; // SALE_APPROVED, SALE_REJECTED, etc.
+    const eventData = body?.data;
+
+    if (!eventData) {
       return {
         status: 'ignored',
-        reason: 'Invalid bold webhook payload (missing payment reference)',
+        reason: 'Invalid bold webhook payload (missing data field)',
       };
     }
 
-    // La referencia es el orderId que enviamos al crear el link
-    // Nota: Bold suele enviar algo como "ORD-123-timestamp", pero nosotros enviamos "ID_ORDEN"
-    // o "ID_ORDEN-timestamp" según BoldService.
-    const referenceParts = payment.reference.split('-');
-    const orderId = referenceParts[0];
-    const paymentStatus = payment.status; // APPROVED, REJECTED, FAILED
-    const paymentId = payment.id || payment.transaction_id;
+    // La referencia la enviamos como `${orderId}-${timestamp}` en createPaymentLink
+    // Los orderId de Prisma son CUIDs (ej: "cm...", sin guiones), así que el último
+    // segmento tras el último guión es el timestamp. Todo antes es el orderId.
+    const rawReference = eventData.metadata?.reference || '';
+    const lastDashIndex = rawReference.lastIndexOf('-');
+    const orderId = lastDashIndex > 0 ? rawReference.slice(0, lastDashIndex) : rawReference;
+
+    if (!orderId) {
+      this.logger.warn(`Bold webhook: no reference found in metadata`, { eventType, rawReference });
+      return { status: 'ignored', reason: 'No order reference in webhook' };
+    }
+
+    const paymentStatus = eventType; // SALE_APPROVED, SALE_REJECTED, etc.
+    const paymentId = eventData.payment_id;
 
     const order = await this.prisma.secure.order.findUnique({
       where: { id: orderId },
@@ -1192,17 +1216,17 @@ export class PaymentsService {
       return { status: 'error', reason: 'Order tenant mismatch' };
     }
 
-    // 3. Manejo de Estados
-    if (paymentStatus === 'APPROVED') {
-      if (order.status === 'APPROVED' || order.status === 'DELIVERED') {
-        return { status: 'processed', reason: 'Already approved' };
+    // 3. Manejo de Estados (Bold CloudEvents: SALE_APPROVED, SALE_REJECTED, VOID_APPROVED, VOID_REJECTED)
+    if (paymentStatus === 'SALE_APPROVED') {
+      if (order.status === 'PREPARING' || order.status === 'DELIVERED') {
+        return { status: 'processed', reason: 'Already processed' };
       }
 
       await this.prisma.secure.$transaction([
         this.prisma.secure.order.update({
           where: { id: orderId },
           data: {
-            status: 'APPROVED',
+            status: 'PREPARING', // Directo a cocina, ya está pagado
             paymentExternalId: paymentId?.toString(),
             paymentProvider: 'BOLD',
           },
@@ -1213,21 +1237,20 @@ export class PaymentsService {
         }),
       ]);
 
-      this.logger.log(`Order ${orderId} APPROVED via Bold Webhook`);
+      this.logger.log(`Order ${orderId} PAID via Bold → sent directly to KITCHEN`);
 
-      // 4. Fulfillment (Productos Digitales / Emails)
-      // Reutilizamos approveOrder si queremos email genérico, o llamamos la lógica directamente
+      // Fulfillment (emails de productos digitales si aplica)
       await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT');
     } else if (
-      paymentStatus === 'REJECTED' ||
-      paymentStatus === 'FAILED' ||
-      paymentStatus === 'DECLINED'
+      paymentStatus === 'SALE_REJECTED' ||
+      paymentStatus === 'VOID_APPROVED' ||
+      paymentStatus === 'VOID_REJECTED'
     ) {
       this.logger.warn(
-        `Order ${orderId} REJECTED/FAILED via Bold Webhook: ${paymentStatus}`,
+        `Order ${orderId} ${paymentStatus} via Bold Webhook`,
       );
 
-      if (order.status === 'PENDING') {
+      if (order.status === 'PENDING' && paymentStatus === 'SALE_REJECTED') {
         await this.prisma.secure.order.update({
           where: { id: orderId },
           data: {
@@ -1238,6 +1261,8 @@ export class PaymentsService {
           },
         });
       }
+    } else {
+      this.logger.warn(`Bold webhook: unknown event type '${paymentStatus}' for order ${orderId}`);
     }
 
     return { status: 'processed' };

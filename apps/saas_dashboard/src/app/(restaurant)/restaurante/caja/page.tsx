@@ -35,6 +35,8 @@ import { formatCurrency } from '@/lib/utils';
 import { getZReport, ZReport } from '@/actions/admin/reports';
 import { getTables } from "@/actions/admin/tables";
 
+const ONLINE_PROVIDERS = ['BOLD', 'MERCADO_PAGO', 'MERCADOPAGO'];
+
 // ─── ZReportContent (Module-scope for React Doctor compliance) ───
 function ZReportContent({ report }: { report: ZReport }) {
     const [printMode, setPrintMode] = useState<'ALL' | 'PRODUCTS'>('ALL');
@@ -513,7 +515,14 @@ export default function CashierPage() {
                                     </div>
                                     <div className="text-right hidden md:block">
                                         <div className="text-xl font-bold">{formatCurrency(remainingTotal)} <span className="text-xs font-normal text-muted-foreground">pendiente</span></div>
-                                        <Badge variant="secondary" className={`${getStatusColor(order.status)} border-0`}>{order.status}</Badge>
+                                        <div className="flex items-center justify-end gap-1.5 mt-1">
+                                            <Badge variant="secondary" className={`${getStatusColor(order.status)} border-0`}>{order.status}</Badge>
+                                            {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) && (
+                                                <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
+                                                    💳 Pagado
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </AccordionTrigger>
@@ -580,7 +589,18 @@ export default function CashierPage() {
                                     <Separator className="my-4" />
 
                                     {/* Action Bar */}
-                                    <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-muted/10 p-4 rounded-xl border">
+                                    {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) ? (
+                                        <div className="flex flex-col items-center gap-3 bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 mt-4">
+                                            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
+                                                <CreditCard className="w-5 h-5" aria-hidden="true" />
+                                                Pagado Online — {order.paymentProvider === 'BOLD' ? 'Bold' : 'MercadoPago'}
+                                            </div>
+                                            <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 text-center">
+                                                Esta orden fue pagada por el cliente al momento de realizar el pedido. No requiere cobro en caja.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                    <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-muted/10 p-4 rounded-xl border mt-4">
                                         <div className="space-y-1 w-full md:w-auto">
                                             <p className="text-sm font-medium mb-2">Método de Pago</p>
                                             <Select
@@ -614,6 +634,7 @@ export default function CashierPage() {
                                             </Button>
                                         </div>
                                     </div>
+                                    )}
                                 </div>
                             </AccordionContent>
                         </AccordionItem>

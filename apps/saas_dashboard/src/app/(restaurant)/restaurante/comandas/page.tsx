@@ -27,6 +27,8 @@ const STATUS_GROUPS = {
     COMPLETED: ['DELIVERED', 'SERVED', 'CANCELLED', 'REFUNDED'] as OrderStatus[],
 }
 
+const ONLINE_PROVIDERS = ['BOLD', 'MERCADO_PAGO', 'MERCADOPAGO']
+
 // ─── OrderCard (Module-scope to avoid re-creation on parent re-render) ───
 function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (orderId: string, newStatus: OrderStatus) => void }) {
     return (
@@ -39,9 +41,20 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                             {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                     </div>
-                    <Badge variant={order.orderType === 'DELIVERY' ? 'secondary' : 'outline'}>
-                        {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                        <Badge variant={order.orderType === 'DELIVERY' ? 'secondary' : 'outline'}>
+                            {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
+                        </Badge>
+                        {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) ? (
+                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
+                                💳 PAGADO
+                            </Badge>
+                        ) : (
+                            <Badge variant="outline" className="text-[10px] px-1.5 border-amber-400 text-amber-600">
+                                Pago pendiente
+                            </Badge>
+                        )}
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="p-4 py-2 text-sm">

@@ -207,29 +207,51 @@ export default async function MarketingHubPage({ params }: Props) {
     // 1. Rebase: normalizar URLs de S3 legadas al endpoint actual
     const rebasedBody = rebaseAssetUrls(landing.body, S3_PUBLIC_ENDPOINT);
 
-    // 2. Convertir rutas RELATIVAS (./assets/...) a URLs absolutas de S3
-    //    El body.html usa href="./assets/styles.min.css" que en el contexto de Next.js
-    //    se resolvería como mauromera.com/assets/... (inexistente).
-    //    Debemos reescribirlas al bucket real en S3.
+    // 2. Convertir rutas RELATIVAS a URLs absolutas de S3
+    //    El body.html puede usar href="./assets/..." o src="../../nuevas imagenes/..."
+    //    que en el contexto de Next.js no existen. Reescribimos todo a S3.
     const bucket = getBucketName(tenantSlug!, false);
     const s3AssetsBase = `${S3_PUBLIC_ENDPOINT}/${bucket}/landings/${pageSlug}`;
-    const absoluteBody = rebasedBody
+    const s3BucketBase = `${S3_PUBLIC_ENDPOINT}/${bucket}`;
+    let absoluteBody = rebasedBody
+      // Rutas relativas simples: ./assets/...
       .replace(/href=["']\.\//g, `href="${s3AssetsBase}/`)
-      .replace(/src=["']\.\//g, `src="${s3AssetsBase}/`);
+      .replace(/src=["']\.\//g, `src="${s3AssetsBase}/`)
+      // Rutas relativas con ../ (ej: ../../nuevas imagenes/...)
+      .replace(/src=["'](?:\.\.\/)+/g, `src="${s3BucketBase}/`)
+      .replace(/href=["'](?:\.\.\/)+/g, `href="${s3BucketBase}/`);
 
-    // 3. Pre-Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
+    // 3. Extraer URLs de <link rel="stylesheet"> ANTES de que DOMPurify las elimine
+    //    DOMPurify remueve <link> por seguridad, pero necesitamos el CSS externo.
+    //    Las URLs se validan con whitelist en LandingRenderer (client-side).
+    const stylesheetUrls: string[] = [];
+    const linkRegex = /<link[^>]+rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+    let linkMatch: RegExpExecArray | null;
+    while ((linkMatch = linkRegex.exec(absoluteBody)) !== null) {
+      stylesheetUrls.push(linkMatch[1]);
+    }
+    // También capturar <link href="..." rel="stylesheet"> (orden invertido)
+    const linkRegex2 = /<link[^>]+href=["']([^"']+)["'][^>]*rel=["']stylesheet["'][^>]*>/gi;
+    while ((linkMatch = linkRegex2.exec(absoluteBody)) !== null) {
+      if (!stylesheetUrls.includes(linkMatch[1])) {
+        stylesheetUrls.push(linkMatch[1]);
+      }
+    }
+
+    // 4. Pre-Sanitizar HTML de S3 (eliminar nav/footer duplicados del builder)
     let preSanitizedBody = absoluteBody
       .replace(/<nav[\s\S]*?<\/nav>/gi, '') 
       .replace(/<header[^>]*?class="[^"]*?(?:navbar|nav-container|menu)[^"]*"[\s\S]*?<\/header>/gi, '')
       .replace(/<footer[\s\S]*?<\/footer>/gi, '');
 
-    // 4. Purificación estricta (XSS Shield)
-    // Permite HTML, SVG (para iconos) pero remueve cualquier script o atributo peligroso
+    // 5. Purificación estricta (XSS Shield)
+    // DOMPurify elimina <link>, <style> importados y scripts.
+    // Los stylesheets ya fueron extraídos en el paso 3 y se inyectarán aparte.
     const finalCleanBody = DOMPurify.sanitize(preSanitizedBody, {
       USE_PROFILES: { html: true, svg: true },
     });
 
-    return <LandingRenderer html={finalCleanBody} />;
+    return <LandingRenderer html={finalCleanBody} stylesheetUrls={stylesheetUrls} />;
   }
 
   // 2. Si no hay landing en S3 y es la raíz, aplicar Lógica DefaultStorefront / Olympo SaaS

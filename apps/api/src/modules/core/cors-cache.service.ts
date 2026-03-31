@@ -27,10 +27,49 @@ export class CorsCacheService implements OnModuleInit {
   }
 
   private getRedisClient() {
-    const store = (this.cacheManager as any).store;
-    // v5 style: store.client
-    // Algunos wrappers pueden tenerlo en store.md.client (multi-store)
-    return store?.client || store?._client || store?.md?.client || null;
+    const manager = this.cacheManager as any;
+    let client: any = null;
+
+    // Dependiendo de la versión de cache-manager y nestjs/cache-manager, el store se anida diferente
+    const possibleStores = [
+      manager?.store, // Standard
+      manager?.store?.store, // Double wrap
+      manager?._store,
+      manager?.md?.store
+    ];
+
+    for (const s of possibleStores) {
+      if (!s) continue;
+      
+      // Buscar cliente de Redis (Node-redis o Ioredis)
+      client =
+        s.client ||
+        s.redisCache || // cache-manager-redis-yet a veces expone redisCache
+        s._client ||
+        s.redis ||
+        s.redisClient;
+
+      if (client && typeof client.sAdd === 'function') {
+        break; // Cliente válido para Set operations (Redis) encontrado
+      }
+    }
+
+    if (!client || typeof client.sAdd !== 'function') {
+      this.logger.warn(`[DEBUG CORS] No se pudo extraer el cliente Redis de CacheManager. Volcando estructura...`);
+      this.logger.warn(`[DEBUG CORS] CacheManager keys: ${Object.keys(manager || {}).join(', ')}`);
+      
+      if (manager?.store) {
+        this.logger.warn(`[DEBUG CORS] Store keys: ${Object.keys(manager.store || {}).join(', ')}`);
+        this.logger.warn(`[DEBUG CORS] Store name: ${manager.store.name || 'unknown'}`);
+        if ((manager.store as any).store) {
+          this.logger.warn(`[DEBUG CORS] Store.Store keys: ${Object.keys((manager.store as any).store).join(', ')}`);
+        }
+      }
+      
+      return null;
+    }
+
+    return client;
   }
 
   /**

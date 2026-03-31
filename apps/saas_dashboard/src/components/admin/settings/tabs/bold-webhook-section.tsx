@@ -49,7 +49,7 @@ export function BoldWebhookSection() {
             <p className="text-xs text-muted-foreground leading-relaxed">
                 Copia esta URL y pégala en el panel de{" "}
                 <a
-                    href="https://merchants.bold.co"
+                    href="https://panel.bold.co"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="underline text-emerald-600 hover:text-emerald-500 inline-flex items-center gap-0.5"

@@ -185,7 +185,7 @@ export function FinanceSettingsForm({ initialData }: FinanceSettingsFormProps) {
                                 <h4 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Credenciales de Bold</h4>
                             </header>
                             <p className="text-sm text-muted-foreground">
-                                Obtén tus credenciales desde el panel de <a href="https://merchants.bold.co" target="_blank" rel="noopener noreferrer" className="underline text-emerald-600 hover:text-emerald-500">Bold Merchants</a>.
+                                Obtén tus credenciales desde el panel de <a href="https://panel.bold.co" target="_blank" rel="noopener noreferrer" className="underline text-emerald-600 hover:text-emerald-500">Bold Merchants</a>.
                             </p>
                             <div className="grid gap-4">
                                 <FormField

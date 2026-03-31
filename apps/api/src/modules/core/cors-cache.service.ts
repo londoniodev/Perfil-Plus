@@ -30,9 +30,14 @@ export class CorsCacheService implements OnModuleInit {
     const manager = this.cacheManager as any;
     let client: any = null;
 
+    // Con cache-manager v6+, el store principal suele estar en el array "stores"
+    const firstStore = manager?.stores ? manager.stores[0] : null;
+
     // Dependiendo de la versión de cache-manager y nestjs/cache-manager, el store se anida diferente
     const possibleStores = [
-      manager?.store, // Standard
+      firstStore, // Nuevo wrapper de Multi-store
+      firstStore?.store, // Double wrap en nuevo multi-store
+      manager?.store, // Standard antiguo
       manager?.store?.store, // Double wrap
       manager?._store,
       manager?.md?.store
@@ -58,7 +63,14 @@ export class CorsCacheService implements OnModuleInit {
       this.logger.warn(`[DEBUG CORS] No se pudo extraer el cliente Redis de CacheManager. Volcando estructura...`);
       this.logger.warn(`[DEBUG CORS] CacheManager keys: ${Object.keys(manager || {}).join(', ')}`);
       
-      if (manager?.store) {
+      if (manager?.stores && manager.stores.length > 0) {
+        const s = manager.stores[0];
+        this.logger.warn(`[DEBUG CORS] stores[0] keys: ${Object.keys(s || {}).join(', ')}`);
+        this.logger.warn(`[DEBUG CORS] stores[0].name: ${s?.name || 'unknown'}`);
+        if (s?.store) {
+           this.logger.warn(`[DEBUG CORS] stores[0].store keys: ${Object.keys(s.store || {}).join(', ')}`);
+        }
+      } else if (manager?.store) {
         this.logger.warn(`[DEBUG CORS] Store keys: ${Object.keys(manager.store || {}).join(', ')}`);
         this.logger.warn(`[DEBUG CORS] Store name: ${manager.store.name || 'unknown'}`);
         if ((manager.store as any).store) {

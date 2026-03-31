@@ -18,6 +18,7 @@
         --popover-foreground: 240 10% 3.9%;
         --primary: 240 5.9% 10%;
         --primary-foreground: 0 0% 98%;
+        --primary-readable: 240 5.9% 10%;
         --primary-soft: 240 5.9% 95%;
         --primary-muted-foreground: 240 5.9% 35%;
         --secondary: 240 4.8% 95.9%;
@@ -72,6 +73,7 @@
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;
         --primary-foreground: 240 5.9% 10%;
+        --primary-readable: 0 0% 98%;
         --primary-soft: 0 0% 15%;
         --primary-muted-foreground: 0 0% 70%;
         --secondary: 240 3.7% 16%;

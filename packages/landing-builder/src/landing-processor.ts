@@ -197,9 +197,10 @@ async function processLocalImages(
     if (!src) continue;
 
     try {
-      const sourcePath = src.startsWith("/") 
-        ? path.join(PUBLIC_DIR, src)
-        : path.resolve(INPUT_DIR, src);
+      const decodedSrc = decodeURIComponent(src); // FIX: decodificar %20 para encontrar la carpeta real
+      const sourcePath = decodedSrc.startsWith("/") 
+        ? path.join(PUBLIC_DIR, decodedSrc)
+        : path.resolve(INPUT_DIR, decodedSrc);
 
       const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
       if (!exists) {
@@ -243,9 +244,10 @@ async function processLocalImages(
       }
 
       try {
-        const sourcePath = src.startsWith("/") 
-          ? path.join(PUBLIC_DIR, src)
-          : path.resolve(INPUT_DIR, src);
+        const decodedSrc = decodeURIComponent(src); // FIX: decodificar %20 también aquí
+        const sourcePath = decodedSrc.startsWith("/") 
+          ? path.join(PUBLIC_DIR, decodedSrc)
+          : path.resolve(INPUT_DIR, decodedSrc);
 
         const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
         if (!exists) {

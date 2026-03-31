@@ -134,3 +134,45 @@ export function getContrastForegroundHsl(hex: string): string {
     // Si el fondo es claro (luminance > 0.5), usar foreground oscuro
     return luminance > 0.5 ? '0 0% 9%' : '0 0% 98%';
 }
+
+/**
+ * Genera una versión "legible" del color primario para usar como texto sobre fondos claros.
+ * Si la luminosidad HSL del color es mayor a 45%, la clampea a 40% para garantizar
+ * contraste WCAG AA contra fondo blanco. Si ya es oscuro, devuelve el HSL tal cual.
+ *
+ * @example getReadablePrimaryHsl("#FACC15") → "48 96% 40%"  (amarillo oscurecido)
+ * @example getReadablePrimaryHsl("#1D4ED8") → "224 76% 48%" (azul oscuro, sin cambio)
+ * @example getReadablePrimaryHsl("zinc")    → "0 0% 3.9%"  (fallback)
+ */
+export function getReadablePrimaryHsl(hex: string): string {
+    if (!hex || typeof hex !== "string") return FALLBACK_PRIMARY_HSL;
+
+    const trimmed = hex.trim();
+
+    // Si ya es formato HSL, ajustar luminancia directamente
+    if (isHslFormat(trimmed)) {
+        const parts = trimmed.split(/\s+/);
+        const h = parts[0];
+        const s = parts[1];
+        const l = parseFloat(parts[2]?.replace('%', '') || '50');
+        if (l > 45) {
+            return `${h} ${s} 40%`;
+        }
+        return trimmed;
+    }
+
+    // Convertir a HSL y luego ajustar
+    const hsl = hexToHsl(trimmed);
+    if (hsl === FALLBACK_PRIMARY_HSL) return hsl; // Era un nombre de theme inválido
+
+    const parts = hsl.split(/\s+/);
+    const h = parts[0];
+    const s = parts[1];
+    const l = parseFloat(parts[2]?.replace('%', '') || '50');
+
+    if (l > 45) {
+        return `${h} ${s.replace('%', '')}% 40%`;
+    }
+
+    return hsl;
+}

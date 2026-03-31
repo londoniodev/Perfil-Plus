@@ -10,7 +10,7 @@ import { getTenantDesign } from "@/lib/tenant-server";
 import { baseMetadata } from "@/config/metadata";
 import { siteConfig } from "@/config/site";
 import { headers } from "next/headers";
-import { hexToHsl, getContrastForegroundHsl } from "@alvarosky/shared";
+import { hexToHsl, getContrastForegroundHsl, getReadablePrimaryHsl } from "@alvarosky/shared";
 
 const PwaInstallPrompt = dynamic(
   () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt)
@@ -142,6 +142,7 @@ export default async function RootLayout({
   if (isCustomPrimary) {
     (brandStyles as any)['--primary'] = hexToHsl(brand.primaryColor);
     (brandStyles as any)['--primary-foreground'] = getContrastForegroundHsl(brand.primaryColor);
+    (brandStyles as any)['--primary-readable'] = getReadablePrimaryHsl(brand.primaryColor);
   }
 
   if (isCustomSecondary) {

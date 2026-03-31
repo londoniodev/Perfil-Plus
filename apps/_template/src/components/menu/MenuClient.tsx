@@ -354,13 +354,13 @@ export default function MenuClient({
                                 : "bg-transparent border-2 border-dashed border-slate-300 group-hover:border-primary/50"
                                 }`}>
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden relative border border-slate-100">
-                                    <Grid3X3 className={`w-6 h-6 ${selectedCategoryId === "ALL" ? "text-primary" : "text-slate-400"}`} />
+                                    <Grid3X3 className={`w-6 h-6 ${selectedCategoryId === "ALL" ? "text-[hsl(var(--primary-readable,var(--primary)))]" : "text-slate-400"}`} />
                                     {selectedCategoryId === "ALL" && (
                                         <div className="absolute inset-0 bg-primary opacity-10" />
                                     )}
                                 </div>
                             </div>
-                            <span className={`text-xs font-medium transition-colors ${selectedCategoryId === "ALL" ? "text-primary font-bold" : "text-slate-500"
+                            <span className={`text-xs font-medium transition-colors ${selectedCategoryId === "ALL" ? "text-[hsl(var(--primary-readable,var(--primary)))] font-bold" : "text-slate-500"
                                 }`}>
                                 Ver Todo
                             </span>
@@ -393,7 +393,7 @@ export default function MenuClient({
                                         </div>
                                     </div>
 
-                                    <span className={`text-xs font-medium text-center truncate w-20 transition-colors ${selectedCategoryId === cat.id ? "text-primary font-bold" : "text-slate-500"
+                                    <span className={`text-xs font-medium text-center truncate w-20 transition-colors ${selectedCategoryId === cat.id ? "text-[hsl(var(--primary-readable,var(--primary)))] font-bold" : "text-slate-500"
                                         }`}>
                                         {cat.name}
                                     </span>
@@ -548,7 +548,16 @@ export default function MenuClient({
                                         <div className="flex-1">
                                             <h4 className="font-bold text-lg text-slate-900">{item.title}</h4>
                                             {item.subtitle && <p className="text-xs text-slate-500 font-medium">{item.subtitle}</p>}
-                                            <p className="text-primary font-semibold text-sm">{formatCurrency(item.price)}</p>
+                                            {item.modifiers && item.modifiers.length > 0 && (
+                                                <div className="mt-0.5 space-y-0.5">
+                                                    {item.modifiers.map((mod) => (
+                                                        <p key={mod.id} className="text-xs text-slate-400">
+                                                            + {mod.name}{mod.price > 0 ? ` (${formatCurrency(mod.price)})` : ''}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <p className="text-[hsl(var(--primary-readable,var(--primary)))] font-semibold text-sm mt-0.5">{formatCurrency(item.price + (item.modifiers || []).reduce((sum, m) => sum + (m.price * (m.quantity || 1)), 0))}</p>
                                         </div>
                                         <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg p-1 text-slate-700">
                                             <button onClick={() => item.quantity > 1 ? addItem({ ...item, quantity: -1 }) : removeItem(item.cartItemId)} className="w-8 h-8 flex items-center justify-center hover:bg-slate-200 rounded-md transition-colors"><Minus className="w-4 h-4" /></button>

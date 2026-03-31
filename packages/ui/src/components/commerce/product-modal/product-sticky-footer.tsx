@@ -7,16 +7,23 @@ export function ProductStickyFooter({
     quantity,
     totalPrice,
     setQuantity,
-    onAdd
+    onAdd,
+    hasModifiers = false
 }: {
     quantity: number
     totalPrice: number
     setQuantity: (updater: (q: number) => number) => void
     onAdd: () => void
+    hasModifiers?: boolean
 }) {
     return (
         <section aria-label="Añadir al carrito" className="absolute bottom-0 w-full z-30">
             <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 px-4 py-4 pb-8 sm:pb-4 shadow-[0_-20px_40px_rgba(0,0,0,0.05)]">
+                {hasModifiers && (
+                    <p className="text-xs text-slate-400 text-center mb-3 leading-relaxed">
+                        💡 Para combinaciones diferentes, agrega los productos uno a uno.
+                    </p>
+                )}
                 <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
                     <div className="flex items-center gap-3 bg-slate-100 rounded-xl p-1.5 h-14 border border-slate-200 shadow-inner" role="group" aria-label="Cantidad">
                         <button 
@@ -50,3 +57,4 @@ export function ProductStickyFooter({
         </section>
     )
 }
+

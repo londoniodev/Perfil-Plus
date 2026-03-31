@@ -161,6 +161,7 @@ export function ProductModal({
                     setQuantity={modifiersState.setQuantity}
                     totalPrice={modifiersState.totalPrice}
                     onAdd={handleAdd}
+                    hasModifiers={!!(product.modifierGroups && product.modifierGroups.length > 0)}
                 />
 
                 <PhoneAuthModal

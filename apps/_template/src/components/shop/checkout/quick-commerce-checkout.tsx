@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCart } from "@/store/use-cart"
+import { useCustomer } from "@/store/use-customer"
 import {
     Button,
     Input,
@@ -35,11 +36,13 @@ interface QuickCommerceCheckoutProps {
 
 export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceCheckoutProps) {
     const { items: cartItems, totalPrice, tableId, setCart } = useCart()
+    const { data: savedCustomer, setCustomerData } = useCustomer()
     const { tenantId, activePaymentProvider, logoUrl } = useTenant()
     const toast = useToast()
     const router = useRouter()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [forceEditMode, setForceEditMode] = useState(false)
+    const [hydratedFromStorage, setHydratedFromStorage] = useState(false)
 
     const form = useForm<QuickCommerceFormData>({
         resolver: zodResolver(quickCommerceSchema),
@@ -75,6 +78,21 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             toast.success("Datos de entrega cargados desde WhatsApp.")
         }
     }, [waData, form, toast, hasHydrated])
+
+    // Hidratación desde localStorage (datos del último pedido)
+    useEffect(() => {
+        if (!waData?.customerData && savedCustomer && !hydratedFromStorage) {
+            form.reset({
+                ...form.getValues(),
+                customerName: savedCustomer.customerName || "",
+                customerPhone: savedCustomer.customerPhone || "",
+                address: savedCustomer.address || "",
+                lat: savedCustomer.lat || undefined,
+                lng: savedCustomer.lng || undefined,
+            })
+            setHydratedFromStorage(true)
+        }
+    }, [savedCustomer, waData, form, hydratedFromStorage])
 
     // Zero-Click: detectar si tenemos datos completos para modo express
     const isExpressMode = useMemo(() => {
@@ -139,6 +157,14 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
             }
 
             // Si es pedido en efectivo (Directo)
+            // Guardar datos del cliente para próximos pedidos
+            setCustomerData({
+                customerName: data.customerName,
+                customerPhone: data.customerPhone,
+                address: data.address || "",
+                lat: data.lat,
+                lng: data.lng,
+            })
             toast.success("¡Pedido realizado con éxito!")
             router.push(`/order-success/${result.id || result.orderNumber}`)
         } catch (error: any) {
@@ -196,16 +222,31 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="py-0 pb-4">
-                        <div className="space-y-2">
-                            {cartItems.map(item => (
-                                <div key={item.variantId} className="flex justify-between text-xs text-muted-foreground">
-                                    <span>
-                                        {item.quantity}x {item.title}
-                                        {item.notes && <span className="italic ml-1">({item.notes})</span>}
-                                    </span>
-                                    <span>{formatCurrency(item.price * item.quantity)}</span>
-                                </div>
-                            ))}
+                        <div className="space-y-3">
+                            {cartItems.map(item => {
+                                const modifiersCost = (item.modifiers || []).reduce((sum, m) => sum + (m.price * (m.quantity || 1)), 0)
+                                return (
+                                    <div key={item.cartItemId || item.variantId} className="space-y-1">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                            <span>
+                                                {item.quantity}x {item.title}
+                                                {item.notes && <span className="italic ml-1">({item.notes})</span>}
+                                            </span>
+                                            <span>{formatCurrency((item.price + modifiersCost) * item.quantity)}</span>
+                                        </div>
+                                        {item.modifiers && item.modifiers.length > 0 && (
+                                            <div className="pl-4 space-y-0.5">
+                                                {item.modifiers.map((mod: any) => (
+                                                    <div key={mod.id} className="flex justify-between text-[11px] text-muted-foreground/70">
+                                                        <span>+ {mod.name}</span>
+                                                        {mod.price > 0 && <span>{formatCurrency(mod.price)}</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </CardContent>
                 </Card>
@@ -313,13 +354,28 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="py-0 pb-4">
-                        <div className="space-y-2">
-                            {cartItems.map(item => (
-                                <div key={item.variantId} className="flex justify-between text-xs text-muted-foreground">
-                                    <span>{item.quantity}x {item.title}</span>
-                                    <span>{formatCurrency(item.price * item.quantity)}</span>
-                                </div>
-                            ))}
+                        <div className="space-y-3">
+                            {cartItems.map(item => {
+                                const modifiersCost = (item.modifiers || []).reduce((sum, m) => sum + (m.price * (m.quantity || 1)), 0)
+                                return (
+                                    <div key={item.cartItemId || item.variantId} className="space-y-1">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                            <span>{item.quantity}x {item.title}</span>
+                                            <span>{formatCurrency((item.price + modifiersCost) * item.quantity)}</span>
+                                        </div>
+                                        {item.modifiers && item.modifiers.length > 0 && (
+                                            <div className="pl-4 space-y-0.5">
+                                                {item.modifiers.map((mod: any) => (
+                                                    <div key={mod.id} className="flex justify-between text-[11px] text-muted-foreground/70">
+                                                        <span>+ {mod.name}</span>
+                                                        {mod.price > 0 && <span>{formatCurrency(mod.price)}</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </CardContent>
                 </Card>
@@ -356,8 +412,16 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 {/* 3. Datos de Contacto */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base flex items-center">
-                            <Smartphone className="mr-2 h-4 w-4" aria-hidden="true" /> Datos de Contacto
+                        <CardTitle className="text-base flex items-center justify-between">
+                            <span className="flex items-center">
+                                <Smartphone className="mr-2 h-4 w-4" aria-hidden="true" /> Datos de Contacto
+                            </span>
+                            {hydratedFromStorage && !waData?.customerData && (
+                                <span className="text-xs text-emerald-600 font-normal flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                                    Datos de tu último pedido
+                                </span>
+                            )}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">

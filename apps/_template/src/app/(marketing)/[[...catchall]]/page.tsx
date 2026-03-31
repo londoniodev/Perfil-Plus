@@ -250,8 +250,24 @@ export default async function MarketingHubPage({ params }: Props) {
     const finalCleanBody = DOMPurify.sanitize(preSanitizedBody, {
       USE_PROFILES: { html: true, svg: true },
     });
+    // 6. Renderizar los <link> de CSS directamente como JSX server-side
+    //    Esto elimina el FOUC (Flash of Unstyled Content) porque el CSS
+    //    viaja junto con el HTML inicial, sin esperar a useEffect del cliente.
+    const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || undefined;
+    const primaryColor = design?.brandSettings?.primaryColor || "#3b82f6";
 
-    return <LandingRenderer html={finalCleanBody} stylesheetUrls={stylesheetUrls} />;
+    return (
+      <>
+        {stylesheetUrls.map((url) => (
+          <link key={url} rel="stylesheet" href={url} />
+        ))}
+        <LandingRenderer
+          html={finalCleanBody}
+          logoUrl={logoUrl}
+          primaryColor={primaryColor}
+        />
+      </>
+    );
   }
 
   // 2. Si no hay landing en S3 y es la raíz, aplicar Lógica DefaultStorefront / Olympo SaaS

@@ -35,10 +35,12 @@ export class CorsCacheService implements OnModuleInit {
 
     // Dependiendo de la versión de cache-manager y nestjs/cache-manager, el store se anida diferente
     const possibleStores = [
-      firstStore, // Nuevo wrapper de Multi-store
-      firstStore?.store, // Double wrap en nuevo multi-store
-      manager?.store, // Standard antiguo
-      manager?.store?.store, // Double wrap
+      firstStore, // Nuevo wrapper de Multi-store (Keyv instance)
+      firstStore?.store,
+      firstStore?._store, // Keyv internal adapter (Aquí debería estar RedisStore)
+      firstStore?.opts?.store, // Keyv options store
+      manager?.store,
+      manager?.store?.store,
       manager?._store,
       manager?.md?.store
     ];
@@ -66,9 +68,12 @@ export class CorsCacheService implements OnModuleInit {
       if (manager?.stores && manager.stores.length > 0) {
         const s = manager.stores[0];
         this.logger.warn(`[DEBUG CORS] stores[0] keys: ${Object.keys(s || {}).join(', ')}`);
-        this.logger.warn(`[DEBUG CORS] stores[0].name: ${s?.name || 'unknown'}`);
-        if (s?.store) {
-           this.logger.warn(`[DEBUG CORS] stores[0].store keys: ${Object.keys(s.store || {}).join(', ')}`);
+        if (s?._store) {
+           this.logger.warn(`[DEBUG CORS] stores[0]._store keys: ${Object.keys(s._store || {}).join(', ')}`);
+           this.logger.warn(`[DEBUG CORS] type of _store: ${typeof s._store}`);
+        }
+        if (s?.opts?.store) {
+           this.logger.warn(`[DEBUG CORS] stores[0].opts.store keys: ${Object.keys(s.opts.store || {}).join(', ')}`);
         }
       } else if (manager?.store) {
         this.logger.warn(`[DEBUG CORS] Store keys: ${Object.keys(manager.store || {}).join(', ')}`);

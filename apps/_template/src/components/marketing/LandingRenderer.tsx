@@ -2,6 +2,27 @@
 
 import { useEffect, useRef } from "react";
 
+/**
+ * ------------------------------------------------------------------
+ * LANDING RENDERER (MOTOR DE REACT PARA HEADLESS CMS)
+ * ------------------------------------------------------------------
+ * IMPORTANTE PARA FUTUROS AGENTES AI Y DESARROLLADORES:
+ * 
+ * 1. SEGURIDAD (XSS): El HTML entrante (`html` prop) YA DEBE venir pre-sanitizado 
+ *    desde el servidor (usando DOMPurify en page.tsx) para cortar cualquier 
+ *    <script> malicioso o handlers (onclick) inyectados en S3.
+ * 
+ * 2. ANIMACIONES JS: React elimina la ejecución de etiquetas <script> al usar 
+ *    `dangerouslySetInnerHTML`. Por lo tanto, CUALQUIER interactividad JS de la 
+ *    Landing (Sliders, Observers, Acordeones) DEBE programarse aquí mismo, 
+ *    escaneando el DOM (`containerRef`) tras montarse.
+ * 
+ * 3. EXPANSIÓN: Actualmente solo soportamos animaciones CSS `.reveal` que 
+ *    dependen de un IntersectionObserver (ver el useEffect).
+ *    Si necesitas un "Carrusel", diseña el HTML inerte en S3 con una clase 
+ *    ej: `.oly-carousel` y haz que este archivo lo procese/convierta a un Swiper React.
+ * ------------------------------------------------------------------
+ */
 interface LandingRendererProps {
   html: string;
 }

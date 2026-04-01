@@ -21,24 +21,6 @@ import { useEffect, useRef, useState } from "react";
  * ------------------------------------------------------------------
  */
 
-/**
- * Genera un color complementario a partir de un hex.
- * Mezcla el color con negro para crear un tono oscuro que combine.
- */
-function generateComplementaryDark(hex: string): string {
-  const clean = hex.replace("#", "");
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  
-  // Mezclar con negro al 85% para un tono oscuro elegante
-  const darkR = Math.round(r * 0.15);
-  const darkG = Math.round(g * 0.15);
-  const darkB = Math.round(b * 0.15);
-  
-  return `rgb(${darkR}, ${darkG}, ${darkB})`;
-}
-
 interface LandingRendererProps {
   html: string;
   logoUrl?: string;
@@ -120,23 +102,18 @@ export default function LandingRenderer({
     };
   }, [html, isReady]);
 
-  const complementaryDark = generateComplementaryDark(primaryColor);
-
+  // Usar CSS variables para el gradiente
   return (
     <>
       {/* ── Loader Premium ── */}
       <div
         aria-hidden={isReady}
+        className="flex h-screen w-full flex-col items-center justify-center gap-6"
         style={{
           position: "fixed",
           inset: 0,
           zIndex: 9999,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1.5rem",
-          background: `radial-gradient(ellipse at center, ${primaryColor}22 0%, ${complementaryDark} 70%, #000 100%)`,
+          background: `radial-gradient(ellipse at center, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.05) 50%, #000 100%)`,
           opacity: isReady ? 0 : 1,
           pointerEvents: isReady ? "none" : "auto",
           transition: "opacity 0.5s ease-out",
@@ -147,32 +124,16 @@ export default function LandingRenderer({
           <img
             src={logoUrl}
             alt="Cargando"
-            style={{
-              width: 80,
-              height: 80,
-              objectFit: "contain",
-              borderRadius: "1rem",
-              animation: "pulse 2s ease-in-out infinite",
-            }}
+            className="w-20 h-20 object-contain rounded-2xl animate-pulse"
           />
         ) : (
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              border: `3px solid ${primaryColor}33`,
-              borderTopColor: primaryColor,
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-            }}
-          />
+          <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         )}
+        
         <div
+          className="w-10 h-1 rounded flex overflow-hidden opacity-80"
           style={{
-            width: 40,
-            height: 3,
-            borderRadius: 4,
-            background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)`,
+            background: `linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)`,
             animation: "shimmer 1.5s ease-in-out infinite",
           }}
         />
@@ -182,8 +143,6 @@ export default function LandingRenderer({
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            @keyframes spin { to { transform: rotate(360deg); } }
-            @keyframes pulse { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
             @keyframes shimmer { 0%, 100% { opacity: 0.3; transform: scaleX(0.5); } 50% { opacity: 1; transform: scaleX(1); } }
           `,
         }}

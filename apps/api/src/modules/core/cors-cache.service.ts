@@ -102,7 +102,6 @@ export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.redisClient) {
       await this.redisClient.quit().catch(() => {});
-      this.logger.log('Conexión Redis CORS cerrada correctamente');
     }
   }
 
@@ -130,31 +129,22 @@ export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
           port,
           connectTimeout: 5000,
           reconnectStrategy: (retries) => {
-            if (retries > 3) {
-              this.logger.warn(
-                'Redis CORS: Máximo de reintentos alcanzado. Operando sin caché.',
-              );
-              return false; // Dejar de reintentar
-            }
+            if (retries > 3) return false;
             return Math.min(retries * 500, 3000);
           },
         },
         password,
       }) as RedisClientType;
 
-      // Listener de errores para evitar crash del proceso
       this.redisClient.on('error', (err) => {
         this.logger.error(`Redis CORS error: ${err.message}`);
       });
 
       await this.redisClient.connect();
-      this.logger.log(
-        `✅ Redis CORS conectado (${host}:${port}) — Conexión dedicada para validación de orígenes`,
-      );
+      this.logger.log(`✅ Redis CORS ready (${host}:${port})`);
     } catch (error: any) {
       this.logger.warn(
-        `⚠️ Redis CORS no disponible (${host}:${port}): ${error.message}. ` +
-          `CORS hará fallback a consultas PostgreSQL.`,
+        `⚠️ Redis CORS offline (${host}:${port}): ${error.message}. Fallback to DB active.`,
       );
       this.redisClient = null;
     }
@@ -302,6 +292,8 @@ export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
   private async checkOriginFromDatabase(
     hostname: string,
   ): Promise<boolean> {
+    if (!hostname) return false;
+
     try {
       const baseDomainNormalized = this.normalizeDomain(this.baseDomain);
       let slugCheck = '';
@@ -314,40 +306,32 @@ export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
         slugCheck = hostname.replace(`.${baseDomainNormalized}`, '');
       }
 
-      // Búsqueda optimizada: primero por slug (indexed), luego por dominio custom
-      const tenants = await this.prisma.tenant.findMany({
+      // Preparamos las condiciones de forma explícita y segura para Prisma.
+      // Así evitamos pasar un `undefined` que anule restricciones del query.
+      const orConditions: any[] = [];
+
+      // 1. Si es un subdominio válido, buscamos por slug explícitamente.
+      if (slugCheck) {
+        orConditions.push({ slug: slugCheck });
+      }
+
+      // 2. Buscamos SIEMPRE por dominio custom directamente en la BD.
+      // Confiaremos en el filtrado de Postgres superando la asunción temporal de Unicode.
+      orConditions.push({ domain: hostname });
+
+      // O(1) Búsqueda única delegada a PostgreSQL. Sin cargar arrays en memoria de Node.
+      const tenant = await this.prisma.tenant.findFirst({
         where: {
-          OR: [
-            { slug: slugCheck || undefined },
-            // No buscamos por domain directamente porque puede estar en
-            // Unicode en la DB mientras que hostname ya es Punycode.
-          ],
+          OR: orConditions,
         },
-        select: { id: true, domain: true },
+        select: { id: true },
       });
 
-      for (const t of tenants) {
-        if (slugCheck && t.id) return true; // Match por slug
-        if (t.domain && this.normalizeDomain(t.domain) === hostname)
-          return true;
-      }
-
-      // Búsqueda exhaustiva por dominio custom (lento, pero necesario)
-      if (tenants.length === 0) {
-        const allCustomDomains = await this.prisma.tenant.findMany({
-          where: { domain: { not: null } },
-          select: { domain: true },
-        });
-        for (const t of allCustomDomains) {
-          if (t.domain && this.normalizeDomain(t.domain) === hostname)
-            return true;
-        }
-      }
-    } catch {
-      // Ignorar errores de URL inválidas o queries fallidas silenciosamente
+      return !!tenant;
+    } catch (error) {
+      // Ignorar errores silenciosamente para no tumbar el proxy CORS, solo fallar
+      return false;
     }
-
-    return false;
   }
 
   // ─────────────────────────────────────────────────────────────────

@@ -81,6 +81,8 @@ export function ThemeProvider({
 
 // NUEVO COMPONENTE DE REFACTORIZACIÓN
 
+import { CartProvider } from '@/store/use-cart';
+
 export function AppProviders({
     children,
     tenantId,
@@ -129,7 +131,9 @@ export function AppProviders({
                 enableSystem
             >
                 <BrandProvider settings={{ ...design, primary: primaryColor } as any}>
-                    {children}
+                    <CartProvider>
+                        {children}
+                    </CartProvider>
                 </BrandProvider>
             </ThemeProvider>
         </TenantProvider>

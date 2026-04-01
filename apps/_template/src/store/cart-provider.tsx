@@ -2,25 +2,23 @@
 
 import { createContext, useRef, useContext, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
-import { createCartStore, CartStore, CartState, CartItem, CartActions } from './cart-store';
-
-export type { CartStore, CartState, CartItem, CartActions };
+import { createCartStore, CartStore, CartState } from './use-cart';
 
 export const CartStoreContext = createContext<ReturnType<typeof createCartStore> | null>(null);
 
 export function CartProvider({ children, initialState }: { children: React.ReactNode, initialState?: CartState }) {
-  const storeRef = useRef<ReturnType<typeof createCartStore> | null>(null);
+  const storeRef = useRef<ReturnType<typeof createCartStore>>();
   
   if (!storeRef.current) {
     storeRef.current = createCartStore(initialState);
   }
 
+  // Resolver el Hydration Mismatch:
+  // Zustand persist en SSR empieza vacío (o con initialState vacío). 
+  // skipHydration evita que reemplace datos en el primer render del cliente.
+  // Aquí le decimos a Zustand persist que hidrate localStorage DESPUÉS del primer render.
   useEffect(() => {
-    // Si la referencia del store existe, forzamos la rehidratación en el cliente 
-    // después del primer pintado (skipHydration: true en el middleware).
-    if (storeRef.current) {
-      storeRef.current.persist.rehydrate();
-    }
+    storeRef.current?.persist.rehydrate();
   }, []);
 
   return (
@@ -30,22 +28,14 @@ export function CartProvider({ children, initialState }: { children: React.React
   );
 }
 
-/**
- * Hook universal que reemplaza directamente el patrón singleton antiguo.
- * Mantiene la compatibilidad con todos los componentes como `cart-sheet`, `checkout-form`, etc.
- */
-export function useCart<T>(selector?: (state: CartStore) => T): T | CartStore {
+export function useCartContext<T>(selector: (state: CartStore) => T): T {
   const store = useContext(CartStoreContext);
   if (!store) {
-      throw new Error('Missing CartProvider in the React tree');
+      throw new Error('Missing CartProvider in the tree');
   }
-  return useStore(store, selector ?? ((state: CartStore) => state));
+  return useStore(store, selector);
 }
 
-/**
- * Hook para saber exactamente cuándo el carrito sincronizó su estado de la persistencia (localStorage)
- * Usa esto para no renderizar contenido montado puramente en cliente antes de tiempo.
- */
 export function useCartHydrated() {
   const [hydrated, setHydrated] = useState(false);
   const store = useContext(CartStoreContext);
@@ -53,14 +43,15 @@ export function useCartHydrated() {
   useEffect(() => {
     if (!store) return;
     
+    // Si ya hidrató antes del render, lo marcamos
     setHydrated(store.persist.hasHydrated());
 
     const unsubHydrated = store.persist.onHydrate(() => setHydrated(false));
     const unsubFinish = store.persist.onFinishHydration(() => setHydrated(true));
     
     return () => {
-        unsubHydrated();
-        unsubFinish();
+        if(unsubHydrated) unsubHydrated();
+        if(unsubFinish) unsubFinish();
     };
   }, [store]);
 

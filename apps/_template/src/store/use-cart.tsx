@@ -34,12 +34,14 @@ export function CartProvider({ children, initialState }: { children: React.React
  * Hook universal que reemplaza directamente el patrón singleton antiguo.
  * Mantiene la compatibilidad con todos los componentes como `cart-sheet`, `checkout-form`, etc.
  */
+export function useCart(): CartStore;
+export function useCart<T>(selector: (state: CartStore) => T): T;
 export function useCart<T>(selector?: (state: CartStore) => T): T | CartStore {
   const store = useContext(CartStoreContext);
   if (!store) {
       throw new Error('Missing CartProvider in the React tree');
   }
-  return useStore(store, selector ?? ((state: CartStore) => state));
+  return useStore(store, selector || ((state: CartStore) => state as any));
 }
 
 /**

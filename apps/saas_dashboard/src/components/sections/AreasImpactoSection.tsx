@@ -84,7 +84,7 @@ export function AreasImpactoSection() {
                     <div
                         key={`bg-${area.name}`}
                         className={cn(
-                            "absolute inset-0 transition-opacity duration-[2000ms]",
+                            "absolute inset-0 transition-opacity duration-&lsqb;2000ms&rsqb;",
                             activeIndex === index ? "opacity-100 z-1" : "opacity-0 z-0"
                         )}
                     >
@@ -139,7 +139,7 @@ export function AreasImpactoSection() {
                         >
                             <div
                                 className={cn(
-                                    "mx-auto text-center px-6 md:px-4 max-w-5xl transition duration-[2000ms]",
+                                    "mx-auto text-center px-6 md:px-4 max-w-5xl transition duration-&lsqb;2000ms&rsqb;",
                                     activeIndex === index ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
                                 )}
                             >

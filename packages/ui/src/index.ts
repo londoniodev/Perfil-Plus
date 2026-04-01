@@ -148,6 +148,7 @@ export * from "./components/marketing";
 // Providers
 export * from "./providers/brand-provider";
 export * from "./lib/themes";
+export * from "./lib/branding";
 
 // Fonts (for app layouts)
 export * from "./lib/fonts";

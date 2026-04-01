@@ -3,10 +3,8 @@
 import * as React from "react"
 import { 
     generateBrandingCSS, 
-    BrandSettings as BrandingSettings 
+    BrandSettings
 } from "../lib/branding"
-
-export type BrandSettings = BrandingSettings
 
 interface BrandProviderProps {
     children?: React.ReactNode

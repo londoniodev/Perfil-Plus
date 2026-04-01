@@ -44,7 +44,7 @@ export class PaymentsService {
 
   private async getMercadoPagoConfig() {
     try {
-      const setting = await this.prisma.secure.systemSetting.findFirst({
+      const setting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: this.getTenantId(), key: 'MERCADOPAGO_CONFIG' },
       });
 
@@ -75,7 +75,7 @@ export class PaymentsService {
 
   private async getTenantCurrency(): Promise<string> {
     try {
-      const setting = await this.prisma.secure.systemSetting.findFirst({
+      const setting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: this.getTenantId(), key: 'TENANT_CONFIG' },
       });
 
@@ -174,7 +174,7 @@ export class PaymentsService {
       throw new BadRequestException('Mercado Pago no está configurado');
     }
 
-    const user = await this.prisma.secure.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { subscription: true },
     });
@@ -227,7 +227,7 @@ export class PaymentsService {
       const response = await this.preference.create({ body: preferenceData });
 
       // Crear o actualizar registro de suscripción como pendiente
-      await this.prisma.secure.subscription.upsert({
+      await this.prisma.subscription.upsert({
         where: { userId },
         create: {
           userId,
@@ -250,7 +250,7 @@ export class PaymentsService {
   }
 
   async cancelSubscription(userId: string) {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
@@ -263,7 +263,7 @@ export class PaymentsService {
     }
 
     // Actualizar estado a CANCELLED
-    await this.prisma.secure.subscription.update({
+    await this.prisma.subscription.update({
       where: { userId },
       data: { status: 'CANCELLED' },
     });
@@ -272,7 +272,7 @@ export class PaymentsService {
   }
 
   async getSubscriptionStatus(userId: string) {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
@@ -292,7 +292,7 @@ export class PaymentsService {
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
     const storeSettings = await (
-      this.prisma.secure as any
+      this.prisma as any
     ).storeSettings.findFirst({
       where: { tenantId },
     });
@@ -319,7 +319,7 @@ export class PaymentsService {
     }
 
     const variantIds = dto.items.map((i) => i.variantId);
-    const variants = await this.prisma.secure.productVariant.findMany({
+    const variants = await this.prisma.productVariant.findMany({
       where: { id: { in: variantIds } },
       include: { product: true },
     });
@@ -330,7 +330,7 @@ export class PaymentsService {
     );
     const modifiers =
       modifierIds.length > 0
-        ? await this.prisma.secure.modifier.findMany({
+        ? await this.prisma.modifier.findMany({
             where: { id: { in: modifierIds } },
           })
         : [];
@@ -414,7 +414,7 @@ export class PaymentsService {
       (activeProvider === 'BOLD' || activeProvider === 'CASH')
     ) {
       const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
-      const newOrder = await this.prisma.secure.order.create({
+      const newOrder = await this.prisma.order.create({
         data: {
           tenantId,
           orderNumber,
@@ -618,7 +618,7 @@ export class PaymentsService {
     try {
       // 1. Recuperar Credenciales desde StoreSettings (SSOT)
       const storeSettings = await (
-        this.prisma.secure as any
+        this.prisma as any
       ).storeSettings.findFirst({
         where: { tenantId: resolvedTenantId },
       });
@@ -698,7 +698,7 @@ export class PaymentsService {
           }
 
           // Avoid duplicate processing by checking if an Order with this mpPaymentId already exists
-          const existingOrder = await this.prisma.secure.order.findFirst({
+          const existingOrder = await this.prisma.order.findFirst({
             where: { mpPaymentId: dataId, tenantId: resolvedTenantId },
           });
 
@@ -708,7 +708,7 @@ export class PaymentsService {
           }
 
           // 5. Creación de la Orden (Prisma Transaction)
-          await this.prisma.secure.$transaction(async (tx) => {
+          await this.prisma.$transaction(async (tx) => {
             let totalAmount = 0;
             const orderItemsData: any[] = [];
             const digitalItemsDispatch: any[] = [];
@@ -936,7 +936,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
 
-    await this.prisma.secure.subscription.upsert({
+    await this.prisma.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -959,7 +959,7 @@ export class PaymentsService {
 
     // Send confirmation email (non-blocking - don't fail if email fails)
     try {
-      const user = await this.prisma.secure.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: userId },
         select: { email: true, name: true },
       });
@@ -982,7 +982,7 @@ export class PaymentsService {
     // 1. Update Order Status
     // Para webhooks (Bold/MP), el CLS no tiene el tenant correcto → usar el tenantId explícito
     const tenantId = explicitTenantId || this.getTenantId();
-    const order = await this.prisma.secure.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { user: true, items: true },
     });
@@ -1002,7 +1002,7 @@ export class PaymentsService {
 
     // Si el webhook ya actualizó el status a PREPARING, no lo sobreescribimos
     if (order.status !== 'PREPARING' && order.status !== 'APPROVED') {
-      await this.prisma.secure.order.update({
+      await this.prisma.order.update({
         where: { id: orderId },
         data: {
           status: 'PREPARING',
@@ -1029,7 +1029,7 @@ export class PaymentsService {
 
       // Batch fetch: single query replaces N findUnique calls
       const variantIds = order.items.map((i) => i.variantId);
-      const variants = await this.prisma.secure.productVariant.findMany({
+      const variants = await this.prisma.productVariant.findMany({
         where: { id: { in: variantIds } },
         include: { product: true },
       });
@@ -1064,7 +1064,7 @@ export class PaymentsService {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + days);
 
-    await this.prisma.secure.subscription.upsert({
+    await this.prisma.subscription.upsert({
       where: { userId },
       create: {
         userId,
@@ -1090,7 +1090,7 @@ export class PaymentsService {
   // ==================== USER SUBSCRIPTION CHECK ====================
 
   async hasActiveSubscription(userId: string): Promise<boolean> {
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
     return subscription?.status === 'ACTIVE';
@@ -1100,11 +1100,11 @@ export class PaymentsService {
 
   async getPaymentStats() {
     const [activeSubscriptions, pendingSubscriptions] = await Promise.all([
-      this.prisma.secure.subscription.count({ where: { status: 'ACTIVE' } }),
-      this.prisma.secure.subscription.count({ where: { status: 'PENDING' } }),
+      this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.subscription.count({ where: { status: 'PENDING' } }),
     ]);
 
-    const recentSubscriptions = await this.prisma.secure.subscription.findMany({
+    const recentSubscriptions = await this.prisma.subscription.findMany({
       where: { status: 'ACTIVE' },
       take: 10,
       orderBy: { startDate: 'desc' },
@@ -1139,7 +1139,7 @@ export class PaymentsService {
 
     // 1. Obtener el secreto del tenant para validar la firma
     // Usamos findFirst en StoreSettings para este tenant
-    const storeSettings = await this.prisma.secure.storeSettings.findFirst({
+    const storeSettings = await this.prisma.storeSettings.findFirst({
       where: { tenantId },
     });
 
@@ -1199,7 +1199,7 @@ export class PaymentsService {
     const paymentStatus = eventType; // SALE_APPROVED, SALE_REJECTED, etc.
     const paymentId = eventData.payment_id;
 
-    const order = await this.prisma.secure.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { items: true, user: { select: { email: true, name: true } } },
     });
@@ -1223,8 +1223,8 @@ export class PaymentsService {
         return { status: 'processed', reason: 'Already processed' };
       }
 
-      await this.prisma.secure.$transaction([
-        this.prisma.secure.order.update({
+      await this.prisma.$transaction([
+        this.prisma.order.update({
           where: { id: orderId },
           data: {
             status: 'PREPARING', // Directo a cocina, ya está pagado
@@ -1232,7 +1232,7 @@ export class PaymentsService {
             paymentProvider: 'BOLD',
           },
         }),
-        this.prisma.secure.orderItem.updateMany({
+        this.prisma.orderItem.updateMany({
           where: { orderId: orderId },
           data: { isPaid: true },
         }),
@@ -1252,7 +1252,7 @@ export class PaymentsService {
       );
 
       if (order.status === 'PENDING' && paymentStatus === 'SALE_REJECTED') {
-        await this.prisma.secure.order.update({
+        await this.prisma.order.update({
           where: { id: orderId },
           data: {
             status: 'CANCELLED',

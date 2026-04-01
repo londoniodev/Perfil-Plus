@@ -61,7 +61,7 @@ export class OrdersService {
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        const createdOrder = await this.prisma.secure.$transaction(
+        const createdOrder = await this.prisma.$transaction(
           async (tx) => {
             const orderCount = await tx.order.count();
             const year = new Date().getFullYear();
@@ -191,7 +191,7 @@ export class OrdersService {
     userRole: Role,
     userId?: string,
   ) {
-    const order = await this.prisma.secure.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
     });
 
@@ -203,7 +203,7 @@ export class OrdersService {
       if (!userId) {
         throw new ForbiddenException('Usuario no autenticado');
       }
-      const driver = await this.prisma.secure.deliveryDriver.findUnique({
+      const driver = await this.prisma.deliveryDriver.findUnique({
         where: { userId },
       });
       if (!driver || order.driverId !== driver.id) {
@@ -215,7 +215,7 @@ export class OrdersService {
 
     validateOrderTransition(order.status, dto.status, userRole);
 
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       if (order.status === 'CANCELLED') {
         throw new BadRequestException(
           'Esta orden ya fue cancelada anteriormente.',
@@ -400,7 +400,7 @@ export class OrdersService {
   }
 
   async findMyOrders(userId: string, take = 20, skip = 0) {
-    return await this.prisma.secure.order.findMany({
+    return await this.prisma.order.findMany({
       where: {
         userId,
         status: {
@@ -430,7 +430,7 @@ export class OrdersService {
   }
 
   async getOrderForTracking(orderId: string) {
-    const order = await this.prisma.secure.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       select: {
         id: true,
@@ -448,7 +448,7 @@ export class OrdersService {
   }
 
   async findOne(id: string) {
-    const order = await this.prisma.secure.order.findUnique({
+    const order = await this.prisma.order.findUnique({
       where: { id },
       select: {
         id: true,
@@ -519,12 +519,12 @@ export class OrdersService {
       ];
 
       const [activeOrders, recentCompleted] = await Promise.all([
-        this.prisma.secure.order.findMany({
+        this.prisma.order.findMany({
           where: { status: { in: activeStatuses } },
           include: fullInclude,
           orderBy: { createdAt: 'desc' },
         }),
-        this.prisma.secure.order.findMany({
+        this.prisma.order.findMany({
           where: { status: { in: completedStatuses } },
           include: fullInclude,
           orderBy: { createdAt: 'desc' },
@@ -538,7 +538,7 @@ export class OrdersService {
       );
     }
 
-    return await this.prisma.secure.order.findMany({
+    return await this.prisma.order.findMany({
       where: status ? { status } : undefined,
       include: fullInclude,
       orderBy: { createdAt: 'desc' },
@@ -555,7 +555,7 @@ export class OrdersService {
     let order: any;
 
     if (orderId) {
-      order = await this.prisma.secure.order.findFirst({
+      order = await this.prisma.order.findFirst({
         where: {
           id: orderId,
           userId,
@@ -564,7 +564,7 @@ export class OrdersService {
         include: { items: { where: { variant: { productId } } } },
       });
     } else {
-      order = await this.prisma.secure.order.findFirst({
+      order = await this.prisma.order.findFirst({
         where: {
           userId,
           status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
@@ -580,7 +580,7 @@ export class OrdersService {
       );
     }
 
-    const product = await this.prisma.secure.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: { digitalFileUrl: true, productType: true },
     });
@@ -601,7 +601,7 @@ export class OrdersService {
   }
 
   async createPayment(orderId: string, dto: CreatePaymentDto) {
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
         include: { items: true },
@@ -674,13 +674,13 @@ export class OrdersService {
     itemId: string,
     isPrepared: boolean,
   ) {
-    const item = await this.prisma.secure.orderItem.findFirst({
+    const item = await this.prisma.orderItem.findFirst({
       where: { id: itemId, orderId },
     });
 
     if (!item) throw new NotFoundException('Item no encontrado en esta orden');
 
-    const updatedItem = await this.prisma.secure.orderItem.update({
+    const updatedItem = await this.prisma.orderItem.update({
       where: { id: itemId },
       data: { isPrepared },
     });
@@ -699,7 +699,7 @@ export class OrdersService {
   }
 
   async assignDriver(orderId: string, driverId: string, userRole: Role) {
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id: orderId } });
 
       if (!order) throw new NotFoundException('Orden no encontrada');
@@ -792,7 +792,7 @@ export class OrdersService {
   }
 
   async getDriverOrders(driverId: string) {
-    return this.prisma.secure.order.findMany({
+    return this.prisma.order.findMany({
       where: { driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
       include: {
         items: {
@@ -807,7 +807,7 @@ export class OrdersService {
   }
 
   async getDriverOrdersByUserId(userId: string) {
-    const driver = await this.prisma.secure.deliveryDriver.findUnique({
+    const driver = await this.prisma.deliveryDriver.findUnique({
       where: { userId },
     });
 

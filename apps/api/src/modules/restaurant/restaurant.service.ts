@@ -13,7 +13,7 @@ export class RestaurantService {
   ) {}
 
   private async getTenantIdBySlug(slug: string): Promise<string> {
-    const tenant = await this.prisma.secure.tenant.findUnique({
+    const tenant = await this.prisma.tenant.findUnique({
       where: { slug },
       select: { id: true },
     });
@@ -36,14 +36,14 @@ export class RestaurantService {
       if (!contextTenantId) {
         throw new NotFoundException('Restaurant context not found');
       }
-      tenant = await this.prisma.secure.tenant.findUnique({
+      tenant = await this.prisma.tenant.findUnique({
         where: { id: contextTenantId },
         include: { brandSettings: true },
       });
     } else {
       // Try lookup by ID first (likely coming from Edge Proxy via custom domain)
       try {
-        tenant = await this.prisma.secure.tenant.findUnique({
+        tenant = await this.prisma.tenant.findUnique({
           where: { id: slugOrId },
           include: { brandSettings: true },
         });
@@ -53,7 +53,7 @@ export class RestaurantService {
 
       // Fallback to Slug lookup
       if (!tenant) {
-        tenant = await this.prisma.secure.tenant.findUnique({
+        tenant = await this.prisma.tenant.findUnique({
           where: { slug: slugOrId },
           include: { brandSettings: true },
         });
@@ -67,7 +67,7 @@ export class RestaurantService {
     const tenantId = tenant.id;
 
     // 2. Find Categories (filtered by tenant via products)
-    const categories = await this.prisma.secure.category.findMany({
+    const categories = await this.prisma.category.findMany({
       where: {
         tenantId,
         products: {
@@ -88,7 +88,7 @@ export class RestaurantService {
     });
 
     // 3. Find Products
-    const products = await this.prisma.secure.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
         tenantId,
         published: true,
@@ -110,7 +110,7 @@ export class RestaurantService {
     });
 
     // 4. Fetch Tenant Config (SystemSetting modules: menu, contact, etc.)
-    const systemSettings = await this.prisma.secure.systemSetting.findMany({
+    const systemSettings = await this.prisma.systemSetting.findMany({
       where: { tenantId },
     });
 
@@ -227,7 +227,7 @@ export class RestaurantService {
   ) {
     // slug is used for public API identification but we don't need tenantId here
     // since productLike is scoped by productId which already belongs to a tenant
-    const existingLike = await this.prisma.secure.productLike.findUnique({
+    const existingLike = await this.prisma.productLike.findUnique({
       where: {
         productId_userPhone: {
           productId,
@@ -237,12 +237,12 @@ export class RestaurantService {
     });
 
     if (existingLike) {
-      await this.prisma.secure.productLike.delete({
+      await this.prisma.productLike.delete({
         where: { id: existingLike.id },
       });
       return { liked: false };
     } else {
-      await this.prisma.secure.productLike.create({
+      await this.prisma.productLike.create({
         data: {
           productId,
           userPhone,
@@ -259,7 +259,7 @@ export class RestaurantService {
     content: string,
     userName?: string,
   ) {
-    const comment = await this.prisma.secure.productComment.create({
+    const comment = await this.prisma.productComment.create({
       data: {
         productId,
         userPhone,
@@ -282,7 +282,7 @@ export class RestaurantService {
     productId: string,
     userPhone: string,
   ) {
-    const count = await this.prisma.secure.productLike.count({
+    const count = await this.prisma.productLike.count({
       where: {
         productId,
         userPhone,

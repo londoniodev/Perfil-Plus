@@ -9,7 +9,7 @@ export class UsageGuardService {
 
   async checkAiLimit(tenantId: string): Promise<boolean> {
     // 1. Obtener límite (aiMonthlyLimit) configurado, por defecto suele ser 100
-    const settings = await this.prisma.secure.storeSettings.findFirst();
+    const settings = await this.prisma.storeSettings.findFirst();
 
     // Workaround for Prisma client not getting updated types immediately
     const monthlyLimit = (settings as any)?.aiMonthlyLimit ?? 100;
@@ -23,7 +23,7 @@ export class UsageGuardService {
     endOfMonth.setMonth(startOfMonth.getMonth() + 1);
 
     // 3. Contar mensajes respondidos por el bot (ASSISTANT) este mes
-    const usageCount = await (this.prisma.secure as any).waMessage.count({
+    const usageCount = await (this.prisma as any).waMessage.count({
       where: {
         role: 'ASSISTANT',
         createdAt: {

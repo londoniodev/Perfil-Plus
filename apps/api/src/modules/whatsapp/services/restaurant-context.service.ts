@@ -43,7 +43,7 @@ export class RestaurantContextService {
       `[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`,
     );
 
-    const products = await this.prisma.secure.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: {
         productType: 'RESTAURANT',
         published: true,
@@ -110,7 +110,7 @@ export class RestaurantContextService {
 
   private async generateMenuContext(tenantId: string): Promise<string> {
     // Obtener configuración del restaurante
-    const storeSettings = await this.prisma.secure.storeSettings.findFirst({
+    const storeSettings = await this.prisma.storeSettings.findFirst({
       include: { tenant: { select: { slug: true } } },
     });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
@@ -119,7 +119,7 @@ export class RestaurantContextService {
     const deliveryFeeFormatted = deliveryFee > 0 ? `$${deliveryFee}` : 'Gratis';
 
     // Obtener menú (Categorías y Productos Activos)
-    const categories = await this.prisma.secure.category.findMany({
+    const categories = await this.prisma.category.findMany({
       include: {
         products: {
           include: {
@@ -182,7 +182,7 @@ ${menuText}
     let needsGps = true; // Rastrear si falta ubicación GPS
 
     if (customerPhone) {
-      const customer = await this.prisma.secure.waCustomer.findUnique({
+      const customer = await this.prisma.waCustomer.findUnique({
         where: { tenantId_phone: { tenantId, phone: customerPhone } },
       });
       if (customer) {

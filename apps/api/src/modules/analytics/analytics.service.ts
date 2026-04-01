@@ -72,19 +72,19 @@ export class AnalyticsService {
 
     const dateQuery = { gte: StartDate, lte: EndDate };
 
-    // ✅ this.prisma.secure — tenantId se inyecta automáticamente por extensión Prisma
+    // ✅ this.prisma — tenantId se inyecta automáticamente por extensión Prisma
     const [totalRevAgg, totalOrders, periodRevAgg, periodOrdersCount] =
       await Promise.all([
-        this.prisma.secure.order.aggregate({
+        this.prisma.order.aggregate({
           _sum: { totalAmount: true },
           where: { status: OrderStatus.DELIVERED },
         }),
-        this.prisma.secure.order.count({}),
-        this.prisma.secure.order.aggregate({
+        this.prisma.order.count({}),
+        this.prisma.order.aggregate({
           _sum: { totalAmount: true },
           where: { status: OrderStatus.DELIVERED, createdAt: dateQuery },
         }),
-        this.prisma.secure.order.count({ where: { createdAt: dateQuery } }),
+        this.prisma.order.count({ where: { createdAt: dateQuery } }),
       ]);
 
     const totalRevenue = Number(totalRevAgg._sum?.totalAmount || 0);
@@ -132,13 +132,13 @@ export class AnalyticsService {
       totalUsers,
       recentOrdersRaw,
     ] = await Promise.all([
-      this.prisma.secure.order.groupBy({
+      this.prisma.order.groupBy({
         by: ['orderType'],
         _count: { id: true },
         _sum: { totalAmount: true },
         where: { createdAt: dateQuery },
       }),
-      this.prisma.secure.orderItem.groupBy({
+      this.prisma.orderItem.groupBy({
         by: ['productName'],
         _sum: { quantity: true },
         where: {
@@ -147,18 +147,18 @@ export class AnalyticsService {
         orderBy: { _sum: { quantity: 'desc' } },
         take: 15,
       }),
-      this.prisma.secure.order.groupBy({
+      this.prisma.order.groupBy({
         by: ['orderType'],
         _sum: { totalAmount: true },
         _count: { id: true },
         where: { createdAt: dateQuery, status: OrderStatus.DELIVERED },
       }),
-      this.prisma.secure.orderDeliveryAnalytics.aggregate({
+      this.prisma.orderDeliveryAnalytics.aggregate({
         _avg: { timeToPrepare: true, timeToShip: true, timeToDeliver: true },
         where: { order: { createdAt: dateQuery } },
       }),
-      this.prisma.secure.user.count({}),
-      this.prisma.secure.order.findMany({
+      this.prisma.user.count({}),
+      this.prisma.order.findMany({
         where: { createdAt: dateQuery },
         orderBy: { createdAt: 'desc' },
         take: 5,
@@ -208,7 +208,7 @@ export class AnalyticsService {
     ];
 
     // Payment methods — queried via order relation (no tenantId manual necesario)
-    const paymentGroup = await this.prisma.secure.payment.groupBy({
+    const paymentGroup = await this.prisma.payment.groupBy({
       by: ['method'],
       _count: { id: true },
       _sum: { amount: true },
@@ -301,12 +301,12 @@ export class AnalyticsService {
     };
 
     const [orderCount, salesAgg, paymentGroup] = await Promise.all([
-      this.prisma.secure.order.count({ where: ordersWhere }),
-      this.prisma.secure.order.aggregate({
+      this.prisma.order.count({ where: ordersWhere }),
+      this.prisma.order.aggregate({
         _sum: { totalAmount: true },
         where: ordersWhere,
       }),
-      this.prisma.secure.payment.groupBy({
+      this.prisma.payment.groupBy({
         by: ['method'],
         _sum: { amount: true },
         _count: { id: true },

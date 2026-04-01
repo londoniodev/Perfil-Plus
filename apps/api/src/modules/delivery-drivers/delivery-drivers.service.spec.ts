@@ -99,9 +99,9 @@ describe('DeliveryDriversService', () => {
 
   describe('create', () => {
     it('debería crear un driver cuando el usuario existe con rol DRIVER', async () => {
-      mockPrisma.secure.user.findFirst.mockResolvedValue(MOCK_USER_DRIVER);
-      mockPrisma.secure.deliveryDriver.findUnique.mockResolvedValue(null); // No existe duplicado
-      mockPrisma.secure.deliveryDriver.create.mockResolvedValue(MOCK_DRIVER);
+      mockPrisma.user.findFirst.mockResolvedValue(MOCK_USER_DRIVER);
+      mockPrisma.deliveryDriver.findUnique.mockResolvedValue(null); // No existe duplicado
+      mockPrisma.deliveryDriver.create.mockResolvedValue(MOCK_DRIVER);
 
       const dto = {
         userId: 'user-driver-1',
@@ -111,10 +111,10 @@ describe('DeliveryDriversService', () => {
 
       const result = await service.create(dto, 'tenant-1');
 
-      expect(mockPrisma.secure.user.findFirst).toHaveBeenCalledWith({
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
         where: { id: 'user-driver-1', tenantId: 'tenant-1' },
       });
-      expect(mockPrisma.secure.deliveryDriver.create).toHaveBeenCalledWith(
+      expect(mockPrisma.deliveryDriver.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             tenantId: 'tenant-1',
@@ -131,7 +131,7 @@ describe('DeliveryDriversService', () => {
     // ============ 2. ❌ Crear con rol incorrecto ============
 
     it('debería lanzar BadRequestException si el usuario no tiene rol DRIVER', async () => {
-      mockPrisma.secure.user.findFirst.mockResolvedValue(MOCK_USER_ADMIN);
+      mockPrisma.user.findFirst.mockResolvedValue(MOCK_USER_ADMIN);
 
       const dto = { userId: 'user-admin-1', phone: '3001234567' };
 
@@ -146,8 +146,8 @@ describe('DeliveryDriversService', () => {
     // ============ 3. ❌ Crear duplicado ============
 
     it('debería lanzar ConflictException si el usuario ya es domiciliario', async () => {
-      mockPrisma.secure.user.findFirst.mockResolvedValue(MOCK_USER_DRIVER);
-      mockPrisma.secure.deliveryDriver.findUnique.mockResolvedValue(
+      mockPrisma.user.findFirst.mockResolvedValue(MOCK_USER_DRIVER);
+      mockPrisma.deliveryDriver.findUnique.mockResolvedValue(
         MOCK_DRIVER,
       ); // Ya existe
 
@@ -162,7 +162,7 @@ describe('DeliveryDriversService', () => {
     });
 
     it('debería lanzar NotFoundException si el usuario no existe', async () => {
-      mockPrisma.secure.user.findFirst.mockResolvedValue(null);
+      mockPrisma.user.findFirst.mockResolvedValue(null);
 
       const dto = { userId: 'no-existe', phone: '3001234567' };
 
@@ -179,13 +179,13 @@ describe('DeliveryDriversService', () => {
       const availableDrivers = [
         { ...MOCK_DRIVER, status: DriverStatus.AVAILABLE },
       ];
-      mockPrisma.secure.deliveryDriver.findMany.mockResolvedValue(
+      mockPrisma.deliveryDriver.findMany.mockResolvedValue(
         availableDrivers,
       );
 
       const result = await service.findAvailable('tenant-1');
 
-      expect(mockPrisma.secure.deliveryDriver.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.deliveryDriver.findMany).toHaveBeenCalledWith({
         where: {
           tenantId: 'tenant-1',
           status: DriverStatus.AVAILABLE,
@@ -207,8 +207,8 @@ describe('DeliveryDriversService', () => {
   describe('update', () => {
     it('debería actualizar maxCapacity correctamente', async () => {
       const updatedDriver = { ...MOCK_DRIVER, maxCapacity: 5 };
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
-      mockPrisma.secure.deliveryDriver.update.mockResolvedValue(updatedDriver);
+      mockPrisma.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
+      mockPrisma.deliveryDriver.update.mockResolvedValue(updatedDriver);
 
       const result = await service.update(
         'driver-1',
@@ -216,7 +216,7 @@ describe('DeliveryDriversService', () => {
         'tenant-1',
       );
 
-      expect(mockPrisma.secure.deliveryDriver.update).toHaveBeenCalledWith(
+      expect(mockPrisma.deliveryDriver.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'driver-1' },
           data: expect.objectContaining({ maxCapacity: 5 }),
@@ -232,8 +232,8 @@ describe('DeliveryDriversService', () => {
         ...MOCK_DRIVER,
         status: DriverStatus.AVAILABLE,
       };
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
-      mockPrisma.secure.deliveryDriver.update.mockResolvedValue(onlineDriver);
+      mockPrisma.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
+      mockPrisma.deliveryDriver.update.mockResolvedValue(onlineDriver);
 
       const result = await service.update(
         'driver-1',
@@ -241,7 +241,7 @@ describe('DeliveryDriversService', () => {
         'tenant-1',
       );
 
-      expect(mockPrisma.secure.deliveryDriver.update).toHaveBeenCalledWith(
+      expect(mockPrisma.deliveryDriver.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ status: DriverStatus.AVAILABLE }),
         }),
@@ -254,12 +254,12 @@ describe('DeliveryDriversService', () => {
 
   describe('remove', () => {
     it('debería eliminar el driver y retornar mensaje de éxito', async () => {
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
-      mockPrisma.secure.deliveryDriver.delete.mockResolvedValue(MOCK_DRIVER);
+      mockPrisma.deliveryDriver.findFirst.mockResolvedValue(MOCK_DRIVER);
+      mockPrisma.deliveryDriver.delete.mockResolvedValue(MOCK_DRIVER);
 
       const result = await service.remove('driver-1', 'tenant-1');
 
-      expect(mockPrisma.secure.deliveryDriver.delete).toHaveBeenCalledWith({
+      expect(mockPrisma.deliveryDriver.delete).toHaveBeenCalledWith({
         where: { id: 'driver-1' },
       });
       expect(result).toEqual({
@@ -272,7 +272,7 @@ describe('DeliveryDriversService', () => {
 
   describe('findOne', () => {
     it('debería lanzar NotFoundException si el driver no existe', async () => {
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(null);
+      mockPrisma.deliveryDriver.findFirst.mockResolvedValue(null);
 
       await expect(service.findOne('no-existe', 'tenant-1')).rejects.toThrow(
         NotFoundException,
@@ -284,13 +284,13 @@ describe('DeliveryDriversService', () => {
         ...MOCK_DRIVER,
         orders: [],
       };
-      mockPrisma.secure.deliveryDriver.findFirst.mockResolvedValue(
+      mockPrisma.deliveryDriver.findFirst.mockResolvedValue(
         driverWithOrders,
       );
 
       const result = await service.findOne('driver-1', 'tenant-1');
 
-      expect(mockPrisma.secure.deliveryDriver.findFirst).toHaveBeenCalledWith(
+      expect(mockPrisma.deliveryDriver.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'driver-1', tenantId: 'tenant-1' },
         }),
@@ -303,13 +303,13 @@ describe('DeliveryDriversService', () => {
 
   describe('findByUserId', () => {
     it('debería retornar el perfil del driver por userId', async () => {
-      mockPrisma.secure.deliveryDriver.findUnique.mockResolvedValue(
+      mockPrisma.deliveryDriver.findUnique.mockResolvedValue(
         MOCK_DRIVER,
       );
 
       const result = await service.findByUserId('user-driver-1');
 
-      expect(mockPrisma.secure.deliveryDriver.findUnique).toHaveBeenCalledWith({
+      expect(mockPrisma.deliveryDriver.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-driver-1' },
         include: expect.objectContaining({
           user: expect.objectContaining({
@@ -321,7 +321,7 @@ describe('DeliveryDriversService', () => {
     });
 
     it('debería lanzar NotFoundException si no hay perfil de driver', async () => {
-      mockPrisma.secure.deliveryDriver.findUnique.mockResolvedValue(null);
+      mockPrisma.deliveryDriver.findUnique.mockResolvedValue(null);
 
       await expect(service.findByUserId('user-sin-driver')).rejects.toThrow(
         NotFoundException,
@@ -337,11 +337,11 @@ describe('DeliveryDriversService', () => {
   describe('findAll', () => {
     it('debería retornar todos los drivers del tenant', async () => {
       const drivers = [MOCK_DRIVER];
-      mockPrisma.secure.deliveryDriver.findMany.mockResolvedValue(drivers);
+      mockPrisma.deliveryDriver.findMany.mockResolvedValue(drivers);
 
       const result = await service.findAll('tenant-1');
 
-      expect(mockPrisma.secure.deliveryDriver.findMany).toHaveBeenCalledWith(
+      expect(mockPrisma.deliveryDriver.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { tenantId: 'tenant-1' },
           orderBy: { createdAt: 'desc' },

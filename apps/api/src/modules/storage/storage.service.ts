@@ -100,7 +100,7 @@ export class StorageService {
     const user = (this.request as any).user;
     if (user?.tenantId) {
       try {
-        const tenantInfo = await this.prisma.secure.tenant.findUnique({
+        const tenantInfo = await this.prisma.tenant.findUnique({
           where: { id: user.tenantId },
           select: { slug: true },
         });
@@ -474,7 +474,7 @@ export class StorageService {
       );
 
       // 1. Encontrar el tenantId por slug (usamos .raw para bypass de seguridad en acción de SuperAdmin)
-      const tenant = await this.prisma.raw.tenant.findUnique({
+      const tenant = await this.prisma.unscoped.tenant.findUnique({
         where: { slug: tenantSlug },
         select: { id: true },
       });
@@ -485,7 +485,7 @@ export class StorageService {
       }
 
       // 2. Buscar si ya existe la configuración de menú (clave 'menu')
-      const setting = await this.prisma.raw.systemSetting.findFirst({
+      const setting = await this.prisma.unscoped.systemSetting.findFirst({
         where: {
           tenantId: tenant.id,
           key: 'menu',
@@ -527,7 +527,7 @@ export class StorageService {
       const updatedMenu = { ...menuData, headerLinks: updatedLinks };
 
       // 4. Upsert de la configuración de menú
-      await this.prisma.raw.systemSetting.upsert({
+      await this.prisma.unscoped.systemSetting.upsert({
         where: {
           tenantId_key: {
             tenantId: tenant.id,
@@ -616,14 +616,14 @@ export class StorageService {
    * e inyectando siempre la vista principal (home).
    */
   async listLandings(tenantSlug: string) {
-    const tenant = await this.prisma.raw.tenant.findUnique({
+    const tenant = await this.prisma.unscoped.tenant.findUnique({
       where: { slug: tenantSlug },
       select: { id: true },
     });
 
     if (!tenant) throw new BadRequestException('Tenant no encontrado');
 
-    const setting = await this.prisma.raw.systemSetting.findFirst({
+    const setting = await this.prisma.unscoped.systemSetting.findFirst({
       where: {
         tenantId: tenant.id,
         key: 'menu',

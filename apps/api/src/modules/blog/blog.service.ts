@@ -20,7 +20,7 @@ export class BlogService {
       dto.readingTime || this.calculateReadingTime(dto.content);
 
     // Crear el post primero
-    const post = await this.prisma.secure.post.create({
+    const post = await this.prisma.post.create({
       data: {
         tenantId,
         title: dto.title,
@@ -40,7 +40,7 @@ export class BlogService {
 
     // Conectar categoría si existe
     if (dto.categoryId) {
-      await this.prisma.secure.categoriesOnPosts.create({
+      await this.prisma.categoriesOnPosts.create({
         data: {
           postId: post.id,
           categoryId: dto.categoryId,
@@ -50,7 +50,7 @@ export class BlogService {
 
     // Conectar tags si existen
     if (dto.tagIds?.length) {
-      await this.prisma.secure.tagsOnPosts.createMany({
+      await this.prisma.tagsOnPosts.createMany({
         data: dto.tagIds.map((tagId) => ({
           postId: post.id,
           tagId,
@@ -62,7 +62,7 @@ export class BlogService {
   }
 
   async updatePost(id: string, dto: UpdatePostDto) {
-    const existingPost = await this.prisma.secure.post.findUnique({
+    const existingPost = await this.prisma.post.findUnique({
       where: { id },
     });
     if (!existingPost) {
@@ -93,18 +93,18 @@ export class BlogService {
       updateData.metaDescription = dto.metaDescription;
 
     // Actualizar el post
-    await this.prisma.secure.post.update({
+    await this.prisma.post.update({
       where: { id },
       data: updateData,
     });
 
     // Actualizar categoría si se proporciona
     if (dto.categoryId !== undefined) {
-      await this.prisma.secure.categoriesOnPosts.deleteMany({
+      await this.prisma.categoriesOnPosts.deleteMany({
         where: { postId: id },
       });
       if (dto.categoryId) {
-        await this.prisma.secure.categoriesOnPosts.create({
+        await this.prisma.categoriesOnPosts.create({
           data: { postId: id, categoryId: dto.categoryId },
         });
       }
@@ -112,11 +112,11 @@ export class BlogService {
 
     // Actualizar tags si se proporcionan
     if (dto.tagIds !== undefined) {
-      await this.prisma.secure.tagsOnPosts.deleteMany({
+      await this.prisma.tagsOnPosts.deleteMany({
         where: { postId: id },
       });
       if (dto.tagIds.length) {
-        await this.prisma.secure.tagsOnPosts.createMany({
+        await this.prisma.tagsOnPosts.createMany({
           data: dto.tagIds.map((tagId) => ({ postId: id, tagId })),
         });
       }
@@ -126,12 +126,12 @@ export class BlogService {
   }
 
   async deletePost(id: string) {
-    const post = await this.prisma.secure.post.findUnique({ where: { id } });
+    const post = await this.prisma.post.findUnique({ where: { id } });
     if (!post) {
       throw new NotFoundException('Post no encontrado');
     }
 
-    await this.prisma.secure.post.delete({ where: { id } });
+    await this.prisma.post.delete({ where: { id } });
     return { message: 'Post eliminado correctamente' };
   }
 
@@ -144,7 +144,7 @@ export class BlogService {
     }
 
     const [posts, total] = await Promise.all([
-      this.prisma.secure.post.findMany({
+      this.prisma.post.findMany({
         where,
         skip,
         take: limit,
@@ -155,7 +155,7 @@ export class BlogService {
           attachments: true,
         },
       }),
-      this.prisma.secure.post.count({ where }),
+      this.prisma.post.count({ where }),
     ]);
 
     const transformedPosts = posts.map((post) => ({
@@ -188,7 +188,7 @@ export class BlogService {
     }
 
     const [posts, total] = await Promise.all([
-      this.prisma.secure.post.findMany({
+      this.prisma.post.findMany({
         where,
         skip,
         take: limit,
@@ -207,7 +207,7 @@ export class BlogService {
           tags: { include: { tag: true } },
         },
       }),
-      this.prisma.secure.post.count({ where }),
+      this.prisma.post.count({ where }),
     ]);
 
     const transformedPosts = posts.map((post) => ({
@@ -232,7 +232,7 @@ export class BlogService {
     hasSubscription = false,
     tenantId?: string,
   ) {
-    const post = await this.prisma.secure.post.findFirst({
+    const post = await this.prisma.post.findFirst({
       where: { slug, ...(tenantId ? { tenantId } : {}) },
       include: {
         categories: { include: { category: true } },
@@ -269,7 +269,7 @@ export class BlogService {
   }
 
   async findPostById(id: string) {
-    const post = await this.prisma.secure.post.findUnique({
+    const post = await this.prisma.post.findUnique({
       where: { id },
       include: {
         categories: { include: { category: true } },
@@ -292,14 +292,14 @@ export class BlogService {
   // ==================== ATTACHMENTS ====================
 
   async addAttachment(postId: string, dto: CreateAttachmentDto) {
-    const post = await this.prisma.secure.post.findUnique({
+    const post = await this.prisma.post.findUnique({
       where: { id: postId },
     });
     if (!post) {
       throw new NotFoundException('Post no encontrado');
     }
 
-    return this.prisma.secure.postAttachment.create({
+    return this.prisma.postAttachment.create({
       data: {
         postId,
         name: dto.name,
@@ -312,7 +312,7 @@ export class BlogService {
   }
 
   async removeAttachment(attachmentId: string) {
-    const attachment = await this.prisma.secure.postAttachment.findUnique({
+    const attachment = await this.prisma.postAttachment.findUnique({
       where: { id: attachmentId },
     });
 
@@ -320,7 +320,7 @@ export class BlogService {
       throw new NotFoundException('Adjunto no encontrado');
     }
 
-    await this.prisma.secure.postAttachment.delete({
+    await this.prisma.postAttachment.delete({
       where: { id: attachmentId },
     });
     return {
@@ -330,7 +330,7 @@ export class BlogService {
   }
 
   async findAttachmentsByPostId(postId: string) {
-    return this.prisma.secure.postAttachment.findMany({
+    return this.prisma.postAttachment.findMany({
       where: { postId },
       orderBy: { createdAt: 'asc' },
     });
@@ -341,7 +341,7 @@ export class BlogService {
   async createCategory(dto: CreateCategoryDto, tenantId: string) {
     const slug = this.generateSlug(dto.name);
 
-    return this.prisma.secure.category.create({
+    return this.prisma.category.create({
       data: {
         tenantId,
         name: dto.name,
@@ -352,7 +352,7 @@ export class BlogService {
   }
 
   async findAllCategories() {
-    return this.prisma.secure.category.findMany({
+    return this.prisma.category.findMany({
       where: { type: 'BLOG' },
       orderBy: { name: 'asc' },
       include: {
@@ -362,21 +362,21 @@ export class BlogService {
   }
 
   async deleteCategory(id: string) {
-    const category = await this.prisma.secure.category.findFirst({
+    const category = await this.prisma.category.findFirst({
       where: { id, type: 'BLOG' },
     });
     if (!category) {
       throw new NotFoundException('Categoría no encontrada');
     }
 
-    await this.prisma.secure.category.delete({ where: { id } });
+    await this.prisma.category.delete({ where: { id } });
     return { message: 'Categoría eliminada correctamente' };
   }
 
   // ==================== TAGS ====================
 
   async createTag(dto: CreateTagDto, tenantId: string) {
-    return this.prisma.secure.tag.create({
+    return this.prisma.tag.create({
       data: {
         tenantId,
         name: dto.name,
@@ -385,7 +385,7 @@ export class BlogService {
   }
 
   async findAllTags() {
-    return this.prisma.secure.tag.findMany({
+    return this.prisma.tag.findMany({
       orderBy: { name: 'asc' },
       include: {
         _count: { select: { posts: true } },
@@ -394,12 +394,12 @@ export class BlogService {
   }
 
   async deleteTag(id: string) {
-    const tag = await this.prisma.secure.tag.findUnique({ where: { id } });
+    const tag = await this.prisma.tag.findUnique({ where: { id } });
     if (!tag) {
       throw new NotFoundException('Tag no encontrado');
     }
 
-    await this.prisma.secure.tag.delete({ where: { id } });
+    await this.prisma.tag.delete({ where: { id } });
     return { message: 'Tag eliminado correctamente' };
   }
 

@@ -14,7 +14,7 @@ export class DeliveryDriversService {
 
   async create(dto: CreateDriverDto, tenantId: string) {
     // Verificar que el usuario existe y tiene rol DRIVER
-    const user = await this.prisma.secure.user.findFirst({
+    const user = await this.prisma.user.findFirst({
       where: { id: dto.userId, tenantId },
     });
 
@@ -29,7 +29,7 @@ export class DeliveryDriversService {
     }
 
     // Verificar que no exista ya un driver para este usuario
-    const existing = await this.prisma.secure.deliveryDriver.findUnique({
+    const existing = await this.prisma.deliveryDriver.findUnique({
       where: { userId: dto.userId },
     });
 
@@ -39,7 +39,7 @@ export class DeliveryDriversService {
       );
     }
 
-    return this.prisma.secure.deliveryDriver.create({
+    return this.prisma.deliveryDriver.create({
       data: {
         tenantId,
         userId: dto.userId,
@@ -56,7 +56,7 @@ export class DeliveryDriversService {
   }
 
   async findAll(tenantId: string) {
-    return this.prisma.secure.deliveryDriver.findMany({
+    return this.prisma.deliveryDriver.findMany({
       where: { tenantId },
       include: {
         user: {
@@ -77,7 +77,7 @@ export class DeliveryDriversService {
   }
 
   async findAvailable(tenantId: string) {
-    return this.prisma.secure.deliveryDriver.findMany({
+    return this.prisma.deliveryDriver.findMany({
       where: {
         tenantId,
         status: DriverStatus.AVAILABLE,
@@ -92,7 +92,7 @@ export class DeliveryDriversService {
   }
 
   async findOne(id: string, tenantId: string) {
-    const driver = await this.prisma.secure.deliveryDriver.findFirst({
+    const driver = await this.prisma.deliveryDriver.findFirst({
       where: { id, tenantId },
       include: {
         user: {
@@ -120,7 +120,7 @@ export class DeliveryDriversService {
   async update(id: string, dto: UpdateDriverDto, tenantId: string) {
     await this.findOne(id, tenantId);
 
-    return this.prisma.secure.deliveryDriver.update({
+    return this.prisma.deliveryDriver.update({
       where: { id },
       data: {
         ...(dto.phone && { phone: dto.phone }),
@@ -137,7 +137,7 @@ export class DeliveryDriversService {
   }
 
   async findByUserId(userId: string) {
-    const driver = await this.prisma.secure.deliveryDriver.findUnique({
+    const driver = await this.prisma.deliveryDriver.findUnique({
       where: { userId },
       include: {
         user: {
@@ -156,7 +156,7 @@ export class DeliveryDriversService {
   async remove(id: string, tenantId: string) {
     await this.findOne(id, tenantId);
 
-    await this.prisma.secure.deliveryDriver.delete({
+    await this.prisma.deliveryDriver.delete({
       where: { id },
     });
 

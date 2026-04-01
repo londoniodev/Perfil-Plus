@@ -33,7 +33,7 @@ export class WaCartController {
 
     if (tenantId) {
       // Prioritario: Buscar de forma segura con el tenantId provisto
-      cart = await (this.prisma.secure as any).waCart.findUnique({
+      cart = await (this.prisma as any).waCart.findUnique({
         where: { id: id, tenantId: tenantId },
       });
       if (cart) {
@@ -46,7 +46,7 @@ export class WaCartController {
     // Fallback: Si no hay tenantId en los headers o no lo encontró, buscar solo por ID
     // Esto previene que una desincronización de headers rompa el carrito
     if (!cart) {
-      cart = await (this.prisma.secure as any).waCart.findFirst({
+      cart = await (this.prisma as any).waCart.findFirst({
         where: { id: id },
       });
       if (cart) {

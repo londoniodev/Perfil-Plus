@@ -25,12 +25,12 @@ export class CustomerLeadListener {
 
       await this.cls.runWith({ tenantId } as any, async () => {
         // 1. Manejo del Lead
-        const existingLead = await this.prisma.secure.lead.findFirst({
+        const existingLead = await this.prisma.lead.findFirst({
           where: { phone: customerPhone, tenantId },
         });
 
         if (!existingLead) {
-          await this.prisma.secure.lead.create({
+          await this.prisma.lead.create({
             data: {
               tenantId,
               phone: customerPhone,
@@ -42,7 +42,7 @@ export class CustomerLeadListener {
           });
           this.logger.log(`Nuevo Lead creado (Phone: ${customerPhone})`);
         } else if (customerName && !existingLead.name) {
-          await this.prisma.secure.lead.update({
+          await this.prisma.lead.update({
             where: { id: existingLead.id },
             data: { name: customerName },
           });
@@ -51,7 +51,7 @@ export class CustomerLeadListener {
         // 2. Manejo de waCustomer
         if (orderType === 'DELIVERY' || orderType === 'TAKE_AWAY') {
           const shipping = shippingData;
-          await this.prisma.secure.waCustomer.upsert({
+          await this.prisma.waCustomer.upsert({
             where: { tenantId_phone: { tenantId, phone: customerPhone } },
             update: {
               name: customerName || undefined,

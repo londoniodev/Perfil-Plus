@@ -35,7 +35,7 @@ export class WhatsappProcessor {
       // resolviendo el tenant justamente desde un contexto global
       // SECURITY EXCEPTION: Global query to resolve tenantId from phone number before CLS context exists.
       /* eslint-disable no-restricted-syntax */
-      const storeSetting = await this.prisma.storeSettings.findFirst({
+      const storeSetting = await this.prisma.unscoped.storeSettings.findFirst({
         /* eslint-enable no-restricted-syntax */
         where: {
           waPhoneNumberId: phone_number_id,
@@ -61,7 +61,7 @@ export class WhatsappProcessor {
 
       // 2. Ejecución Segura (CLS): Ejecutar lógica dentro del contexto del Tenant
       await this.cls.runWith({ tenantId } as any, async () => {
-        // Todas las queries a this.prisma.secure() a partir de aquí tendrán Row-Level Security!
+        // Todas las queries a this.prisma() a partir de aquí tendrán Row-Level Security!
 
         const message = payload.messages[0];
         const from = message.from; // Número del cliente
@@ -80,7 +80,7 @@ export class WhatsappProcessor {
 
           // Persistir coordenadas en WaCustomer (upsert para manejar cliente nuevo o existente)
           try {
-            await (this.prisma.secure as any).waCustomer.upsert({
+            await (this.prisma as any).waCustomer.upsert({
               where: { tenantId_phone: { tenantId, phone: from } },
               update: { lat: latitude, lng: longitude },
               create: { tenantId, phone: from, lat: latitude, lng: longitude },
@@ -111,7 +111,7 @@ export class WhatsappProcessor {
 
         // 1. Upsert Conversación Activa
         // Buscar conversación abierta, o crear una si no existe
-        let conversation = await this.prisma.secure.waConversation.findFirst({
+        let conversation = await this.prisma.waConversation.findFirst({
           where: {
             customerPhone: from,
             status: 'OPEN',
@@ -122,7 +122,7 @@ export class WhatsappProcessor {
           this.logger.log(
             `[Tenant: ${tenantId}] Creando nueva conversación para el cliente ${from}`,
           );
-          conversation = await this.prisma.secure.waConversation.create({
+          conversation = await this.prisma.waConversation.create({
             data: {
               tenantId,
               customerPhone: from,
@@ -133,7 +133,7 @@ export class WhatsappProcessor {
 
         // 2. Guardar el Mensaje
         // Evitar duplicados (Meta a veces reintenta el mismo mensaje)
-        const existingMessage = await this.prisma.secure.waMessage.findUnique({
+        const existingMessage = await this.prisma.waMessage.findUnique({
           where: { waMessageId: messageId },
         });
 
@@ -144,7 +144,7 @@ export class WhatsappProcessor {
           return; // Ya fue procesado
         }
 
-        await this.prisma.secure.waMessage.create({
+        await this.prisma.waMessage.create({
           data: {
             tenantId,
             conversationId: conversation.id,
@@ -176,7 +176,7 @@ export class WhatsappProcessor {
         );
 
         // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
-        const rawHistory = await (this.prisma.secure as any).waMessage.findMany(
+        const rawHistory = await (this.prisma as any).waMessage.findMany(
           {
             where: { conversationId: conversation.id },
             orderBy: { createdAt: 'desc' },
@@ -214,7 +214,7 @@ export class WhatsappProcessor {
         }
 
         // 7. Guardar Mensaje del Asistente
-        await (this.prisma.secure as any).waMessage.create({
+        await (this.prisma as any).waMessage.create({
           data: {
             tenantId,
             conversationId: conversation.id,

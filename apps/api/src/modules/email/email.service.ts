@@ -48,7 +48,7 @@ export class EmailService {
   private async getFrontendUrl(): Promise<string> {
     // 1. Intentar obtener de la configuración del Tenant (DB)
     try {
-      const setting = await this.prisma.secure.systemSetting.findFirst({
+      const setting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: this.getTenantId(), key: 'FRONTEND_URL' },
       });
       if (typeof setting?.value === 'string') {
@@ -76,7 +76,7 @@ export class EmailService {
     let smtpConfig: SmtpConfig | null = null;
 
     try {
-      const setting = await this.prisma.secure.systemSetting.findFirst({
+      const setting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: this.getTenantId(), key: 'SMTP_CONFIG' },
       });
 

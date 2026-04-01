@@ -114,7 +114,7 @@ export class WhatsappOnboardingService {
         `[Tenant: ${tenantId}] Guardando credenciales de WhatsApp: PhoneID ${waPhoneNumberId}, WabaID ${wabaId}`,
       );
 
-      await (this.prisma.secure as any).storeSettings.upsert({
+      await (this.prisma as any).storeSettings.upsert({
         where: { tenantId },
         update: {
           waAccessToken: longLivedToken,

@@ -10,14 +10,14 @@ export class TablesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(tenantId: string) {
-    return this.prisma.secure.table.findMany({
+    return this.prisma.table.findMany({
       where: { tenantId },
       orderBy: { label: 'asc' },
     });
   }
 
   async findOne(tenantId: string, id: string) {
-    const table = await this.prisma.secure.table.findUnique({
+    const table = await this.prisma.table.findUnique({
       where: { id },
     });
 
@@ -31,7 +31,7 @@ export class TablesService {
   }
 
   async create(tenantId: string, createDto: CreateTableDto) {
-    return this.prisma.secure.table.create({
+    return this.prisma.table.create({
       data: {
         tenantId,
         label: createDto.label,
@@ -45,7 +45,7 @@ export class TablesService {
 
   async update(tenantId: string, id: string, updateDto: UpdateTableDto) {
     // Verificar propiedad the tenant antes the actualizar (Vulnerabilidad IDOR)
-    const existing = await this.prisma.secure.table.findFirst({
+    const existing = await this.prisma.table.findFirst({
       where: { id, tenantId },
     });
 
@@ -55,7 +55,7 @@ export class TablesService {
       );
     }
 
-    return this.prisma.secure.table.update({
+    return this.prisma.table.update({
       where: { id }, // La propiedad está verificada en paso superior
       data: updateDto,
     });
@@ -63,7 +63,7 @@ export class TablesService {
 
   async remove(tenantId: string, id: string) {
     // Prevenir IDOR en el borrado
-    const existing = await this.prisma.secure.table.findFirst({
+    const existing = await this.prisma.table.findFirst({
       where: { id, tenantId },
     });
 
@@ -75,7 +75,7 @@ export class TablesService {
 
     // Comprobar relaciones si existieran. Las Ordenes (`Order`) tienen tableNumber pero no estan atadas a ForeignKey de Table para cascade delete en schema, sino que es un mero string (tableNumber). Así que es seguro borrar la mesa sin romper DB relations.
 
-    await this.prisma.secure.table.delete({
+    await this.prisma.table.delete({
       where: { id },
     });
 

@@ -44,14 +44,14 @@ export class CategoriesService {
   }
 
   async findAll(tenantId: string, type: CategoryType = 'PRODUCT') {
-    return this.prisma.secure.category.findMany({
+    return this.prisma.category.findMany({
       where: { tenantId, type },
       orderBy: { name: 'asc' },
     });
   }
 
   async findOne(tenantId: string, id: string) {
-    const category = await this.prisma.secure.category.findUnique({
+    const category = await this.prisma.category.findUnique({
       where: { id },
     });
 
@@ -75,7 +75,7 @@ export class CategoriesService {
     }
 
     // Verificar unicidad de nombre / slug por tenant Y tipo
-    const existing = await this.prisma.secure.category.findFirst({
+    const existing = await this.prisma.category.findFirst({
       where: {
         tenantId,
         type,
@@ -97,7 +97,7 @@ export class CategoriesService {
       );
     }
 
-    const category = await this.prisma.secure.category.create({
+    const category = await this.prisma.category.create({
       data: {
         tenantId,
         name: createDto.name,
@@ -117,7 +117,7 @@ export class CategoriesService {
     type: CategoryType = 'PRODUCT',
   ) {
     // Verificar que exista y pertenezca al tenant (Prevencion IDOR)
-    const existing = await this.prisma.secure.category.findFirst({
+    const existing = await this.prisma.category.findFirst({
       where: { id, tenantId, type },
     });
 
@@ -131,14 +131,14 @@ export class CategoriesService {
     if (updateDto.name && updateDto.name !== existing.name) {
       slug = slugify(updateDto.name);
 
-      const slugConflict = await this.prisma.secure.category.findFirst({
+      const slugConflict = await this.prisma.category.findFirst({
         where: { tenantId, slug, type, NOT: { id } },
       });
       if (slugConflict)
         throw new BadRequestException('El nombre genera un slug ya en uso.');
     }
 
-    const category = await this.prisma.secure.category.update({
+    const category = await this.prisma.category.update({
       where: { id }, // Ya confirmamos que le pertenece al tenantId arriba. Opcional podria ser un UpdateMany pero Update arroja el error de Unique más rapido y devuelve registro
       data: {
         name: updateDto.name,
@@ -152,7 +152,7 @@ export class CategoriesService {
 
   async remove(tenantId: string, id: string, type: CategoryType = 'PRODUCT') {
     // Prevenir IDOR
-    const existing = await this.prisma.secure.category.findFirst({
+    const existing = await this.prisma.category.findFirst({
       where: { id, tenantId, type },
     });
 
@@ -163,7 +163,7 @@ export class CategoriesService {
     }
 
     // Comprobar Productos Asociados en la tabla Pivot CategoriesOnProducts
-    const productCount = await this.prisma.secure.categoriesOnProducts.count({
+    const productCount = await this.prisma.categoriesOnProducts.count({
       where: { categoryId: id },
     });
 
@@ -174,7 +174,7 @@ export class CategoriesService {
     }
 
     // Permitido borrar
-    await this.prisma.secure.category.delete({
+    await this.prisma.category.delete({
       where: { id },
     });
 

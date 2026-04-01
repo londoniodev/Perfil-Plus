@@ -134,7 +134,7 @@ export class OpenAiProvider implements AiProvider {
               const args = JSON.parse(toolCall.function.arguments);
               const { name, address } = args;
 
-              const customer = await this.prisma.secure.waCustomer.upsert({
+              const customer = await this.prisma.waCustomer.upsert({
                 where: {
                   tenantId_phone: { tenantId, phone: customerPhone || '' },
                 },
@@ -164,7 +164,7 @@ export class OpenAiProvider implements AiProvider {
               `[Tenant: ${tenantId}] OpenAI invocó la herramienta getLatestOrderStatus para ${customerPhone}`,
             );
 
-            const order = await this.prisma.secure.order.findFirst({
+            const order = await this.prisma.order.findFirst({
               where: { customerPhone: customerPhone || '' },
               orderBy: { createdAt: 'desc' },
               select: { status: true, totalAmount: true, updatedAt: true },
@@ -267,7 +267,7 @@ export class OpenAiProvider implements AiProvider {
 
                   // Obtener perfil del cliente para hidratar el checkout
                   const customer =
-                    await this.prisma.secure.waCustomer.findUnique({
+                    await this.prisma.waCustomer.findUnique({
                       where: {
                         tenantId_phone: {
                           tenantId,
@@ -301,7 +301,7 @@ export class OpenAiProvider implements AiProvider {
                   this.logger.log(`[CART_SAVE] TenantID: ${tenantId}`);
 
                   try {
-                    await this.prisma.secure.waCart.create({
+                    await this.prisma.waCart.create({
                       data: {
                         id: cartId,
                         tenantId,
@@ -330,7 +330,7 @@ export class OpenAiProvider implements AiProvider {
 
                   // Generar recibo determinista consultando la DB (deliveryFee)
                   const storeSettings =
-                    await this.prisma.secure.storeSettings.findFirst({
+                    await this.prisma.storeSettings.findFirst({
                       where: { tenantId },
                     });
                   const deliveryFee = Number(storeSettings?.deliveryFee || 0);

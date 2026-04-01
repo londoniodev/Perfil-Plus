@@ -262,7 +262,7 @@ export class TenantService {
     let tenant: any = null;
 
     // Buscar simultáneamente por ID (CUID) o Slug
-    tenant = await this.prisma.secure.tenant.findFirst({
+    tenant = await this.prisma.tenant.findFirst({
       where: {
         OR: [{ id: tenantId }, { slug: tenantId }],
       },
@@ -278,16 +278,16 @@ export class TenantService {
     });
 
     if (tenant) {
-      const menuSetting = await this.prisma.secure.systemSetting.findFirst({
+      const menuSetting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'menu' },
       });
-      const whatsappSetting = await this.prisma.secure.systemSetting.findFirst({
+      const whatsappSetting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'whatsapp' },
       });
-      const smtpSetting = await this.prisma.secure.systemSetting.findFirst({
+      const smtpSetting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'smtp' },
       });
-      const storeSettings = await this.prisma.secure.storeSettings.findFirst({
+      const storeSettings = await this.prisma.storeSettings.findFirst({
         where: { tenantId: tenant.id },
         select: { activePaymentProvider: true },
       });
@@ -336,7 +336,7 @@ export class TenantService {
     let tenant: any = null;
 
     // Buscar unificadamente por ID o Slug
-    tenant = await this.prisma.secure.tenant.findFirst({
+    tenant = await this.prisma.tenant.findFirst({
       where: {
         OR: [{ id: tenantId }, { slug: tenantId }],
       },
@@ -395,7 +395,7 @@ export class TenantService {
       : lowercaseDomain;
 
     try {
-      tenant = await this.prisma.secure.tenant.findFirst({
+      tenant = await this.prisma.tenant.findFirst({
         where: {
           OR: [
             { domain: lowercaseDomain },
@@ -419,7 +419,7 @@ export class TenantService {
     if (!tenant) {
       // Fallback a búsqueda parcial
       try {
-        tenant = await this.prisma.secure.tenant.findFirst({
+        tenant = await this.prisma.tenant.findFirst({
           where: {
             OR: [
               { slug: { contains: domain, mode: 'insensitive' } },
@@ -464,7 +464,7 @@ export class TenantService {
     // Leer custom links del tenant desde SystemSetting(key='menu') — Usamos .raw para bypass inicial
     let customLinks: { label: string; href: string }[] = [];
     try {
-      const menuSetting = await this.prisma.raw.systemSetting.findFirst({
+      const menuSetting = await this.prisma.unscoped.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'menu' },
       });
       const menuData = (menuSetting?.value as any) || {};
@@ -475,7 +475,7 @@ export class TenantService {
       } else {
         // Fallback defensivo a la clave legacy customLinks si no existe el objeto menu estructurado
         const legacyLinksSetting =
-          await this.prisma.raw.systemSetting.findFirst({
+          await this.prisma.unscoped.systemSetting.findFirst({
             where: { tenantId: tenant.id, key: 'customLinks' },
           });
         if (legacyLinksSetting && Array.isArray(legacyLinksSetting.value)) {
@@ -515,7 +515,7 @@ export class TenantService {
     const metaTitle = design.metaTitle || null;
     const metaDescription = design.metaDescription || null;
 
-    const updatedSettings = await this.prisma.secure.brandSettings.upsert({
+    const updatedSettings = await this.prisma.brandSettings.upsert({
       where: { tenantId },
       create: {
         tenantId,
@@ -597,7 +597,7 @@ export class TenantService {
   }
 
   async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
-    const updated = await this.prisma.secure.brandSettings.upsert({
+    const updated = await this.prisma.brandSettings.upsert({
       where: { tenantId },
       create: {
         tenantId,
@@ -620,7 +620,7 @@ export class TenantService {
   }
 
   async findAll() {
-    return this.prisma.raw.tenant.findMany({
+    return this.prisma.unscoped.tenant.findMany({
       orderBy: {
         createdAt: 'desc',
       },
@@ -628,7 +628,7 @@ export class TenantService {
   }
 
   async getSettings(idOrSlug: string) {
-    const tenant = await this.prisma.secure.tenant.findFirst({
+    const tenant = await this.prisma.tenant.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
@@ -642,7 +642,7 @@ export class TenantService {
   }
 
   async updateSettings(idOrSlug: string, dto: any) {
-    const tenant = await this.prisma.secure.tenant.findFirst({
+    const tenant = await this.prisma.tenant.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
@@ -663,7 +663,7 @@ export class TenantService {
    */
   async updateFeatures(tenantIdOrSlug: string, features: string[]) {
     // 1. Verificar que el tenant existe buscando por ID o Slug (Contexto Global)
-    const tenant = await this.prisma.raw.tenant.findFirst({
+    const tenant = await this.prisma.unscoped.tenant.findFirst({
       where: {
         OR: [{ id: tenantIdOrSlug }, { slug: tenantIdOrSlug }],
       },
@@ -683,7 +683,7 @@ export class TenantService {
       new Set([...features.map((f) => f.toUpperCase()), 'DASHBOARD']),
     );
 
-    const updated = await this.prisma.raw.tenant.update({
+    const updated = await this.prisma.unscoped.tenant.update({
       where: { id: tenant.id },
       data: { features: normalizedFeatures },
       select: { id: true, slug: true, features: true },
@@ -769,7 +769,7 @@ export class TenantService {
     }
 
     // Obtener todos los tenants para construir las claves a purgar
-    const tenants = await this.prisma.raw.tenant.findMany({
+    const tenants = await this.prisma.unscoped.tenant.findMany({
       select: { slug: true, domain: true },
     });
 
@@ -815,7 +815,7 @@ export class TenantService {
   }
 
   async getTenantByIdOrSlug(idOrSlug: string, requestTenantId?: string) {
-    const tenant = await this.prisma.raw.tenant.findFirst({
+    const tenant = await this.prisma.unscoped.tenant.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },

@@ -29,7 +29,7 @@ export class EmployeesService {
     }
 
     // Verificar email duplicado
-    const existing = await this.prisma.secure.user.findFirst({
+    const existing = await this.prisma.user.findFirst({
       where: { tenantId, email: dto.email.toLowerCase() },
     });
 
@@ -40,7 +40,7 @@ export class EmployeesService {
     // Hash de contraseña
     const hashedPassword = await bcrypt.hash(dto.password, 12);
 
-    const employee = await this.prisma.secure.user.create({
+    const employee = await this.prisma.user.create({
       data: {
         tenantId,
         email: dto.email.toLowerCase(),
@@ -64,7 +64,7 @@ export class EmployeesService {
   }
 
   async findAll(tenantId: string) {
-    const users = await this.prisma.secure.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
         tenantId,
         role: { in: STAFF_ROLES },
@@ -89,7 +89,7 @@ export class EmployeesService {
   }
 
   async findOne(id: string, tenantId: string) {
-    const employee = await this.prisma.secure.user.findFirst({
+    const employee = await this.prisma.user.findFirst({
       where: { id, tenantId },
       select: {
         id: true,
@@ -124,7 +124,7 @@ export class EmployeesService {
       );
     }
 
-    const updated = await this.prisma.secure.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: {
         ...(dto.name && { name: dto.name }),
@@ -148,7 +148,7 @@ export class EmployeesService {
     // Verificar que existe y es staff
     await this.findOne(id, tenantId);
 
-    await this.prisma.secure.user.delete({
+    await this.prisma.user.delete({
       where: { id },
     });
 

@@ -12,12 +12,12 @@ export class SettingsService {
    * Obtiene todas las configuraciones del sistema/tienda de un tenant en un objeto colapsado
    */
   async getTenantConfig(tenantId: string) {
-    const tenant = await this.prisma.secure.tenant.findUnique({
+    const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { name: true, slug: true }, // heroImage removed because it's not in schema
     });
 
-    const settings = await this.prisma.secure.systemSetting.findMany({
+    const settings = await this.prisma.systemSetting.findMany({
       where: {
         tenantId,
         isPublic: true,
@@ -31,13 +31,13 @@ export class SettingsService {
     }, {});
 
     // Obtener BrandSettings (Colores y Apariencia)
-    const brandSettings = await this.prisma.secure.brandSettings.findUnique({
+    const brandSettings = await this.prisma.brandSettings.findUnique({
       where: { tenantId },
     });
 
     // Obtener StoreSettings para incluir campos específicos
     const storeSettings = await (
-      this.prisma.secure as any
+      this.prisma as any
     ).storeSettings.findFirst({
       where: { tenantId },
     });
@@ -125,7 +125,7 @@ export class SettingsService {
         );
       })
       .map(([key, value]) => {
-        return this.prisma.secure.systemSetting.upsert({
+        return this.prisma.systemSetting.upsert({
           where: {
             tenantId_key: {
               tenantId,
@@ -159,7 +159,7 @@ export class SettingsService {
       // if (updateDto.hero_image !== undefined) dataToUpdate.heroImage = updateDto.hero_image;
 
       if (Object.keys(dataToUpdate).length > 0) {
-        await this.prisma.secure.tenant.update({
+        await this.prisma.tenant.update({
           where: { id: tenantId },
           data: dataToUpdate,
         });
@@ -173,7 +173,7 @@ export class SettingsService {
       updateDto.secondary_color ||
       updateDto.hero_image !== undefined
     ) {
-      await this.prisma.secure.brandSettings.upsert({
+      await this.prisma.brandSettings.upsert({
         where: { tenantId },
         update: {
           primaryColor: updateDto.primary_color,
@@ -204,7 +204,7 @@ export class SettingsService {
       updateDto.businessHours !== undefined
     ) {
       const storeSettings = await (
-        this.prisma.secure as any
+        this.prisma as any
       ).storeSettings.findFirst({
         where: { tenantId },
       });
@@ -220,7 +220,7 @@ export class SettingsService {
           : undefined;
 
       if (storeSettings) {
-        await (this.prisma.secure as any).storeSettings.update({
+        await (this.prisma as any).storeSettings.update({
           where: { id: storeSettings.id },
           data: {
             mpPublicKey: updateDto.mp_public_key,
@@ -240,7 +240,7 @@ export class SettingsService {
           },
         });
       } else {
-        await (this.prisma.secure as any).storeSettings.create({
+        await (this.prisma as any).storeSettings.create({
           data: {
             tenantId,
             mpPublicKey: updateDto.mp_public_key,

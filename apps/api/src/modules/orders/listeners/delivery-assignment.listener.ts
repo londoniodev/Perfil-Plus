@@ -24,7 +24,7 @@ export class DeliveryAssignmentListener {
       if (newStatus !== 'READY') return;
 
       await this.cls.runWith({ tenantId } as any, async () => {
-        const order = await this.prisma.secure.order.findUnique({
+        const order = await this.prisma.order.findUnique({
           where: { id: orderId },
         });
 

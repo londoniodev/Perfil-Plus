@@ -25,13 +25,13 @@ export class RecipesService {
   async create(dto: CreateRecipeDto) {
     const tenantId = this.getTenantId();
     // Verify product exists and belongs to tenant
-    const product = await this.prisma.secure.product.findFirst({
+    const product = await this.prisma.product.findFirst({
       where: { id: dto.productId, tenantId },
     });
     if (!product) throw new NotFoundException('Producto no encontrado');
 
     // Verify no existing recipe for this product
-    const existing = await this.prisma.secure.recipe.findUnique({
+    const existing = await this.prisma.recipe.findUnique({
       where: { productId: dto.productId },
     });
     if (existing) {
@@ -42,7 +42,7 @@ export class RecipesService {
 
     // Verify all ingredients exist
     const ingredientIds = dto.ingredients.map((i) => i.inventoryItemId);
-    const items = await this.prisma.secure.inventoryItem.findMany({
+    const items = await this.prisma.inventoryItem.findMany({
       where: { id: { in: ingredientIds }, tenantId },
     });
     if (items.length !== ingredientIds.length) {
@@ -51,7 +51,7 @@ export class RecipesService {
       );
     }
 
-    return this.prisma.secure.recipe.create({
+    return this.prisma.recipe.create({
       data: {
         tenantId,
         productId: dto.productId,
@@ -80,7 +80,7 @@ export class RecipesService {
   }
 
   async findAll() {
-    return this.prisma.secure.recipe.findMany({
+    return this.prisma.recipe.findMany({
       include: {
         product: {
           select: { id: true, name: true, basePrice: true, images: true },
@@ -98,7 +98,7 @@ export class RecipesService {
   }
 
   async findOne(id: string) {
-    const recipe = await this.prisma.secure.recipe.findFirst({
+    const recipe = await this.prisma.recipe.findFirst({
       where: { id },
       include: {
         product: {
@@ -118,7 +118,7 @@ export class RecipesService {
   }
 
   async findByProduct(productId: string) {
-    return this.prisma.secure.recipe.findFirst({
+    return this.prisma.recipe.findFirst({
       where: { productId },
       include: {
         product: { select: { id: true, name: true, basePrice: true } },
@@ -134,13 +134,13 @@ export class RecipesService {
   }
 
   async update(id: string, dto: UpdateRecipeDto) {
-    const recipe = await this.prisma.secure.recipe.findFirst({
+    const recipe = await this.prisma.recipe.findFirst({
       where: { id },
     });
     if (!recipe) throw new NotFoundException('Receta no encontrada');
 
     // ✅ secure.$transaction — el tx interno propaga el contexto de tenant automáticamente
-    return this.prisma.secure.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       await tx.recipe.update({
         where: { id },
         data: { yield: dto.yield, notes: dto.notes },
@@ -187,17 +187,17 @@ export class RecipesService {
   }
 
   async delete(id: string) {
-    const recipe = await this.prisma.secure.recipe.findFirst({
+    const recipe = await this.prisma.recipe.findFirst({
       where: { id },
     });
     if (!recipe) throw new NotFoundException('Receta no encontrada');
 
-    return this.prisma.secure.recipe.delete({ where: { id } });
+    return this.prisma.recipe.delete({ where: { id } });
   }
 
   // Products without a recipe (for UI selection)
   async getProductsWithoutRecipe() {
-    return this.prisma.secure.product.findMany({
+    return this.prisma.product.findMany({
       where: {
         productType: 'RESTAURANT',
         recipe: null,

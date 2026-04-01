@@ -32,7 +32,7 @@ export class OrderAnalyticsListener {
 
       // Important: Since this is background, CLS might not have context. We must use simple queries.
       await this.cls.runWith({ tenantId: event.tenantId } as any, async () => {
-        await this.prisma.secure.orderDeliveryAnalytics.upsert({
+        await this.prisma.orderDeliveryAnalytics.upsert({
           where: { orderId: order.id },
           create: analyticsData,
           update: analyticsData,
@@ -55,7 +55,7 @@ export class OrderAnalyticsListener {
 
       await this.cls.runWith({ tenantId: event.tenantId } as any, async () => {
         const record =
-          await this.prisma.secure.orderDeliveryAnalytics.findUnique({
+          await this.prisma.orderDeliveryAnalytics.findUnique({
             where: { orderId: event.orderId },
           });
         if (!record) return;
@@ -108,7 +108,7 @@ export class OrderAnalyticsListener {
         }
 
         if (Object.keys(updates).length > 0) {
-          await this.prisma.secure.orderDeliveryAnalytics.update({
+          await this.prisma.orderDeliveryAnalytics.update({
             where: { id: record.id },
             data: updates,
           });

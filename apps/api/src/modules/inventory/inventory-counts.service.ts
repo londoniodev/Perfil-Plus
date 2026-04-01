@@ -29,13 +29,13 @@ export class InventoryCountsService {
   async create(userId: string, dto: CreateInventoryCountDto) {
     const tenantId = this.getTenantId();
     // Verify warehouse
-    const warehouse = await this.prisma.secure.warehouse.findFirst({
+    const warehouse = await this.prisma.warehouse.findFirst({
       where: { id: dto.warehouseId },
     });
     if (!warehouse) throw new NotFoundException('Almacén no encontrado');
 
     // Get all active inventory items and their current stock in this warehouse
-    const items = await this.prisma.secure.inventoryItem.findMany({
+    const items = await this.prisma.inventoryItem.findMany({
       where: { isActive: true },
       include: {
         stock: {
@@ -46,7 +46,7 @@ export class InventoryCountsService {
     });
 
     // Create count with pre-populated lines (system stock snapshot)
-    return this.prisma.secure.inventoryCount.create({
+    return this.prisma.inventoryCount.create({
       data: {
         tenantId: this.getTenantId(),
         warehouseId: dto.warehouseId,
@@ -73,7 +73,7 @@ export class InventoryCountsService {
   }
 
   async findAll() {
-    return this.prisma.secure.inventoryCount.findMany({
+    return this.prisma.inventoryCount.findMany({
       include: {
         warehouse: { select: { id: true, name: true } },
         _count: { select: { lines: true } },
@@ -83,7 +83,7 @@ export class InventoryCountsService {
   }
 
   async findOne(id: string) {
-    const count = await this.prisma.secure.inventoryCount.findFirst({
+    const count = await this.prisma.inventoryCount.findFirst({
       where: { id },
       include: {
         warehouse: { select: { id: true, name: true } },
@@ -101,7 +101,7 @@ export class InventoryCountsService {
 
   async complete(id: string, userId: string, dto: CompleteInventoryCountDto) {
     const tenantId = this.getTenantId();
-    const count = await this.prisma.secure.inventoryCount.findFirst({
+    const count = await this.prisma.inventoryCount.findFirst({
       where: { id, status: CountStatus.DRAFT },
       include: { lines: true },
     });
@@ -109,7 +109,7 @@ export class InventoryCountsService {
       throw new NotFoundException('Conteo no encontrado o ya fue completado');
     }
 
-    return this.prisma.secure.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       /* eslint-disable no-restricted-syntax */
       const expectedCountsRaw = await this.prisma.$queryRaw<
         { inventoryItemId: string; currentStock: number }[]
@@ -218,13 +218,13 @@ export class InventoryCountsService {
   }
 
   async delete(id: string) {
-    const count = await this.prisma.secure.inventoryCount.findFirst({
+    const count = await this.prisma.inventoryCount.findFirst({
       where: { id, status: CountStatus.DRAFT },
     });
     if (!count) {
       throw new NotFoundException('Conteo no encontrado o ya fue completado');
     }
 
-    return this.prisma.secure.inventoryCount.delete({ where: { id } });
+    return this.prisma.inventoryCount.delete({ where: { id } });
   }
 }

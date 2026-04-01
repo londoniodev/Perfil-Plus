@@ -31,7 +31,7 @@ export class WaCartCronService {
       // SECURITY BYPASS: Este es un CRON global de mantenimiento del sistema.
       // Debe limpiar carritos expirados de TODOS los inquilinos, por lo que usamos el cliente 'raw'.
       /* eslint-disable no-restricted-syntax */
-      const result = await this.prisma.raw.waCart.deleteMany({
+      const result = await this.prisma.unscoped.waCart.deleteMany({
         where: {
           expiresAt: {
             lt: cutOffDate,

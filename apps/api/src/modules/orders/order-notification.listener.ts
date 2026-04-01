@@ -42,7 +42,7 @@ export class OrderNotificationListener {
       // Buscar si este teléfono es de una conversación de WhatsApp activa
       let storeSetting;
       await this.cls.runWith({ tenantId } as any, async () => {
-        storeSetting = await this.prisma.secure.storeSettings.findFirst({
+        storeSetting = await this.prisma.storeSettings.findFirst({
           select: { waPhoneNumberId: true },
         });
       });

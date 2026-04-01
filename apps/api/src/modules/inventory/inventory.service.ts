@@ -37,13 +37,13 @@ export class InventoryService {
   // ✅ tenantId eliminado de todas las firmas públicas — .secure lo inyecta
   async createWarehouse(dto: CreateWarehouseDto) {
     if (dto.isDefault) {
-      await this.prisma.secure.warehouse.updateMany({
+      await this.prisma.warehouse.updateMany({
         where: { isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    return this.prisma.secure.warehouse.create({
+    return this.prisma.warehouse.create({
       data: {
         tenantId: this.getTenantId(),
         name: dto.name,
@@ -53,19 +53,19 @@ export class InventoryService {
   }
 
   async findAllWarehouses() {
-    return this.prisma.secure.warehouse.findMany({
+    return this.prisma.warehouse.findMany({
       orderBy: [{ isDefault: 'desc' }, { name: 'asc' }],
       include: { _count: { select: { stock: true } } },
     });
   }
 
   async getDefaultWarehouse() {
-    let warehouse = await this.prisma.secure.warehouse.findFirst({
+    let warehouse = await this.prisma.warehouse.findFirst({
       where: { isDefault: true },
     });
 
     if (!warehouse) {
-      warehouse = await this.prisma.secure.warehouse.create({
+      warehouse = await this.prisma.warehouse.create({
         data: {
           tenantId: this.getTenantId(),
           name: 'Cocina Principal',
@@ -81,26 +81,26 @@ export class InventoryService {
   }
 
   async updateWarehouse(id: string, dto: CreateWarehouseDto) {
-    const warehouse = await this.prisma.secure.warehouse.findUnique({
+    const warehouse = await this.prisma.warehouse.findUnique({
       where: { id },
     });
     if (!warehouse) throw new NotFoundException('Almacén no encontrado');
 
     if (dto.isDefault) {
-      await this.prisma.secure.warehouse.updateMany({
+      await this.prisma.warehouse.updateMany({
         where: { isDefault: true, id: { not: id } },
         data: { isDefault: false },
       });
     }
 
-    return this.prisma.secure.warehouse.update({
+    return this.prisma.warehouse.update({
       where: { id },
       data: { name: dto.name, isDefault: dto.isDefault },
     });
   }
 
   async deleteWarehouse(id: string) {
-    const warehouse = await this.prisma.secure.warehouse.findUnique({
+    const warehouse = await this.prisma.warehouse.findUnique({
       where: { id },
       include: { _count: { select: { stock: true, movements: true } } },
     });
@@ -116,7 +116,7 @@ export class InventoryService {
       );
     }
 
-    return this.prisma.secure.warehouse.delete({ where: { id } });
+    return this.prisma.warehouse.delete({ where: { id } });
   }
 
   // ================================================================
@@ -124,7 +124,7 @@ export class InventoryService {
   // ================================================================
 
   async createItem(dto: CreateInventoryItemDto) {
-    return this.prisma.secure.inventoryItem.create({
+    return this.prisma.inventoryItem.create({
       data: {
         tenantId: this.getTenantId(),
         name: dto.name,
@@ -137,7 +137,7 @@ export class InventoryService {
   }
 
   async findAllItems(includeInactive = false, take = 100, skip = 0) {
-    return this.prisma.secure.inventoryItem.findMany({
+    return this.prisma.inventoryItem.findMany({
       where: { ...(includeInactive ? {} : { isActive: true }) },
       include: {
         stock: {
@@ -151,7 +151,7 @@ export class InventoryService {
   }
 
   async findOneItem(id: string) {
-    const item = await this.prisma.secure.inventoryItem.findUnique({
+    const item = await this.prisma.inventoryItem.findUnique({
       where: { id },
       include: {
         stock: {
@@ -169,12 +169,12 @@ export class InventoryService {
   }
 
   async updateItem(id: string, dto: UpdateInventoryItemDto) {
-    const item = await this.prisma.secure.inventoryItem.findUnique({
+    const item = await this.prisma.inventoryItem.findUnique({
       where: { id },
     });
     if (!item) throw new NotFoundException('Ingrediente no encontrado');
 
-    return this.prisma.secure.inventoryItem.update({
+    return this.prisma.inventoryItem.update({
       where: { id },
       data: {
         ...(dto.name !== undefined ? { name: dto.name } : {}),
@@ -187,7 +187,7 @@ export class InventoryService {
   }
 
   async deleteItem(id: string) {
-    const item = await this.prisma.secure.inventoryItem.findUnique({
+    const item = await this.prisma.inventoryItem.findUnique({
       where: { id },
       include: {
         stock: { where: { currentStock: { gt: 0 } } },
@@ -201,7 +201,7 @@ export class InventoryService {
       );
     }
 
-    return this.prisma.secure.inventoryItem.update({
+    return this.prisma.inventoryItem.update({
       where: { id },
       data: { isActive: false },
     });
@@ -213,7 +213,7 @@ export class InventoryService {
 
   async addStockEntry(userId: string, dto: StockEntryDto) {
     // ✅ secure.$transaction — propaga tenant context al tx interno
-    return this.prisma.secure.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const item = await tx.inventoryItem.findUnique({
         where: { id: dto.inventoryItemId },
       });
@@ -271,7 +271,7 @@ export class InventoryService {
   }
 
   async addStockExit(userId: string, dto: StockExitDto) {
-    return this.prisma.secure.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const item = await tx.inventoryItem.findUnique({
         where: { id: dto.inventoryItemId },
       });
@@ -331,7 +331,7 @@ export class InventoryService {
       );
     }
 
-    return this.prisma.secure.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const item = await tx.inventoryItem.findUnique({
         where: { id: dto.inventoryItemId },
       });
@@ -418,7 +418,7 @@ export class InventoryService {
   ) {
     const tenantId = this.getTenantId();
     // Usar el tx seguro si viene de una transacción, o el cliente secure propio
-    const prismaClient = tx || this.prisma.secure;
+    const prismaClient = tx || this.prisma;
     const defaultWarehouse = await this.getDefaultWarehouseId(prismaClient);
 
     const productIds = items.map((i) => i.productId);
@@ -587,7 +587,7 @@ export class InventoryService {
 
   async restoreByOrder(orderId: string, tx?: any) {
     const tenantId = this.getTenantId();
-    const prismaClient = tx || this.prisma.secure;
+    const prismaClient = tx || this.prisma;
 
     const movements = await prismaClient.inventoryMovement.findMany({
       where: { reference: orderId, type: MovementType.SALE },
@@ -672,7 +672,7 @@ export class InventoryService {
   // ================================================================
 
   async getRecipeCost(productId: string) {
-    const recipe = await this.prisma.secure.recipe.findUnique({
+    const recipe = await this.prisma.recipe.findUnique({
       where: { productId },
       select: { id: true, yield: true },
     });

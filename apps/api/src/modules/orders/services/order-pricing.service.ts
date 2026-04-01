@@ -32,14 +32,14 @@ export interface CalculatedOrderItems {
 export class OrderPricingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ✅ tenantId eliminado de la firma — this.prisma.secure inyecta el contexto automáticamente
+  // ✅ tenantId eliminado de la firma — this.prisma inyecta el contexto automáticamente
   async calculate(items: CreateOrderItemDto[]): Promise<CalculatedOrderItems> {
     let totalAmount = new Decimal(0);
     const orderItemsData: any[] = [];
 
     // Pre-fetch all variants to avoid N+1 queries
     const variantIds = items.map((i) => i.variantId);
-    const variants = await this.prisma.secure.productVariant.findMany({
+    const variants = await this.prisma.productVariant.findMany({
       where: { id: { in: variantIds } },
       include: {
         product: {
@@ -57,7 +57,7 @@ export class OrderPricingService {
     let fallbackModifierMap = new Map();
 
     if (allModifierIds.length > 0) {
-      const fallbackModifiers = await this.prisma.secure.modifier.findMany({
+      const fallbackModifiers = await this.prisma.modifier.findMany({
         where: { id: { in: allModifierIds } },
       });
       fallbackModifierMap = new Map(fallbackModifiers.map((m) => [m.id, m]));

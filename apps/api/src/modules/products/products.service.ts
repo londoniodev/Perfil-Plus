@@ -59,13 +59,13 @@ export class ProductsService {
   };
 
   // ============ CREAR PRODUCTO ============
-  // ✅ tenantId es inyectado automáticamente por this.prisma.secure
+  // ✅ tenantId es inyectado automáticamente por this.prisma
   async create(data: CreateProductDto) {
     const { sku, stock, modifierGroups, categories, variants, ...productData } =
       data;
 
     // Validar slug único en el contexto del tenant actual (inyectado automáticamente por .secure)
-    const existing = await this.prisma.secure.product.findFirst({
+    const existing = await this.prisma.product.findFirst({
       where: { slug: data.slug },
     });
 
@@ -73,9 +73,9 @@ export class ProductsService {
       throw new BadRequestException('El slug del producto ya existe');
     }
 
-    // ✅ Usamos this.prisma.secure.$transaction para que el cliente `tx`
+    // ✅ Usamos this.prisma.$transaction para que el cliente `tx`
     // interno propague el contexto de tenant automáticamente.
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
           tenantId: this.cls.get('tenantId'),
@@ -176,7 +176,7 @@ export class ProductsService {
 
   // ============ ACTUALIZAR PRODUCTO ============
   async update(id: string, data: CreateProductDto) {
-    const existing = await this.prisma.secure.product.findUnique({
+    const existing = await this.prisma.product.findUnique({
       where: { id },
     });
 
@@ -186,7 +186,7 @@ export class ProductsService {
 
     const { sku, stock, modifierGroups, categories, variants, ...productData } = data;
 
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       await tx.product.update({
         where: { id },
         data: {
@@ -333,7 +333,7 @@ export class ProductsService {
 
   // ============ ACTUALIZAR DISPONIBILIDAD ============
   async updateAvailability(id: string, isAvailable: boolean) {
-    const existing = await this.prisma.secure.product.findUnique({
+    const existing = await this.prisma.product.findUnique({
       where: { id },
     });
 
@@ -341,7 +341,7 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado en este tenant');
     }
 
-    const result = await this.prisma.secure.product.update({
+    const result = await this.prisma.product.update({
       where: { id },
       data: { isAvailable },
     });
@@ -353,13 +353,13 @@ export class ProductsService {
   // ============ DESCARGAS DIGITALES ============
   async getProductDownloadUrl(productId: string, userId: string) {
     // 1. Verificar suscripción activa
-    const subscription = await this.prisma.secure.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { userId },
     });
 
     if (subscription?.status !== 'ACTIVE') {
       // 2. Verificar compra
-      const hasPurchased = await this.prisma.secure.order.findFirst({
+      const hasPurchased = await this.prisma.order.findFirst({
         where: {
           userId,
           status: { in: ['APPROVED', 'DELIVERED', 'SHIPPED', 'PROCESSING'] },
@@ -374,7 +374,7 @@ export class ProductsService {
       // Fallback tabla Purchase deprecada
       const hasLegacyPurchase =
         !hasPurchased &&
-        (await this.prisma.secure.purchase.findFirst({
+        (await this.prisma.purchase.findFirst({
           where: { userId, status: 'approved', productId },
         }));
 
@@ -386,7 +386,7 @@ export class ProductsService {
     }
 
     // 3. Obtener URL del archivo
-    const product = await this.prisma.secure.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id: productId },
       select: { digitalFileUrl: true, productType: true },
     });
@@ -412,7 +412,7 @@ export class ProductsService {
   // ============ QUERIES ============
   async getLiveStatus() {
     const tenantId = this.cls.get('tenantId');
-    const products = await this.prisma.secure.product.findMany({
+    const products = await this.prisma.product.findMany({
       where: { published: true },
       select: {
         id: true,
@@ -433,7 +433,7 @@ export class ProductsService {
   }
 
   async findAllAdmin() {
-    return await this.prisma.secure.product.findMany({
+    return await this.prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         variants: true,
@@ -456,7 +456,7 @@ export class ProductsService {
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
 
-    const result = await this.prisma.secure.product.findMany({
+    const result = await this.prisma.product.findMany({
       where: {
         published: true,
         ...(type ? { productType: type } : {}),
@@ -483,7 +483,7 @@ export class ProductsService {
   }
 
   async findOnePublished(slug: string) {
-    const product = await this.prisma.secure.product.findFirst({
+    const product = await this.prisma.product.findFirst({
       where: { slug },
       include: {
         variants: true,
@@ -500,7 +500,7 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const product = await this.prisma.secure.product.findFirst({
+    const product = await this.prisma.product.findFirst({
       where: { id },
       include: {
         variants: true,
@@ -514,7 +514,7 @@ export class ProductsService {
 
   // ============ ELIMINAR PRODUCTO ============
   async remove(id: string) {
-    const existing = await this.prisma.secure.product.findUnique({
+    const existing = await this.prisma.product.findUnique({
       where: { id },
     });
 
@@ -522,7 +522,7 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado en este tenant');
     }
 
-    return await this.prisma.secure.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       const mGroups = await tx.modifierGroup.findMany({
         where: { productId: id },
         select: { id: true, modifiers: { select: { id: true } } },

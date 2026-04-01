@@ -16,7 +16,7 @@ export class MetaApiService {
     text: string,
   ): Promise<boolean> {
     try {
-      const settings = await this.prisma.secure.storeSettings.findFirst();
+      const settings = await this.prisma.storeSettings.findFirst();
       const accessToken = (settings as any)?.waAccessToken;
 
       if (!accessToken) {
@@ -76,7 +76,7 @@ export class MetaApiService {
     ctaUrl: string,
   ): Promise<boolean> {
     try {
-      const settings = await this.prisma.secure.storeSettings.findFirst();
+      const settings = await this.prisma.storeSettings.findFirst();
       const accessToken = (settings as any)?.waAccessToken;
 
       if (!accessToken) {

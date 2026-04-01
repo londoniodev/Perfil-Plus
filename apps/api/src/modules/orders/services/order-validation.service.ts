@@ -38,7 +38,7 @@ export class OrderValidationService {
 
   async validateRestaurantAvailability(tenantId: string) {
     const storeSettings = await (
-      this.prisma.secure as any
+      this.prisma as any
     ).storeSettings.findFirst({
       where: { tenantId },
       select: { businessHours: true },

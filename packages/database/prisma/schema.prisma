@@ -894,6 +894,7 @@ model BrandSettings {
   metaDescription String? @db.VarChar(160)
   authBgUrl      String?
   authQuote      String?
+  theme          String?    @default("system")
   tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 

@@ -360,6 +360,31 @@ export const BrandingForm = forwardRef<any, BrandingFormProps>(({ defaultValues 
                                         </FormItem>
                                     )}
                                 />
+
+                                {/* Tema / Modo */}
+                                <FormField
+                                    control={form.control}
+                                    name="mode"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tema Predeterminado</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger aria-label="Seleccionar tema">
+                                                        <SelectValue placeholder="Tema" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="system">Sistema (Auto)</SelectItem>
+                                                    <SelectItem value="light">Claro</SelectItem>
+                                                    <SelectItem value="dark">Oscuro</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>Forzar modo visual para todos los usuarios.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
 
                             <Separator />

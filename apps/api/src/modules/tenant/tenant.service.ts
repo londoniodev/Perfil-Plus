@@ -512,6 +512,7 @@ export class TenantService {
     const tagline = design.tagline || null;
     const authBgUrl = design.authBgUrl || null;
     const authQuote = design.authQuote || null;
+    const theme = design.mode || design.theme || 'system';
     const metaTitle = design.metaTitle || null;
     const metaDescription = design.metaDescription || null;
 
@@ -529,6 +530,7 @@ export class TenantService {
         tagline,
         authBgUrl,
         authQuote,
+        theme,
         metaTitle,
         metaDescription,
       },
@@ -543,6 +545,7 @@ export class TenantService {
         tagline,
         authBgUrl,
         authQuote,
+        theme,
         metaTitle,
         metaDescription,
       },

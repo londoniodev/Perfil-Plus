@@ -9,14 +9,20 @@ import {
     SidebarProvider,
     BrandProvider,
     ToastProvider,
-    getFontVariables
+    getFontVariables,
+    generateBrandingCSS
 } from "@alvarosky/ui";
 import { serverFetch } from "@/lib/api-server";
 
 // --- Server Side Data Fetching ---
 async function getTenantData() {
     try {
-        const data = await serverFetch<any>('/tenant/branding');
+        const data = await serverFetch<any>('/tenant/branding', {
+            cache: 'force-cache',
+            next: {
+                tags: ['tenant-branding-slug', 'tenant-resolve-slug']
+            }
+        });
         return {
             name: data?.name || null,
             features: data?.features || [],
@@ -87,24 +93,43 @@ export default async function DashboardLayout({
         return lower as FeatureKey;
     }).filter((f: string): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
 
+    // --- Branding & Theme Logic (SSR Anti-FOUC) ---
+    const brandingSettings = {
+        primary: brandSettings?.primaryColor || design?.colors?.primary || "zinc",
+        radius: brandSettings?.borderRadius ?? design?.radius ?? 0.5,
+        mode: brandSettings?.theme || brandSettings?.layoutType as any, // Admin preference
+        ...design,
+    };
+
+    // 1. Theme Priority: Admin > Cookie > Default ('dark')
+    const cookieTheme = cookieStore.get("theme")?.value;
+    const initialTheme = brandingSettings.mode || cookieTheme || "dark";
+
+    // 2. Generate CSS Variables SSR
+    const serverSideStyles = generateBrandingCSS(brandingSettings);
+
     return (
-        <html lang="es" suppressHydrationWarning>
+        <html lang="es" className={initialTheme} suppressHydrationWarning>
             <head>
                 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
                 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+                <style 
+                    id="server-side-branding" 
+                    dangerouslySetInnerHTML={{ __html: serverSideStyles }} 
+                />
             </head>
             <body className={`${getFontVariables()} font-sans antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="dark"
                     enableSystem={false}
+                    forcedTheme={brandingSettings.mode} // Prevent client overwrite if admin forced it
                 >
                     <AuthProvider>
                         <DashboardProvider>
                             <BrandProvider settings={{
-                                primary: brandSettings?.primaryColor || design?.colors?.primary || "zinc",
-                                radius: brandSettings?.borderRadius ?? design?.radius ?? 0.5,
-                                ...design,
+                                ...brandingSettings,
+                                primary: "custom" // Signal that CSS is already injected
                             } as any}>
                                 <ToastProvider>
                                     <DashboardShell

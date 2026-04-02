@@ -123,6 +123,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
             const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.perfil.plus"
             const response = await fetch(`${API_URL}/tenant/${tenantToDelete.slug}`, {
                 method: "DELETE",
+                credentials: "include",
             })
 
             if (!response.ok) {

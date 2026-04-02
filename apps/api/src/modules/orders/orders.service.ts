@@ -61,97 +61,94 @@ export class OrdersService {
 
     for (let i = 0; i < MAX_RETRIES; i++) {
       try {
-        const createdOrder = await this.prisma.$transaction(
-          async (tx) => {
-            const orderCount = await tx.order.count();
-            const year = new Date().getFullYear();
-            const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
+        const createdOrder = await this.prisma.$transaction(async (tx) => {
+          const orderCount = await tx.order.count();
+          const year = new Date().getFullYear();
+          const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
 
-            await this.validationService.validateAndDeductStock(
-              orderItemsData,
+          await this.validationService.validateAndDeductStock(
+            orderItemsData,
+            tx,
+          );
+
+          const order = await tx.order.create({
+            data: {
+              tenantId: this.getTenantId(),
+              userId: userId || null,
+              orderNumber,
+              totalAmount,
+              status: dto.status || 'PENDING',
+              orderType: dto.orderType || 'DINE_IN',
+              tableNumber: dto.tableNumber || null,
+              customerName: dto.customerName || null,
+              customerPhone: dto.customerPhone || null,
+              customerEmail: dto.customerEmail || null,
+              identification: dto.identification || null,
+              notes: (() => {
+                let methodLabel = dto.paymentMethod;
+                if (methodLabel === 'CASH') methodLabel = 'Efectivo';
+                if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
+                if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
+                if (methodLabel === 'BOLD') methodLabel = 'Bold';
+                if (methodLabel === 'MERCADOPAGO') methodLabel = 'MercadoPago';
+
+                const paymentNote = dto.paymentMethod
+                  ? `Forma de pago: ${methodLabel}`
+                  : null;
+                if (dto.notes && paymentNote)
+                  return `${dto.notes}\n\n${paymentNote}`;
+                return paymentNote || dto.notes || null;
+              })(),
+              shippingData: dto.shippingData || Prisma.DbNull,
+              items: {
+                create: orderItemsData.map((item) => ({
+                  variantId: item.variantId,
+                  quantity: item.quantity,
+                  price: item.price,
+                  productName: item.productName,
+                  variantName: item.variantName,
+                  notes: item.notes,
+                  modifiers: {
+                    create: item.modifiers.map((mod) => ({
+                      modifierId: mod.modifierId,
+                      modifierName: mod.modifierName,
+                      priceAdjustment: mod.priceAdjustment,
+                      quantity: mod.quantity,
+                    })),
+                  },
+                })),
+              },
+            },
+            include: {
+              items: {
+                include: {
+                  modifiers: true,
+                  variant: { include: { product: true } },
+                },
+              },
+            },
+          });
+
+          const productItems = orderItemsData.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          }));
+
+          if (productItems.length > 0) {
+            const inventoryResult = await this.inventoryService.deductByOrder(
+              order.id,
+              productItems,
               tx,
             );
-
-            const order = await tx.order.create({
-              data: {
-                tenantId: this.getTenantId(),
-                userId: userId || null,
-                orderNumber,
-                totalAmount,
-                status: dto.status || 'PENDING',
-                orderType: dto.orderType || 'DINE_IN',
-                tableNumber: dto.tableNumber || null,
-                customerName: dto.customerName || null,
-                customerPhone: dto.customerPhone || null,
-                customerEmail: dto.customerEmail || null,
-                identification: dto.identification || null,
-                notes: (() => {
-                  let methodLabel = dto.paymentMethod;
-                  if (methodLabel === 'CASH') methodLabel = 'Efectivo';
-                  if (methodLabel === 'CARD') methodLabel = 'Tarjeta';
-                  if (methodLabel === 'TRANSFER') methodLabel = 'Transferencia';
-                  if (methodLabel === 'BOLD') methodLabel = 'Bold';
-                  if (methodLabel === 'MERCADOPAGO')
-                    methodLabel = 'MercadoPago';
-
-                  const paymentNote = dto.paymentMethod
-                    ? `Forma de pago: ${methodLabel}`
-                    : null;
-                  if (dto.notes && paymentNote)
-                    return `${dto.notes}\n\n${paymentNote}`;
-                  return paymentNote || dto.notes || null;
-                })(),
-                shippingData: dto.shippingData || Prisma.DbNull,
-                items: {
-                  create: orderItemsData.map((item) => ({
-                    variantId: item.variantId,
-                    quantity: item.quantity,
-                    price: item.price,
-                    productName: item.productName,
-                    variantName: item.variantName,
-                    notes: item.notes,
-                    modifiers: {
-                      create: item.modifiers.map((mod) => ({
-                        modifierId: mod.modifierId,
-                        modifierName: mod.modifierName,
-                        priceAdjustment: mod.priceAdjustment,
-                        quantity: mod.quantity,
-                      })),
-                    },
-                  })),
-                },
-              },
-              include: {
-                items: {
-                  include: {
-                    modifiers: true,
-                    variant: { include: { product: true } },
-                  },
-                },
-              },
-            });
-
-            const productItems = orderItemsData.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            }));
-
-            if (productItems.length > 0) {
-              const inventoryResult = await this.inventoryService.deductByOrder(
-                order.id,
-                productItems,
-                tx,
+            if (inventoryResult.alerts.length > 0) {
+              this.logger.warn(
+                `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
               );
-              if (inventoryResult.alerts.length > 0) {
-                this.logger.warn(
-                  `Orden ${orderNumber}: ${inventoryResult.alerts.length} alertas de stock bajo`,
-                );
-              }
             }
+          }
 
-            return order;
-          },
-        );
+          return order;
+        });
 
         this.logger.log(
           `Orden ${createdOrder.orderNumber} creada — Total: ${totalAmount} — Items: ${dto.items.length}`,
@@ -238,14 +235,15 @@ export class OrdersService {
             if (item.variant.stock !== -1) {
               variantIncrements.set(
                 item.variantId,
-                (variantIncrements.get(item.variantId) || 0) + item.quantity
+                (variantIncrements.get(item.variantId) || 0) + item.quantity,
               );
             }
 
             for (const mod of item.modifiers) {
               modifierIncrements.set(
                 mod.modifierId,
-                (modifierIncrements.get(mod.modifierId) || 0) + mod.quantity * item.quantity
+                (modifierIncrements.get(mod.modifierId) || 0) +
+                  mod.quantity * item.quantity,
               );
             }
           }
@@ -257,7 +255,7 @@ export class OrdersService {
               tx.productVariant.update({
                 where: { id: variantId },
                 data: { stock: { increment } },
-              })
+              }),
             );
           }
 
@@ -278,7 +276,7 @@ export class OrdersService {
                   tx.modifier.update({
                     where: { id: mod.id },
                     data: { stock: { increment } },
-                  })
+                  }),
                 );
               }
             }

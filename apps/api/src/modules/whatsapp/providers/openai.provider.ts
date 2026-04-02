@@ -266,15 +266,14 @@ export class OpenAiProvider implements AiProvider {
                   const cartId = `wa-${Date.now().toString(36)}-${Math.random().toString(36).substring(7)}`;
 
                   // Obtener perfil del cliente para hidratar el checkout
-                  const customer =
-                    await this.prisma.waCustomer.findUnique({
-                      where: {
-                        tenantId_phone: {
-                          tenantId,
-                          phone: customerPhone || '',
-                        },
+                  const customer = await this.prisma.waCustomer.findUnique({
+                    where: {
+                      tenantId_phone: {
+                        tenantId,
+                        phone: customerPhone || '',
                       },
-                    });
+                    },
+                  });
 
                   const cartPayload = {
                     items: foundProducts,

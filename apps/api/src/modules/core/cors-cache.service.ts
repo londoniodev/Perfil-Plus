@@ -289,9 +289,7 @@ export class CorsCacheService implements OnModuleInit, OnModuleDestroy {
    * encontrado en el SET (puede ser un tenant recién creado
    * por otro pod/instancia que aún no sincronizó).
    */
-  private async checkOriginFromDatabase(
-    hostname: string,
-  ): Promise<boolean> {
+  private async checkOriginFromDatabase(hostname: string): Promise<boolean> {
     if (!hostname) return false;
 
     try {

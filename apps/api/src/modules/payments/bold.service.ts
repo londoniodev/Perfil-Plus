@@ -188,8 +188,9 @@ export class BoldService {
 
     try {
       // 1. Convertir body a string si es Buffer
-      const bodyString =
-        Buffer.isBuffer(rawBody) ? rawBody.toString('utf-8') : rawBody;
+      const bodyString = Buffer.isBuffer(rawBody)
+        ? rawBody.toString('utf-8')
+        : rawBody;
 
       // 2. Codificar en Base64 (requisito de Bold)
       const encodedBody = Buffer.from(bodyString, 'utf-8').toString('base64');
@@ -202,10 +203,7 @@ export class BoldService {
 
       // 4. Comparación segura contra timing attacks
       if (hash.length !== signature.length) return false;
-      return crypto.timingSafeEqual(
-        Buffer.from(hash),
-        Buffer.from(signature),
-      );
+      return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(signature));
     } catch (error) {
       this.logger.error('Error verifying Bold webhook signature', error);
       return false;

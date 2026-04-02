@@ -28,7 +28,7 @@ export class PrismaService
       log:
         process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
-    
+
     // Este objeto 'target' es esencialmente la instancia cruda
     this.unscoped = this;
 
@@ -119,7 +119,7 @@ export class PrismaService
       },
     });
 
-    // Inversión de Control: Retornamos un Proxy para que la clase exponga 
+    // Inversión de Control: Retornamos un Proxy para que la clase exponga
     // por defecto al Cliente Seguro
     return new Proxy(this, {
       get: (target, prop) => {
@@ -127,17 +127,18 @@ export class PrismaService
         if (prop === 'unscoped') return target;
         if (prop === 'logger') return target.logger;
         if (prop === 'onModuleInit') return target.onModuleInit.bind(target);
-        if (prop === 'onModuleDestroy') return target.onModuleDestroy.bind(target);
-        
+        if (prop === 'onModuleDestroy')
+          return target.onModuleDestroy.bind(target);
+
         // Todo lo demás se redirige al cliente seguro por defecto (.product, .user, .$transaction, etc)
         const secureFeature = (secureClient as any)[prop];
         if (typeof secureFeature === 'function') {
-           // Envolver o retornar directo. Prisma pre-hace bind en `$extends`.
-           return secureFeature;
+          // Envolver o retornar directo. Prisma pre-hace bind en `$extends`.
+          return secureFeature;
         }
-        
+
         return secureFeature ?? (target as any)[prop];
-      }
+      },
     });
   }
 

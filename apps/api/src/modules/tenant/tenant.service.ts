@@ -48,7 +48,9 @@ export class TenantService {
       ? `${process.env.STOREFRONT_URL}/api/revalidate`
       : 'http://web-storefront:3000/api/revalidate');
   private readonly internalApiKey =
-    process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    process.env.REVALIDATION_SECRET ||
+    process.env.INTERNAL_API_KEY ||
+    'default_dev_secret_key';
 
   constructor(
     private readonly prisma: PrismaService,
@@ -413,7 +415,9 @@ export class TenantService {
       });
     } catch (error) {
       dbQueryFailed = true;
-      this.logger.error(`Error en identifyTenant (query primario): ${error.message}`);
+      this.logger.error(
+        `Error en identifyTenant (query primario): ${error.message}`,
+      );
     }
 
     if (!tenant) {
@@ -437,7 +441,9 @@ export class TenantService {
         });
       } catch (error) {
         dbQueryFailed = true;
-        this.logger.error(`Error en identifyTenant (query fallback): ${error.message}`);
+        this.logger.error(
+          `Error en identifyTenant (query fallback): ${error.message}`,
+        );
       }
     }
 
@@ -876,62 +882,142 @@ export class TenantService {
     // El orden importa: primero los registros que referencian a otros registros del tenant
     await this.prisma.$transaction([
       // 2.1 Datos de Negocio y Transacciones
-      this.prisma.unscoped.orderItemModifier.deleteMany({ where: { modifier: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.orderItem.deleteMany({ where: { order: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.payment.deleteMany({ where: { order: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.orderDeliveryAnalytics.deleteMany({ where: { order: { tenantId: tenant.id } } }),
+      this.prisma.unscoped.orderItemModifier.deleteMany({
+        where: { modifier: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.orderItem.deleteMany({
+        where: { order: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.payment.deleteMany({
+        where: { order: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.orderDeliveryAnalytics.deleteMany({
+        where: { order: { tenantId: tenant.id } },
+      }),
       this.prisma.unscoped.order.deleteMany({ where: { tenantId: tenant.id } }),
 
       // 2.2 Inventario y Recetas
-      this.prisma.unscoped.recipeIngredient.deleteMany({ where: { recipe: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.recipe.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.inventoryMovement.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.warehouseStock.deleteMany({ where: { warehouse: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.inventoryCountLine.deleteMany({ where: { count: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.inventoryCount.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.inventoryItem.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.warehouse.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.recipeIngredient.deleteMany({
+        where: { recipe: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.recipe.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.inventoryMovement.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.warehouseStock.deleteMany({
+        where: { warehouse: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.inventoryCountLine.deleteMany({
+        where: { count: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.inventoryCount.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.inventoryItem.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.warehouse.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
 
       // 2.3 Productos y Catálogo
-      this.prisma.unscoped.modifier.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.modifierGroup.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.categoriesOnProducts.deleteMany({ where: { category: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.productVariant.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.productComment.deleteMany({ where: { product: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.productLike.deleteMany({ where: { product: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.product.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.category.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.modifier.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.modifierGroup.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.categoriesOnProducts.deleteMany({
+        where: { category: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.productVariant.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.productComment.deleteMany({
+        where: { product: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.productLike.deleteMany({
+        where: { product: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.product.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.category.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
       this.prisma.unscoped.tag.deleteMany({ where: { tenantId: tenant.id } }),
 
       // 2.4 Contenido y Educación
-      this.prisma.unscoped.lessonAttachment.deleteMany({ where: { lesson: { course: { tenantId: tenant.id } } } }),
-      this.prisma.unscoped.userProgress.deleteMany({ where: { user: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.lesson.deleteMany({ where: { course: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.course.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.evaluationResult.deleteMany({ where: { user: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.question.deleteMany({ where: { evaluation: { theme: { tenantId: tenant.id } } } }),
-      this.prisma.unscoped.evaluation.deleteMany({ where: { theme: { tenantId: tenant.id } } }),
+      this.prisma.unscoped.lessonAttachment.deleteMany({
+        where: { lesson: { course: { tenantId: tenant.id } } },
+      }),
+      this.prisma.unscoped.userProgress.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.lesson.deleteMany({
+        where: { course: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.course.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.evaluationResult.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.question.deleteMany({
+        where: { evaluation: { theme: { tenantId: tenant.id } } },
+      }),
+      this.prisma.unscoped.evaluation.deleteMany({
+        where: { theme: { tenantId: tenant.id } },
+      }),
       this.prisma.unscoped.theme.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.postAttachment.deleteMany({ where: { post: { tenantId: tenant.id } } }),
+      this.prisma.unscoped.postAttachment.deleteMany({
+        where: { post: { tenantId: tenant.id } },
+      }),
       this.prisma.unscoped.post.deleteMany({ where: { tenantId: tenant.id } }),
 
       // 2.5 Configuración y Otros
-      this.prisma.unscoped.brandSettings.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.storeSettings.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.systemSetting.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.brandSettings.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.storeSettings.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.systemSetting.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
       this.prisma.unscoped.table.deleteMany({ where: { tenantId: tenant.id } }),
       this.prisma.unscoped.lead.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.waCart.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.waMessage.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.waConversation.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.waCustomer.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.waCart.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.waMessage.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.waConversation.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.waCustomer.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
 
       // 2.6 Usuarios (Finasmente)
-      this.prisma.unscoped.deliveryDriver.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.refreshToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.emailVerificationToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.passwordResetToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
-      this.prisma.unscoped.subscription.deleteMany({ where: { user: { tenantId: tenant.id } } }),
+      this.prisma.unscoped.deliveryDriver.deleteMany({
+        where: { tenantId: tenant.id },
+      }),
+      this.prisma.unscoped.refreshToken.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.emailVerificationToken.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.passwordResetToken.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
+      this.prisma.unscoped.subscription.deleteMany({
+        where: { user: { tenantId: tenant.id } },
+      }),
       this.prisma.unscoped.user.deleteMany({ where: { tenantId: tenant.id } }),
     ]);
 

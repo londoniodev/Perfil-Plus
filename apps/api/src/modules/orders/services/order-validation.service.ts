@@ -37,9 +37,7 @@ export class OrderValidationService {
   }
 
   async validateRestaurantAvailability(tenantId: string) {
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
+    const storeSettings = await (this.prisma as any).storeSettings.findFirst({
       where: { tenantId },
       select: { businessHours: true },
     });
@@ -97,9 +95,7 @@ export class OrderValidationService {
     const schedule = businessHours.schedule;
     if (!Array.isArray(schedule)) return true;
 
-    const todaySchedule = schedule.find(
-      (s: any) => s.day === currentDay,
-    );
+    const todaySchedule = schedule.find((s: any) => s.day === currentDay);
 
     if (!todaySchedule || !todaySchedule.isOpen) {
       throw new BadRequestException(
@@ -130,4 +126,3 @@ export class OrderValidationService {
     return true;
   }
 }
-

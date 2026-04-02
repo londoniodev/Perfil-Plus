@@ -64,6 +64,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
     const [search, setSearch] = React.useState("")
     const [currentPage, setCurrentPage] = React.useState(1)
     const [tenantToDelete, setTenantToDelete] = React.useState<Tenant | null>(null)
+    const [confirmSlug, setConfirmSlug] = React.useState("")
     const [isDeleting, setIsDeleting] = React.useState(false)
     const itemsPerPage = 10
 
@@ -119,7 +120,8 @@ export function TenantsTable({ data }: TenantsTableProps) {
 
         setIsDeleting(true)
         try {
-            const response = await fetch(`/api/tenants/${tenantToDelete.slug}`, {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.perfil.plus"
+            const response = await fetch(`${API_URL}/tenant/${tenantToDelete.slug}`, {
                 method: "DELETE",
             })
 
@@ -135,6 +137,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
         } finally {
             setIsDeleting(false)
             setTenantToDelete(null)
+            setConfirmSlug("")
         }
     }
 
@@ -231,7 +234,7 @@ export function TenantsTable({ data }: TenantsTableProps) {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                                    className="bg-red-600 text-white hover:bg-red-700 focus:bg-red-700 focus:text-white cursor-pointer mt-1"
                                                     onClick={() => setTenantToDelete(tenant)}
                                                 >
                                                     <Trash className="mr-2 h-4 w-4" />
@@ -283,26 +286,41 @@ export function TenantsTable({ data }: TenantsTableProps) {
             )}
 
             <AlertDialog open={!!tenantToDelete} onOpenChange={(open) => !open && setTenantToDelete(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-[400px]">
                     <AlertDialogHeader>
                         <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
                         <AlertDialogDescription>
                             Esta acción no se puede deshacer. Esto eliminará permanentemente el tenant
-                            <span className="font-bold text-foreground mx-1">
+                            <span className="font-bold text-red-500 mx-1">
                                 {tenantToDelete?.name || tenantToDelete?.slug}
                             </span>
-                            y sus registros asociados de la base de datos de gestión.
+                            y todos sus datos asociados.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    
+                    <div className="py-4 space-y-2">
+                        <p className="text-xs text-muted-foreground">
+                            Por favor escribe <span className="font-mono font-bold text-foreground">{tenantToDelete?.slug}</span> para confirmar:
+                        </p>
+                        <Input
+                            placeholder="Escribe el slug para confirmar"
+                            value={confirmSlug}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmSlug(e.target.value)}
+                            className="bg-background/50 border-destructive/30 focus-visible:ring-destructive"
+                        />
+                    </div>
+
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isDeleting} onClick={() => setConfirmSlug("")}>
+                            Cancelar
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={(e) => {
                                 e.preventDefault()
                                 handleDelete()
                             }}
-                            disabled={isDeleting}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isDeleting || confirmSlug !== tenantToDelete?.slug}
+                            className="bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isDeleting ? "Eliminando..." : "Eliminar Tenant"}
                         </AlertDialogAction>

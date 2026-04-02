@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Delete,
   UseGuards,
   Query,
   Headers,
@@ -142,5 +143,13 @@ export class TenantController {
   @Roles('SUPERADMIN' as any)
   async updateSettings(@Param('id') tenantId: string, @Body() dto: any) {
     return this.tenantService.updateSettings(tenantId, dto);
+  }
+
+  // ELIMINAR TENANT (Físico) - ¡CUIDADO!
+  @Delete(':idOrSlug')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPERADMIN' as any)
+  async deleteTenant(@Param('idOrSlug') idOrSlug: string) {
+    return this.tenantService.deleteTenant(idOrSlug);
   }
 }

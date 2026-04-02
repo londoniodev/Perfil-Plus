@@ -849,4 +849,39 @@ export class TenantService {
 
     return tenant;
   }
+
+  /**
+   * Elimina un tenant de forma física y permanente.
+   * - Borra el registro en la DB (Cascada automática habilitada por Prisma).
+   * - Invalida la caché de Redis.
+   */
+  async deleteTenant(idOrSlug: string) {
+    // 1. Obtener datos antes de borrar para limpiar caché
+    const tenant = await this.prisma.unscoped.tenant.findFirst({
+      where: {
+        OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+      select: { id: true, slug: true, domain: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(
+        `Tenant con ID/Slug "${idOrSlug}" no encontrado para eliminar`,
+      );
+    }
+
+    this.logger.warn(`⚠️  ELIMINANDO TENANT: ${tenant.slug} (${tenant.id})`);
+
+    // 2. Ejecutar borrado en cascada (Prisma elimina StoreSettings, BrandSettings, etc.)
+    await this.prisma.unscoped.tenant.delete({
+      where: { id: tenant.id },
+    });
+
+    // 3. Invalidar caché en Redis
+    await this.invalidateTenantCache(tenant.slug, tenant.domain ?? undefined);
+
+    this.logger.log(`✅ Tenant ${tenant.slug} eliminado exitosamente.`);
+
+    return { success: true, message: `Tenant ${tenant.slug} eliminado.` };
+  }
 }

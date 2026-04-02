@@ -76,6 +76,7 @@ function createMockPrismaClient() {
     product: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findFirst: jest.fn(),
       findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -98,6 +99,7 @@ function createMockPrismaClient() {
     },
     subscription: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     order: {
       findFirst: jest.fn(),
@@ -354,7 +356,7 @@ describe('ProductsService', () => {
     };
 
     it('debería actualizar producto y reemplazar modifier groups (replace strategy)', async () => {
-      mockClient.product.findUnique
+      mockClient.product.findFirst
         .mockResolvedValueOnce(mockProduct) // exists check
         .mockResolvedValueOnce(mockProductComplete); // final find
       mockClient.modifierGroup.findMany.mockResolvedValueOnce([mockModifierGroup]);
@@ -381,7 +383,7 @@ describe('ProductsService', () => {
     });
 
     it('debería lanzar NotFoundException si el producto no existe', async () => {
-      mockClient.product.findUnique.mockResolvedValueOnce(null);
+      mockClient.product.findFirst.mockResolvedValueOnce(null);
 
       await expect(
         service.update('no-existe', updateDto),
@@ -553,11 +555,11 @@ describe('ProductsService', () => {
     };
 
     it('debería permitir descarga con suscripción activa (sin verificar compra)', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue({
+      mockClient.subscription.findFirst.mockResolvedValue({
         status: 'ACTIVE',
         userId: 'user-1',
       });
-      mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+      mockClient.product.findFirst.mockResolvedValue(digitalProduct);
 
       const result = await service.getProductDownloadUrl('prod-1', 'user-1');
 
@@ -568,9 +570,9 @@ describe('ProductsService', () => {
     });
 
     it('debería permitir descarga con compra válida (Order)', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue(null); // sin suscripción
+      mockClient.subscription.findFirst.mockResolvedValue(null); // sin suscripción
       mockClient.order.findFirst.mockResolvedValue({ id: 'order-1' }); // compra via Order
-      mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+      mockClient.product.findFirst.mockResolvedValue(digitalProduct);
 
       const result = await service.getProductDownloadUrl('prod-1', 'user-1');
 
@@ -586,13 +588,13 @@ describe('ProductsService', () => {
     });
 
     it('debería permitir descarga con compra legacy (Purchase table)', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue(null);
+      mockClient.subscription.findFirst.mockResolvedValue(null);
       mockClient.order.findFirst.mockResolvedValue(null); // sin Order
       mockClient.purchase.findFirst.mockResolvedValue({
         id: 'purchase-1',
         status: 'approved',
       }); // legacy
-      mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+      mockClient.product.findFirst.mockResolvedValue(digitalProduct);
 
       const result = await service.getProductDownloadUrl('prod-1', 'user-1');
 
@@ -605,7 +607,7 @@ describe('ProductsService', () => {
     });
 
     it('debería lanzar ForbiddenException si no tiene acceso (sin suscripción, sin compra)', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue(null);
+      mockClient.subscription.findFirst.mockResolvedValue(null);
       mockClient.order.findFirst.mockResolvedValue(null);
       mockClient.purchase.findFirst.mockResolvedValue(null);
 
@@ -615,10 +617,10 @@ describe('ProductsService', () => {
     });
 
     it('debería lanzar NotFoundException si producto no es DIGITAL', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue({
+      mockClient.subscription.findFirst.mockResolvedValue({
         status: 'ACTIVE',
       });
-      mockClient.product.findUnique.mockResolvedValue({
+      mockClient.product.findFirst.mockResolvedValue({
         digitalFileUrl: null,
         productType: 'PHYSICAL',
       });
@@ -629,10 +631,10 @@ describe('ProductsService', () => {
     });
 
     it('debería lanzar NotFoundException si producto digital no tiene archivo', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue({
+      mockClient.subscription.findFirst.mockResolvedValue({
         status: 'ACTIVE',
       });
-      mockClient.product.findUnique.mockResolvedValue({
+      mockClient.product.findFirst.mockResolvedValue({
         digitalFileUrl: null,
         productType: 'DIGITAL',
       });
@@ -643,10 +645,10 @@ describe('ProductsService', () => {
     });
 
     it('debería generar signed URL con expiración de 3600 segundos', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue({
+      mockClient.subscription.findFirst.mockResolvedValue({
         status: 'ACTIVE',
       });
-      mockClient.product.findUnique.mockResolvedValue(digitalProduct);
+      mockClient.product.findFirst.mockResolvedValue(digitalProduct);
 
       await service.getProductDownloadUrl('prod-1', 'user-1');
 
@@ -658,7 +660,7 @@ describe('ProductsService', () => {
     });
 
     it('debería NO permitir acceso con suscripción inactiva', async () => {
-      mockClient.subscription.findUnique.mockResolvedValue({
+      mockClient.subscription.findFirst.mockResolvedValue({
         status: 'CANCELLED',
       });
       mockClient.order.findFirst.mockResolvedValue(null);

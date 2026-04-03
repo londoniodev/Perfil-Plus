@@ -217,9 +217,11 @@ export default async function MarketingHubPage({ params }: Props) {
       // Rutas relativas simples: ./assets/...
       .replace(/href=["']\.\//g, `href="${s3AssetsBase}/`)
       .replace(/src=["']\.\//g, `src="${s3AssetsBase}/`)
+      .replace(/url\(["']\.\//g, `url("${s3AssetsBase}/`)
       // Rutas relativas con ../ (ej: ../../nuevas imagenes/...)
       .replace(/src=["'](?:\.\.\/)+/g, `src="${s3BucketBase}/`)
-      .replace(/href=["'](?:\.\.\/)+/g, `href="${s3BucketBase}/`);
+      .replace(/href=["'](?:\.\.\/)+/g, `href="${s3BucketBase}/`)
+      .replace(/url\(["'](?:\.\.\/)+/g, `url("${s3BucketBase}/`);
 
     // 3. Extraer URLs de <link rel="stylesheet"> ANTES de que DOMPurify las elimine
     //    DOMPurify remueve <link> por seguridad, pero necesitamos el CSS externo.

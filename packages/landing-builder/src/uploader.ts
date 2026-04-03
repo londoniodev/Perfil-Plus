@@ -88,7 +88,11 @@ function mutateBodyForProduction(
 ): string {
   const cdnBase = `${publicBaseUrl}/${tenantSlug}-public/landings/${landingSlug}/assets/`;
 
-  const mutated = bodyHtml.replace(/\.\/assets\//g, cdnBase);
+  // 1. Reemplazo de href="./assets/" y src="./assets/"
+  let mutated = bodyHtml.replace(/(href|src)=["']\.\/assets\//g, `$1="${cdnBase}`);
+  
+  // 2. Reemplazo de url('./assets/...') o url("./assets/...") en estilos inline (ej: parallax)
+  mutated = mutated.replace(/url\(["']\.\/assets\//g, `url('${cdnBase}`);
 
   log("🔗", `Mutated asset paths → ${cdnBase}`);
   return mutated;

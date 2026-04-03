@@ -126,6 +126,7 @@ describe('ProductsService', () => {
           provide: PrismaService,
           useValue: {
             secure: mockClient,
+            ...mockClient,
           },
         },
         {

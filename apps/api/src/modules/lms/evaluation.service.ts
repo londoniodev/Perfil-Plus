@@ -17,10 +17,10 @@ export class EvaluationService {
 
   // ==================== EVALUATIONS ====================
 
-  async createEvaluation(dto: CreateEvaluationDto) {
+  async createEvaluation(dto: CreateEvaluationDto, tenantId: string) {
     // Verificar que el tema existe y no tiene evaluación
-    const theme = await this.prisma.theme.findUnique({
-      where: { id: dto.themeId },
+    const theme = await this.prisma.secure.theme.findFirst({
+      where: { id: dto.themeId, tenantId },
       include: { evaluation: true },
     });
 
@@ -30,7 +30,7 @@ export class EvaluationService {
 
     const { questions, ...evaluationData } = dto;
 
-    return this.prisma.evaluation.create({
+    return this.prisma.secure.evaluation.create({
       data: {
         ...evaluationData,
         questions: questions?.length
@@ -52,13 +52,17 @@ export class EvaluationService {
     });
   }
 
-  async updateEvaluation(id: string, dto: UpdateEvaluationDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+  async updateEvaluation(
+    id: string,
+    dto: UpdateEvaluationDto,
+    tenantId: string,
+  ) {
+    const evaluation = await this.prisma.secure.evaluation.findFirst({
+      where: { id, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
-    return this.prisma.evaluation.update({
+    return this.prisma.secure.evaluation.update({
       where: { id },
       data: dto,
       include: {
@@ -68,18 +72,18 @@ export class EvaluationService {
     });
   }
 
-  async deleteEvaluation(id: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+  async deleteEvaluation(id: string, tenantId: string) {
+    const evaluation = await this.prisma.secure.evaluation.findFirst({
+      where: { id, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
-    await this.prisma.evaluation.delete({ where: { id } });
+    await this.prisma.secure.evaluation.delete({ where: { id } });
     return { message: 'Evaluación eliminada correctamente' };
   }
 
   async findEvaluationById(id: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
+    const evaluation = await this.prisma.secure.evaluation.findUnique({
       where: { id },
       include: {
         questions: { orderBy: { order: 'asc' } },
@@ -93,19 +97,23 @@ export class EvaluationService {
 
   // ==================== QUESTIONS ====================
 
-  async addQuestion(evaluationId: string, dto: CreateQuestionDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id: evaluationId },
+  async addQuestion(
+    evaluationId: string,
+    dto: CreateQuestionDto,
+    tenantId: string,
+  ) {
+    const evaluation = await this.prisma.secure.evaluation.findFirst({
+      where: { id: evaluationId, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
     // Obtener el orden máximo actual
-    const maxOrder = await this.prisma.question.aggregate({
+    const maxOrder = await this.prisma.secure.question.aggregate({
       where: { evaluationId },
       _max: { order: true },
     });
 
-    return this.prisma.question.create({
+    return this.prisma.secure.question.create({
       data: {
         evaluationId,
         question: dto.question,
@@ -117,13 +125,17 @@ export class EvaluationService {
     });
   }
 
-  async updateQuestion(id: string, dto: Partial<CreateQuestionDto>) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+  async updateQuestion(
+    id: string,
+    dto: Partial<CreateQuestionDto>,
+    tenantId: string,
+  ) {
+    const question = await this.prisma.secure.question.findFirst({
+      where: { id, evaluation: { theme: { tenantId } } },
     });
     if (!question) throw new NotFoundException('Pregunta no encontrada');
 
-    return this.prisma.question.update({
+    return this.prisma.secure.question.update({
       where: { id },
       data: dto.options
         ? { ...dto, options: dto.options as any }
@@ -131,20 +143,20 @@ export class EvaluationService {
     });
   }
 
-  async deleteQuestion(id: string) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+  async deleteQuestion(id: string, tenantId: string) {
+    const question = await this.prisma.secure.question.findFirst({
+      where: { id, evaluation: { theme: { tenantId } } },
     });
     if (!question) throw new NotFoundException('Pregunta no encontrada');
 
-    await this.prisma.question.delete({ where: { id } });
+    await this.prisma.secure.question.delete({ where: { id } });
     return { message: 'Pregunta eliminada correctamente' };
   }
 
   // ==================== TAKE EVALUATION ====================
 
   async getEvaluationForUser(evaluationId: string, userId: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
+    const evaluation = await this.prisma.secure.evaluation.findUnique({
       where: { id: evaluationId },
       include: {
         questions: {
@@ -164,7 +176,7 @@ export class EvaluationService {
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
     // Verificar si ya completó la evaluación
-    const existingResult = await this.prisma.evaluationResult.findUnique(
+    const existingResult = await this.prisma.secure.evaluationResult.findUnique(
       {
         where: { userId_evaluationId: { userId, evaluationId } },
       },
@@ -184,7 +196,7 @@ export class EvaluationService {
     userId: string,
     dto: SubmitEvaluationDto,
   ) {
-    const evaluation = await this.prisma.evaluation.findUnique({
+    const evaluation = await this.prisma.secure.evaluation.findUnique({
       where: { id: evaluationId },
       include: { questions: true },
     });
@@ -192,7 +204,7 @@ export class EvaluationService {
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
     // Verificar si ya completó la evaluación
-    const existingResult = await this.prisma.evaluationResult.findUnique(
+    const existingResult = await this.prisma.secure.evaluationResult.findUnique(
       {
         where: { userId_evaluationId: { userId, evaluationId } },
       },
@@ -219,7 +231,7 @@ export class EvaluationService {
     const passed = score >= evaluation.passingScore;
 
     // Guardar resultado
-    const result = await this.prisma.evaluationResult.create({
+    const result = await this.prisma.secure.evaluationResult.create({
       data: {
         userId,
         evaluationId,
@@ -250,7 +262,7 @@ export class EvaluationService {
   }
 
   async getUserResults(userId: string) {
-    return this.prisma.evaluationResult.findMany({
+    return this.prisma.secure.evaluationResult.findMany({
       where: { userId },
       include: {
         evaluation: {

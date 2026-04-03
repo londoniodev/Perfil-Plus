@@ -184,7 +184,8 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    const { sku, stock, modifierGroups, categories, variants, ...productData } = data;
+    const { sku, stock, modifierGroups, categories, variants, ...productData } =
+      data;
 
     return await this.prisma.$transaction(async (tx) => {
       await tx.product.update({
@@ -206,23 +207,27 @@ export class ProductsService {
       // Sync Variants
       if (variants !== undefined && Array.isArray(variants)) {
         const incomingIds = variants.map((v) => v.id).filter(Boolean);
-        
+
         // Remove variants not in payload (only if not referenced by orders yet)
         try {
           await tx.productVariant.deleteMany({
             where: {
               productId: id,
-              ...(incomingIds.length > 0 ? { id: { notIn: incomingIds as string[] } } : {}),
-              orderItems: { none: {} }
-            }
+              ...(incomingIds.length > 0
+                ? { id: { notIn: incomingIds as string[] } }
+                : {}),
+              orderItems: { none: {} },
+            },
           });
         } catch (e) {
           // Ignore if foreign key constraint or other deletion error
         }
 
         for (const [index, v] of variants.entries()) {
-          const skuVal = v.sku || `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
-          
+          const skuVal =
+            v.sku ||
+            `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
+
           if (v.id) {
             await tx.productVariant.update({
               where: { id: v.id },
@@ -233,7 +238,7 @@ export class ProductsService {
                 stock: v.stock ?? 0,
                 isDefault: v.isDefault ?? index === 0,
                 attributes: v.attributes ?? undefined,
-              }
+              },
             });
           } else {
             await tx.productVariant.create({
@@ -246,7 +251,7 @@ export class ProductsService {
                 stock: v.stock ?? 0,
                 isDefault: v.isDefault ?? index === 0,
                 attributes: v.attributes ?? undefined,
-              }
+              },
             });
           }
         }

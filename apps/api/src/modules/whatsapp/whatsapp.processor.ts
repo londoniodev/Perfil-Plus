@@ -176,13 +176,11 @@ export class WhatsappProcessor {
         );
 
         // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
-        const rawHistory = await (this.prisma as any).waMessage.findMany(
-          {
-            where: { conversationId: conversation.id },
-            orderBy: { createdAt: 'desc' },
-            take: 10,
-          },
-        );
+        const rawHistory = await (this.prisma as any).waMessage.findMany({
+          where: { conversationId: conversation.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        });
 
         const history = rawHistory.reverse().map((msg: any) => ({
           role: msg.role === 'USER' ? 'USER' : 'ASSISTANT',

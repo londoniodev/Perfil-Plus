@@ -36,9 +36,7 @@ export class SettingsService {
     });
 
     // Obtener StoreSettings para incluir campos específicos
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
+    const storeSettings = await (this.prisma as any).storeSettings.findFirst({
       where: { tenantId },
     });
 
@@ -203,9 +201,7 @@ export class SettingsService {
       updateDto.boldSecretKey !== undefined ||
       updateDto.businessHours !== undefined
     ) {
-      const storeSettings = await (
-        this.prisma as any
-      ).storeSettings.findFirst({
+      const storeSettings = await (this.prisma as any).storeSettings.findFirst({
         where: { tenantId },
       });
 
@@ -236,7 +232,9 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider,
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
-            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
+            ...(updateDto.businessHours !== undefined && {
+              businessHours: updateDto.businessHours,
+            }),
           },
         });
       } else {
@@ -256,7 +254,9 @@ export class SettingsService {
             activePaymentProvider: updateDto.activePaymentProvider || 'NONE',
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
-            ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
+            ...(updateDto.businessHours !== undefined && {
+              businessHours: updateDto.businessHours,
+            }),
           },
         });
       }

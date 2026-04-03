@@ -291,9 +291,7 @@ export class PaymentsService {
   // ==================== PRODUCT PURCHASES ====================
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
+    const storeSettings = await (this.prisma as any).storeSettings.findFirst({
       where: { tenantId },
     });
 
@@ -429,9 +427,10 @@ export class PaymentsService {
           notes: (() => {
             let methodLabel = dto.paymentMethod || activeProvider;
             if (methodLabel === 'CASH') methodLabel = 'Efectivo';
-            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO') methodLabel = 'MercadoPago';
+            if (methodLabel === 'MERCADOPAGO' || methodLabel === 'MERCADO_PAGO')
+              methodLabel = 'MercadoPago';
             if (methodLabel === 'BOLD') methodLabel = 'Bold';
-            
+
             const paymentNote = `Forma de pago: ${methodLabel}`;
             return dto.customer?.notes
               ? `${dto.customer.notes}\n\n${paymentNote}`
@@ -617,9 +616,7 @@ export class PaymentsService {
 
     try {
       // 1. Recuperar Credenciales desde StoreSettings (SSOT)
-      const storeSettings = await (
-        this.prisma as any
-      ).storeSettings.findFirst({
+      const storeSettings = await (this.prisma as any).storeSettings.findFirst({
         where: { tenantId: resolvedTenantId },
       });
 
@@ -978,7 +975,11 @@ export class PaymentsService {
     }
   }
 
-  private async approveOrder(orderId: string, mpPaymentId: string, explicitTenantId?: string) {
+  private async approveOrder(
+    orderId: string,
+    mpPaymentId: string,
+    explicitTenantId?: string,
+  ) {
     // 1. Update Order Status
     // Para webhooks (Bold/MP), el CLS no tiene el tenant correcto → usar el tenantId explícito
     const tenantId = explicitTenantId || this.getTenantId();
@@ -1189,10 +1190,14 @@ export class PaymentsService {
     // segmento tras el último guión es el timestamp. Todo antes es el orderId.
     const rawReference = eventData.metadata?.reference || '';
     const lastDashIndex = rawReference.lastIndexOf('-');
-    const orderId = lastDashIndex > 0 ? rawReference.slice(0, lastDashIndex) : rawReference;
+    const orderId =
+      lastDashIndex > 0 ? rawReference.slice(0, lastDashIndex) : rawReference;
 
     if (!orderId) {
-      this.logger.warn(`Bold webhook: no reference found in metadata`, { eventType, rawReference });
+      this.logger.warn(`Bold webhook: no reference found in metadata`, {
+        eventType,
+        rawReference,
+      });
       return { status: 'ignored', reason: 'No order reference in webhook' };
     }
 
@@ -1238,18 +1243,22 @@ export class PaymentsService {
         }),
       ]);
 
-      this.logger.log(`Order ${orderId} PAID via Bold → sent directly to KITCHEN`);
+      this.logger.log(
+        `Order ${orderId} PAID via Bold → sent directly to KITCHEN`,
+      );
 
       // Fulfillment (emails de productos digitales si aplica)
-      await this.approveOrder(orderId, paymentId?.toString() || 'BOLD_PAYMENT', tenantId);
+      await this.approveOrder(
+        orderId,
+        paymentId?.toString() || 'BOLD_PAYMENT',
+        tenantId,
+      );
     } else if (
       paymentStatus === 'SALE_REJECTED' ||
       paymentStatus === 'VOID_APPROVED' ||
       paymentStatus === 'VOID_REJECTED'
     ) {
-      this.logger.warn(
-        `Order ${orderId} ${paymentStatus} via Bold Webhook`,
-      );
+      this.logger.warn(`Order ${orderId} ${paymentStatus} via Bold Webhook`);
 
       if (order.status === 'PENDING' && paymentStatus === 'SALE_REJECTED') {
         await this.prisma.order.update({
@@ -1263,7 +1272,9 @@ export class PaymentsService {
         });
       }
     } else {
-      this.logger.warn(`Bold webhook: unknown event type '${paymentStatus}' for order ${orderId}`);
+      this.logger.warn(
+        `Bold webhook: unknown event type '${paymentStatus}' for order ${orderId}`,
+      );
     }
 
     return { status: 'processed' };

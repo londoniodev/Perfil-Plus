@@ -217,7 +217,7 @@ export class AuthController {
     // Si no coinciden, el navegador NO borra la cookie original
     const clearOptions = {
       httpOnly: true,
-      secure: true,              // Mismo que getCookieOptions
+      secure: true, // Mismo que getCookieOptions
       sameSite: 'none' as const, // Mismo que getCookieOptions
       path: '/',
     };

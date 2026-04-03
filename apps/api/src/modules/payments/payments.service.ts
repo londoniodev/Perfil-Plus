@@ -861,32 +861,33 @@ export class PaymentsService {
                 `Dispatching ${digitalItemsDispatch.length} digital items to ${customerEmail}`,
               );
 
-              const dispatchLinks: {
-                productName: string;
-                downloadUrl: string;
-              }[] = [];
-
-              for (const product of digitalItemsDispatch) {
-                if (product.digitalFileUrl) {
-                  try {
-                    // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
-                    const downloadUrl =
-                      await this.storageService.getPresignedUrl(
+              const dispatchLinksResult = await Promise.all(
+                digitalItemsDispatch.map(async (product) => {
+                  if (product.digitalFileUrl) {
+                    try {
+                      // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
+                      const downloadUrl = await this.storageService.getPresignedUrl(
                         product.digitalFileUrl,
                         86400,
                       );
-                    dispatchLinks.push({
-                      productName: product.name,
-                      downloadUrl,
-                    });
-                  } catch (err) {
-                    this.logger.error(
-                      `Error generating presigned URL for ${product.name}`,
-                      err,
-                    );
+                      return {
+                        productName: product.name,
+                        downloadUrl,
+                      };
+                    } catch (err) {
+                      this.logger.error(
+                        `Error generating presigned URL for ${product.name}`,
+                        err,
+                      );
+                    }
                   }
-                }
-              }
+                  return null;
+                })
+              );
+
+              const dispatchLinks = dispatchLinksResult.filter(
+                (link): link is { productName: string; downloadUrl: string } => link !== null
+              );
 
               if (dispatchLinks.length > 0) {
                 // Ejecutar envío de email SIN await dentro del transaction.
@@ -1035,24 +1036,26 @@ export class PaymentsService {
       });
       const variantMap = new Map(variants.map((v) => [v.id, v]));
 
-      for (const item of order.items) {
-        const variant = variantMap.get(item.variantId);
+      await Promise.all(
+        order.items.map(async (item) => {
+          const variant = variantMap.get(item.variantId);
 
-        if (variant && variant.product.productType === 'DIGITAL') {
-          if (order.user?.email) {
-            await this.emailService.sendDigitalPurchaseEmail(
-              order.user.email,
-              order.user.name || order.customerName || 'Cliente',
-              item.productName,
-              variant.product.slug,
-            );
-          } else {
-            this.logger.warn(
-              `No se pudo enviar email digital para la orden ${orderId}: No hay email disponible.`,
-            );
+          if (variant && variant.product.productType === 'DIGITAL') {
+            if (order.user?.email) {
+              await this.emailService.sendDigitalPurchaseEmail(
+                order.user.email,
+                order.user.name || order.customerName || 'Cliente',
+                item.productName,
+                variant.product.slug,
+              );
+            } else {
+              this.logger.warn(
+                `No se pudo enviar email digital para la orden ${orderId}: No hay email disponible.`,
+              );
+            }
           }
-        }
-      }
+        })
+      );
     } catch (e) {
       this.logger.error(`Error sending order email for ${orderId}`, e);
     }

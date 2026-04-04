@@ -59,10 +59,10 @@ export class RecipesService {
         notes: dto.notes,
         ingredients: {
           create: dto.ingredients.map((ing) => ({
+            tenantId,
             inventoryItemId: ing.inventoryItemId,
             quantity: ing.quantity,
             wasteFactor: ing.wasteFactor ?? 1,
-            tenantId, // agregado por compilar stricto de prisma
           })),
         },
       },
@@ -159,9 +159,10 @@ export class RecipesService {
         }
 
         await tx.recipeIngredient.deleteMany({ where: { recipeId: id } });
+        const tenantId = this.getTenantId();
         await tx.recipeIngredient.createMany({
           data: dto.ingredients.map((ing) => ({
-            tenantId: this.getTenantId(),
+            tenantId,
             recipeId: id,
             inventoryItemId: ing.inventoryItemId,
             quantity: ing.quantity,

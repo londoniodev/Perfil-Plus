@@ -27,15 +27,20 @@ model Tenant {
   courses            Course[]
   deliveryDrivers    DeliveryDriver[]
   inventoryCounts    InventoryCount[]
+  inventoryCountLines InventoryCountLine[]
   inventoryItems     InventoryItem[]
   inventoryMovements InventoryMovement[]
   leads              Lead[]
   modifiers          Modifier[]
   modifierGroups     ModifierGroup[]
+  orderItems         OrderItem[]
+  orderItemModifiers OrderItemModifier[]
   orders             Order[]
+  payments           Payment[]
   posts              Post[]
   products           Product[]
   productVariants    ProductVariant[]
+  recipeIngredients  RecipeIngredient[]
   recipes            Recipe[]
   storeSettings      StoreSettings[]
   systemSettings     SystemSetting[]
@@ -48,6 +53,7 @@ model Tenant {
   waCustomers        WaCustomer[]
   waMessages         WaMessage[]
   warehouses         Warehouse[]
+  warehouseStocks    WarehouseStock[]
 }
 
 model User {
@@ -565,6 +571,7 @@ model Order {
 
 model OrderItem {
   id          String              @id @default(cuid())
+  tenantId    String
   orderId     String
   variantId   String
   quantity    Int                 @default(1)
@@ -578,14 +585,17 @@ model OrderItem {
   order       Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant     ProductVariant      @relation(fields: [variantId], references: [id])
   modifiers   OrderItemModifier[]
+  tenant      Tenant              @relation(fields: [tenantId], references: [id])
 
   @@index([orderId])
   @@index([variantId])
   @@index([orderId, isPrepared])
+  @@index([tenantId])
 }
 
 model OrderItemModifier {
   id              String    @id @default(cuid())
+  tenantId        String
   orderItemId     String
   modifierId      String
   modifierName    String
@@ -593,20 +603,25 @@ model OrderItemModifier {
   quantity        Int       @default(1)
   modifier        Modifier  @relation(fields: [modifierId], references: [id])
   orderItem       OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
 
   @@index([orderItemId])
+  @@index([tenantId])
 }
 
 model Payment {
   id        String   @id @default(cuid())
+  tenantId  String
   orderId   String
   amount    Decimal  @db.Decimal(10, 2)
   method    String
   reference String?
   createdAt DateTime @default(now())
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([orderId])
+  @@index([tenantId])
 }
 
 model Lead {
@@ -722,14 +737,17 @@ model InventoryItem {
 
 model WarehouseStock {
   id              String        @id @default(cuid())
+  tenantId        String
   warehouseId     String
   inventoryItemId String
   currentStock    Decimal       @default(0) @db.Decimal(10, 3)
   updatedAt       DateTime      @updatedAt
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
   warehouse       Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   @@unique([warehouseId, inventoryItemId])
+  @@index([tenantId])
 }
 
 model InventoryMovement {
@@ -774,14 +792,17 @@ model Recipe {
 
 model RecipeIngredient {
   id              String        @id @default(cuid())
+  tenantId        String
   recipeId        String
   inventoryItemId String
   quantity        Decimal       @db.Decimal(10, 3)
   wasteFactor     Decimal       @default(1) @db.Decimal(4, 2)
   inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
   recipe          Recipe        @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
 
   @@unique([recipeId, inventoryItemId])
+  @@index([tenantId])
 }
 
 model InventoryCount {
@@ -804,6 +825,7 @@ model InventoryCount {
 
 model InventoryCountLine {
   id              String          @id @default(cuid())
+  tenantId        String
   countId         String
   inventoryItemId String
   systemStock     Decimal         @db.Decimal(10, 3)
@@ -812,8 +834,10 @@ model InventoryCountLine {
   adjustmentType  AdjustmentType?
   count           InventoryCount  @relation(fields: [countId], references: [id], onDelete: Cascade)
   inventoryItem   InventoryItem   @relation(fields: [inventoryItemId], references: [id])
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
 
   @@unique([countId, inventoryItemId])
+  @@index([tenantId])
 }
 
 model WaConversation {

@@ -11,7 +11,6 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
-import * as express from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentsService } from './payments.service';
 import { CreateSubscriptionDto, CreateCheckoutDto } from './dto';
@@ -51,12 +50,12 @@ export class PaymentsController {
   @Post('product/checkout')
   @Public()
   async createProductCheckout(
-    @Req() req: express.Request,
+    @Req() req: any,
     @Body() dto: CreateCheckoutDto,
   ) {
     // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
     const tenantId =
-      (req as any).tenantId || req.headers['x-tenant-id'] || 'default';
+      req.tenantId || (req.headers['x-tenant-id'] as string) || 'default';
     return this.paymentsService.createProductCheckout(dto, tenantId);
   }
 
@@ -104,7 +103,7 @@ export class PaymentsController {
   @Public()
   @HttpCode(HttpStatus.OK)
   async handleBoldWebhook(
-    @Req() req: express.Request,
+    @Req() req: any,
     @Body() body: any,
     @Headers('x-bold-signature') signature: string,
     @Query('tenantId') tenantId: string,

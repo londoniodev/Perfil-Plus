@@ -226,15 +226,16 @@ async function processLocalImages(
   }
 
   // 2. Process Tailwind arbitrary bg urls: bg-[url('...')]
-  const bgElements = $("[class*='bg-\\[url']");
-  for (let i = 0; i < bgElements.length; i++) {
-    const el = bgElements[i];
-    if (!el) continue;
-    
+  const bgElements = $("*").filter((_i, el) => {
+    const cls = $(el).attr("class") || "";
+    return cls.includes("bg-[url");
+  }).get();
+
+  for (const el of bgElements) {
     let cls = $(el).attr("class") || "";
+    let modifiedCls = cls;
     const regex = /bg-\[url\(['"]([^'"]+)['"]\)\]/g;
     let match;
-    let modifiedCls = cls;
     let processCount = 0;
 
     while ((match = regex.exec(cls)) !== null) {
@@ -244,7 +245,7 @@ async function processLocalImages(
       }
 
       try {
-        const decodedSrc = decodeURIComponent(src); // FIX: decodificar %20 también aquí
+        const decodedSrc = decodeURIComponent(src);
         const sourcePath = decodedSrc.startsWith("/") 
           ? path.join(PUBLIC_DIR, decodedSrc)
           : path.resolve(INPUT_DIR, decodedSrc);
@@ -264,10 +265,14 @@ async function processLocalImages(
         log("🖼️  (Local BG)", `Optimizing: ${src} → ${filename}`);
         await sharp(buffer).webp({ quality }).toFile(outputPath);
 
-        // Replace the old src in the class with the new ./assets/ path
-        modifiedCls = modifiedCls.replace(`bg-[url('${src}')]`, `bg-[url('./assets/${filename}')]`);
-        modifiedCls = modifiedCls.replace(`bg-[url("${src}")]`, `bg-[url('./assets/${filename}')]`);
-        modifiedCls = modifiedCls.replace(`bg-[url(${src})]`, `bg-[url('./assets/${filename}')]`);
+        // Convert to inline style to avoid Tailwind class mismatch after CDN mutation
+        modifiedCls = modifiedCls.replace(`bg-[url('${src}')]`, "").replace(`bg-[url("${src}")]`, "").replace(`bg-[url(${src})]`, "");
+        
+        let currentStyle = $(el).attr("style") || "";
+        const bgStyle = `background-image: url('./assets/${filename}');`;
+        if (!currentStyle.includes(bgStyle)) {
+          $(el).attr("style", `${currentStyle}${currentStyle.endsWith(";") ? "" : ";"} ${bgStyle}`.trim());
+        }
         
         processCount++;
         count++;
@@ -277,7 +282,7 @@ async function processLocalImages(
     }
 
     if (processCount > 0) {
-      $(el).attr("class", modifiedCls);
+      $(el).attr("class", modifiedCls.replace(/\s+/g, " ").trim());
     }
   }
 
@@ -501,7 +506,11 @@ function sanitizeBodyHtml(bodyHtml: string): string {
   const sanitized = purify.sanitize(bodyHtml, {
     WHOLE_DOCUMENT: false, // Fragment mode — no <html>/<head>/<body> wrapping
     ADD_TAGS: ["link", "style"],
-    ADD_ATTR: ["rel", "href", "media", "class", "id", "role", "aria-label", "aria-hidden", "loading", "decoding"],
+    ADD_ATTR: [
+      "rel", "href", "media", "class", "id", "role", "aria-label", "aria-hidden", 
+      "loading", "decoding", "width", "height", "viewBox", "fill", "stroke", 
+      "stroke-width", "stroke-linecap", "stroke-linejoin"
+    ],
     FORBID_TAGS: ["script", "iframe", "object", "embed", "form"],
     FORBID_ATTR: [
       "onclick", "ondblclick", "onmousedown", "onmouseup", "onmouseover",

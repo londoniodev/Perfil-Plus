@@ -360,6 +360,7 @@ export class PaymentsService {
             unitPrice += Number(mod.priceAdjustment) * modItem.quantity;
             modDescriptions.push(`${mod.name} (x${modItem.quantity})`);
             itemModifiersData.push({
+              tenantId,
               modifierId: mod.id,
               modifierName: mod.name,
               priceAdjustment: mod.priceAdjustment,
@@ -388,6 +389,7 @@ export class PaymentsService {
       });
 
       orderItemsData.push({
+        tenantId,
         variantId: variant.id,
         quantity: item.quantity,
         price: unitPrice,
@@ -750,6 +752,7 @@ export class PaymentsService {
                   if (mod) {
                     itemPrice += Number(mod.priceAdjustment) * modItem.quantity;
                     itemModifiersData.push({
+                      tenantId: resolvedTenantId,
                       modifierId: mod.id,
                       modifierName: mod.name,
                       priceAdjustment: mod.priceAdjustment,
@@ -762,6 +765,7 @@ export class PaymentsService {
               totalAmount += itemPrice * item.quantity;
 
               orderItemsData.push({
+                tenantId: resolvedTenantId,
                 variantId: variant.id,
                 quantity: item.quantity,
                 price: itemPrice,

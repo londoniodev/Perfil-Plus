@@ -55,6 +55,7 @@ export class InventoryCountsService {
         status: CountStatus.DRAFT,
         lines: {
           create: items.map((item) => ({
+            tenantId,
             inventoryItemId: item.id,
             systemStock: item.stock[0]?.currentStock ?? 0,
           })),
@@ -182,6 +183,7 @@ export class InventoryCountsService {
                 },
               },
               create: {
+                tenantId,
                 warehouseId: count.warehouseId,
                 inventoryItemId: u.inventoryItemId,
                 currentStock: u.countedStock,

@@ -104,6 +104,7 @@ export class OrdersService {
                 shippingData: dto.shippingData || Prisma.DbNull,
                 items: {
                   create: orderItemsData.map((item) => ({
+                    tenantId: this.getTenantId(),
                     variantId: item.variantId,
                     quantity: item.quantity,
                     price: item.price,
@@ -112,6 +113,7 @@ export class OrdersService {
                     notes: item.notes,
                     modifiers: {
                       create: item.modifiers.map((mod) => ({
+                        tenantId: this.getTenantId(),
                         modifierId: mod.modifierId,
                         modifierName: mod.modifierName,
                         priceAdjustment: mod.priceAdjustment,
@@ -611,6 +613,7 @@ export class OrdersService {
 
       const payment = await tx.payment.create({
         data: {
+          tenantId: this.getTenantId(),
           orderId,
           amount: dto.amount,
           method: dto.method,

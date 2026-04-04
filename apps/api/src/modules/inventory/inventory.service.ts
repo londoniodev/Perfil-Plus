@@ -239,6 +239,7 @@ export class InventoryService {
       });
 
       // 2. Upsert warehouse stock
+      const tenantId = this.getTenantId();
       await tx.warehouseStock.upsert({
         where: {
           warehouseId_inventoryItemId: {
@@ -247,6 +248,7 @@ export class InventoryService {
           },
         },
         create: {
+          tenantId,
           warehouseId: dto.warehouseId,
           inventoryItemId: dto.inventoryItemId,
           currentStock: dto.quantity,
@@ -393,6 +395,7 @@ export class InventoryService {
           },
         },
         create: {
+          tenantId: this.getTenantId(),
           warehouseId: dto.toWarehouseId,
           inventoryItemId: dto.inventoryItemId,
           currentStock: dto.quantity,
@@ -527,12 +530,12 @@ export class InventoryService {
     const { randomUUID } = await import('crypto');
     const fragments = Array.from(aggregated.entries()).map(
       ([itemId, qty]) =>
-        Prisma.sql`(${randomUUID()}, ${defaultWarehouse}, ${itemId}, ${-qty}, CURRENT_TIMESTAMP)`,
+        Prisma.sql`(${randomUUID()}, ${tenantId}, ${defaultWarehouse}, ${itemId}, ${-qty}, CURRENT_TIMESTAMP)`,
     );
 
     /* eslint-disable no-restricted-syntax */
     await prismaClient.$executeRaw`
-      INSERT INTO "WarehouseStock" ("id", "warehouseId", "inventoryItemId", "currentStock", "updatedAt")
+      INSERT INTO "WarehouseStock" ("id", "tenantId", "warehouseId", "inventoryItemId", "currentStock", "updatedAt")
       VALUES ${Prisma.join(fragments)}
       ON CONFLICT ("warehouseId", "inventoryItemId")
       DO UPDATE SET
@@ -618,6 +621,7 @@ export class InventoryService {
             },
           },
           create: {
+            tenantId,
             warehouseId: m.warehouseId,
             inventoryItemId: m.inventoryItemId,
             currentStock: restoreQty,

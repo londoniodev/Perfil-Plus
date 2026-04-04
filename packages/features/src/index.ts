@@ -1,6 +1,6 @@
 // ============================================================================
 // @alvarosky/features
-// Shared business logic and utilities for the Mauro Mera platform
+// Shared business logic and utilities for the Multi-Tenant SaaS ecosystem
 // ============================================================================
 
 // Validation Schemas (Zod)

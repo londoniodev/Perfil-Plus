@@ -1,5 +1,5 @@
 // This is the MANAGEMENT schema - separate from tenant schemas
-// Contains platform-level data: Tenants, SuperAdmin users
+// Contains management-level data: Tenants, SuperAdmin users (consumed by saas_dashboard)
 
 generator client {
   provider = "prisma-client-js"
@@ -35,7 +35,7 @@ model Tenant {
   @@index([slug])
 }
 
-// ============ PLATFORM AUTHENTICATION ============
+// ============ MANAGEMENT AUTHENTICATION ============
 
 model PlatformUser {
   id        String   @id @default(cuid())

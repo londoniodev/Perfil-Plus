@@ -33,6 +33,7 @@ export interface Order {
     tableNumber?: string;
     customerName?: string;
     customerPhone?: string;
+    customerEmail?: string;
     notes?: string;
     paymentProvider?: string;
     shippingData?: {

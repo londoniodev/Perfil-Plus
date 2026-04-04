@@ -1,6 +1,6 @@
 // ============================================================================
 // @alvarosky/ui
-// Shared UI components for the Mauro Mera platform
+// Shared UI components for the SaaS dashboard and multi-tenant ecosystem
 // ============================================================================
 
 // Utilities

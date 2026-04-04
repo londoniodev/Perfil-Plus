@@ -8,3 +8,6 @@
 ## 2026-03-27 - Product tenant query indexing
 **Learning:** Frequent queries that filter by `tenantId` AND multiple boolean flags (like `published` and `isAvailable`) on the `Product` table can cause full-table scans per tenant or slow sorts.
 **Action:** Always add a composite index like `@@index([tenantId, flag1, flag2])` (e.g., `@@index([tenantId, published, isAvailable])`) on widely queried models to help the database engine immediately pinpoint the exact subset of records.
+## 2026-03-27 - Replace N+1 Sequential Writes in Transactions
+**Learning:** Sequential `await` calls inside `for...of` loops, such as variant iterations within a Prisma transaction (`tx.productVariant.update`), result in N+1 queries. These cause high latency due to Node.js event loop round-trips.
+**Action:** Always replace sequential `for...of` loops involving independent `tx` updates/creates with `Promise.all` and `.map()`. Ensure tenant isolation is preserved by directly injecting `this.cls.get("tenantId")` inside the mapping closure.

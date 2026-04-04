@@ -803,7 +803,7 @@ export class PaymentsService {
               newOrder = await tx.order.update({
                 where: { id: existingOrderId },
                 data: {
-                  status: 'PREPARING', // Directo a cocina, ya está pagado
+                  status: 'ACCEPTED', // Directo a cocina, ya está pagado
                   mpPaymentId: dataId,
                   // Actualizar envío en caso de haberlo incluido
                   shippingData: address
@@ -832,7 +832,7 @@ export class PaymentsService {
                   tenantId: resolvedTenantId,
                   orderNumber,
                   totalAmount,
-                  status: 'PREPARING', // Directo a cocina, ya está pagado
+                  status: 'ACCEPTED', // Directo a cocina, ya está pagado
                   orderType: 'DELIVERY', // o 'DINE_IN' según modelo, asumiendo e-commerce
                   mpPaymentId: dataId,
                   customerName,
@@ -1004,12 +1004,12 @@ export class PaymentsService {
       return;
     }
 
-    // Si el webhook ya actualizó el status a PREPARING, no lo sobreescribimos
-    if (order.status !== 'PREPARING' && order.status !== 'APPROVED') {
+    // Si el webhook ya actualizó el status a ACCEPTED, no lo sobreescribimos
+    if (order.status !== 'ACCEPTED' && order.status !== 'APPROVED') {
       await this.prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'PREPARING',
+          status: 'ACCEPTED',
           mpPaymentId,
         },
       });
@@ -1223,7 +1223,7 @@ export class PaymentsService {
 
     // 3. Manejo de Estados (Bold CloudEvents: SALE_APPROVED, SALE_REJECTED, VOID_APPROVED, VOID_REJECTED)
     if (paymentStatus === 'SALE_APPROVED') {
-      if (order.status === 'PREPARING' || order.status === 'DELIVERED') {
+      if (order.status === 'ACCEPTED' || order.status === 'PREPARING' || order.status === 'DELIVERED') {
         return { status: 'processed', reason: 'Already processed' };
       }
 
@@ -1231,7 +1231,7 @@ export class PaymentsService {
         this.prisma.order.update({
           where: { id: orderId },
           data: {
-            status: 'PREPARING', // Directo a cocina, ya está pagado
+            status: 'ACCEPTED', // Directo a cocina, ya está pagado
             paymentExternalId: paymentId?.toString(),
             paymentProvider: 'BOLD',
           },

@@ -20,9 +20,8 @@ import {
 } from "@alvarosky/ui"
 import { RefreshCw, Clock, Utensils, CheckCircle, Truck, AlertCircle } from "lucide-react"
 
-const STATUS_GROUPS = {
     NEW: ['PENDING'] as OrderStatus[],
-    COOKING: ['PROCESSING', 'PREPARING'] as OrderStatus[],
+    COOKING: ['ACCEPTED', 'COOKING', 'PROCESSING', 'PREPARING'] as OrderStatus[],
     READY: ['READY', 'SHIPPED'] as OrderStatus[],
     COMPLETED: ['DELIVERED', 'SERVED', 'CANCELLED', 'REFUNDED'] as OrderStatus[],
 }
@@ -45,13 +44,23 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                         <Badge variant={order.orderType === 'DELIVERY' ? 'secondary' : 'outline'}>
                             {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
                         </Badge>
-                        {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) ? (
+                        {order.items?.some(i => i.isPaid) ? (
                             <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
                                 💳 PAGADO
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="text-[10px] px-1.5 border-amber-400 text-amber-600">
                                 Pago pendiente
+                            </Badge>
+                        )}
+                        {(order.status === 'ACCEPTED' || order.status === 'PREPARING') && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 bg-slate-200 text-slate-700">
+                                Sin Empezar
+                            </Badge>
+                        )}
+                        {(order.status === 'COOKING' || order.status === 'PROCESSING') && (
+                            <Badge variant="default" className="text-[10px] px-1.5 bg-blue-500 hover:bg-blue-600">
+                                Cocinando
                             </Badge>
                         )}
                     </div>
@@ -77,9 +86,11 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                     ))}
                 </div>
 
-                {(order.customerName || order.notes || (order.orderType === 'DELIVERY' && order.shippingData)) && (
+                {(order.customerName || order.customerPhone || order.customerEmail || order.notes || (order.orderType === 'DELIVERY' && order.shippingData)) && (
                     <div className="bg-muted/30 p-2 rounded text-xs space-y-1">
                         {order.customerName && <p><strong>Cliente:</strong> {order.customerName}</p>}
+                        {order.customerPhone && <p><strong>Tel:</strong> {order.customerPhone}</p>}
+                        {order.customerEmail && <p><strong>Email:</strong> {order.customerEmail}</p>}
                         {order.orderType === 'DELIVERY' && order.shippingData && (
                             <p><strong>Dir:</strong> {order.shippingData.address}, {order.shippingData.city}</p>
                         )}
@@ -101,7 +112,7 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                         </Button>
                         <Button
                             size="sm"
-                            onClick={() => onStatusChange(order.id, 'PREPARING')}
+                            onClick={() => onStatusChange(order.id, 'ACCEPTED')}
                             className="flex-1 bg-green-600 hover:bg-green-700"
                         >
                             <Utensils className="w-4 h-4 mr-2" aria-hidden="true" /> Enviar a Cocina
@@ -109,11 +120,21 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                     </div>
                 )}
                 {(order.status === 'APPROVED') && (
-                    <Button size="sm" onClick={() => onStatusChange(order.id, 'PREPARING')} className="w-full">
+                    <Button size="sm" onClick={() => onStatusChange(order.id, 'ACCEPTED')} className="w-full">
                         <Utensils className="w-4 h-4 mr-2" aria-hidden="true" /> Enviar a Cocina
                     </Button>
                 )}
-                {(order.status === 'PREPARING' || order.status === 'PROCESSING') && (
+                {(order.status === 'ACCEPTED' || order.status === 'PREPARING') && (
+                    <div className="flex gap-2 w-full">
+                        <Button size="sm" onClick={() => onStatusChange(order.id, 'COOKING')} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                            Empezar a Cocinar
+                        </Button>
+                        <Button size="sm" onClick={() => onStatusChange(order.id, 'READY')} className="flex-1 border-orange-500 text-orange-600 bg-white hover:bg-orange-50">
+                            Marcar Listo
+                        </Button>
+                    </div>
+                )}
+                {(order.status === 'COOKING' || order.status === 'PROCESSING') && (
                     <Button size="sm" onClick={() => onStatusChange(order.id, 'READY')} className="w-full bg-orange-600 hover:bg-orange-700">
                         <Clock className="w-4 h-4 mr-2" aria-hidden="true" /> Marcar Listo (Cocina)
                     </Button>
@@ -194,9 +215,10 @@ export default function AdminOrdersPage() {
             const isInStatusGroup = group.includes(o.status);
             
             // Si estamos en la pestaña NUEVOS, ocultamos los que ya están pagados online
+            // Si estamos en la pestaña NUEVOS, ocultamos los que ya están pagados online o tienen isPaid
             // para que no requieran aprobación manual del mesero.
             if (group === STATUS_GROUPS.NEW) {
-                const isPaidOnline = o.paymentProvider && ONLINE_PROVIDERS.includes(o.paymentProvider);
+                const isPaidOnline = o.items?.some(i => i.isPaid) || false;
                 return isInStatusGroup && !isPaidOnline;
             }
 

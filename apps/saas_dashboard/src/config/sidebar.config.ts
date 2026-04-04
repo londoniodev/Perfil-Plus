@@ -208,7 +208,6 @@ export const sidebarConfig: SidebarConfig = {
                     { title: "Almacenes", href: "/restaurante/inventario/almacenes" },
                     { title: "Recetas", href: "/restaurante/recetas" },
                     { title: "Conteo físico", href: "/restaurante/inventario/conteos" },
-                    { title: "Costeo y Márgenes", href: "/restaurante/costeo" },
                 ],
             },
         ],

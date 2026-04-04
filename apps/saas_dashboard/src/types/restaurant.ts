@@ -1,4 +1,4 @@
-export type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'READY' | 'SERVED' | 'ASSIGNED' | 'IN_TRANSIT' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+export type OrderStatus = 'PENDING' | 'APPROVED' | 'PROCESSING' | 'PREPARING' | 'ACCEPTED' | 'COOKING' | 'READY' | 'SERVED' | 'ASSIGNED' | 'IN_TRANSIT' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
 export type OrderType = 'DINE_IN' | 'TAKE_AWAY' | 'DELIVERY';
 
 export interface Modifier {

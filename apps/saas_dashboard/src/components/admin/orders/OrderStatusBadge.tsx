@@ -15,8 +15,10 @@ interface OrderStatusBadgeProps {
 const statusColors: Record<OrderStatus, string> = {
     PENDING: "bg-yellow-500",
     APPROVED: "bg-green-500",
+    ACCEPTED: "bg-orange-500",
+    COOKING: "bg-red-500",
     PROCESSING: "bg-blue-500",
-    PREPARING: "bg-orange-500",
+    PREPARING: "bg-slate-400",
     READY: "bg-teal-500",
     SERVED: "bg-purple-500",
     ASSIGNED: "bg-blue-600",
@@ -31,8 +33,10 @@ const statusColors: Record<OrderStatus, string> = {
 const statusLabels: Record<OrderStatus, string> = {
     PENDING: "Pendiente",
     APPROVED: "Aprobado",
+    ACCEPTED: "Sin Empezar",
+    COOKING: "Cocinando",
     PROCESSING: "Procesando",
-    PREPARING: "En Cocina",
+    PREPARING: "En Cocina (Obsol)",
     READY: "Listo",
     SERVED: "Servido",
     ASSIGNED: "Asignado a Repartidor",
@@ -57,7 +61,7 @@ export default function OrderStatusBadge({ order }: OrderStatusBadgeProps) {
     if (hasDigital && !hasPhysical && !hasFood) {
         isReadOnly = true
     } else if (hasFood) {
-        allowedStatuses = ["PREPARING", "READY", "SERVED", "CANCELLED"]
+        allowedStatuses = ["ACCEPTED", "COOKING", "READY", "SERVED", "CANCELLED"]
     } else if (hasPhysical) {
         allowedStatuses = ["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]
     } else {

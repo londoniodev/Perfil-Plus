@@ -28,12 +28,12 @@ function printHelp(): void {
 ║    --tenant, -t      Tenant slug (e.g. bocata-artesanal) ║
 ║    --landing, -l     Landing slug (e.g. home, promo-2025)║
 ║                                                          ║
-║  Environment Variables (required):                       ║
-║    S3_ENDPOINT       MinIO endpoint URL                  ║
-║    S3_REGION         S3 region (e.g. us-east-1)          ║
-║    S3_ACCESS_KEY     MinIO access key                    ║
-║    S3_SECRET_KEY     MinIO secret key                    ║
 ║    S3_PUBLIC_URL     Public CDN base URL                 ║
+║    REVALIDATION_SECRET  Secret for cache purging         ║
+║                                                          ║
+║  Options (optional):                                     ║
+║    --domain, -d      Target domain for revalidation      ║
+║                      (example: perfil.plus)              ║
 ║                                                          ║
 ║  Source:                                                 ║
 ║    Reads from .local-landings/<tenant>/<landing>/         ║
@@ -45,7 +45,7 @@ function printHelp(): void {
 ║    Assets: landings/<landing>/assets/*                    ║
 ║                                                          ║
 ║  Example:                                                ║
-║    npx tsx src/cli-upload.ts -t bocata-artesanal -l home  ║
+║    npx tsx src/cli-upload.ts -t bocata -l home -d perfil.plus║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 `);
@@ -71,6 +71,7 @@ async function main(): Promise<void> {
 
   const tenantSlug = parseArg(args, ["--tenant", "-t"]);
   const landingSlug = parseArg(args, ["--landing", "-l"]);
+  const domain = parseArg(args, ["--domain", "-d"]);
 
   if (!tenantSlug) {
     console.error("❌ Error: --tenant (-t) is required.");
@@ -90,7 +91,7 @@ async function main(): Promise<void> {
   console.log("");
 
   try {
-    const result = await uploadLanding({ tenantSlug, landingSlug });
+    const result = await uploadLanding({ tenantSlug, landingSlug, domain });
 
     console.log("");
     console.log(`🌐 Landing live at: ${result.publicUrl}`);

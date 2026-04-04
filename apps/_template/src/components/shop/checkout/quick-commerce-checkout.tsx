@@ -19,7 +19,7 @@ import {
     Separator,
     useToast
 } from "@alvarosky/ui"
-import { ArrowRight, Loader2, MapPin, Truck, ShoppingBag, UtensilsCrossed, Smartphone, CheckCircle2, Pencil } from "lucide-react"
+import { ArrowRight, Loader2, MapPin, Locate, Truck, ShoppingBag, UtensilsCrossed, Smartphone, CheckCircle2, Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { LocationPicker } from "./location-picker"
 import { formatCurrency } from "@/lib/utils"
@@ -43,6 +43,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [forceEditMode, setForceEditMode] = useState(false)
     const [hydratedFromStorage, setHydratedFromStorage] = useState(false)
+    const [gpsCoords, setGpsCoords] = useState<{ lat: number, lng: number } | undefined>(undefined)
 
     const form = useForm<QuickCommerceFormData>({
         resolver: zodResolver(quickCommerceSchema),
@@ -98,8 +99,28 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
     const isExpressMode = useMemo(() => {
         if (forceEditMode || !waData?.customerData) return false
         const cd = waData.customerData
-        return !!(cd.name && cd.phone && cd.address)
+        return !!(waData.customerData.name && waData.customerData.phone && waData.customerData.address)
     }, [waData, forceEditMode])
+
+    const handleLocate = () => {
+        if (typeof window !== "undefined" && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const newCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+                    setGpsCoords(newCoords)
+                    form.setValue("lat", newCoords.lat)
+                    form.setValue("lng", newCoords.lng)
+                    toast.success("Ubicación actualizada", "El pin del mapa se ha movido a tu posición actual.")
+                },
+                (error) => {
+                    toast.error("Ubicación", "No se pudo obtener el GPS. Actívalo o arrastra el pin manualmente.")
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            )
+        } else {
+            toast.error("Error", "Tu navegador no soporta geolocalización.")
+        }
+    }
 
     const onSubmit = async (data: QuickCommerceFormData) => {
         console.log('[Checkout] onSubmit ejecutado con:', data)
@@ -449,7 +470,19 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="q-address">Dirección Exacta</Label>
-                                <Input id="q-address" {...form.register("address")} placeholder="Calle, apto, oficina..." className="bg-muted/30" />
+                                <div className="flex gap-2">
+                                    <Input id="q-address" {...form.register("address")} placeholder="Calle, apto, oficina..." className="bg-muted/30 flex-1" />
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        size="icon" 
+                                        onClick={handleLocate}
+                                        title="Usar mi ubicación actual"
+                                        className="shrink-0 bg-white hover:bg-slate-50 border-slate-200"
+                                    >
+                                        <Locate className="h-4 w-4 text-primary" aria-hidden="true" />
+                                    </Button>
+                                </div>
                                 {form.formState.errors.address && <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>}
                             </div>
                         </CardContent>
@@ -466,7 +499,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                         <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
                             <div className="h-[300px] w-full border-y md:max-w-xl md:mx-auto md:rounded-xl md:border shadow-sm overflow-hidden z-0">
                                 <LocationPicker 
-                                    initialLocation={waData?.customerData ? { lat: waData.customerData.lat, lng: waData.customerData.lng } : undefined}
+                                    initialLocation={gpsCoords || (waData?.customerData ? { lat: waData.customerData.lat, lng: waData.customerData.lng } : undefined)}
                                     onLocationChange={(loc) => {
                                         form.setValue("lat", loc.lat)
                                         form.setValue("lng", loc.lng)

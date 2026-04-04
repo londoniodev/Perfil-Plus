@@ -10,6 +10,7 @@ import { lookup as mimeTypeLookup } from "mime-types";
 interface UploaderConfig {
   tenantSlug: string;
   landingSlug: string;
+  domain?: string; // Opcional: Dominio del tenant para revalidación automática
 }
 
 interface UploadResult {
@@ -233,12 +234,17 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
 
   // 8. Fire revalidation webhook
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     const secret = process.env.REVALIDATION_SECRET;
+    // Prioridad: 1. Argumento --domain, 2. Env NEXT_PUBLIC_APP_URL, 3. Fallback perfil.plus
+    let appUrl = config.domain || process.env.NEXT_PUBLIC_APP_URL || "https://perfil.plus";
 
-    if (!appUrl || !secret) {
-      log("⚠️", "Upload succeeded, but cache revalidation skipped: Missing NEXT_PUBLIC_APP_URL or REVALIDATION_SECRET");
+    if (!secret) {
+      log("⚠️", "Upload succeeded, but cache revalidation skipped: Missing REVALIDATION_SECRET");
     } else {
+      // Normalización de URL
+      if (!appUrl.startsWith("http")) appUrl = `https://${appUrl}`;
+      appUrl = appUrl.replace(/\/+$/, ""); // Quitar slash final
+
       const webhookUrl = `${appUrl}/api/webhooks/revalidate`;
       log("🔄", `Firing revalidation webhook: ${webhookUrl}`);
       

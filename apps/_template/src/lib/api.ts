@@ -164,3 +164,8 @@ export async function payOrder(orderId: string, data: { amount: number, method: 
         body: JSON.stringify(data),
     }, tenantId);
 }
+
+export async function trackOrder(orderId: string, tenantId?: string): Promise<any> {
+    return fetchAPI(`/orders/track/${orderId}`, undefined, tenantId);
+}
+

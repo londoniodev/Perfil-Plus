@@ -940,7 +940,26 @@ export class TenantService {
       where: { id: tenant.id },
     });
 
-    // 4. Invalidar caché en Redis
+    // 4. Eliminar dominios en Dokploy (Flujo seguro: buscar domainId → eliminar por ID)
+    const storefrontAppId = this.configService.get<string>('STOREFRONT_DOKPLOY_APP_ID');
+    const baseDomain = this.configService.get<string>('BASE_DOMAIN') || this.configService.get<string>('NEXT_PUBLIC_BASE_DOMAIN') || 'perfil.plus';
+
+    if (storefrontAppId) {
+      const defaultDomain = `${tenant.slug}.${baseDomain}`;
+      // Eliminar el subdominio base (ej: demo-restaurante.perfil.plus)
+      this.dokployService
+        .removeDomainByHost(defaultDomain, storefrontAppId)
+        .catch((e) => this.logger.error(`[Dokploy Cleanup] Error eliminando ${defaultDomain}: ${e.message}`));
+
+      // Si tiene un dominio personalizado diferente, eliminarlo también
+      if (tenant.domain && tenant.domain !== defaultDomain) {
+        this.dokployService
+          .removeDomainByHost(tenant.domain, storefrontAppId)
+          .catch((e) => this.logger.error(`[Dokploy Cleanup] Error eliminando ${tenant.domain}: ${e.message}`));
+      }
+    }
+
+    // 5. Invalidar caché en Redis
     await this.invalidateTenantCache(tenant.slug, tenant.domain ?? undefined);
 
     this.logger.log(`✅ Tenant ${tenant.slug} eliminado exitosamente.`);

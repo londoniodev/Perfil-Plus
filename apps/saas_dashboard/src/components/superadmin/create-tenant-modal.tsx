@@ -83,6 +83,21 @@ export function CreateTenantModal() {
         },
     })
 
+    const [hasCustomDomain, setHasCustomDomain] = React.useState(false)
+    const slug = form.watch("slug")
+
+    React.useEffect(() => {
+        if (!hasCustomDomain) {
+            if (slug) {
+                // Remove generic fallback domains and ensure valid format internally
+                const cleanSlug = slug.replace(/[^a-z0-9-]/g, '').toLowerCase()
+                form.setValue("domain", `${cleanSlug}.perfil.plus`, { shouldValidate: true })
+            } else {
+                form.setValue("domain", "", { shouldValidate: false })
+            }
+        }
+    }, [slug, hasCustomDomain, form])
+
     const onSubmit = async (data: CreateTenantFormValues) => {
         setIsSubmitting(true)
         try {
@@ -165,9 +180,29 @@ export function CreateTenantModal() {
                                 name="domain"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Dominio Custom</FormLabel>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <FormLabel>Dominio</FormLabel>
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox 
+                                                    id="customDomain" 
+                                                    checked={hasCustomDomain} 
+                                                    onCheckedChange={(c) => setHasCustomDomain(!!c)} 
+                                                />
+                                                <label 
+                                                    htmlFor="customDomain" 
+                                                    className="text-xs font-medium leading-none cursor-pointer"
+                                                >
+                                                    Dominio Propio
+                                                </label>
+                                            </div>
+                                        </div>
                                         <FormControl>
-                                            <Input placeholder="elbuensabor.com" {...field} />
+                                            <Input 
+                                                placeholder="elbuensabor.com" 
+                                                readOnly={!hasCustomDomain} 
+                                                className={!hasCustomDomain ? "bg-muted/50 text-muted-foreground outline-none focus-visible:ring-0" : ""} 
+                                                {...field} 
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

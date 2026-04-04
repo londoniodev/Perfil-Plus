@@ -320,13 +320,24 @@ export default function TablesPage() {
                                                     <Button variant="outline" size="sm" className="bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800 hover:text-white whitespace-nowrap" onClick={() => handleDownloadQr(tableUrl, table.label)}>
                                                         Descargar QR
                                                     </Button>
+                                                     <Button
+                                                         variant="outline"
+                                                         size="sm"
+                                                         className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                                         onClick={() => handleEdit(table)}
+                                                         aria-label="Editar mesa"
+                                                     >
+                                                         <Edit className="h-4 w-4 mr-1" aria-hidden="true" />
+                                                         Editar
+                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                                         onClick={() => handleDelete(table.id)}
+                                                        aria-label="Eliminar mesa"
                                                     >
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                                                     </Button>
                                                 </div>
                                             </TableCell>

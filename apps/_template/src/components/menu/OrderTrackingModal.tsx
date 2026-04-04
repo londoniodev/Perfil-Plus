@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { CheckCircle2, Copy, ArrowRight, Loader2, Package, ChefHat, Check, RefreshCw } from "lucide-react"
+import { CheckCircle2, Copy, ArrowRight, Loader2, Package, ChefHat, Check, RefreshCw, UtensilsCrossed } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { useTenant } from "@/app/providers"
 import { useOrder } from "@alvarosky/restaurant-sdk"
@@ -14,10 +14,11 @@ interface OrderTrackingModalProps {
 
 const statusSteps = [
     { key: "PENDING", label: "Pendiente", icon: Loader2, color: "text-yellow-500" },
-    { key: "APPROVED", label: "Aprobado", icon: CheckCircle2, color: "text-blue-500" },
-    { key: "PREPARING", label: "En Cocina", icon: ChefHat, color: "text-orange-500" },
-    { key: "READY", label: "Listo", icon: Check, color: "text-green-500" },
-    { key: "SERVED", label: "Servido", icon: Package, color: "text-slate-500" }
+    { key: "APPROVED", label: "Confirmado", icon: CheckCircle2, color: "text-blue-500" },
+    { key: "ACCEPTED", label: "Recibido", icon: CheckCircle2, color: "text-emerald-500" },
+    { key: "COOKING", label: "En Cocina", icon: ChefHat, color: "text-orange-500" },
+    { key: "READY", label: "¡Listo!", icon: Check, color: "text-green-500" },
+    { key: "SERVED", label: "Entregado", icon: Package, color: "text-slate-500" }
 ]
 
 export function OrderTrackingModal({
@@ -54,7 +55,9 @@ export function OrderTrackingModal({
     if (!isOpen) return null
 
     const currentStatus = order?.status || "PENDING"
-    const statusIndex = statusSteps.findIndex(s => s.key === currentStatus)
+    // Handle deprecated PREPARING by mapping it to COOKING for the index calculation
+    const normalizedStatus = currentStatus === "PREPARING" ? "COOKING" : currentStatus
+    const statusIndex = statusSteps.findIndex(s => s.key === normalizedStatus)
 
     return (
         <AnimatePresence>

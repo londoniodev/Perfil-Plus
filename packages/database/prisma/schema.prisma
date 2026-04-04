@@ -959,7 +959,9 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   REFUNDED
-  PREPARING
+  PREPARING   // @deprecated (migrating to ACCEPTED/COOKING)
+  ACCEPTED    // Sin Empezar / En Cola
+  COOKING     // Cocinando activamente
   READY
   SERVED
   ASSIGNED

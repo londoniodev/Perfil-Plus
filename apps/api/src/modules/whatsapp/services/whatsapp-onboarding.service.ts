@@ -114,20 +114,27 @@ export class WhatsappOnboardingService {
         `[Tenant: ${tenantId}] Guardando credenciales de WhatsApp: PhoneID ${waPhoneNumberId}, WabaID ${wabaId}`,
       );
 
-      await this.prisma.secure.storeSettings.upsert({
+      const existingSettings = await this.prisma.storeSettings.findFirst({
         where: { tenantId },
-        update: {
-          waAccessToken: longLivedToken,
-          waPhoneNumberId: waPhoneNumberId,
-          wabaId: wabaId,
-        },
-        create: {
-          tenantId,
-          waAccessToken: longLivedToken,
-          waPhoneNumberId: waPhoneNumberId,
-          wabaId: wabaId,
-        },
+        select: { id: true },
       });
+
+      const waData = {
+        waAccessToken: longLivedToken,
+        waPhoneNumberId: waPhoneNumberId,
+        wabaId: wabaId,
+      };
+
+      if (existingSettings) {
+        await this.prisma.storeSettings.update({
+          where: { id: existingSettings.id },
+          data: waData,
+        });
+      } else {
+        await this.prisma.storeSettings.create({
+          data: { tenantId, ...waData },
+        });
+      }
 
       return {
         success: true,

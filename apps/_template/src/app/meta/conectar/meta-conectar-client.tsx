@@ -1,6 +1,6 @@
 "use client"
 
-import { WhatsAppEmbeddedSignup } from "@/components/admin/whatsapp/embedded-signup"
+import { WhatsAppEmbeddedSignup } from "@/components/meta/embedded-signup"
 
 interface MetaConectarClientProps {
   tenantId: string

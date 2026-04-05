@@ -20,34 +20,17 @@ export async function middleware(request: NextRequest) {
         domainToQuery = domainToQuery.substring(4);
     }
 
-    // ── Bypass: Hub Centralizado de Meta Embedded Signup ──
-    // El dominio del Tech Provider NO es un tenant.
-    // Las rutas /meta/* se reescriben directamente al Dashboard sin resolución de tenant.
-    // El tenantId viaja en los searchParams de la URL, no en el dominio.
-    // IMPORTANTE: Usar la versión punycode del dominio (ej: xn--alvarolondoo-khb.dev)
-    // porque el Host header del navegador siempre llega en punycode.
-    const TECH_PROVIDER_DOMAIN = process.env.TECH_PROVIDER_DOMAIN;
+    // NOTA: La ruta /meta/conectar ahora se sirve de forma nativa desde _template.
+    // Ya no se requiere un bypass/rewrite hacia saas_dashboard.
 
-    if (TECH_PROVIDER_DOMAIN && domainToQuery === TECH_PROVIDER_DOMAIN && url.pathname.startsWith('/meta')) {
-        const dashboardHost = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
-        const destinationTarget = new URL(url.pathname + url.search, dashboardHost);
 
-        const bypassHeaders = new Headers(request.headers);
-        bypassHeaders.set('x-forwarded-host', request.headers.get('host') || '');
-        bypassHeaders.set('x-forwarded-proto', request.headers.get('x-forwarded-proto') || url.protocol.replace(':', ''));
-        bypassHeaders.set('x-forwarded-path', url.pathname);
-        // No se inyecta x-tenant-id — el tenant se identifica por searchParams en el frontend
-
-        if (process.env.NODE_ENV !== 'production') {
-            console.log(`[META BYPASS] Rewriting ${url.pathname} to Dashboard (Tech Provider domain: ${domainToQuery})`);
-        }
-
-        return NextResponse.rewrite(destinationTarget, {
-            request: { headers: bypassHeaders },
-        });
-    }
-
-    const isBaseDomain = ['localhost', '127.0.0.1'].some(d => domainToQuery.includes(d));
+    const baseDomainEnv = process.env.BASE_DOMAIN || 'perfil.plus';
+    const techProviderEnv = process.env.TECH_PROVIDER_DOMAIN || 'xn--alvarolondoo-khb.dev';
+    
+    // Si el dominio es localhost, el dominio base, o el tech provider, no intentamos resolver un tenant
+    const isBaseDomain = ['localhost', '127.0.0.1', baseDomainEnv, techProviderEnv].some(d => 
+        domainToQuery === d || domainToQuery.includes('localhost') || domainToQuery.includes('127.0.0.1')
+    );
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantSlug = process.env.NEXT_PUBLIC_TENANT_ID || domainToQuery; // Fallback al dominio

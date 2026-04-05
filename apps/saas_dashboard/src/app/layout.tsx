@@ -66,38 +66,16 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     // 1. Validate Session Server-Side
-    // Bypass: Rutas públicas del Hub de Meta Embedded Signup (/meta/*)
-    // No requieren autenticación — la seguridad la maneja el OAuth de Meta.
-    const h = await import("next/headers");
-    const hdrs = await h.headers();
-    const forwardedPath = hdrs.get("x-forwarded-path") || "";
-    const isPublicMetaRoute = forwardedPath.startsWith("/meta");
-
-    const user = isPublicMetaRoute ? null : await getSessionUser();
-    if (!user && !isPublicMetaRoute) {
+    const user = await getSessionUser();
+    if (!user) {
         // En Next.js, un redirect relativo es capturado por el basePath (/dashboard).
         // Para redirigir al portal público de autenticación, usamos una URL absoluta
         // construida dinámicamente a partir del proxy.
-        const headersList = await cookies(); // Dummy hack? No, use headers from next/headers
+        const h = await import("next/headers");
+        const hdrs = await h.headers();
         const host = hdrs.get("x-forwarded-host") || hdrs.get("host") || "localhost:3000";
         const proto = hdrs.get("x-forwarded-proto") || "https";
         redirect(`${proto}://${host}/login?reason=session_expired`);
-    }
-
-    // ── Early return: Hub público de Meta (sin auth, sin sidebar, sin branding) ──
-    if (isPublicMetaRoute) {
-        return (
-            <html lang="es" className="dark" suppressHydrationWarning>
-                <head>
-                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-                </head>
-                <body className={`${getFontVariables()} font-sans antialiased min-h-screen bg-background text-foreground`}>
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
-                </body>
-            </html>
-        );
     }
 
     const cookieStore = await cookies();

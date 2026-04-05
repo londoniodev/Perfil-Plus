@@ -6,7 +6,7 @@ import { apiSettingsSchema, ApiSettingsValues } from "@alvarosky/features"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast } from "@alvarosky/ui"
 import { Loader2, MessageSquare, CheckCircle2, ExternalLink } from "lucide-react"
 import { updateApiSettings } from "@/actions/admin/update-settings"
-import { TENANT_ID } from "@/lib/config"
+import { TENANT_ID, META_HUB_DOMAIN } from "@/lib/config"
 import { useRouter } from "next/navigation"
 
 interface ApiSettingsFormProps {
@@ -14,8 +14,6 @@ interface ApiSettingsFormProps {
     waPhoneNumberId?: string | null
     wabaId?: string | null
 }
-
-const META_HUB_DOMAIN = process.env.NEXT_PUBLIC_META_HUB_DOMAIN || ""
 
 export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSettingsFormProps) {
     const toast = useToast()
@@ -49,12 +47,15 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
      * bloqueo de popups en navegadores modernos.
      */
     const handleConnectWhatsApp = () => {
-        const currentUrl = window.location.href
-        const hubUrl = new URL(`https://${META_HUB_DOMAIN}/meta/conectar`)
-        hubUrl.searchParams.set("tenantId", TENANT_ID)
-        hubUrl.searchParams.set("returnUrl", currentUrl)
+        if (!META_HUB_DOMAIN) {
+            toast.error("NEXT_PUBLIC_META_HUB_DOMAIN no está configurado. Reconstruye la app con esta variable.")
+            return
+        }
 
-        window.location.href = hubUrl.toString()
+        const currentUrl = window.location.href
+        const hubUrl = `https://${META_HUB_DOMAIN}/meta/conectar?tenantId=${encodeURIComponent(TENANT_ID)}&returnUrl=${encodeURIComponent(currentUrl)}`
+
+        window.location.href = hubUrl
     }
 
     return (

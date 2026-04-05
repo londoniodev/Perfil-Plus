@@ -18,6 +18,12 @@ if (!envTenantId) {
 
 export const TENANT_ID = envTenantId;
 
+// ── Meta Embedded Signup Hub ──
+// Dominio del Tech Provider donde se ejecuta el flujo de Embedded Signup.
+// Debe ser la versión punycode si el dominio tiene caracteres especiales (ej: ñ).
+// Ejemplo: xn--alvarolondoo-khb.dev
+export const META_HUB_DOMAIN = process.env.NEXT_PUBLIC_META_HUB_DOMAIN?.trim() || "";
+
 /**
  * Get API headers with tenant ID
  * Use this for all API calls to ensure tenant context is passed
@@ -29,3 +35,4 @@ export function getApiHeaders(additionalHeaders?: HeadersInit): HeadersInit {
         ...additionalHeaders,
     };
 }
+

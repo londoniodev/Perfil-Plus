@@ -1,147 +1,207 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@alvarosky/ui"
+import { useState } from "react"
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@alvarosky/ui"
 import { toast } from "sonner"
-import { Loader2, MessageSquare } from "lucide-react"
-import axios from "axios"
+import { Loader2, MessageSquare, CheckCircle2, ExternalLink } from "lucide-react"
+import { useFacebookSdk } from "@/hooks/useFacebookSdk"
+import type { FBCodeAuthResponse } from "@/types/facebook-sdk"
+import { API_BASE } from "@/lib/config"
 
 interface WhatsAppEmbeddedSignupProps {
+  /** CUID del tenant que se está conectando */
+  tenantId: string
+  /** URL a la que redirigir al completar el flujo */
+  returnUrl?: string
+  /** Callback interno cuando el signup es exitoso */
   onSuccess?: () => void
 }
 
-declare global {
-  interface Window {
-    FB: any
-    fbAsyncInit: any
-  }
-}
+type SignupStatus = "idle" | "connecting" | "sending" | "success" | "error"
 
-export function WhatsAppEmbeddedSignup({ onSuccess }: WhatsAppEmbeddedSignupProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSdkLoaded, setIsSdkLoaded] = useState(false)
+export function WhatsAppEmbeddedSignup({
+  tenantId,
+  returnUrl,
+  onSuccess,
+}: WhatsAppEmbeddedSignupProps) {
+  const [status, setStatus] = useState<SignupStatus>("idle")
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Cargar SDK de Facebook
-    const loadFbSdk = () => {
-      // Función de inicialización
-      const initSdk = () => {
-        if (!window.FB) return;
-        window.FB.init({
-          appId: process.env.NEXT_PUBLIC_META_APP_ID || "YOUR_APP_ID",
-          cookie: true,
-          xfbml: true,
-          version: "v21.0"
-        });
-        setIsSdkLoaded(true)
-      };
+  const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID || ""
+  const metaConfigId = process.env.NEXT_PUBLIC_META_CONFIG_ID || ""
 
-      if (window.FB) {
-        initSdk();
-      } else {
-        window.fbAsyncInit = initSdk;
-        
-        // Inyectar script si no existe
-        if (!document.getElementById("facebook-jssdk")) {
-          (function(d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s) as HTMLScriptElement;
-            js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode?.insertBefore(js, fjs);
-          }(document, "script", "facebook-jssdk"));
-        }
-      }
-    }
-
-    loadFbSdk()
-  }, [])
+  const { fb, isLoading: isSdkLoading, error: sdkError } = useFacebookSdk({
+    appId: metaAppId,
+    version: "v21.0",
+  })
 
   const handleSignup = () => {
-    if (!window.FB) {
+    if (!fb) {
       toast.error("El SDK de Facebook no ha cargado correctamente")
       return
     }
 
-    setIsLoading(true)
+    if (!metaConfigId) {
+      toast.error("NEXT_PUBLIC_META_CONFIG_ID no está configurado")
+      return
+    }
 
-    // Lanzar el Login de Meta para WhatsApp Embedded Signup
-    window.FB.login(
-      (response: any) => {
-        if (response.authResponse) {
-          const code = response.authResponse.code
-          if (code) {
-            exchangeCodeForToken(code)
-          } else {
-            setIsLoading(false)
-            toast.error("No se recibió el código de autorización de Meta")
-          }
+    setStatus("connecting")
+    setErrorMessage(null)
+
+    // FB.login() abre el popup de Meta Embedded Signup
+    fb.login(
+      async (response) => {
+        if (response.authResponse && "code" in response.authResponse) {
+          const { code } = response.authResponse as FBCodeAuthResponse
+          await exchangeCode(code)
         } else {
-          setIsLoading(false)
-          console.warn("El usuario canceló el login o no autorizó los permisos")
+          setStatus("idle")
+          // El usuario cerró el popup o no autorizó
+          console.warn("[Embedded Signup] El usuario canceló o no autorizó los permisos")
         }
       },
       {
-        config_id: process.env.NEXT_PUBLIC_META_CONFIG_ID || "YOUR_CONFIG_ID", // Config ID del flujo de Embedded Signup
+        config_id: metaConfigId,
         response_type: "code",
-        override_default_response_type: true
+        override_default_response_type: true,
       }
     )
   }
 
-  const exchangeCodeForToken = async (code: string) => {
+  const exchangeCode = async (code: string) => {
+    setStatus("sending")
+
     try {
-      const response = await axios.post("/api/whatsapp/onboarding/callback", { code })
-      
-      if (response.data.success) {
+      const token = typeof window !== "undefined"
+        ? localStorage.getItem("auth_token")
+        : null
+
+      const response = await fetch(`${API_BASE}/whatsapp/onboarding/callback`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-id": tenantId,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ code }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setStatus("success")
         toast.success("¡Cuenta de WhatsApp vinculada exitosamente!")
         onSuccess?.()
+
+        // Redirigir de vuelta al panel del tenant
+        if (returnUrl) {
+          setTimeout(() => {
+            window.location.href = returnUrl
+          }, 2000)
+        }
       } else {
-        toast.error(response.data.message || "Error al vincular la cuenta")
+        setStatus("error")
+        const msg = data.message || "Error al vincular la cuenta"
+        setErrorMessage(msg)
+        toast.error(msg)
       }
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Error en la conexión con el servidor"
-      toast.error(errorMsg)
-      console.error("Error exchanging code:", error)
-    } finally {
-      setIsLoading(false)
+    } catch (error: unknown) {
+      setStatus("error")
+      const msg = error instanceof Error
+        ? error.message
+        : "Error en la conexión con el servidor"
+      setErrorMessage(msg)
+      toast.error(msg)
+      console.error("[Embedded Signup] Error exchanging code:", error)
     }
   }
 
-  return (
-    <div className="flex flex-col items-center gap-4 p-6 border rounded-xl bg-card shadow-sm">
-      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600">
-        <MessageSquare className="w-6 h-6" />
-      </div>
-      
-      <div className="text-center space-y-1">
-        <h3 className="text-lg font-semibold">Vincular WhatsApp Business</h3>
-        <p className="text-sm text-muted-foreground max-w-xs">
-          Conecta tu cuenta de Meta para empezar a usar el asistente inteligente de WhatsApp.
-        </p>
-      </div>
+  // ── Estado de éxito ──
+  if (status === "success") {
+    return (
+      <Card className="border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+        <CardContent className="flex flex-col items-center gap-3 p-6">
+          <CheckCircle2 className="h-10 w-10 text-green-600" aria-hidden="true" />
+          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            ¡Cuenta vinculada exitosamente!
+          </p>
+          {returnUrl && (
+            <p className="text-xs text-muted-foreground animate-pulse">
+              Redirigiendo a tu panel...
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
 
-      <Button 
-        onClick={handleSignup} 
-        disabled={isLoading || !isSdkLoaded}
-        className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Vinculando...
-          </>
-        ) : (
-          "Conectar con Meta"
-        )}
-      </Button>
-      
-      {!isSdkLoaded && (
-        <p className="text-[10px] text-muted-foreground animate-pulse">
-          Cargando SDK de Meta...
-        </p>
-      )}
-    </div>
+  // ── Error del SDK ──
+  if (sdkError) {
+    return (
+      <Card className="border-destructive/50">
+        <CardContent className="p-6">
+          <p className="text-sm text-destructive" role="alert">
+            {sdkError}
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const isDisabled = isSdkLoading || status === "connecting" || status === "sending"
+
+  return (
+    <section aria-labelledby="whatsapp-signup-title">
+      <Card>
+        <CardHeader className="flex flex-row items-center gap-3 pb-3">
+          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30">
+            <MessageSquare className="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
+          </div>
+          <div className="space-y-0.5">
+            <CardTitle id="whatsapp-signup-title" className="text-base">
+              Vincular WhatsApp Business
+            </CardTitle>
+            <CardDescription>
+              Conecta tu cuenta de Meta para habilitar el asistente de WhatsApp.
+            </CardDescription>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <Button
+            onClick={handleSignup}
+            disabled={isDisabled}
+            className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white focus-visible:ring-green-500"
+            aria-busy={status === "connecting" || status === "sending"}
+          >
+            {status === "connecting" || status === "sending" ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                {status === "connecting" ? "Autenticando con Meta..." : "Vinculando cuenta..."}
+              </>
+            ) : (
+              <>
+                <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
+                Conectar con Meta
+              </>
+            )}
+          </Button>
+
+          {isSdkLoading && (
+            <p className="text-center text-[10px] text-muted-foreground animate-pulse" aria-live="polite">
+              Cargando SDK de Meta...
+            </p>
+          )}
+
+          {errorMessage && (
+            <p className="text-sm text-destructive text-center" role="alert">
+              {errorMessage}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </section>
   )
 }

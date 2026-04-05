@@ -21,16 +21,14 @@ export async function middleware(request: NextRequest) {
     }
 
     // ── Bypass: Hub Centralizado de Meta Embedded Signup ──
-    // El dominio del Tech Provider (alvarolondoño.dev) NO es un tenant.
+    // El dominio del Tech Provider NO es un tenant.
     // Las rutas /meta/* se reescriben directamente al Dashboard sin resolución de tenant.
     // El tenantId viaja en los searchParams de la URL, no en el dominio.
-    // NOTA: El Host header llega en punycode (xn--alvarolondoo-khb.dev), debemos comparar ambas formas.
-    const TECH_PROVIDER_DOMAIN = process.env.TECH_PROVIDER_DOMAIN || 'xn--alvarolondoo-khb.dev';
-    const isTechProviderDomain = domainToQuery === TECH_PROVIDER_DOMAIN
-        || domainToQuery === 'xn--alvarolondoo-khb.dev'
-        || domainToQuery === 'alvarolondoño.dev';
+    // IMPORTANTE: Usar la versión punycode del dominio (ej: xn--alvarolondoo-khb.dev)
+    // porque el Host header del navegador siempre llega en punycode.
+    const TECH_PROVIDER_DOMAIN = process.env.TECH_PROVIDER_DOMAIN;
 
-    if (isTechProviderDomain && url.pathname.startsWith('/meta')) {
+    if (TECH_PROVIDER_DOMAIN && domainToQuery === TECH_PROVIDER_DOMAIN && url.pathname.startsWith('/meta')) {
         const dashboardHost = process.env.DASHBOARD_INTERNAL_URL || 'http://localhost:3002';
         const destinationTarget = new URL(url.pathname + url.search, dashboardHost);
 

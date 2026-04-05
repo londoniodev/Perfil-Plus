@@ -26,6 +26,7 @@ export async function middleware(request: NextRequest) {
 
     const baseDomainEnv = process.env.BASE_DOMAIN || 'perfil.plus';
     const techProviderEnv = process.env.TECH_PROVIDER_DOMAIN || 'xn--alvarolondoo-khb.dev';
+    const techProviderSlug = techProviderEnv.split('.')[0];
     
     // Si el dominio es localhost, el dominio base, o el tech provider, no intentamos resolver un tenant
     const isBaseDomain = ['localhost', '127.0.0.1', baseDomainEnv, techProviderEnv].some(d => 
@@ -34,6 +35,12 @@ export async function middleware(request: NextRequest) {
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantSlug = process.env.NEXT_PUBLIC_TENANT_ID || domainToQuery; // Fallback al dominio
+
+    // Forzar tenantId correcto si estamos en el dominio del Tech Provider (SaaS Owner)
+    if (domainToQuery === techProviderEnv || domainToQuery === 'alvarolondoño.dev' || domainToQuery === 'xn--alvarolondoo-khb.dev') {
+        tenantId = techProviderSlug;
+        tenantSlug = techProviderSlug;
+    }
     let tenantFeatures: string[] = [];
     let tenantCustomLinks: { label: string; href: string }[] = [];
 

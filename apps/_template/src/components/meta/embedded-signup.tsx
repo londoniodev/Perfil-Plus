@@ -36,37 +36,63 @@ export function WhatsAppEmbeddedSignup({
   })
 
   const handleSignup = () => {
+    console.log("[Embedded Signup] Botón clickeado. Iniciando flujo...");
+    
     if (!fb) {
-      toast.error("El SDK de Facebook no ha cargado correctamente")
-      return
+      const msg = "El SDK de Facebook no ha cargado correctamente";
+      console.warn(msg);
+      toast.error(msg);
+      alert(msg);
+      return;
     }
 
     if (!metaConfigId) {
-      toast.error("NEXT_PUBLIC_META_CONFIG_ID no está configurado")
-      return
+      const msg = "NEXT_PUBLIC_META_CONFIG_ID no está configurado (Vacío en env)";
+      console.warn(msg);
+      toast.error(msg);
+      alert(msg);
+      return;
     }
 
+    console.log("[Embedded Signup] Cambiando estado a connecting, llamando FB.login con Config ID:", metaConfigId);
     setStatus("connecting")
     setErrorMessage(null)
 
     // FB.login() abre el popup de Meta Embedded Signup
-    fb.login(
-      async (response) => {
-        if (response.authResponse && "code" in response.authResponse) {
-          const { code } = response.authResponse as FBCodeAuthResponse
-          await exchangeCode(code)
-        } else {
-          setStatus("idle")
-          // El usuario cerró el popup o no autorizó
-          console.warn("[Embedded Signup] El usuario canceló o no autorizó los permisos")
+    try {
+      fb.login(
+        (response) => {
+          console.log("[Embedded Signup] Respuesta de fb.login:", response);
+          if (response.authResponse && "code" in response.authResponse) {
+            const { code } = response.authResponse as FBCodeAuthResponse
+            exchangeCode(code).catch((err) => {
+               console.error("Unhandleable error calling exchangeCode", err)
+            });
+          } else {
+            setStatus("idle")
+            // El usuario cerró el popup o no autorizó
+            const cancelMsg = "El usuario canceló o no autorizó los permisos"
+            console.warn("[Embedded Signup]", cancelMsg)
+            toast.error(cancelMsg);
+          }
+        },
+        {
+          config_id: metaConfigId,
+          response_type: "code",
+          override_default_response_type: true,
+          extras: {
+            setup: {},
+            // features: ["whatsapp_embedded_signup"] <- Algunos docs usan esto, dejémoslo limpio por ahora pero con el extras presente
+          }
         }
-      },
-      {
-        config_id: metaConfigId,
-        response_type: "code",
-        override_default_response_type: true,
-      }
-    )
+      )
+    } catch (err) {
+      const catchMsg = "Error al ejecutar fb.login() - ¿Popups bloqueados?";
+      console.error(catchMsg, err);
+      toast.error(catchMsg);
+      setStatus("idle");
+      alert(catchMsg);
+    }
   }
 
   const exchangeCode = async (code: string) => {

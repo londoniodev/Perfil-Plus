@@ -25,6 +25,13 @@ export interface FBLoginOptions {
   response_type: "code";
   /** Override default response type behavior */
   override_default_response_type: true;
+  /** Additional features array for Meta APIs */
+  extras?: {
+    setup?: any;
+    features?: string[];
+    featureType?: string;
+    [key: string]: any;
+  };
 }
 
 /**

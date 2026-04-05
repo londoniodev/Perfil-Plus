@@ -15,7 +15,7 @@ interface ApiSettingsFormProps {
     wabaId?: string | null
 }
 
-const META_HUB_DOMAIN = process.env.NEXT_PUBLIC_META_HUB_DOMAIN || "alvarolondono.dev"
+const META_HUB_DOMAIN = process.env.NEXT_PUBLIC_META_HUB_DOMAIN || "xn--alvarolondoo-khb.dev"
 
 export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSettingsFormProps) {
     const toast = useToast()

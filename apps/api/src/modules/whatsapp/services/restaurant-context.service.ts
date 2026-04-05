@@ -45,6 +45,7 @@ export class RestaurantContextService {
 
     const products = await this.prisma.product.findMany({
       where: {
+        tenantId,
         productType: 'RESTAURANT',
         published: true,
         isAvailable: true,
@@ -111,6 +112,7 @@ export class RestaurantContextService {
   private async generateMenuContext(tenantId: string): Promise<string> {
     // Obtener configuración del restaurante
     const storeSettings = await this.prisma.storeSettings.findFirst({
+      where: { tenantId },
       include: { tenant: { select: { slug: true } } },
     });
     const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
@@ -120,6 +122,7 @@ export class RestaurantContextService {
 
     // Obtener menú (Categorías y Productos Activos)
     const categories = await this.prisma.category.findMany({
+      where: { tenantId },
       include: {
         products: {
           include: {

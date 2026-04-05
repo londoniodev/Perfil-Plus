@@ -19,7 +19,7 @@ export class EvaluationService {
 
   async createEvaluation(dto: CreateEvaluationDto) {
     // Verificar que el tema existe y no tiene evaluación
-    const theme = await this.prisma.theme.findUnique({
+    const theme = await this.prisma.theme.findFirst({
       where: { id: dto.themeId },
       include: { evaluation: true },
     });
@@ -53,10 +53,11 @@ export class EvaluationService {
   }
 
   async updateEvaluation(id: string, dto: UpdateEvaluationDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id } },
     });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
 
     return this.prisma.evaluation.update({
       where: { id },
@@ -69,16 +70,23 @@ export class EvaluationService {
   }
 
   async deleteEvaluation(id: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id } },
     });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
 
     await this.prisma.evaluation.delete({ where: { id } });
     return { message: 'Evaluación eliminada correctamente' };
   }
 
   async findEvaluationById(id: string) {
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id } },
+    });
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
+
     const evaluation = await this.prisma.evaluation.findUnique({
       where: { id },
       include: {
@@ -87,17 +95,17 @@ export class EvaluationService {
         _count: { select: { results: true } },
       },
     });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
-    return evaluation;
+    return evaluation!;
   }
 
   // ==================== QUESTIONS ====================
 
   async addQuestion(evaluationId: string, dto: CreateQuestionDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id: evaluationId },
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id: evaluationId } },
     });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
 
     // Obtener el orden máximo actual
     const maxOrder = await this.prisma.question.aggregate({
@@ -118,10 +126,11 @@ export class EvaluationService {
   }
 
   async updateQuestion(id: string, dto: Partial<CreateQuestionDto>) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { questions: { some: { id } } } },
     });
-    if (!question) throw new NotFoundException('Pregunta no encontrada');
+    if (!theme) throw new NotFoundException('Pregunta no encontrada');
 
     return this.prisma.question.update({
       where: { id },
@@ -132,10 +141,11 @@ export class EvaluationService {
   }
 
   async deleteQuestion(id: string) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { questions: { some: { id } } } },
     });
-    if (!question) throw new NotFoundException('Pregunta no encontrada');
+    if (!theme) throw new NotFoundException('Pregunta no encontrada');
 
     await this.prisma.question.delete({ where: { id } });
     return { message: 'Pregunta eliminada correctamente' };
@@ -144,6 +154,12 @@ export class EvaluationService {
   // ==================== TAKE EVALUATION ====================
 
   async getEvaluationForUser(evaluationId: string, userId: string) {
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id: evaluationId } },
+    });
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
+
     const evaluation = await this.prisma.evaluation.findUnique({
       where: { id: evaluationId },
       include: {
@@ -184,6 +200,12 @@ export class EvaluationService {
     userId: string,
     dto: SubmitEvaluationDto,
   ) {
+    // Validar autorización del tenant
+    const theme = await this.prisma.theme.findFirst({
+      where: { evaluation: { id: evaluationId } },
+    });
+    if (!theme) throw new NotFoundException('Evaluación no encontrada');
+
     const evaluation = await this.prisma.evaluation.findUnique({
       where: { id: evaluationId },
       include: { questions: true },

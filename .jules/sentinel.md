@@ -6,3 +6,7 @@
 **Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
 **Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
 **Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+## 2025-02-18 - [Cross-Tenant IDOR in LMS Evaluations]
+**Vulnerability:** Cross-Tenant IDOR / RLS Bypass.
+**Learning:** Global models in Prisma (like Evaluation and Question) bypass automatic Row-Level Security. Operations modifying these models allowed IDOR and RLS bypasses by failing to manually verify the associated tenant.
+**Prevention:** Always verify the `tenantId` of parent models (like Theme) using `findFirst` before modifying or accessing global models in a multi-tenant environment.

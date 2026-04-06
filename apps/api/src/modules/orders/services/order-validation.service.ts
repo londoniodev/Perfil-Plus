@@ -6,23 +6,14 @@ export class OrderValidationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateAndDeductStock(orderItemsData: any[], tx: any) {
+    const variantMap = new Map<string, { quantity: number; item: any }>();
     for (const item of orderItemsData) {
-      // -1 indica stock ilimitado (infinito). Solo validamos y deducimos si es >= 0.
-      if (item.stockType >= 0) {
-        if (item.stockType < item.quantity) {
-          throw new BadRequestException(
-            `Stock insuficiente para ${item.productName} (${item.variantName})`,
-          );
-        }
-        // Deducción atómica dentro de la transacción
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: { stock: { decrement: item.quantity } },
-        });
+      if (!variantMap.has(item.variantId)) {
+        variantMap.set(item.variantId, { quantity: 0, item });
       }
+      variantMap.get(item.variantId)!.quantity += item.quantity;
 
       for (const mod of item.modifiers) {
-        // -1 indica stock ilimitado en modificadores. Solo validamos si es >= 0.
         if (
           mod.stock !== null &&
           mod.stock !== -1 &&
@@ -34,6 +25,25 @@ export class OrderValidationService {
         }
       }
     }
+
+    const updatePromises = Array.from(variantMap.values())
+      .map(({ quantity, item }) => {
+        if (item.stockType >= 0) {
+          if (item.stockType < quantity) {
+            throw new BadRequestException(
+              `Stock insuficiente para ${item.productName} (${item.variantName})`,
+            );
+          }
+          return tx.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { decrement: quantity } },
+          });
+        }
+        return null;
+      })
+      .filter((p) => p !== null);
+
+    await Promise.all(updatePromises);
   }
 
   async validateRestaurantAvailability(tenantId: string) {

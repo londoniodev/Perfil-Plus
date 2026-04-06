@@ -8,9 +8,13 @@ export class TenantMiddleware implements NestMiddleware {
 
   use(req: TenantRequest, res: Response, next: NextFunction) {
     const tenantId = req.headers['x-tenant-id'] as string;
+    const branchId = req.headers['x-branch-id'] as string;
 
     if (tenantId) {
       req.tenantId = tenantId;
+    }
+    if (branchId) {
+      req.branchId = branchId;
     }
 
     next();

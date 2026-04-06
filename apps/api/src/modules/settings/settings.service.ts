@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateTenantConfigDto } from './dto/update-tenant-config.dto';
 
@@ -9,12 +9,15 @@ export class SettingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Obtiene todas las configuraciones del sistema/tienda de un tenant en un objeto colapsado
+   * Obtiene todas las configuraciones del sistema/tienda de un tenant en un objeto colapsado.
+   * Ahora combina: SystemSetting + BrandSettings + TenantSettings (global) + BranchSettings (operativa).
+   * @param tenantId - ID del tenant
+   * @param branchId - ID de la sucursal (opcional, usa default si no se envía)
    */
-  async getTenantConfig(tenantId: string) {
+  async getTenantConfig(tenantId: string, branchId?: string) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { name: true, slug: true }, // heroImage removed because it's not in schema
+      select: { name: true, slug: true },
     });
 
     const settings = await this.prisma.systemSetting.findMany({
@@ -35,12 +38,28 @@ export class SettingsService {
       where: { tenantId },
     });
 
-    // Obtener StoreSettings para incluir campos específicos
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
+    // Obtener TenantSettings (Configuración Global: WABA, OpenAI, etc.)
+    const tenantSettings = await this.prisma.tenantSettings.findUnique({
       where: { tenantId },
     });
+
+    // Resolver branchId: si no viene, usar la sucursal por defecto
+    let resolvedBranchId = branchId;
+    if (!resolvedBranchId) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+      resolvedBranchId = defaultBranch?.id;
+    }
+
+    // Obtener BranchSettings (Configuración Operativa: pagos, delivery, horarios)
+    let branchSettings: any = null;
+    if (resolvedBranchId) {
+      branchSettings = await this.prisma.branchSettings.findUnique({
+        where: { branchId: resolvedBranchId },
+      });
+    }
 
     // Combinar todo. Los campos de tablas específicas sobrescriben los genéricos si coinciden.
     const finalConfig = {
@@ -54,31 +73,32 @@ export class SettingsService {
       // 3. BrandSettings (Mapeo explícito a snake_case para el frontend)
       primary_color: brandSettings?.primaryColor || '#6366f1',
       secondary_color: brandSettings?.secondaryColor || '#a5a6f6',
-      // 'theme' en la UI es light/dark/auto, se saca de SystemSetting (collapsed)
       theme: collapsed['theme'] || '',
-      // Si el frontend llegara a usar layoutType, se expone como layout_type
       layout_type: brandSettings?.layoutType || 'CLASSIC',
 
-      // 4. StoreSettings (Mapeo explícito)
-      mp_public_key:
-        storeSettings?.mpPublicKey || collapsed['mp_public_key'] || '',
-      mp_access_token:
-        storeSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
+      // 4. TenantSettings (Global: WhatsApp)
       waPhoneNumberId:
-        storeSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
-      deliveryFee:
-        storeSettings?.deliveryFee !== null
-          ? Number(storeSettings?.deliveryFee)
-          : Number(collapsed['deliveryFee']) || 0,
+        tenantSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
       hero_image: brandSettings?.authBgUrl || '',
 
-      // 5. Payment Provider (Bold integration)
-      activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
-      boldApiKey: storeSettings?.boldApiKey || '',
-      boldSecretKey: storeSettings?.boldSecretKey || '',
+      // 5. BranchSettings (Operativa: pagos, delivery, horarios)
+      mp_public_key:
+        branchSettings?.mpPublicKey || collapsed['mp_public_key'] || '',
+      mp_access_token:
+        branchSettings?.mpAccessToken || collapsed['mp_access_token'] || '',
+      deliveryFee:
+        branchSettings?.deliveryFee !== null && branchSettings?.deliveryFee !== undefined
+          ? Number(branchSettings.deliveryFee)
+          : Number(collapsed['deliveryFee']) || 0,
+      activePaymentProvider: branchSettings?.activePaymentProvider || 'NONE',
+      boldApiKey: branchSettings?.boldApiKey || '',
+      boldSecretKey: branchSettings?.boldSecretKey || '',
 
-      // 6. Business Hours (Horarios de atención)
-      businessHours: storeSettings?.businessHours || null,
+      // 6. Business Hours (Horarios de atención — por sucursal)
+      businessHours: branchSettings?.businessHours || null,
+
+      // 7. Branch context
+      branchId: resolvedBranchId || null,
     };
 
     return finalConfig;
@@ -86,18 +106,22 @@ export class SettingsService {
 
   /**
    * Actualiza masivamente los ajustes enviados protegiendo que solo se graben para el tenant y llaves permitidas.
+   * Ahora escribe a TenantSettings (global) y BranchSettings (operativa) según la naturaleza del campo.
    */
-  async updateTenantConfig(tenantId: string, updateDto: UpdateTenantConfigDto) {
+  async updateTenantConfig(
+    tenantId: string,
+    updateDto: UpdateTenantConfigDto,
+    branchId?: string,
+  ) {
     if (!updateDto || Object.keys(updateDto).length === 0) {
       return { success: true };
     }
 
-    // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, StoreSettings)
-    const storeAndBrandKeys = [
+    // 1. Filtrar llaves que van a tablas específicas (Tenant, BrandSettings, TenantSettings, BranchSettings)
+    const specificKeys = [
       'tenant_name',
       'primary_color',
       'secondary_color',
-      // 'theme' NO va aquí, va a SystemSetting porque es light/dark
       'mp_public_key',
       'mp_access_token',
       'deliveryFee',
@@ -105,23 +129,19 @@ export class SettingsService {
       'tenant_slug',
       'layout_type',
       'hero_image',
-      // Bold payment provider keys
       'activePaymentProvider',
       'boldApiKey',
       'boldSecretKey',
-      // Business Hours
       'businessHours',
+      'storeName',
+      'storeEmail',
     ];
 
     const operations = Object.entries(updateDto)
       .filter(([key, value]) => {
-        // Solo guardamos en SystemSetting si:
-        // 1. El valor no es undefined
-        // 2. NO es una de las llaves que van a tablas específicas
-        // 3. No es un objeto complejo que el frontend envía por error
         const isComplex = typeof value === 'object' && value !== null;
         return (
-          value !== undefined && !storeAndBrandKeys.includes(key) && !isComplex
+          value !== undefined && !specificKeys.includes(key) && !isComplex
         );
       })
       .map(([key, value]) => {
@@ -155,8 +175,6 @@ export class SettingsService {
       if (updateDto.tenant_name || updateDto.storeName) {
         dataToUpdate.name = updateDto.tenant_name || updateDto.storeName;
       }
-      // heroImage is missing in schema, so we can't update it directly on Tenant
-      // if (updateDto.hero_image !== undefined) dataToUpdate.heroImage = updateDto.hero_image;
 
       if (Object.keys(dataToUpdate).length > 0) {
         await this.prisma.tenant.update({
@@ -167,7 +185,6 @@ export class SettingsService {
     }
 
     // 3. Actualizar BrandSettings si hay cambios de apariencia
-    // Aquí solo manejamos colores por ahora, theme va a SystemSetting
     if (
       updateDto.primary_color ||
       updateDto.secondary_color ||
@@ -190,70 +207,72 @@ export class SettingsService {
       });
     }
 
-    // 4. Actualizar StoreSettings (MercadoPago y Delivery)
+    // 4. Actualizar TenantSettings (Global: WABA, storeName, storeEmail)
+    if (
+      updateDto.waPhoneNumberId !== undefined ||
+      updateDto.storeName !== undefined ||
+      updateDto.storeEmail !== undefined
+    ) {
+      const waPhoneNumberId =
+        updateDto.waPhoneNumberId !== undefined
+          ? updateDto.waPhoneNumberId?.trim() || null
+          : undefined;
+
+      await this.prisma.tenantSettings.upsert({
+        where: { tenantId },
+        update: {
+          ...(waPhoneNumberId !== undefined && { waPhoneNumberId }),
+          ...(updateDto.storeName !== undefined && { storeName: updateDto.storeName }),
+          ...(updateDto.storeEmail !== undefined && { storeEmail: updateDto.storeEmail }),
+        },
+        create: {
+          tenantId,
+          storeName: updateDto.storeName,
+          storeEmail: updateDto.storeEmail,
+          waPhoneNumberId,
+        },
+      });
+    }
+
+    // 5. Actualizar BranchSettings (Operativa: pasarelas de pago, delivery, horarios)
     if (
       updateDto.mp_public_key !== undefined ||
       updateDto.mp_access_token !== undefined ||
       updateDto.deliveryFee !== undefined ||
-      updateDto.waPhoneNumberId !== undefined ||
-      updateDto.storeName !== undefined ||
-      updateDto.storeEmail !== undefined ||
       updateDto.activePaymentProvider !== undefined ||
       updateDto.boldApiKey !== undefined ||
       updateDto.boldSecretKey !== undefined ||
       updateDto.businessHours !== undefined
     ) {
-      const storeSettings = await (
-        this.prisma as any
-      ).storeSettings.findFirst({
-        where: { tenantId },
-      });
+      // Resolver branchId
+      let resolvedBranchId = branchId;
+      if (!resolvedBranchId) {
+        const defaultBranch = await this.prisma.branch.findFirst({
+          where: { tenantId, isDefault: true },
+          select: { id: true },
+        });
+        resolvedBranchId = defaultBranch?.id;
+      }
 
-      // Normalizar campos únicos para evitar conflictos P2002 (PostgreSQL UNIQUE permite múltiples NULL pero solo un "")
-      const waPhoneNumberId =
-        updateDto.waPhoneNumberId !== undefined
-          ? updateDto.waPhoneNumberId?.trim() || null
-          : undefined;
-      const wabaId =
-        updateDto.wabaId !== undefined
-          ? updateDto.wabaId?.trim() || null
-          : undefined;
-
-      if (storeSettings) {
-        await (this.prisma as any).storeSettings.update({
-          where: { id: storeSettings.id },
-          data: {
-            mpPublicKey: updateDto.mp_public_key,
-            mpAccessToken: updateDto.mp_access_token,
-            deliveryFee:
-              updateDto.deliveryFee !== undefined
-                ? Number(updateDto.deliveryFee)
-                : undefined,
-            waPhoneNumberId,
-            wabaId,
-            storeName: updateDto.storeName,
-            storeEmail: updateDto.storeEmail,
-            activePaymentProvider: updateDto.activePaymentProvider,
-            boldApiKey: updateDto.boldApiKey,
-            boldSecretKey: updateDto.boldSecretKey,
+      if (resolvedBranchId) {
+        await this.prisma.branchSettings.upsert({
+          where: { branchId: resolvedBranchId },
+          update: {
+            ...(updateDto.mp_public_key !== undefined && { mpPublicKey: updateDto.mp_public_key }),
+            ...(updateDto.mp_access_token !== undefined && { mpAccessToken: updateDto.mp_access_token }),
+            ...(updateDto.deliveryFee !== undefined && { deliveryFee: Number(updateDto.deliveryFee) }),
+            ...(updateDto.activePaymentProvider !== undefined && { activePaymentProvider: updateDto.activePaymentProvider as any }),
+            ...(updateDto.boldApiKey !== undefined && { boldApiKey: updateDto.boldApiKey }),
+            ...(updateDto.boldSecretKey !== undefined && { boldSecretKey: updateDto.boldSecretKey }),
             ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
           },
-        });
-      } else {
-        await (this.prisma as any).storeSettings.create({
-          data: {
+          create: {
             tenantId,
+            branchId: resolvedBranchId,
             mpPublicKey: updateDto.mp_public_key,
             mpAccessToken: updateDto.mp_access_token,
-            deliveryFee:
-              updateDto.deliveryFee !== undefined
-                ? Number(updateDto.deliveryFee)
-                : 0,
-            waPhoneNumberId,
-            wabaId,
-            storeName: updateDto.storeName,
-            storeEmail: updateDto.storeEmail,
-            activePaymentProvider: updateDto.activePaymentProvider || 'NONE',
+            deliveryFee: updateDto.deliveryFee !== undefined ? Number(updateDto.deliveryFee) : 0,
+            activePaymentProvider: updateDto.activePaymentProvider as any || 'NONE',
             boldApiKey: updateDto.boldApiKey,
             boldSecretKey: updateDto.boldSecretKey,
             ...(updateDto.businessHours !== undefined && { businessHours: updateDto.businessHours }),
@@ -263,7 +282,7 @@ export class SettingsService {
     }
 
     this.logger.log(
-      `[Tenant ${tenantId}] Settings masivos actualizados (System + Brand + Store).`,
+      `[Tenant ${tenantId}] Settings masivos actualizados (System + Brand + TenantSettings + BranchSettings).`,
     );
 
     return { success: true };

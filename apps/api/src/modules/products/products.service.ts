@@ -412,8 +412,27 @@ export class ProductsService {
   // ============ QUERIES ============
   async getLiveStatus() {
     const tenantId = this.cls.get('tenantId');
+    let resolvedBranchId = this.cls.get('branchId');
+    if (!resolvedBranchId) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+      resolvedBranchId = defaultBranch?.id;
+    }
+
     const products = await this.prisma.product.findMany({
-      where: { published: true },
+      where: { 
+        published: true,
+        ...(resolvedBranchId ? {
+          branchProducts: {
+            some: {
+              branchId: resolvedBranchId,
+              isAvailable: true,
+            }
+          }
+        } : {})
+      },
       select: {
         id: true,
         isAvailable: true,
@@ -450,8 +469,17 @@ export class ProductsService {
     limit?: number,
   ) {
     const tenantId = this.cls.get('tenantId');
+    let resolvedBranchId = this.cls.get('branchId');
+    if (!resolvedBranchId) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+      resolvedBranchId = defaultBranch?.id;
+    }
+
     const safeLimit = limit || 100;
-    const cacheKey = `menu:${tenantId}:${type || 'all'}:${allVariants}:${search || 'none'}:${safeLimit}`;
+    const cacheKey = `menu:${tenantId}:${resolvedBranchId || 'default'}:${type || 'all'}:${allVariants}:${search || 'none'}:${safeLimit}`;
 
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
@@ -468,6 +496,14 @@ export class ProductsService {
               ],
             }
           : {}),
+        ...(resolvedBranchId ? {
+          branchProducts: {
+            some: {
+              branchId: resolvedBranchId,
+              isAvailable: true,
+            }
+          }
+        } : {})
       },
       take: safeLimit,
       orderBy: { createdAt: 'desc' },
@@ -475,26 +511,69 @@ export class ProductsService {
         variants: allVariants ? true : { where: { isDefault: true } },
         ...this.modifierGroupsInclude,
         categories: { include: { category: true } },
+        ...(resolvedBranchId ? { branchProducts: { where: { branchId: resolvedBranchId } } } : {})
       },
     });
 
-    await this.cacheManager.set(cacheKey, result, 300_000); // 5 min TTL
-    return result;
+    const mappedResult = result.map(p => {
+      if ((p as any).branchProducts && (p as any).branchProducts.length > 0) {
+        const bp = (p as any).branchProducts[0];
+        if (bp.priceOverride !== null && bp.priceOverride !== undefined) {
+          p.basePrice = bp.priceOverride;
+        }
+        delete (p as any).branchProducts;
+      }
+      return p;
+    });
+
+    await this.cacheManager.set(cacheKey, mappedResult, 300_000); // 5 min TTL
+    return mappedResult;
   }
 
   async findOnePublished(slug: string) {
+    const tenantId = this.cls.get('tenantId');
+    let resolvedBranchId = this.cls.get('branchId');
+    if (!resolvedBranchId) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+      resolvedBranchId = defaultBranch?.id;
+    }
+
     const product = await this.prisma.product.findFirst({
-      where: { slug },
+      where: { 
+        slug,
+        ...(resolvedBranchId ? {
+          branchProducts: {
+            some: {
+              branchId: resolvedBranchId,
+              isAvailable: true,
+            }
+          }
+        } : {})
+      },
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
         categories: { include: { category: true } },
+        ...(resolvedBranchId ? { branchProducts: { where: { branchId: resolvedBranchId } } } : {})
       },
     });
 
     if (!product || !product.published) {
-      throw new NotFoundException('Producto no encontrado');
+      throw new NotFoundException('Producto no encontrado o no disponible en esta sucursal');
     }
+
+    if ((product as any).branchProducts && (product as any).branchProducts.length > 0) {
+      const bp = (product as any).branchProducts[0];
+      if (bp.priceOverride !== null && bp.priceOverride !== undefined) {
+        product.basePrice = bp.priceOverride;
+      }
+      delete (product as any).branchProducts;
+    }
+
+    return product;
 
     return product;
   }

@@ -8,11 +8,12 @@ export class UsageGuardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async checkAiLimit(tenantId: string): Promise<boolean> {
-    // 1. Obtener límite (aiMonthlyLimit) configurado, por defecto suele ser 100
-    const settings = await this.prisma.storeSettings.findFirst();
+    // 1. Obtener límite (aiMonthlyLimit) desde TenantSettings, por defecto 100
+    const tenantSettings = await this.prisma.tenantSettings.findUnique({
+      where: { tenantId },
+    });
 
-    // Workaround for Prisma client not getting updated types immediately
-    const monthlyLimit = (settings as any)?.aiMonthlyLimit ?? 100;
+    const monthlyLimit = (tenantSettings as any)?.aiMonthlyLimit ?? 100;
 
     // 2. Determinar inicio de mes y fin de mes
     const startOfMonth = new Date();
@@ -30,9 +31,6 @@ export class UsageGuardService {
           gte: startOfMonth,
           lt: endOfMonth,
         },
-        // El relation filtering a nivel profundo puede ayudar,
-        // pero como esto corre bajo CLS y RLS, la bbdd ya filtra por el Tenant subyacente de WaConversation.
-        // Para ser explícitos:
         conversation: {
           tenantId: tenantId,
         },

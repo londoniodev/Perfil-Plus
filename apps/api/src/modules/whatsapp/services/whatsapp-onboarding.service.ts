@@ -68,10 +68,6 @@ export class WhatsappOnboardingService {
 
       const { data } = debugTokenResponse.data;
 
-      // En Embedded Signup, el waba_id suele venir en los granular_scopes o se puede obtener de business_id
-      // Pero usualmente se obtiene de la lista de cuentas vinculadas.
-      // Para simplificar, asumiremos que el usuario vinculó una cuenta.
-
       // Obtener las WABAs vinculadas al negocio del usuario
       const wabaResponse = await axios.get(
         `${this.apiUrl}/me/whatsapp_business_accounts`,
@@ -109,15 +105,10 @@ export class WhatsappOnboardingService {
 
       const waPhoneNumberId = phoneNumber.id;
 
-      // Persistir en base de datos
+      // Persistir en TenantSettings (credenciales globales de WhatsApp por tenant)
       this.logger.log(
-        `[Tenant: ${tenantId}] Guardando credenciales de WhatsApp: PhoneID ${waPhoneNumberId}, WabaID ${wabaId}`,
+        `[Tenant: ${tenantId}] Guardando credenciales de WhatsApp en TenantSettings: PhoneID ${waPhoneNumberId}, WabaID ${wabaId}`,
       );
-
-      const existingSettings = await this.prisma.storeSettings.findFirst({
-        where: { tenantId },
-        select: { id: true },
-      });
 
       const waData = {
         waAccessToken: longLivedToken,
@@ -125,16 +116,11 @@ export class WhatsappOnboardingService {
         wabaId: wabaId,
       };
 
-      if (existingSettings) {
-        await this.prisma.storeSettings.update({
-          where: { id: existingSettings.id },
-          data: waData,
-        });
-      } else {
-        await this.prisma.storeSettings.create({
-          data: { tenantId, ...waData },
-        });
-      }
+      await this.prisma.tenantSettings.upsert({
+        where: { tenantId },
+        update: waData,
+        create: { tenantId, ...waData },
+      });
 
       return {
         success: true,

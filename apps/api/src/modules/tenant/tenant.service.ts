@@ -136,8 +136,18 @@ export class TenantService {
         },
       });
 
-      // 3. Crear StoreSettings
-      await tx.storeSettings.create({
+      // 3. Crear Branch por defecto "Sede Principal"
+      const defaultBranch = await tx.branch.create({
+        data: {
+          tenantId: tenant.id,
+          slug: 'sede-principal',
+          name: 'Sede Principal',
+          isDefault: true,
+        },
+      });
+
+      // 4. Crear TenantSettings (Config Global: WABA, OpenAI, marca)
+      await tx.tenantSettings.create({
         data: {
           tenantId: tenant.id,
           storeName: name || tenant.slug,
@@ -145,16 +155,25 @@ export class TenantService {
         },
       });
 
-      // 4. Crear Warehouse por defecto
+      // 5. Crear BranchSettings (Config Operativa: pagos, delivery, horarios)
+      await tx.branchSettings.create({
+        data: {
+          tenantId: tenant.id,
+          branchId: defaultBranch.id,
+        },
+      });
+
+      // 6. Crear Warehouse por defecto
       await tx.warehouse.create({
         data: {
           tenantId: tenant.id,
+          branchId: defaultBranch.id,
           name: 'Principal',
           isDefault: true,
         },
       });
 
-      // 5. Crear BrandSettings (Motor de Marca Blanca)
+      // 7. Crear BrandSettings (Motor de Marca Blanca)
       await tx.brandSettings.create({
         data: {
           tenantId: tenant.id,
@@ -287,10 +306,19 @@ export class TenantService {
       const smtpSetting = await this.prisma.systemSetting.findFirst({
         where: { tenantId: tenant.id, key: 'smtp' },
       });
-      const storeSettings = await this.prisma.storeSettings.findFirst({
-        where: { tenantId: tenant.id },
-        select: { activePaymentProvider: true },
+
+      // Obtener BranchSettings de la sucursal default para el payment provider
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId: tenant.id, isDefault: true },
+        select: { id: true },
       });
+      let branchSettings: any = null;
+      if (defaultBranch) {
+        branchSettings = await this.prisma.branchSettings.findUnique({
+          where: { branchId: defaultBranch.id },
+          select: { activePaymentProvider: true },
+        });
+      }
 
       const menuData = (menuSetting?.value as any) || {};
       const bs =
@@ -324,7 +352,7 @@ export class TenantService {
         contactEmail,
         contactPhone,
         tagline,
-        activePaymentProvider: storeSettings?.activePaymentProvider || 'NONE',
+        activePaymentProvider: branchSettings?.activePaymentProvider || 'NONE',
         brandSettings: tenant.brandSettings || null,
       };
     }
@@ -917,7 +945,10 @@ export class TenantService {
 
       // 2.5 Configuración y Otros
       this.prisma.unscoped.brandSettings.deleteMany({ where: { tenantId: tenant.id } }),
-      this.prisma.unscoped.storeSettings.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.branchSettings.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.tenantSettings.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.branchProduct.deleteMany({ where: { tenantId: tenant.id } }),
+      this.prisma.unscoped.userBranchAccess.deleteMany({ where: { branch: { tenantId: tenant.id } } }),
       this.prisma.unscoped.systemSetting.deleteMany({ where: { tenantId: tenant.id } }),
       this.prisma.unscoped.table.deleteMany({ where: { tenantId: tenant.id } }),
       this.prisma.unscoped.lead.deleteMany({ where: { tenantId: tenant.id } }),
@@ -926,13 +957,16 @@ export class TenantService {
       this.prisma.unscoped.waConversation.deleteMany({ where: { tenantId: tenant.id } }),
       this.prisma.unscoped.waCustomer.deleteMany({ where: { tenantId: tenant.id } }),
 
-      // 2.6 Usuarios (Finasmente)
+      // 2.6 Usuarios (Finalmente)
       this.prisma.unscoped.deliveryDriver.deleteMany({ where: { tenantId: tenant.id } }),
       this.prisma.unscoped.refreshToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
       this.prisma.unscoped.emailVerificationToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
       this.prisma.unscoped.passwordResetToken.deleteMany({ where: { user: { tenantId: tenant.id } } }),
       this.prisma.unscoped.subscription.deleteMany({ where: { user: { tenantId: tenant.id } } }),
       this.prisma.unscoped.user.deleteMany({ where: { tenantId: tenant.id } }),
+
+      // 2.7 Branches (después de todo lo que depende de ellas)
+      this.prisma.unscoped.branch.deleteMany({ where: { tenantId: tenant.id } }),
     ]);
 
     // 3. Finalmente, borrar el tenant

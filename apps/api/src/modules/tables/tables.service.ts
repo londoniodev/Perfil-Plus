@@ -16,6 +16,25 @@ export class TablesService {
     });
   }
 
+  async resolve(id: string) {
+    const table = await this.prisma.unscoped.table.findUnique({
+      where: { id },
+      include: {
+        tenant: { select: { slug: true } },
+      },
+    });
+
+    if (!table) {
+      throw new NotFoundException(`Mesa con ID ${id} no encontrada`);
+    }
+
+    return {
+      tableNumber: table.label,
+      tenantSlug: table.tenant.slug,
+      branchId: table.branchId,
+    };
+  }
+
   async findOne(tenantId: string, id: string) {
     const table = await this.prisma.table.findUnique({
       where: { id },
@@ -31,9 +50,15 @@ export class TablesService {
   }
 
   async create(tenantId: string, createDto: CreateTableDto) {
+    const defaultBranch = await this.prisma.branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
+    });
+
     return this.prisma.table.create({
       data: {
         tenantId,
+        branchId: defaultBranch!.id,
         label: createDto.label,
         capacity: createDto.capacity ?? 4,
         status: createDto.status ?? 'ACTIVE',

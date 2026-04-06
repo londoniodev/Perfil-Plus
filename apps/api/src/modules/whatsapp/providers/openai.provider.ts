@@ -328,12 +328,19 @@ export class OpenAiProvider implements AiProvider {
                   const checkoutUrl = `https://${tenantSlug || 'demo'}.${baseDomain}/checkout?wa=${cartId}`;
                   detectedCheckoutUrl = checkoutUrl; // Guardar para retornar al processor
 
-                  // Generar recibo determinista consultando la DB (deliveryFee)
-                  const storeSettings =
-                    await this.prisma.storeSettings.findFirst({
-                      where: { tenantId },
+                  // Generar recibo determinista consultando BranchSettings (deliveryFee operativa)
+                  const defaultBranch = await (this.prisma as any).branch.findFirst({
+                    where: { tenantId, isDefault: true },
+                    select: { id: true },
+                  });
+                  let deliveryFee = 0;
+                  if (defaultBranch) {
+                    const branchSettings = await (this.prisma as any).branchSettings.findUnique({
+                      where: { branchId: defaultBranch.id },
+                      select: { deliveryFee: true },
                     });
-                  const deliveryFee = Number(storeSettings?.deliveryFee || 0);
+                    deliveryFee = Number(branchSettings?.deliveryFee || 0);
+                  }
 
                   let subtotal = 0;
                   let receiptText = `\n\n🧾 *Resumen de tu pedido:*\n`;

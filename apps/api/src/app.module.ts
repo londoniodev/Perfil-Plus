@@ -44,6 +44,7 @@ import { TablesModule } from './modules/tables/tables.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { CoreModule } from './modules/core';
+import { BranchesModule } from './modules/branches/branches.module';
 
 // Interceptors
 // Interceptors removed
@@ -111,6 +112,10 @@ import { CoreModule } from './modules/core';
           const tenantId = req.headers['x-tenant-id'] as string;
           if (tenantId) {
             cls.set('tenantId', tenantId);
+          }
+          const branchId = req.headers['x-branch-id'] as string;
+          if (branchId) {
+            cls.set('branchId', branchId);
           }
         },
       },

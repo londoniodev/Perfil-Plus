@@ -65,7 +65,42 @@ async function main() {
             create: t
         });
         createdTenants[tenant.slug] = tenant;
-        console.log(`   ✓ Tenant asegurado: ${tenant.name} (${tenant.slug})`);
+
+        // Crear Branch "Sede Principal" por defecto
+        const branch = await prisma.branch.upsert({
+            where: { tenantId_slug: { tenantId: tenant.id, slug: 'sede-principal' } },
+            update: {},
+            create: {
+                tenantId: tenant.id,
+                name: 'Sede Principal',
+                slug: 'sede-principal',
+                isDefault: true,
+            }
+        });
+
+        // Crear TenantSettings (config global)
+        await prisma.tenantSettings.upsert({
+            where: { tenantId: tenant.id },
+            update: {},
+            create: {
+                tenantId: tenant.id,
+                storeName: tenant.name,
+                storeEmail: `admin@${t.slug}.com`,
+            }
+        });
+
+        // Crear BranchSettings (config operativa)
+        await prisma.branchSettings.upsert({
+            where: { branchId: branch.id },
+            update: {},
+            create: {
+                tenantId: tenant.id,
+                branchId: branch.id,
+                activePaymentProvider: 'NONE',
+            }
+        });
+
+        console.log(`   ✓ Tenant asegurado: ${tenant.name} (${tenant.slug}) + Sede Principal`);
     }
 
     // 2. CREAR USUARIOS (ADMIN y USER) PARA CADA TENANT

@@ -5,6 +5,17 @@ import { API_BASE as API_BASE_URL } from './config';
 async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTenantId?: string): Promise<T> {
     const isClient = typeof window !== 'undefined';
     let token = isClient ? localStorage.getItem('token') : null;
+    let localBranchId: string | null = null;
+    
+    if (isClient) {
+        try {
+            const cartStorage = localStorage.getItem('cart-storage');
+            if (cartStorage) {
+                const parsed = JSON.parse(cartStorage);
+                localBranchId = parsed?.state?.branchId || null;
+            }
+        } catch(e) {}
+    }
 
     // Resolve tenantId: explicit > next_public (fallback)
     // NOTE: On server (SSR/ISR), explicitTenantId must be provided by the caller.
@@ -15,6 +26,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTena
     const getHeaders = (authToken: string | null) => ({
         'Content-Type': 'application/json',
         ...(tenantId ? { 'x-tenant-id': tenantId } : {}), // Only send if we have it, otherwise let host resolution work
+        ...(localBranchId ? { 'x-branch-id': localBranchId } : {}),
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         ...options?.headers,
     });
@@ -167,5 +179,13 @@ export async function payOrder(orderId: string, data: { amount: number, method: 
 
 export async function trackOrder(orderId: string, tenantId?: string): Promise<any> {
     return fetchAPI(`/orders/track/${orderId}`, undefined, tenantId);
+}
+
+export async function getBranches(tenantId?: string): Promise<{id: string, name: string}[]> {
+    return fetchAPI(`/store/branches`, undefined, tenantId);
+}
+
+export async function resolveTableInfo(id: string, tenantId?: string): Promise<{tableNumber: string, tenantSlug: string, branchId: string}> {
+    return fetchAPI(`/tables/resolve/${id}`, undefined, tenantId);
 }
 

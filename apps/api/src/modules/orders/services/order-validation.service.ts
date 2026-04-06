@@ -37,14 +37,20 @@ export class OrderValidationService {
   }
 
   async validateRestaurantAvailability(tenantId: string) {
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
-      where: { tenantId },
-      select: { businessHours: true },
+    // businessHours es una configuración operativa que vive en BranchSettings
+    const defaultBranch = await (this.prisma as any).branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
     });
+    let branchSettings: any = null;
+    if (defaultBranch) {
+      branchSettings = await (this.prisma as any).branchSettings.findUnique({
+        where: { branchId: defaultBranch.id },
+        select: { businessHours: true },
+      });
+    }
 
-    const businessHours = storeSettings?.businessHours;
+    const businessHours = branchSettings?.businessHours;
 
     // Si no hay configuración o no está habilitada la restricción, permitir
     if (!businessHours || !businessHours.enforceRestriction) {
@@ -130,4 +136,3 @@ export class OrderValidationService {
     return true;
   }
 }
-

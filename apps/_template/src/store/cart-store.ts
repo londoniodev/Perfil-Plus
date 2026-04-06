@@ -20,12 +20,16 @@ import { createStore } from 'zustand/vanilla'
 export type CartState = {
     items: CartItem[]
     tableId: string | null
+    tableNumber: string | null
+    branchId: string | null
 }
 
 export type CartActions = {
     addItem: (data: Omit<CartItem, 'cartItemId'>) => void
     removeItem: (cartItemId: string) => void
     setTableId: (id: string | null) => void
+    setTableInfo: (info: { tableId: string | null, tableNumber: string | null, branchId: string | null }) => void
+    setBranchId: (id: string | null) => void
     setCart: (items: CartItem[]) => void // Sobrescribir carrito completo (para IA WhatsApp)
     clearCart: () => void
     totalItems: () => number
@@ -37,6 +41,8 @@ export type CartStore = CartState & CartActions
 export const defaultInitState: CartState = {
     items: [],
     tableId: null,
+    tableNumber: null,
+    branchId: null,
 }
 
 export const createCartStore = (
@@ -48,6 +54,30 @@ export const createCartStore = (
                 ...initState,
 
                 setTableId: (id) => set({ tableId: id }),
+                setTableInfo: (info) => {
+                    set({ 
+                        tableId: info.tableId, 
+                        tableNumber: info.tableNumber, 
+                        branchId: info.branchId 
+                    });
+                    if (typeof document !== 'undefined') {
+                        if (info.branchId) {
+                            document.cookie = `x-branch-id=${info.branchId}; path=/; max-age=31536000; SameSite=Lax`;
+                        } else {
+                            document.cookie = `x-branch-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax`;
+                        }
+                    }
+                },
+                setBranchId: (id) => {
+                    set({ branchId: id });
+                    if (typeof document !== 'undefined') {
+                        if (id) {
+                            document.cookie = `x-branch-id=${id}; path=/; max-age=31536000; SameSite=Lax`;
+                        } else {
+                            document.cookie = `x-branch-id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Lax`;
+                        }
+                    }
+                },
 
                 addItem: (data) => {
                     const currentItems = get().items

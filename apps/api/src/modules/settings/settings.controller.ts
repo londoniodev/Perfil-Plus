@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
+import { CurrentBranch } from '../../common/decorators/current-branch.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -12,8 +13,11 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get()
-  async getTenantConfig(@CurrentTenant() tenantId: string) {
-    return this.settingsService.getTenantConfig(tenantId);
+  async getTenantConfig(
+    @CurrentTenant() tenantId: string,
+    @CurrentBranch() branchId?: string,
+  ) {
+    return this.settingsService.getTenantConfig(tenantId, branchId);
   }
 
   @Patch()

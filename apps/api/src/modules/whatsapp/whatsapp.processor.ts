@@ -35,7 +35,7 @@ export class WhatsappProcessor {
       // resolviendo el tenant justamente desde un contexto global
       // SECURITY EXCEPTION: Global query to resolve tenantId from phone number before CLS context exists.
       /* eslint-disable no-restricted-syntax */
-      const storeSetting = await this.prisma.unscoped.storeSettings.findFirst({
+      const tenantSetting = await this.prisma.unscoped.tenantSettings.findFirst({
         /* eslint-enable no-restricted-syntax */
         where: {
           waPhoneNumberId: phone_number_id,
@@ -48,14 +48,14 @@ export class WhatsappProcessor {
         },
       });
 
-      if (!storeSetting) {
+      if (!tenantSetting) {
         this.logger.warn(
           `No se encontró tenant asociado al número de WhatsApp: ${phone_number_id} - Ignorando mensaje.`,
         );
         return;
       }
 
-      const { tenantId, tenant } = storeSetting as any; // Cast as any to avoid PRISMA type errors initially
+      const { tenantId, tenant } = tenantSetting as any;
       const tenantSlug = tenant?.slug || 'demo';
       this.logger.log(`Tenant resuelto: ${tenantId}`);
 

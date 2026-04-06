@@ -43,9 +43,15 @@ export class InventoryService {
       });
     }
 
+    const defaultBranch = await this.prisma.branch.findFirst({
+      where: { tenantId: this.getTenantId(), isDefault: true },
+      select: { id: true },
+    });
+
     return this.prisma.warehouse.create({
       data: {
         tenantId: this.getTenantId(),
+        branchId: defaultBranch!.id,
         name: dto.name,
         isDefault: dto.isDefault ?? false,
       },
@@ -65,9 +71,15 @@ export class InventoryService {
     });
 
     if (!warehouse) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId: this.getTenantId(), isDefault: true },
+        select: { id: true },
+      });
+
       warehouse = await this.prisma.warehouse.create({
         data: {
           tenantId: this.getTenantId(),
+          branchId: defaultBranch!.id,
           name: 'Cocina Principal',
           isDefault: true,
         },

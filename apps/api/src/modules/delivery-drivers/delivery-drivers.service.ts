@@ -39,9 +39,15 @@ export class DeliveryDriversService {
       );
     }
 
+    const defaultBranch = await this.prisma.branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
+    });
+
     return this.prisma.deliveryDriver.create({
       data: {
         tenantId,
+        branchId: defaultBranch!.id,
         userId: dto.userId,
         phone: dto.phone,
         vehicle: dto.vehicle,

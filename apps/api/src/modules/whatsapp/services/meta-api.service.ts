@@ -16,12 +16,15 @@ export class MetaApiService {
     text: string,
   ): Promise<boolean> {
     try {
-      const settings = await this.prisma.storeSettings.findFirst();
-      const accessToken = (settings as any)?.waAccessToken;
+      // waAccessToken ahora vive en TenantSettings (global)
+      const tenantSettings = await this.prisma.tenantSettings.findUnique({
+        where: { tenantId },
+      });
+      const accessToken = tenantSettings?.waAccessToken;
 
       if (!accessToken) {
         this.logger.error(
-          `[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje.`,
+          `[Tenant: ${tenantId}] waAccessToken no configurado en TenantSettings. No se puede enviar el mensaje.`,
         );
         return false;
       }
@@ -76,12 +79,15 @@ export class MetaApiService {
     ctaUrl: string,
   ): Promise<boolean> {
     try {
-      const settings = await this.prisma.storeSettings.findFirst();
-      const accessToken = (settings as any)?.waAccessToken;
+      // waAccessToken ahora vive en TenantSettings (global)
+      const tenantSettings = await this.prisma.tenantSettings.findUnique({
+        where: { tenantId },
+      });
+      const accessToken = tenantSettings?.waAccessToken;
 
       if (!accessToken) {
         this.logger.error(
-          `[Tenant: ${tenantId}] waAccessToken no configurado. No se puede enviar el mensaje interactivo.`,
+          `[Tenant: ${tenantId}] waAccessToken no configurado en TenantSettings. No se puede enviar el mensaje interactivo.`,
         );
         return false;
       }

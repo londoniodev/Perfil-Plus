@@ -15,11 +15,18 @@ import { CurrentTenant } from '../../common/decorators/current-tenant.decorator'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '@alvarosky/database';
 
 @Controller('tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
+
+  @Public()
+  @Get('resolve/:id')
+  resolve(@Param('id') id: string) {
+    return this.tablesService.resolve(id);
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)

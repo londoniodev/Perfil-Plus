@@ -40,16 +40,17 @@ export class OrderNotificationListener {
 
     try {
       // Buscar si este teléfono es de una conversación de WhatsApp activa
-      let storeSetting;
+      let tenantSetting: any;
       await this.cls.runWith({ tenantId } as any, async () => {
-        storeSetting = await this.prisma.storeSettings.findFirst({
+        tenantSetting = await this.prisma.tenantSettings.findUnique({
+          where: { tenantId },
           select: { waPhoneNumberId: true },
         });
       });
 
-      if (!storeSetting?.waPhoneNumberId) {
+      if (!tenantSetting?.waPhoneNumberId) {
         this.logger.log(
-          `[Tenant: ${tenantId}] Sin WhatsApp configurado, omitiendo notificación.`,
+          `[Tenant: ${tenantId}] Sin WhatsApp configurado en TenantSettings, omitiendo notificación.`,
         );
         return;
       }
@@ -91,7 +92,7 @@ export class OrderNotificationListener {
 
       await this.metaApiService.sendTextMessage(
         tenantId,
-        storeSetting.waPhoneNumberId,
+        tenantSetting.waPhoneNumberId,
         customerPhone,
         message,
       );

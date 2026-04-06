@@ -16,6 +16,7 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
     const tenantId = await getTenantId();
     const cookieStore = await cookies();
     const token = cookieStore.get("Authentication")?.value || cookieStore.get("accessToken")?.value;
+    const branchId = cookieStore.get("x-branch-id")?.value;
 
     const headers = new Headers(options?.headers);
 
@@ -25,6 +26,10 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
     }
     headers.set('x-tenant-id', tenantId);
     headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');
+
+    if (branchId) {
+        headers.set('x-branch-id', branchId);
+    }
 
     if (token && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);

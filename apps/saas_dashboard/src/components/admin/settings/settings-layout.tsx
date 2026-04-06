@@ -9,13 +9,39 @@ import { EmailSettingsForm } from "./tabs/email-settings-form"
 import { ApiSettingsForm } from "./tabs/api-settings-form"
 import { NavigationSettingsForm } from "./tabs/navigation-settings-form"
 import { BusinessHoursSettingsForm } from "./tabs/business-hours-settings-form"
+import { useBranchStore } from "@/store/use-branch-store"
+import { useEffect, useState, useCallback } from "react"
+import { fetchAPI } from "@/lib/api"
+import { Loader2, Globe, Building } from "lucide-react"
 
 interface SettingsLayoutProps {
     initialData?: any
     brandingData?: any
 }
 
-export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProps) {
+export function SettingsLayout({ initialData: propsInitialData, brandingData }: SettingsLayoutProps) {
+    const { currentBranchId } = useBranchStore()
+    const [initialData, setInitialData] = useState(propsInitialData)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const fetchConfig = useCallback(async () => {
+        setIsLoading(true)
+        try {
+            const data = await fetchAPI<any>('/settings/tenant-config')
+            setInitialData(data)
+        } catch (error) {
+            console.error("Error fetching branch config:", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        // Solo refetch si ya estamos montados y el branchId cambió
+        if (currentBranchId) {
+            fetchConfig()
+        }
+    }, [currentBranchId, fetchConfig])
     
     // Mapear datos para BrandingForm
     const mappedBrandingData = useMemo(() => {
@@ -92,17 +118,36 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
     return (
         <div className="max-w-4xl mx-auto w-full space-y-6">
             <Tabs defaultValue="general" className="w-full">
-                <div className="flex justify-center mb-8">
+                <div className="flex flex-col items-center gap-4 mb-8">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-full text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <Globe className="h-3 w-3" /> Configuración Global (Tenant)
+                    </div>
                     <TabsList>
                         <TabsTrigger value="general">General</TabsTrigger>
                         <TabsTrigger value="branding">Branding</TabsTrigger>
-                        <TabsTrigger value="finance">Finanzas</TabsTrigger>
                         <TabsTrigger value="navigation">Navegación</TabsTrigger>
-                        <TabsTrigger value="hours">Horarios</TabsTrigger>
                         <TabsTrigger value="email">Email</TabsTrigger>
                         <TabsTrigger value="apis">API's</TabsTrigger>
                     </TabsList>
+
+                    <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-xs font-medium text-primary uppercase tracking-wider mt-4">
+                        <Building className="h-3 w-3" /> Configuración de Sucursal
+                    </div>
+                    <TabsList className="bg-primary/5">
+                        <TabsTrigger value="finance">Operación y Pagos</TabsTrigger>
+                        <TabsTrigger value="hours">Horarios de Atención</TabsTrigger>
+                    </TabsList>
                 </div>
+
+                {isLoading && (
+                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Cargando configuración de la sucursal...</p>
+                    </div>
+                )}
+
+                <div className={isLoading ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"}>
+
 
             <TabsContent value="general">
                 <GeneralSettingsForm initialData={generalData} />
@@ -135,8 +180,8 @@ export function SettingsLayout({ initialData, brandingData }: SettingsLayoutProp
             </TabsContent>
 
             <TabsContent value="hours">
-                <BusinessHoursSettingsForm initialData={businessHoursData} />
-            </TabsContent>
+                </TabsContent>
+                </div>
             </Tabs>
         </div>
     )

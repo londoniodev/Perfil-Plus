@@ -29,12 +29,18 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
     const tenantId = await getTenantId();
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value || cookieStore.get("Authentication")?.value;
+    const branchId = cookieStore.get("x-branch-id")?.value;
+
 
     const headers = new Headers(options?.headers);
 
     // Inyectar tenantId para rutas públicas y auditoría
     if (tenantId) {
         headers.set('x-tenant-id', tenantId);
+    }
+
+    if (branchId) {
+        headers.set('x-branch-id', branchId);
     }
 
     headers.set('x-internal-token', process.env.INTERNAL_API_KEY || 'default_dev_secret_key');

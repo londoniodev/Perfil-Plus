@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks";
 import { usePathname } from "next/navigation";
 import { SiteHeader } from "@alvarosky/ui";
 import { CartSheet } from "@/components/shop/cart-sheet";
+import { BranchSelector } from "./BranchSelector";
 import { siteConfig } from "@/config/site";
 
 interface HeaderProps {
@@ -35,6 +36,7 @@ export function Header({ tenantName, logoUrl }: HeaderProps) {
             links={navLinks}
             isAuthenticated={isAuthenticated}
             pathname={pathname}
+            logoSuffix={<BranchSelector />}
             cartComponent={<CartSheet />}
         />
     );

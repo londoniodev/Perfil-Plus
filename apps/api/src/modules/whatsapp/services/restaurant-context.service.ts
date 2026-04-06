@@ -23,10 +23,13 @@ export class RestaurantContextService {
 
   /**
    * Retorna el catálogo completo de productos activos del tenant,
-   * cacheado en Redis. Usado por OpenAiProvider para búsqueda fuzzy con fuse.js.
+   * filtrado por BranchProduct si se proporciona branchId.
+   * Cacheado en Redis. Usado por OpenAiProvider para búsqueda fuzzy con fuse.js.
    */
-  async getProductCatalog(tenantId: string): Promise<CatalogProduct[]> {
-    const cacheKey = `tenant:${tenantId}:product_catalog`;
+  async getProductCatalog(tenantId: string, branchId?: string): Promise<CatalogProduct[]> {
+    const cacheKey = branchId
+      ? `tenant:${tenantId}:branch:${branchId}:product_catalog`
+      : `tenant:${tenantId}:product_catalog`;
 
     const cached = await this.cacheManager.get<string>(cacheKey);
     if (cached) {
@@ -43,6 +46,48 @@ export class RestaurantContextService {
       `[Tenant: ${tenantId}] Cache miss para catálogo de productos. Fetching DB...`,
     );
 
+    // Si tenemos branchId, filtramos via BranchProduct (disponibilidad + price override)
+    if (branchId) {
+      const branchProducts = await (this.prisma as any).branchProduct.findMany({
+        where: {
+          branchId,
+          isAvailable: true,
+          product: {
+            productType: 'RESTAURANT',
+            published: true,
+          },
+        },
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              basePrice: true,
+              description: true,
+              images: true,
+              variants: { select: { id: true }, take: 1 },
+            },
+          },
+        },
+      });
+
+      const catalog: CatalogProduct[] = branchProducts.map((bp: any) => ({
+        id: bp.product.id,
+        name: bp.product.name,
+        basePrice: bp.priceOverride !== null ? Number(bp.priceOverride) : Number(bp.product.basePrice),
+        description: bp.product.description || null,
+        variantId: bp.product.variants[0]?.id || bp.product.id,
+        images: bp.product.images || [],
+      }));
+
+      await this.cacheManager.set(cacheKey, JSON.stringify(catalog), 2592000000);
+      this.logger.log(
+        `[Tenant: ${tenantId}] Catálogo de ${catalog.length} productos (branch: ${branchId}) cacheado.`,
+      );
+      return catalog;
+    }
+
+    // Fallback: catálogo sin filtro de branch (legacy)
     const products = await this.prisma.product.findMany({
       where: {
         productType: 'RESTAURANT',
@@ -109,13 +154,27 @@ export class RestaurantContextService {
   }
 
   private async generateMenuContext(tenantId: string): Promise<string> {
-    // Obtener configuración del restaurante
-    const storeSettings = await this.prisma.storeSettings.findFirst({
+    // Obtener TenantSettings (config global: nombre del restaurante)
+    const tenantSettings = await this.prisma.tenantSettings.findUnique({
+      where: { tenantId },
       include: { tenant: { select: { slug: true } } },
     });
-    const storeName = storeSettings?.storeName || 'Nuestro Restaurante';
-    const tenantSlug = storeSettings?.tenant?.slug || 'demo';
-    const deliveryFee = Number(storeSettings?.deliveryFee || 0);
+    const storeName = tenantSettings?.storeName || 'Nuestro Restaurante';
+    const tenantSlug = (tenantSettings as any)?.tenant?.slug || 'demo';
+
+    // Obtener BranchSettings de la sucursal default (delivery fee operativo)
+    const defaultBranch = await this.prisma.branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
+    });
+    let deliveryFee = 0;
+    if (defaultBranch) {
+      const branchSettings = await this.prisma.branchSettings.findUnique({
+        where: { branchId: defaultBranch.id },
+        select: { deliveryFee: true },
+      });
+      deliveryFee = Number(branchSettings?.deliveryFee || 0);
+    }
     const deliveryFeeFormatted = deliveryFee > 0 ? `$${deliveryFee}` : 'Gratis';
 
     // Obtener menú (Categorías y Productos Activos)

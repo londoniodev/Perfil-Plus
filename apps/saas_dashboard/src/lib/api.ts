@@ -2,15 +2,24 @@ import { Post, Category, Tag } from '@/types/blog';
 import { PaginatedResponse } from '@/types/common';
 import { API_BASE as API_BASE_URL, TENANT_ID } from './config';
 
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+export async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const isClient = typeof window !== 'undefined';
     let token = isClient ? localStorage.getItem('token') : null;
 
-    const getHeaders = (authToken: string | null) => ({
-        'Content-Type': 'application/json',
-        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-        ...options?.headers,
-    });
+    const getHeaders = (authToken: string | null) => {
+        const branchId = isClient ? localStorage.getItem('branch-storage') : null;
+        // Parsear branchId de zustand persist string if needed, or better use Cookies for universal access
+        const branchIdFromCookie = isClient 
+            ? document.cookie.split('; ').find(row => row.startsWith('x-branch-id='))?.split('=')[1]
+            : null;
+
+        return {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            ...(branchIdFromCookie ? { 'x-branch-id': branchIdFromCookie } : {}),
+            ...options?.headers,
+        };
+    };
 
     const separator = endpoint.includes('?') ? '&' : '?';
     const currentEndpoint = (!options?.method || options.method === 'GET') 

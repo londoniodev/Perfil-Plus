@@ -72,9 +72,15 @@ export class OrdersService {
               tx,
             );
 
+            const defaultBranch = await tx.branch.findFirst({
+              where: { tenantId: this.getTenantId(), isDefault: true },
+              select: { id: true },
+            });
+
             const order = await tx.order.create({
               data: {
                 tenantId: this.getTenantId(),
+                branchId: defaultBranch!.id,
                 userId: userId || null,
                 orderNumber,
                 totalAmount,

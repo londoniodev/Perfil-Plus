@@ -291,13 +291,19 @@ export class PaymentsService {
   // ==================== PRODUCT PURCHASES ====================
 
   async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
-    const storeSettings = await (
-      this.prisma as any
-    ).storeSettings.findFirst({
-      where: { tenantId },
+    // Obtener BranchSettings de la sucursal default (credenciales de pago operativas)
+    const defaultBranch = await (this.prisma as any).branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
     });
+    let branchSettings: any = null;
+    if (defaultBranch) {
+      branchSettings = await (this.prisma as any).branchSettings.findUnique({
+        where: { branchId: defaultBranch.id },
+      });
+    }
 
-    const activeProvider = storeSettings?.activePaymentProvider || 'NONE';
+    const activeProvider = branchSettings?.activePaymentProvider || 'NONE';
 
     if (activeProvider === 'NONE') {
       throw new BadRequestException('El vendedor no ha configurado pagos');
@@ -418,10 +424,16 @@ export class PaymentsService {
       !orderIdToUse &&
       (paymentStrategy === 'BOLD' || paymentStrategy === 'CASH')
     ) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+
       const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
       const newOrder = await this.prisma.order.create({
         data: {
           tenantId,
+          branchId: defaultBranch!.id,
           orderNumber,
           totalAmount,
           status: 'PENDING',
@@ -461,7 +473,7 @@ export class PaymentsService {
     // ================= ESTRATEGIA SEGUN PROVEEDOR ================= //
 
     if (paymentStrategy === 'MERCADO_PAGO') {
-      const accessToken = storeSettings?.mpAccessToken;
+      const accessToken = branchSettings?.mpAccessToken;
       if (!accessToken)
         throw new BadRequestException('MercadoPago no está configurado');
 
@@ -544,7 +556,7 @@ export class PaymentsService {
         );
       }
     } else if (paymentStrategy === 'BOLD') {
-      const boldApiKey = storeSettings?.boldApiKey;
+      const boldApiKey = branchSettings?.boldApiKey;
       if (!boldApiKey)
         throw new BadRequestException(
           'La integración con Bold no tiene API Key configurada',
@@ -552,7 +564,12 @@ export class PaymentsService {
 
       const redirectUrl = `${frontendUrl}/checkout/success?orderId=${orderIdToUse}`;
       const notificationUrl = `${apiUrl}/api/payments/webhook/bold?tenantId=${tenantId}`;
-      const description = `Pago de Orden en ${storeSettings.storeName || 'Tienda'}`;
+      // Obtener storeName desde TenantSettings para la descripción de Bold
+      const tenantSettings = await (this.prisma as any).tenantSettings.findUnique({
+        where: { tenantId },
+        select: { storeName: true },
+      });
+      const description = `Pago de Orden en ${tenantSettings?.storeName || 'Tienda'}`;
 
       const boldResponse = await this.boldService.createPaymentLink(
         {
@@ -621,18 +638,25 @@ export class PaymentsService {
     const resolvedTenantId = tenantId;
 
     try {
-      // 1. Recuperar Credenciales desde StoreSettings (SSOT)
-      const storeSettings = await (
+      // 1. Recuperar Credenciales desde BranchSettings (sucursal default)
+      const defaultBranch = await (
         this.prisma as any
-      ).storeSettings.findFirst({
-        where: { tenantId: resolvedTenantId },
+      ).branch.findFirst({
+        where: { tenantId: resolvedTenantId, isDefault: true },
+        select: { id: true },
       });
+      let branchSettings: any = null;
+      if (defaultBranch) {
+        branchSettings = await (this.prisma as any).branchSettings.findUnique({
+          where: { branchId: defaultBranch.id },
+        });
+      }
 
-      const accessToken = storeSettings?.mpAccessToken;
+      const accessToken = branchSettings?.mpAccessToken;
 
       if (!accessToken) {
         this.logger.error(
-          `[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en StoreSettings`,
+          `[PAYMENTS_WEBHOOK] Tenant ${resolvedTenantId} no tiene mpAccessToken en BranchSettings`,
         );
         return { status: 'error', reason: 'Mercado Pago not configured' };
       }
@@ -828,11 +852,17 @@ export class PaymentsService {
               });
             } else {
               // Generar numero de orden
+              const defaultBranch = await tx.branch.findFirst({
+                where: { tenantId: resolvedTenantId, isDefault: true },
+                select: { id: true },
+              });
+
               const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
 
               newOrder = await tx.order.create({
                 data: {
                   tenantId: resolvedTenantId,
+                  branchId: defaultBranch!.id,
                   orderNumber,
                   totalAmount,
                   status: 'ACCEPTED', // Directo a cocina, ya está pagado
@@ -1144,13 +1174,20 @@ export class PaymentsService {
       reference: body?.data?.metadata?.reference,
     });
 
-    // 1. Obtener el secreto del tenant para validar la firma
-    // Usamos findFirst en StoreSettings para este tenant
-    const storeSettings = await this.prisma.storeSettings.findFirst({
-      where: { tenantId },
+    // 1. Obtener el secreto del tenant desde BranchSettings (sucursal default)
+    const boldBranch = await (this.prisma as any).branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
     });
+    let boldBranchSettings: any = null;
+    if (boldBranch) {
+      boldBranchSettings = await (this.prisma as any).branchSettings.findUnique({
+        where: { branchId: boldBranch.id },
+        select: { boldSecretKey: true },
+      });
+    }
 
-    const secret = storeSettings?.boldSecretKey;
+    const secret = boldBranchSettings?.boldSecretKey;
 
     // 2. Validar firma HMAC (Seguridad)
     if (rawBody && signature && secret) {

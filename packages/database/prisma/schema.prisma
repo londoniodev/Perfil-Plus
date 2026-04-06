@@ -23,6 +23,9 @@ model Tenant {
   updatedAt          DateTime            @updatedAt
   domain             String?             @unique
   brandSettings      BrandSettings?
+  branches           Branch[]
+  branchProducts     BranchProduct[]
+  branchSettings     BranchSettings[]
   categories         Category[]
   courses            Course[]
   deliveryDrivers    DeliveryDriver[]
@@ -42,7 +45,7 @@ model Tenant {
   productVariants    ProductVariant[]
   recipeIngredients  RecipeIngredient[]
   recipes            Recipe[]
-  storeSettings      StoreSettings[]
+  tenantSettings     TenantSettings?
   systemSettings     SystemSetting[]
   tables             Table[]
   tags               Tag[]
@@ -69,6 +72,7 @@ model User {
   failedLoginAttempts     Int                      @default(0)
   lockedUntil             DateTime?
   tenantId                String
+  branches                UserBranchAccess[]
   deliveryDriver          DeliveryDriver?
   emailVerificationTokens EmailVerificationToken[]
   evaluations             EvaluationResult[]
@@ -366,24 +370,35 @@ model Purchase {
   @@index([status])
 }
 
-model StoreSettings {
-  id                     String          @id @default(cuid())
-  mpAccessToken          String?
-  mpPublicKey            String?
-  activePaymentProvider  PaymentProvider @default(NONE)
-  boldApiKey             String?
-  boldSecretKey          String?
-  storeName              String?
-  storeEmail             String?
-  createdAt              DateTime        @default(now())
-  updatedAt              DateTime        @updatedAt
-  deliveryFee            Decimal?        @default(0) @db.Decimal(10, 2)
-  tenantId               String
-  waAccessToken          String?
-  waPhoneNumberId        String?         @unique
-  wabaId                 String?         @unique
-  businessHours          Json?
-  tenant                 Tenant          @relation(fields: [tenantId], references: [id])
+model TenantSettings {
+  id              String   @id @default(cuid())
+  tenantId        String   @unique
+  storeName       String?
+  storeEmail      String?
+  waAccessToken   String?
+  waPhoneNumberId String?  @unique
+  wabaId          String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model BranchSettings {
+  id                    String          @id @default(cuid())
+  tenantId              String
+  branchId              String          @unique
+  mpAccessToken         String?
+  mpPublicKey           String?
+  activePaymentProvider PaymentProvider @default(NONE)
+  boldApiKey            String?
+  boldSecretKey         String?
+  deliveryFee           Decimal?        @default(0) @db.Decimal(10, 2)
+  businessHours         Json?
+  deliveryZones         Json?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  branch                Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  tenant                Tenant          @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
 }
@@ -399,9 +414,12 @@ model Table {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tenantId  String
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
+  @@index([branchId])
 }
 
 model Product {
@@ -421,6 +439,7 @@ model Product {
   isAvailable    Boolean                @default(true)
   previewUrl     String?
   tenantId       String
+  branchProducts BranchProduct[]
   categories     CategoriesOnProducts[]
   modifierGroups ModifierGroup[]
   tenant         Tenant                 @relation(fields: [tenantId], references: [id])
@@ -549,6 +568,8 @@ model Order {
   guestCount         Int?                    @default(1)
   identification     String?
   tenantId           String
+  branchId           String
+  branch             Branch                  @relation(fields: [branchId], references: [id])
   driver             DeliveryDriver?         @relation(fields: [driverId], references: [id])
   tenant             Tenant                  @relation(fields: [tenantId], references: [id])
   user               User?                   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -558,6 +579,7 @@ model Order {
 
   @@unique([tenantId, orderNumber])
   @@index([tenantId])
+  @@index([branchId])
   @@index([userId])
   @@index([status])
   @@index([orderType])
@@ -665,6 +687,7 @@ model OrderDeliveryAnalytics {
 model DeliveryDriver {
   id                  String       @id @default(cuid())
   tenantId            String
+  branchId            String
   userId              String       @unique
   vehicle             String?
   phone               String
@@ -673,11 +696,13 @@ model DeliveryDriver {
   maxCapacity         Int          @default(3)
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
+  branch              Branch       @relation(fields: [branchId], references: [id])
   tenant              Tenant       @relation(fields: [tenantId], references: [id])
   user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders              Order[]
 
   @@index([tenantId])
+  @@index([branchId])
   @@index([tenantId, status])
 }
 
@@ -699,10 +724,12 @@ model SystemSetting {
 model Warehouse {
   id        String              @id @default(cuid())
   tenantId  String
+  branchId  String
   name      String
   isDefault Boolean             @default(false)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
+  branch    Branch              @relation(fields: [branchId], references: [id])
   counts    InventoryCount[]
   movements InventoryMovement[]
   tenant    Tenant              @relation(fields: [tenantId], references: [id])
@@ -710,6 +737,7 @@ model Warehouse {
 
   @@unique([tenantId, name])
   @@index([tenantId])
+  @@index([branchId])
 }
 
 model InventoryItem {
@@ -843,15 +871,18 @@ model InventoryCountLine {
 model WaConversation {
   id            String               @id @default(cuid())
   tenantId      String
+  branchId      String?
   customerPhone String
   status        WaConversationStatus @default(OPEN)
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+  branch        Branch?              @relation(fields: [branchId], references: [id])
   tenant        Tenant               @relation(fields: [tenantId], references: [id])
   messages      WaMessage[]
 
   @@unique([tenantId, customerPhone, status], name: "active_conversation", map: "WaConversation_active_conversation_idx")
   @@index([tenantId])
+  @@index([branchId])
   @@index([customerPhone])
   @@index([tenantId, status])
 }
@@ -920,6 +951,63 @@ model BrandSettings {
   authQuote      String?
   theme          String?    @default("system")
   tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model Branch {
+  id              String             @id @default(cuid())
+  tenantId        String
+  name            String
+  slug            String
+  address         String?
+  phone           String?
+  status          String             @default("ACTIVE")
+  isDefault       Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  branchSettings  BranchSettings?
+  branchProducts  BranchProduct[]
+  deliveryDrivers DeliveryDriver[]
+  orders          Order[]
+  tables          Table[]
+  users           UserBranchAccess[]
+  waConversations WaConversation[]
+  warehouses      Warehouse[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+model BranchProduct {
+  id            String   @id @default(cuid())
+  tenantId      String
+  branchId      String
+  productId     String
+  isAvailable   Boolean  @default(true)
+  priceOverride Decimal? @db.Decimal(10, 2)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  branch        Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([branchId, productId])
+  @@index([tenantId])
+  @@index([branchId])
+}
+
+model UserBranchAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  branchId   String
+  assignedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch     Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, branchId])
+  @@index([userId])
+  @@index([branchId])
 }
 
 enum CategoryType {

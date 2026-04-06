@@ -213,7 +213,7 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
                 lng: data.lng,
             })
             toast.success("¡Pedido realizado con éxito!")
-            router.push(`/order-success/${result.id || result.orderNumber}`)
+            router.push(`/checkout/success?orderId=${result.id}&orderNumber=${result.orderNumber}`)
         } catch (error: any) {
             console.error("Error al procesar el pedido:", error)
             toast.error(error.message || "Error desconocido al procesar el pedido")

@@ -21,7 +21,7 @@ import {
 import { RefreshCw, Clock, Utensils, CheckCircle, Truck, AlertCircle } from "lucide-react"
 
 const STATUS_GROUPS: Record<string, OrderStatus[]> = {
-    NEW: ['PENDING'] as OrderStatus[],
+    NEW: ['PENDING', 'APPROVED'] as OrderStatus[],
     COOKING: ['ACCEPTED', 'COOKING', 'PROCESSING', 'PREPARING'] as OrderStatus[],
     READY: ['READY', 'SHIPPED'] as OrderStatus[],
     COMPLETED: ['DELIVERED', 'SERVED', 'CANCELLED', 'REFUNDED'] as OrderStatus[],

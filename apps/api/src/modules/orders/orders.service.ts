@@ -508,6 +508,8 @@ export class OrdersService {
       const activeStatuses: OrderStatus[] = [
         'PENDING',
         'APPROVED',
+        'ACCEPTED',
+        'COOKING',
         'PROCESSING',
         'PREPARING',
         'READY',

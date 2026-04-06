@@ -34,7 +34,7 @@ export function ProductVariantsForm({ hasModifiers }: ProductVariantsFormProps) 
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => append({ name: "", sku: "", price: 0, stock: 0, isDefault: false })}
+                    onClick={() => append({ name: "", sku: "", price: undefined, stock: 0, isDefault: false })}
                 >
                     <IconPlus className="h-4 w-4 mr-2" />
                     Agregar

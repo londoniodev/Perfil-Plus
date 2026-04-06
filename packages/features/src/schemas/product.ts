@@ -4,7 +4,10 @@ export const variantSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, "Nombre requerido"),
     sku: z.string().optional(),
-    price: z.coerce.number().optional().nullable(),
+    price: z.preprocess(
+        (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+        z.number().optional().nullable()
+    ),
     stock: z.coerce.number().int().min(-1).default(0),
     isDefault: z.boolean().default(false),
     attributes: z.record(z.string(), z.any()).optional()

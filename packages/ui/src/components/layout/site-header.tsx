@@ -83,7 +83,7 @@ export function SiteHeader({
                     [data-header-desktop] { display: flex !important; }
                 }
             `}} />
-            <div className="w-full px-4 md:px-8 flex items-center justify-between">
+            <div className="relative w-full px-4 md:px-8 flex items-center justify-between">
 
                 {/* Mobile Trigger (Left) */}
                 <div className="ml-2" style={{ display: 'block' }} data-header-mobile>
@@ -114,7 +114,7 @@ export function SiteHeader({
                 </div>
 
                 {/* Logo */}
-                <Link href="/" className="flex-1 flex items-center gap-2 z-10 lg:ml-4 group">
+                <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:transform-none lg:flex-1 flex items-center justify-center lg:justify-start gap-2 z-10 lg:ml-4 group">
                     <Image
                         src={logo}
                         alt={logoAlt}

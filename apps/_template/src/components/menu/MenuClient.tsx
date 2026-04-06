@@ -407,7 +407,7 @@ export default function MenuClient({
                 {/* Social Grid (Menu Items) - Animated */}
                 <motion.div
                     layout
-                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-[2px] bg-slate-100 pb-20"
+                    className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[2px] bg-slate-100 pb-20"
                 >
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, productIndex) => (
@@ -426,7 +426,7 @@ export default function MenuClient({
                                     src={product.images?.[0] || getFallbackImage(productIndex, product.name)}
                                     alt={product.name}
                                     fill
-                                    sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 15vw"
+                                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 15vw"
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
 

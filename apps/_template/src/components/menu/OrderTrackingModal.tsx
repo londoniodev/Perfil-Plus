@@ -33,16 +33,20 @@ export function OrderTrackingModal({
     const [loading, setLoading] = useState(true)
     const [copied, setCopied] = useState(false)
 
-    const fetchOrder = useCallback(async () => {
-        setLoading(true)
+    const fetchOrder = useCallback(async (silent = false) => {
+        if (!silent) setLoading(true)
         const data = await trackOrder(orderId)
         if (data) setOrder(data)
-        setLoading(false)
+        if (!silent) setLoading(false)
     }, [orderId, trackOrder])
 
     useEffect(() => {
         if (isOpen && orderId) {
             fetchOrder()
+            const interval = setInterval(() => {
+                fetchOrder(true)
+            }, 10000)
+            return () => clearInterval(interval)
         }
     }, [isOpen, orderId, fetchOrder])
 
@@ -72,7 +76,7 @@ export function OrderTrackingModal({
                         <div className="text-left">
                             <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                                 Seguimiento
-                                <button onClick={fetchOrder} disabled={loading} className="p-1 rounded-full text-slate-400 hover:text-primary transition-colors disabled:opacity-50" aria-label="Actualizar estado">
+                                <button onClick={() => fetchOrder(false)} disabled={loading} className="p-1 rounded-full text-slate-400 hover:text-primary transition-colors disabled:opacity-50" aria-label="Actualizar estado">
                                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                                 </button>
                             </h3>

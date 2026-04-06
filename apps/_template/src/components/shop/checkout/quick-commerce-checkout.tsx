@@ -126,32 +126,58 @@ export function QuickCommerceCheckout({ waData, isLoading }: QuickCommerceChecko
         console.log('[Checkout] onSubmit ejecutado con:', data)
         setIsSubmitting(true)
         try {
-            const payload = {
-                items: cartItems.map(item => ({
-                    variantId: item.variantId,
-                    quantity: item.quantity,
-                    notes: item.notes,
-                    modifiers: item.modifiers?.map(m => ({
-                        modifierId: m.id,
-                        quantity: m.quantity || 1
-                    }))
-                })),
-                customer: {
-                    name: data.customerName,
-                    phone: data.customerPhone.replace(/\D/g, ''),
-                    address: data.address,
-                    lat: data.lat,
-                    lng: data.lng,
-                },
-                orderType: data.orderType,
-                paymentMethod: data.paymentMethod,
-                frontUrl: window.location.origin
+            let payload: any = {};
+            const isOnlinePayment = data.paymentMethod === "MERCADOPAGO" || data.paymentMethod === "BOLD";
+
+            if (isOnlinePayment) {
+                payload = {
+                    items: cartItems.map(item => ({
+                        variantId: item.variantId,
+                        quantity: item.quantity,
+                        notes: item.notes,
+                        modifiers: item.modifiers?.map(m => ({
+                            modifierId: m.id,
+                            quantity: m.quantity || 1
+                        }))
+                    })),
+                    customer: {
+                        name: data.customerName,
+                        phone: data.customerPhone.replace(/\D/g, ''),
+                        address: data.address,
+                        lat: data.lat,
+                        lng: data.lng,
+                    },
+                    orderType: data.orderType,
+                    paymentMethod: data.paymentMethod,
+                    frontUrl: window.location.origin
+                };
+            } else {
+                // CASH -> /api/orders
+                payload = {
+                    items: cartItems.map(item => ({
+                        variantId: item.variantId,
+                        quantity: item.quantity,
+                        notes: item.notes,
+                        modifiers: item.modifiers?.map(m => ({
+                            modifierId: m.id,
+                            quantity: m.quantity || 1
+                        }))
+                    })),
+                    customerName: data.customerName,
+                    customerPhone: data.customerPhone.replace(/\D/g, ''),
+                    shippingData: {
+                        address: data.address,
+                        lat: data.lat,
+                        lng: data.lng,
+                    },
+                    orderType: data.orderType,
+                };
             }
 
             const _apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api").replace(/\/+$/, "");
             const API_URL = _apiUrl.endsWith('/api') ? _apiUrl : `${_apiUrl}/api`;
             
-            const endpoint = (data.paymentMethod === "MERCADOPAGO" || data.paymentMethod === "BOLD")
+            const endpoint = isOnlinePayment
                 ? `${API_URL}/payments/product/checkout`
                 : `${API_URL}/orders`; // Usar el endpoint estándar para pedidos directos
 

@@ -411,9 +411,12 @@ export class PaymentsService {
     // Si la orden ya existiera proveniente del DTO:
     let orderIdToUse = dto.existingOrderId;
 
+    // Determinar la estrategia final de pago
+    const paymentStrategy = dto.paymentMethod === 'CASH' ? 'CASH' : activeProvider;
+
     if (
       !orderIdToUse &&
-      (activeProvider === 'BOLD' || activeProvider === 'CASH')
+      (paymentStrategy === 'BOLD' || paymentStrategy === 'CASH')
     ) {
       const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
       const newOrder = await this.prisma.order.create({
@@ -457,7 +460,7 @@ export class PaymentsService {
 
     // ================= ESTRATEGIA SEGUN PROVEEDOR ================= //
 
-    if (activeProvider === 'MERCADO_PAGO') {
+    if (paymentStrategy === 'MERCADO_PAGO') {
       const accessToken = storeSettings?.mpAccessToken;
       if (!accessToken)
         throw new BadRequestException('MercadoPago no está configurado');
@@ -540,7 +543,7 @@ export class PaymentsService {
           'Error al iniciar el pago con MercadoPago',
         );
       }
-    } else if (activeProvider === 'BOLD') {
+    } else if (paymentStrategy === 'BOLD') {
       const boldApiKey = storeSettings?.boldApiKey;
       if (!boldApiKey)
         throw new BadRequestException(
@@ -571,7 +574,7 @@ export class PaymentsService {
         preferenceId: orderIdToUse,
         totalAmount,
       };
-    } else if (activeProvider === 'CASH') {
+    } else if (paymentStrategy === 'CASH') {
       return {
         init_point: `${frontendUrl}/checkout/success?orderId=${orderIdToUse}&type=cash`,
         sandbox_init_point: `${frontendUrl}/checkout/success?orderId=${orderIdToUse}&type=cash`,

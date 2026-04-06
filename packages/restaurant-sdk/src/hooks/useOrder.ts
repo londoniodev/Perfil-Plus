@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { CartItem } from './useCart'
 
 interface OrderData {
@@ -28,7 +28,7 @@ export function useOrder(tenantId?: string) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const createOrder = async (orderData: OrderData) => {
+    const createOrder = useCallback(async (orderData: OrderData) => {
         setIsSubmitting(true)
         setError(null)
         try {
@@ -87,9 +87,9 @@ export function useOrder(tenantId?: string) {
         } finally {
             setIsSubmitting(false)
         }
-    }
+    }, [tenantId])
 
-    const trackOrder = async (orderId: string) => {
+    const trackOrder = useCallback(async (orderId: string) => {
         try {
             const _rawUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, "");
             const apiUrl = _rawUrl.endsWith('/api') ? _rawUrl : `${_rawUrl}/api`;
@@ -107,7 +107,7 @@ export function useOrder(tenantId?: string) {
             console.error("Tracking Error:", err)
             return null
         }
-    }
+    }, [tenantId])
 
     return {
         createOrder,

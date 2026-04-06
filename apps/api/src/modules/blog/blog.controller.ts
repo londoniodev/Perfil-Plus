@@ -93,13 +93,20 @@ export class AdminBlogController {
   }
 
   @Patch('posts/:id')
-  async updatePost(@Param('id') id: string, @Body() dto: UpdatePostDto) {
-    return this.blogService.updatePost(id, dto);
+  async updatePost(
+    @Param('id') id: string,
+    @Body() dto: UpdatePostDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.blogService.updatePost(id, dto, tenantId);
   }
 
   @Delete('posts/:id')
-  async deletePost(@Param('id') id: string) {
-    return this.blogService.deletePost(id);
+  async deletePost(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.blogService.deletePost(id, tenantId);
   }
 
   // Attachments
@@ -112,13 +119,17 @@ export class AdminBlogController {
   async addAttachment(
     @Param('postId') postId: string,
     @Body() dto: CreateAttachmentDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.blogService.addAttachment(postId, dto);
+    return this.blogService.addAttachment(postId, dto, tenantId);
   }
 
   @Delete('attachments/:id')
-  async removeAttachment(@Param('id') id: string) {
-    return this.blogService.removeAttachment(id);
+  async removeAttachment(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.blogService.removeAttachment(id, tenantId);
   }
 
   // Categories
@@ -131,8 +142,11 @@ export class AdminBlogController {
   }
 
   @Delete('categories/:id')
-  async deleteCategory(@Param('id') id: string) {
-    return this.blogService.deleteCategory(id);
+  async deleteCategory(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.blogService.deleteCategory(id, tenantId);
   }
 
   // Tags
@@ -145,7 +159,10 @@ export class AdminBlogController {
   }
 
   @Delete('tags/:id')
-  async deleteTag(@Param('id') id: string) {
-    return this.blogService.deleteTag(id);
+  async deleteTag(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.blogService.deleteTag(id, tenantId);
   }
 }

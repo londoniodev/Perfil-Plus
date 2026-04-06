@@ -8,3 +8,6 @@
 ## 2026-03-27 - Product tenant query indexing
 **Learning:** Frequent queries that filter by `tenantId` AND multiple boolean flags (like `published` and `isAvailable`) on the `Product` table can cause full-table scans per tenant or slow sorts.
 **Action:** Always add a composite index like `@@index([tenantId, flag1, flag2])` (e.g., `@@index([tenantId, published, isAvailable])`) on widely queried models to help the database engine immediately pinpoint the exact subset of records.
+## 2026-03-27 - [Optimize Presigned URL Generation in Loops]
+**Learning:** Generating S3 presigned URLs sequentially using `for...of` loops introduces significant wait time (N+1 bottleneck on I/O), particularly when processing multiple digital items during a checkout or webhook transaction. The `StorageService` in `apps/api` is typically `Scope.REQUEST`, but resolving tenant context and generating signatures can and should be parallelized.
+**Action:** Always replace sequential `await this.storageService.getPresignedUrl` calls in a loop with `Promise.all` and `Array.map` (with individual `try-catch` blocks) to execute these background I/O operations concurrently and reduce transaction latency.

@@ -31,7 +31,7 @@ function mapApiToFormValues(apiData: any) {
         primary: bs.primaryColor || "",
         radius: bs.borderRadius ?? 0.5,
         density: "default" as const,
-        mode: (bs.theme || "system") as "light" | "dark" | "system",
+        mode: (bs.theme || "dark") as "light" | "dark" | "system",
         logoUrl: bs.logoUrl || "",
         faviconUrl: bs.faviconUrl || "",
         secondaryColor: bs.secondaryColor || "",

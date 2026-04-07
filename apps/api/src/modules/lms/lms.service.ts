@@ -32,8 +32,8 @@ export class LmsService {
     });
   }
 
-  async updateTheme(id: string, dto: UpdateThemeDto) {
-    const theme = await this.prisma.theme.findUnique({ where: { id } });
+  async updateTheme(id: string, dto: UpdateThemeDto, tenantId: string) {
+    const theme = await this.prisma.theme.findFirst({ where: { id, tenantId } });
     if (!theme) throw new NotFoundException('Tema no encontrado');
 
     const data: any = { ...dto };
@@ -46,8 +46,8 @@ export class LmsService {
     });
   }
 
-  async deleteTheme(id: string) {
-    const theme = await this.prisma.theme.findUnique({ where: { id } });
+  async deleteTheme(id: string, tenantId: string) {
+    const theme = await this.prisma.theme.findFirst({ where: { id, tenantId } });
     if (!theme) throw new NotFoundException('Tema no encontrado');
 
     await this.prisma.theme.delete({ where: { id } });
@@ -141,9 +141,9 @@ export class LmsService {
     });
   }
 
-  async updateCourse(id: string, dto: UpdateCourseDto) {
-    const course = await this.prisma.course.findUnique({
-      where: { id },
+  async updateCourse(id: string, dto: UpdateCourseDto, tenantId: string) {
+    const course = await this.prisma.course.findFirst({
+      where: { id, tenantId },
     });
     if (!course) throw new NotFoundException('Curso no encontrado');
 
@@ -157,9 +157,9 @@ export class LmsService {
     });
   }
 
-  async deleteCourse(id: string) {
-    const course = await this.prisma.course.findUnique({
-      where: { id },
+  async deleteCourse(id: string, tenantId: string) {
+    const course = await this.prisma.course.findFirst({
+      where: { id, tenantId },
     });
     if (!course) throw new NotFoundException('Curso no encontrado');
 
@@ -242,9 +242,9 @@ export class LmsService {
     });
   }
 
-  async updateLesson(id: string, dto: UpdateLessonDto) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: { id },
+  async updateLesson(id: string, dto: UpdateLessonDto, tenantId: string) {
+    const lesson = await this.prisma.lesson.findFirst({
+      where: { id, course: { tenantId } },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
 
@@ -258,9 +258,9 @@ export class LmsService {
     });
   }
 
-  async deleteLesson(id: string) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: { id },
+  async deleteLesson(id: string, tenantId: string) {
+    const lesson = await this.prisma.lesson.findFirst({
+      where: { id, course: { tenantId } },
     });
     if (!lesson) throw new NotFoundException('Lección no encontrada');
 

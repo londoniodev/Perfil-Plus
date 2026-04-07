@@ -52,9 +52,9 @@ export class EvaluationService {
     });
   }
 
-  async updateEvaluation(id: string, dto: UpdateEvaluationDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+  async updateEvaluation(id: string, dto: UpdateEvaluationDto, tenantId: string) {
+    const evaluation = await this.prisma.evaluation.findFirst({
+      where: { id, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
@@ -68,9 +68,9 @@ export class EvaluationService {
     });
   }
 
-  async deleteEvaluation(id: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
+  async deleteEvaluation(id: string, tenantId: string) {
+    const evaluation = await this.prisma.evaluation.findFirst({
+      where: { id, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
@@ -93,9 +93,9 @@ export class EvaluationService {
 
   // ==================== QUESTIONS ====================
 
-  async addQuestion(evaluationId: string, dto: CreateQuestionDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id: evaluationId },
+  async addQuestion(evaluationId: string, dto: CreateQuestionDto, tenantId: string) {
+    const evaluation = await this.prisma.evaluation.findFirst({
+      where: { id: evaluationId, theme: { tenantId } },
     });
     if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
 
@@ -117,9 +117,9 @@ export class EvaluationService {
     });
   }
 
-  async updateQuestion(id: string, dto: Partial<CreateQuestionDto>) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+  async updateQuestion(id: string, dto: Partial<CreateQuestionDto>, tenantId: string) {
+    const question = await this.prisma.question.findFirst({
+      where: { id, evaluation: { theme: { tenantId } } },
     });
     if (!question) throw new NotFoundException('Pregunta no encontrada');
 
@@ -131,9 +131,9 @@ export class EvaluationService {
     });
   }
 
-  async deleteQuestion(id: string) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
+  async deleteQuestion(id: string, tenantId: string) {
+    const question = await this.prisma.question.findFirst({
+      where: { id, evaluation: { theme: { tenantId } } },
     });
     if (!question) throw new NotFoundException('Pregunta no encontrada');
 

@@ -153,13 +153,20 @@ export class AdminLmsController {
   }
 
   @Patch('themes/:id')
-  async updateTheme(@Param('id') id: string, @Body() dto: UpdateThemeDto) {
-    return this.lmsService.updateTheme(id, dto);
+  async updateTheme(
+    @Param('id') id: string,
+    @Body() dto: UpdateThemeDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.updateTheme(id, dto, tenantId);
   }
 
   @Delete('themes/:id')
-  async deleteTheme(@Param('id') id: string) {
-    return this.lmsService.deleteTheme(id);
+  async deleteTheme(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.deleteTheme(id, tenantId);
   }
 
   // Courses
@@ -177,13 +184,20 @@ export class AdminLmsController {
   }
 
   @Patch('courses/:id')
-  async updateCourse(@Param('id') id: string, @Body() dto: UpdateCourseDto) {
-    return this.lmsService.updateCourse(id, dto);
+  async updateCourse(
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.updateCourse(id, dto, tenantId);
   }
 
   @Delete('courses/:id')
-  async deleteCourse(@Param('id') id: string) {
-    return this.lmsService.deleteCourse(id);
+  async deleteCourse(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.deleteCourse(id, tenantId);
   }
 
   // Lessons
@@ -201,13 +215,20 @@ export class AdminLmsController {
   }
 
   @Patch('lessons/:id')
-  async updateLesson(@Param('id') id: string, @Body() dto: UpdateLessonDto) {
-    return this.lmsService.updateLesson(id, dto);
+  async updateLesson(
+    @Param('id') id: string,
+    @Body() dto: UpdateLessonDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.updateLesson(id, dto, tenantId);
   }
 
   @Delete('lessons/:id')
-  async deleteLesson(@Param('id') id: string) {
-    return this.lmsService.deleteLesson(id);
+  async deleteLesson(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.lmsService.deleteLesson(id, tenantId);
   }
 
   @Post('lessons/:id/attachments')
@@ -238,13 +259,17 @@ export class AdminLmsController {
   async updateEvaluation(
     @Param('id') id: string,
     @Body() dto: UpdateEvaluationDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.updateEvaluation(id, dto);
+    return this.evaluationService.updateEvaluation(id, dto, tenantId);
   }
 
   @Delete('evaluations/:id')
-  async deleteEvaluation(@Param('id') id: string) {
-    return this.evaluationService.deleteEvaluation(id);
+  async deleteEvaluation(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.evaluationService.deleteEvaluation(id, tenantId);
   }
 
   // Questions
@@ -252,20 +277,25 @@ export class AdminLmsController {
   async addQuestion(
     @Param('evaluationId') evaluationId: string,
     @Body() dto: CreateQuestionDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.addQuestion(evaluationId, dto);
+    return this.evaluationService.addQuestion(evaluationId, dto, tenantId);
   }
 
   @Patch('questions/:id')
   async updateQuestion(
     @Param('id') id: string,
     @Body() dto: Partial<CreateQuestionDto>,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.updateQuestion(id, dto);
+    return this.evaluationService.updateQuestion(id, dto, tenantId);
   }
 
   @Delete('questions/:id')
-  async deleteQuestion(@Param('id') id: string) {
-    return this.evaluationService.deleteQuestion(id);
+  async deleteQuestion(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.evaluationService.deleteQuestion(id, tenantId);
   }
 }

@@ -6,3 +6,8 @@
 **Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
 **Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
 **Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+
+## 2025-02-18 - Fix Cross-Tenant IDOR in LMS Module
+**Vulnerability:** IDOR (Insecure Direct Object Reference) on global LMS models (Theme, Course, Lesson, Evaluation, Question).
+**Learning:** Models lacking a direct `tenantId` field (global models linked via parent relationships) bypass automatic Row-Level Security. Admin users from one tenant could manipulate IDs to update or delete educational content belonging to other tenants because the `findUnique` verification lacked tenant validation.
+**Prevention:** Always enforce tenant isolation manually for nested global models by replacing `findUnique` with `findFirst` and verifying the `tenantId` through relation traversal (e.g., `where: { id, evaluation: { theme: { tenantId } } }`) before allowing update or delete operations.

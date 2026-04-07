@@ -145,6 +145,42 @@ export class WhatsappOnboardingService {
         create: { tenantId, ...waData },
       });
 
+      // Paso 4: Registrar el número en la Cloud API de Meta
+      // Sin este paso, el número queda en estado "Pendiente" y no puede enviar/recibir mensajes.
+      // El endpoint /register hace el handshake final con los servidores de WhatsApp.
+      this.logger.log(
+        `[Tenant: ${tenantId}] Registrando número ${waPhoneNumberId} en la Cloud API de Meta...`,
+      );
+
+      const pin = Math.floor(100000 + Math.random() * 900000).toString();
+
+      try {
+        await axios.post(
+          `${this.apiUrl}/${waPhoneNumberId}/register`,
+          {
+            messaging_product: 'whatsapp',
+            pin,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${longLivedToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+        this.logger.log(
+          `[Tenant: ${tenantId}] ✅ Número registrado exitosamente en la Cloud API`,
+        );
+      } catch (registerError) {
+        // No lanzar excepción — el onboarding ya se completó, solo loguear la advertencia
+        const registerMsg =
+          registerError.response?.data?.error?.message || registerError.message;
+        this.logger.warn(
+          `[Tenant: ${tenantId}] ⚠️ No se pudo registrar el número automáticamente: ${registerMsg}. ` +
+            `Puede requerir registro manual vía Graph API.`,
+        );
+      }
+
       return {
         success: true,
         message: 'Onboarding completado exitosamente',

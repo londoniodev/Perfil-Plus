@@ -2,6 +2,11 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import axios from 'axios';
 import { PrismaService } from '../../../prisma/prisma.service';
 
+interface SessionInfo {
+  wabaId?: string;
+  phoneNumberId?: string;
+}
+
 @Injectable()
 export class WhatsappOnboardingService {
   private readonly logger = new Logger(WhatsappOnboardingService.name);
@@ -11,7 +16,11 @@ export class WhatsappOnboardingService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async processOnboarding(code: string, tenantId: string) {
+  async processOnboarding(
+    code: string,
+    tenantId: string,
+    sessionInfo?: SessionInfo,
+  ) {
     if (!this.appId || !this.appSecret) {
       this.logger.error('META_APP_ID o META_APP_SECRET no están configurados');
       throw new BadRequestException(
@@ -55,55 +64,69 @@ export class WhatsappOnboardingService {
 
       const longLivedToken = longLivedTokenResponse.data.access_token;
 
-      // Paso 3: Consultar debug_token para obtener el business_id (WABA) y validar permisos
-      this.logger.log(
-        `[Tenant: ${tenantId}] Validando token y obteniendo IDs...`,
-      );
-      const debugTokenResponse = await axios.get(`${this.apiUrl}/debug_token`, {
-        params: {
-          input_token: longLivedToken,
-          access_token: `${this.appId}|${this.appSecret}`, // App Token
-        },
-      });
+      // Paso 3: Obtener WABA ID y Phone Number ID
+      // Prioridad: IDs del sessionInfo (Embedded Signup postMessage) > fallback a Graph API
+      let wabaId = sessionInfo?.wabaId || null;
+      let waPhoneNumberId = sessionInfo?.phoneNumberId || null;
 
-      const { data } = debugTokenResponse.data;
-
-      // Obtener las WABAs vinculadas al negocio del usuario
-      const wabaResponse = await axios.get(
-        `${this.apiUrl}/me/whatsapp_business_accounts`,
-        {
-          params: { access_token: longLivedToken },
-        },
-      );
-
-      const waba = wabaResponse.data.data?.[0];
-      if (!waba) {
-        throw new BadRequestException(
-          'No se encontró ninguna cuenta de WhatsApp Business Account vinculada',
+      if (wabaId && waPhoneNumberId) {
+        this.logger.log(
+          `[Tenant: ${tenantId}] Usando IDs del Embedded Signup sessionInfo: WABA=${wabaId}, Phone=${waPhoneNumberId}`,
         );
+      } else {
+        // Fallback: intentar obtener de debug_token (para flujos no-embedded)
+        this.logger.warn(
+          `[Tenant: ${tenantId}] No se recibieron IDs del sessionInfo, intentando obtener del debug_token...`,
+        );
+
+        const debugTokenResponse = await axios.get(
+          `${this.apiUrl}/debug_token`,
+          {
+            params: {
+              input_token: longLivedToken,
+              access_token: `${this.appId}|${this.appSecret}`,
+            },
+          },
+        );
+
+        const debugData = debugTokenResponse.data?.data;
+        const granularScopes = debugData?.granular_scopes || [];
+
+        // Buscar WABA ID en los scopes granulares
+        const wabaScope = granularScopes.find(
+          (s: any) => s.scope === 'whatsapp_business_management',
+        );
+        if (wabaScope?.target_ids?.length > 0) {
+          wabaId = wabaScope.target_ids[0];
+          this.logger.log(
+            `[Tenant: ${tenantId}] WABA ID obtenido de debug_token: ${wabaId}`,
+          );
+        }
+
+        // Si tenemos WABA ID, obtener el phone number
+        if (wabaId) {
+          const phoneResponse = await axios.get(
+            `${this.apiUrl}/${wabaId}/phone_numbers`,
+            {
+              params: { access_token: longLivedToken },
+            },
+          );
+
+          const phoneNumber = phoneResponse.data.data?.[0];
+          if (phoneNumber) {
+            waPhoneNumberId = phoneNumber.id;
+            this.logger.log(
+              `[Tenant: ${tenantId}] Phone Number ID obtenido del Graph API: ${waPhoneNumberId}`,
+            );
+          }
+        }
       }
 
-      const wabaId = waba.id;
-
-      // Paso 4: Obtener el ID del número de teléfono
-      this.logger.log(
-        `[Tenant: ${tenantId}] Obteniendo ID del número de teléfono para WABA: ${wabaId}...`,
-      );
-      const phoneResponse = await axios.get(
-        `${this.apiUrl}/${wabaId}/phone_numbers`,
-        {
-          params: { access_token: longLivedToken },
-        },
-      );
-
-      const phoneNumber = phoneResponse.data.data?.[0];
-      if (!phoneNumber) {
+      if (!wabaId || !waPhoneNumberId) {
         throw new BadRequestException(
-          'No se encontró ningún número de teléfono vinculado a la WABA',
+          'No se pudieron obtener los IDs de WhatsApp Business. Asegúrate de completar el flujo de vinculación.',
         );
       }
-
-      const waPhoneNumberId = phoneNumber.id;
 
       // Persistir en TenantSettings (credenciales globales de WhatsApp por tenant)
       this.logger.log(

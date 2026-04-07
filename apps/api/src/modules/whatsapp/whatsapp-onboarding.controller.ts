@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Req,
   BadRequestException,
 } from '@nestjs/common';
 import { WhatsappOnboardingService } from './services/whatsapp-onboarding.service';
@@ -16,7 +15,11 @@ export class WhatsappOnboardingController {
   ) {}
 
   @Post('callback')
-  async handleCallback(@Body('code') code: string) {
+  async handleCallback(
+    @Body('code') code: string,
+    @Body('wabaId') wabaId?: string,
+    @Body('phoneNumberId') phoneNumberId?: string,
+  ) {
     if (!code) {
       throw new BadRequestException('El código de Meta es requerido');
     }
@@ -26,6 +29,9 @@ export class WhatsappOnboardingController {
       throw new BadRequestException('No se pudo identificar el Tenant actual');
     }
 
-    return this.onboardingService.processOnboarding(code, tenantId);
+    return this.onboardingService.processOnboarding(code, tenantId, {
+      wabaId,
+      phoneNumberId,
+    });
   }
 }

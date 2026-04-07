@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@alvarosky/ui"
 import { toast } from "sonner"
 import { Loader2, MessageSquare, CheckCircle2, ExternalLink } from "lucide-react"
@@ -19,6 +19,15 @@ interface WhatsAppEmbeddedSignupProps {
 
 type SignupStatus = "idle" | "connecting" | "sending" | "success" | "error"
 
+/**
+ * Datos que Meta envía a través de window.postMessage durante el Embedded Signup.
+ * Contiene los IDs de la cuenta de WhatsApp Business y el número de teléfono.
+ */
+interface SessionInfo {
+  wabaId: string | null
+  phoneNumberId: string | null
+}
+
 export function WhatsAppEmbeddedSignup({
   tenantId,
   returnUrl,
@@ -26,6 +35,7 @@ export function WhatsAppEmbeddedSignup({
 }: WhatsAppEmbeddedSignupProps) {
   const [status, setStatus] = useState<SignupStatus>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const sessionInfoRef = useRef<SessionInfo>({ wabaId: null, phoneNumberId: null })
 
   const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID || ""
   const metaConfigId = process.env.NEXT_PUBLIC_META_CONFIG_ID || ""
@@ -35,6 +45,38 @@ export function WhatsAppEmbeddedSignup({
     version: "v21.0",
   })
 
+  // ── Listener para capturar sessionInfo de Meta Embedded Signup ──
+  // Meta envía los IDs (waba_id, phone_number_id) vía postMessage
+  // ANTES de que FB.login() devuelva el callback con el code.
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Solo aceptar mensajes de dominios de Facebook
+      if (
+        event.origin !== "https://www.facebook.com" &&
+        event.origin !== "https://web.facebook.com"
+      ) {
+        return
+      }
+
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data
+        
+        if (data.type === "WA_EMBEDDED_SIGNUP") {
+          console.log("[Embedded Signup] Session info recibida de Meta:", data.data)
+          sessionInfoRef.current = {
+            wabaId: data.data?.waba_id || null,
+            phoneNumberId: data.data?.phone_number_id || null,
+          }
+        }
+      } catch {
+        // Mensajes que no son JSON — ignorar silenciosamente
+      }
+    }
+
+    window.addEventListener("message", handleMessage)
+    return () => window.removeEventListener("message", handleMessage)
+  }, [])
+
   const handleSignup = () => {
     console.log("[Embedded Signup] Botón clickeado. Iniciando flujo...");
     
@@ -42,7 +84,6 @@ export function WhatsAppEmbeddedSignup({
       const msg = "El SDK de Facebook no ha cargado correctamente";
       console.warn(msg);
       toast.error(msg);
-      alert(msg);
       return;
     }
 
@@ -50,9 +91,11 @@ export function WhatsAppEmbeddedSignup({
       const msg = "NEXT_PUBLIC_META_CONFIG_ID no está configurado (Vacío en env)";
       console.warn(msg);
       toast.error(msg);
-      alert(msg);
       return;
     }
+
+    // Limpiar session info de intentos previos
+    sessionInfoRef.current = { wabaId: null, phoneNumberId: null }
 
     console.log("[Embedded Signup] Cambiando estado a connecting, llamando FB.login con Config ID:", metaConfigId);
     setStatus("connecting")
@@ -63,14 +106,14 @@ export function WhatsAppEmbeddedSignup({
       fb.login(
         (response) => {
           console.log("[Embedded Signup] Respuesta de fb.login:", response);
+          console.log("[Embedded Signup] Session Info capturada:", sessionInfoRef.current);
           if (response.authResponse && "code" in response.authResponse) {
             const { code } = response.authResponse as FBCodeAuthResponse
-            exchangeCode(code).catch((err) => {
+            exchangeCode(code, sessionInfoRef.current).catch((err) => {
                console.error("Unhandleable error calling exchangeCode", err)
             });
           } else {
             setStatus("idle")
-            // El usuario cerró el popup o no autorizó
             const cancelMsg = "El usuario canceló o no autorizó los permisos"
             console.warn("[Embedded Signup]", cancelMsg)
             toast.error(cancelMsg);
@@ -82,7 +125,6 @@ export function WhatsAppEmbeddedSignup({
           override_default_response_type: true,
           extras: {
             setup: {},
-            // features: ["whatsapp_embedded_signup"] <- Algunos docs usan esto, dejémoslo limpio por ahora pero con el extras presente
           }
         }
       )
@@ -91,11 +133,10 @@ export function WhatsAppEmbeddedSignup({
       console.error(catchMsg, err);
       toast.error(catchMsg);
       setStatus("idle");
-      alert(catchMsg);
     }
   }
 
-  const exchangeCode = async (code: string) => {
+  const exchangeCode = async (code: string, sessionInfo: SessionInfo) => {
     setStatus("sending")
 
     try {
@@ -111,7 +152,11 @@ export function WhatsAppEmbeddedSignup({
           "x-tenant-id": tenantId,
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({
+          code,
+          wabaId: sessionInfo.wabaId,
+          phoneNumberId: sessionInfo.phoneNumberId,
+        }),
       })
 
       const data = await response.json()

@@ -76,17 +76,17 @@ export function SiteHeader({
         )}>
             {/* Critical: inline CSS ensures responsive visibility even if Tailwind CSS chunks are not fully loaded */}
             <style dangerouslySetInnerHTML={{ __html: `
-                [data-header-mobile] { display: block !important; }
+                [data-header-mobile] { display: flex !important; }
                 [data-header-desktop] { display: none !important; }
                 @media (min-width: 1024px) {
                     [data-header-mobile] { display: none !important; }
                     [data-header-desktop] { display: flex !important; }
                 }
             `}} />
-            <div className="relative w-full px-4 md:px-8 flex items-center justify-between">
+            <div className="relative w-full px-4 md:px-8 flex items-center">
 
-                {/* Mobile Trigger (Left) */}
-                <div className="ml-2" style={{ display: 'block' }} data-header-mobile>
+                {/* Mobile Trigger (Left, Col 1 on Mobile) */}
+                <div className="flex-1 flex items-center justify-start" style={{ display: 'flex' }} data-header-mobile>
                     <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon" className={cn(isScrolled ? "text-black" : (isWhiteText ? "text-white" : "text-foreground"))}>
@@ -113,8 +113,8 @@ export function SiteHeader({
                     </Sheet>
                 </div>
 
-                {/* Logo */}
-                <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:transform-none lg:flex-1 flex items-center justify-center lg:justify-start gap-2 z-10 lg:ml-4 group">
+                {/* Logo (Col 2 on Mobile, Col 1 on Desktop) */}
+                <Link href="/" className="flex-1 flex items-center justify-center gap-2 z-10 group">
                     <Image
                         src={logo}
                         alt={logoAlt}
@@ -127,8 +127,8 @@ export function SiteHeader({
                     {logoSuffix}
                 </Link>
 
-                {/* Desktop Nav */}
-                <nav className="flex-none items-center justify-center gap-8" style={{ display: 'none' }} data-header-desktop>
+                {/* Desktop Nav (Col 2 on Desktop) */}
+                <nav className="flex-none px-4 lg:px-8 shrink-0 items-center justify-center gap-8" style={{ display: 'none' }} data-header-desktop>
                     <DesktopNavLinks
                         links={links}
                         isLoggedIn={isAuthenticated}
@@ -142,8 +142,8 @@ export function SiteHeader({
                     />
                 </nav>
 
-                {/* Actions (Toggle Theme + Cart) */}
-                <div className="flex-1 flex items-center justify-end gap-1 mr-2">
+                {/* Actions (Toggle Theme + Cart, Col 3 on Both) */}
+                <div className="flex-1 flex items-center justify-end gap-1">
                     {mounted && (
                         <button 
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

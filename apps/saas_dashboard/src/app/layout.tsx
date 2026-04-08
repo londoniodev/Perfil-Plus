@@ -46,9 +46,10 @@ import { ThemeProvider } from "./providers";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-    const { name, logo } = await getTenantData();
+    const { name, logo, brandSettings } = await getTenantData();
     const tenantName = name || "Panel de Administración";
-    const logoUrl = logo || "/favicon.ico"; // Fallback static
+    // Favicon must be square
+    const logoUrl = brandSettings?.faviconUrl || brandSettings?.logoUrl || logo || "/favicon.ico";
 
     return {
         title: `${tenantName} | Panel de Administración`,
@@ -136,7 +137,7 @@ export default async function DashboardLayout({
                                         tenantName={tenantName}
                                         defaultOpen={defaultOpen}
                                         appName={tenantName}
-                                        logoUrl={logo}
+                                        logoUrl={brandSettings?.faviconUrl || brandSettings?.logoUrl || logo}
                                     >
                                         {children}
                                     </DashboardShell>

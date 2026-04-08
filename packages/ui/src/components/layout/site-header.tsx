@@ -120,7 +120,7 @@ export function SiteHeader({
                         alt={logoAlt}
                         width={200}
                         height={80}
-                        className="h-8 md:h-10 w-auto max-w-[180px] object-contain rounded-full transition group-hover:scale-105"
+                        className="h-8 md:h-10 w-auto max-w-[180px] object-contain transition group-hover:scale-105"
                         priority
                         unoptimized={logoUnoptimized}
                     />

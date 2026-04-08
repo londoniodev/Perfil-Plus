@@ -190,7 +190,7 @@ export default function MenuClient({
                                     alt="Logo"
                                     fill
                                     sizes="80px"
-                                    className="object-cover rounded-full"
+                                    className="object-contain p-1 rounded-full bg-white"
                                 />
                             </div>
                         </div>

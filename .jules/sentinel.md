@@ -6,3 +6,7 @@
 **Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
 **Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
 **Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+## 2024-04-08 - [High] Fix Cross-Tenant IDOR in Products Service
+ **Vulnerability:** Cross-Tenant IDOR on product mutation endpoints (`update`, `updateAvailability`, `remove`). The endpoints used `findUnique` on `id` without verifying the `tenantId` of the target resource, allowing users to modify or delete products from other tenants if they knew the ID.
+ **Learning:** In multi-tenant environments relying on row-level isolation via the application layer or scoped Prisma clients, queries checking resource existence prior to modification MUST explicitly validate the `tenantId`. `findUnique` cannot do this if `tenantId` is not part of the unique constraint.
+ **Prevention:** Use `findFirst` instead of `findUnique` when querying by `id` to allow including `tenantId: this.cls.get('tenantId')` in the `where` clause, ensuring the resource definitively belongs to the authenticated user's tenant before performing update or delete operations.

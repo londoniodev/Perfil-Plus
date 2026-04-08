@@ -176,8 +176,8 @@ export class ProductsService {
 
   // ============ ACTUALIZAR PRODUCTO ============
   async update(id: string, data: CreateProductDto) {
-    const existing = await this.prisma.product.findUnique({
-      where: { id },
+    const existing = await this.prisma.product.findFirst({
+      where: { id, tenantId: this.cls.get('tenantId') },
     });
 
     if (!existing) {
@@ -318,8 +318,8 @@ export class ProductsService {
         }
       }
 
-      const result = await tx.product.findUnique({
-        where: { id },
+      const result = await tx.product.findFirst({
+        where: { id, tenantId: this.cls.get('tenantId') },
         include: {
           variants: true,
           ...this.modifierGroupsInclude,
@@ -333,8 +333,8 @@ export class ProductsService {
 
   // ============ ACTUALIZAR DISPONIBILIDAD ============
   async updateAvailability(id: string, isAvailable: boolean) {
-    const existing = await this.prisma.product.findUnique({
-      where: { id },
+    const existing = await this.prisma.product.findFirst({
+      where: { id, tenantId: this.cls.get('tenantId') },
     });
 
     if (!existing) {
@@ -593,8 +593,8 @@ export class ProductsService {
 
   // ============ ELIMINAR PRODUCTO ============
   async remove(id: string) {
-    const existing = await this.prisma.product.findUnique({
-      where: { id },
+    const existing = await this.prisma.product.findFirst({
+      where: { id, tenantId: this.cls.get('tenantId') },
     });
 
     if (!existing) {

@@ -52,6 +52,7 @@ export class PrismaService
               'CategoriesOnPosts',
               'CategoriesOnProducts',
               'TagsOnPosts',
+              'Lesson',
               'LessonAttachment',
               'PostAttachment',
               'Evaluation',

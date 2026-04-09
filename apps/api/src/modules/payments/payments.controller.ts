@@ -122,6 +122,19 @@ export class PaymentsController {
     );
   }
 
+  // ==================== BOLD POLLING FALLBACK ====================
+
+  @Get('verify-bold/:orderId')
+  @Public()
+  async verifyBoldPayment(
+    @Param('orderId') orderId: string,
+    @Req() req: any,
+  ) {
+    const tenantId =
+      req.tenantId || (req.headers['x-tenant-id'] as string) || 'default';
+    return this.paymentsService.verifyBoldPaymentStatus(orderId, tenantId);
+  }
+
   // ==================== ADMIN ====================
 
   @Get('admin/stats')

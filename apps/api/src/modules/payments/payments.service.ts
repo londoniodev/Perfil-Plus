@@ -3,6 +3,7 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
   Scope,
   InternalServerErrorException,
   Inject,
@@ -584,6 +585,14 @@ export class PaymentsService {
         redirectUrl,
         notificationUrl,
       );
+
+      // Guardar el payment_link_id de Bold para polling fallback
+      if (boldResponse.payment_link_id && orderIdToUse) {
+        await this.prisma.order.update({
+          where: { id: orderIdToUse },
+          data: { paymentExternalId: boldResponse.payment_link_id },
+        });
+      }
 
       return {
         init_point: boldResponse.payment_link,
@@ -1311,5 +1320,149 @@ export class PaymentsService {
     }
 
     return { status: 'processed' };
+  }
+
+  // ==================== BOLD POLLING FALLBACK ====================
+
+  /**
+   * Verifica el estado de un pago Bold consultando directamente la API.
+   * Se usa como fallback cuando el webhook no llega (sandbox, firewall, etc).
+   */
+  async verifyBoldPaymentStatus(orderId: string, tenantId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        status: true,
+        paymentExternalId: true,
+        paymentProvider: true,
+        tenantId: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Orden no encontrada');
+    }
+
+    // Solo verificar si: orden PENDING + provider BOLD + tiene paymentExternalId
+    if (
+      order.status !== 'PENDING' ||
+      order.paymentProvider !== 'BOLD' ||
+      !order.paymentExternalId
+    ) {
+      return {
+        status: order.status,
+        verified: false,
+        reason: 'No requiere verificación Bold',
+      };
+    }
+
+    // Anti-IDOR: verificar tenant
+    if (order.tenantId !== tenantId) {
+      this.logger.error(
+        `Security: Tenant ${tenantId} tried to verify order ${orderId} of tenant ${order.tenantId}`,
+      );
+      throw new ForbiddenException('No autorizado');
+    }
+
+    // Obtener boldApiKey del tenant
+    const boldBranch = await (this.prisma as any).branch.findFirst({
+      where: { tenantId, isDefault: true },
+      select: { id: true },
+    });
+
+    if (!boldBranch) {
+      return { status: order.status, verified: false, reason: 'No branch found' };
+    }
+
+    const branchSettings = await (this.prisma as any).branchSettings.findUnique({
+      where: { branchId: boldBranch.id },
+      select: { boldApiKey: true },
+    });
+
+    if (!branchSettings?.boldApiKey) {
+      return { status: order.status, verified: false, reason: 'No Bold API key' };
+    }
+
+    try {
+      const boldStatus = await this.boldService.getPaymentLinkStatus(
+        order.paymentExternalId,
+        branchSettings.boldApiKey,
+      );
+
+      this.logger.log(
+        `Bold polling for order ${orderId}: ${JSON.stringify(boldStatus)}`,
+      );
+
+      // Bold devuelve status del link de pago
+      // Posibles valores: CREATED, SENT, PAID, EXPIRED, REJECTED, etc.
+      const linkStatus =
+        (boldStatus as any)?.status ||
+        (boldStatus as any)?.payment_status ||
+        '';
+
+      if (
+        linkStatus === 'PAID' ||
+        linkStatus === 'APPROVED' ||
+        linkStatus === 'SALE_APPROVED'
+      ) {
+        // ¡El pago fue exitoso! Actualizar la orden
+        const paymentId =
+          (boldStatus as any)?.payment_id ||
+          order.paymentExternalId;
+
+        await this.prisma.$transaction([
+          this.prisma.order.update({
+            where: { id: orderId },
+            data: {
+              status: 'ACCEPTED',
+              paymentProvider: 'BOLD',
+            },
+          }),
+          this.prisma.orderItem.updateMany({
+            where: { orderId },
+            data: { isPaid: true },
+          }),
+        ]);
+
+        this.logger.log(
+          `Order ${orderId} PAID via Bold polling fallback → ACCEPTED`,
+        );
+
+        await this.approveOrder(
+          orderId,
+          paymentId?.toString() || 'BOLD_POLLING',
+          tenantId,
+        );
+
+        return { status: 'ACCEPTED', verified: true, paidVia: 'bold_polling' };
+      }
+
+      if (linkStatus === 'EXPIRED' || linkStatus === 'REJECTED') {
+        return {
+          status: order.status,
+          verified: true,
+          boldStatus: linkStatus,
+          reason: 'Pago expirado o rechazado',
+        };
+      }
+
+      // Link aún pendiente
+      return {
+        status: order.status,
+        verified: true,
+        boldStatus: linkStatus,
+        reason: 'Pago aún en proceso',
+      };
+    } catch (error) {
+      this.logger.warn(
+        `Bold polling failed for order ${orderId}: ${error instanceof Error ? error.message : 'unknown'}`,
+      );
+      return {
+        status: order.status,
+        verified: false,
+        reason: 'Error consultando Bold',
+      };
+    }
   }
 }

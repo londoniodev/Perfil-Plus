@@ -124,6 +124,7 @@ export class BoldService {
 
       return {
         payment_link: linkPayload.url,
+        payment_link_id: linkPayload.payment_link, // LNK_xxx — para polling de estado
       };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;

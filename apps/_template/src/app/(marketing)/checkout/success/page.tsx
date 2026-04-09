@@ -8,7 +8,7 @@ import { useCart } from "@/store/use-cart"
 import { motion } from "framer-motion"
 import { useTenant } from "@/app/providers"
 import { useSearchParams } from "next/navigation"
-import { trackOrder } from "@/lib/api"
+import { trackOrder, verifyBoldPayment } from "@/lib/api"
 
 import { OrderTrackingModal } from "@/components/menu/OrderTrackingModal"
 
@@ -65,8 +65,20 @@ function CheckoutSuccessContent() {
                     if (data.status !== 'PENDING') {
                         setStatus("success")
                     } else {
+                        // Bold polling fallback: verificar directo con Bold API
+                        try {
+                            const boldResult = await verifyBoldPayment(orderId, tenantId)
+                            if (boldResult.status === 'ACCEPTED') {
+                                setOrderData({ ...data, status: 'ACCEPTED' })
+                                setStatus("success")
+                                return
+                            }
+                        } catch {
+                            // Silently continue — no es crítico
+                        }
+
                         // Polling 
-                        if (pollCount < 6) { // Un poco más de tiempo para Bold
+                        if (pollCount < 10) { // Más intentos para Bold (~30 seg)
                             setTimeout(() => {
                                 if (isMounted) setPollCount(prev => prev + 1)
                             }, 3000)
@@ -140,7 +152,7 @@ function CheckoutSuccessContent() {
                 )}
 
                 <p className="text-slate-500 mb-8 leading-relaxed text-sm">
-                    {pollCount >= 6 && orderData?.status === 'PENDING' 
+                    {pollCount >= 10 && orderData?.status === 'PENDING' 
                         ? "Estamos esperando la confirmación final del banco, pero ya tenemos tu pedido anotado. ¡Pronto verás el estado actualizado!"
                         : isRestaurant
                             ? "Tu pedido ha sido recibido y entrará en cocina en unos instantes."

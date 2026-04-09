@@ -181,6 +181,37 @@ export class WhatsappOnboardingService {
         );
       }
 
+      // Paso 5: Suscribir la app al WABA para recibir webhooks
+      // Sin este paso, Meta NO enruta los mensajes entrantes de esta WABA al webhook.
+      // Es el "eslabón perdido" del Embedded Signup: el webhook global está verificado,
+      // pero cada WABA nueva necesita una suscripción explícita.
+      this.logger.log(
+        `[Tenant: ${tenantId}] Suscribiendo app al WABA ${wabaId} para recibir webhooks...`,
+      );
+
+      try {
+        await axios.post(
+          `${this.apiUrl}/${wabaId}/subscribed_apps`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${longLivedToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+        this.logger.log(
+          `[Tenant: ${tenantId}] ✅ App suscrita exitosamente al WABA — webhook activo`,
+        );
+      } catch (subscribeError) {
+        const subscribeMsg =
+          subscribeError.response?.data?.error?.message || subscribeError.message;
+        this.logger.warn(
+          `[Tenant: ${tenantId}] ⚠️ No se pudo suscribir la app al WABA: ${subscribeMsg}. ` +
+            `Los mensajes entrantes podrían no llegar al webhook.`,
+        );
+      }
+
       return {
         success: true,
         message: 'Onboarding completado exitosamente',

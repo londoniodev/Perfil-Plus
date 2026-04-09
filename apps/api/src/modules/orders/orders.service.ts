@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { ProductType, OrderStatus, Prisma, Role } from '@alvarosky/database';
+import { ProductType, OrderStatus, PaymentProvider, Prisma, Role } from '@alvarosky/database';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -511,8 +511,10 @@ export class OrdersService {
     };
 
     if (activeOnly) {
+      // Providers que requieren pago antes de aparecer en cocina
+      const onlineProviders: PaymentProvider[] = ['BOLD', 'MERCADO_PAGO'];
+
       const activeStatuses: OrderStatus[] = [
-        'PENDING',
         'APPROVED',
         'ACCEPTED',
         'COOKING',
@@ -528,21 +530,36 @@ export class OrdersService {
         'REFUNDED',
       ];
 
-      const [activeOrders, recentCompleted] = await Promise.all([
-        this.prisma.order.findMany({
-          where: { status: { in: activeStatuses } },
-          include: fullInclude,
-          orderBy: { createdAt: 'desc' },
-        }),
-        this.prisma.order.findMany({
-          where: { status: { in: completedStatuses } },
-          include: fullInclude,
-          orderBy: { createdAt: 'desc' },
-          take,
-        }),
-      ]);
+      const [activeOrders, pendingCashOrders, recentCompleted] =
+        await Promise.all([
+          // Órdenes activas (ya confirmadas / en proceso)
+          this.prisma.order.findMany({
+            where: { status: { in: activeStatuses } },
+            include: fullInclude,
+            orderBy: { createdAt: 'desc' },
+          }),
+          // PENDING solo si NO usan pasarela de pago online
+          // (ej: efectivo, transferencia → sí se muestran para que el operador las acepte)
+          this.prisma.order.findMany({
+            where: {
+              status: 'PENDING',
+              OR: [
+                { paymentProvider: { notIn: onlineProviders } },
+                { paymentProvider: null },
+              ],
+            },
+            include: fullInclude,
+            orderBy: { createdAt: 'desc' },
+          }),
+          this.prisma.order.findMany({
+            where: { status: { in: completedStatuses } },
+            include: fullInclude,
+            orderBy: { createdAt: 'desc' },
+            take,
+          }),
+        ]);
 
-      return [...activeOrders, ...recentCompleted].sort(
+      return [...activeOrders, ...pendingCashOrders, ...recentCompleted].sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );

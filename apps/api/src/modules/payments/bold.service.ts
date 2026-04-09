@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
  */
 export interface BoldPaymentLinkResponse {
   payment_link: string;
+  paymentLinkId: string;
 }
 
 @Injectable()
@@ -124,7 +125,7 @@ export class BoldService {
 
       return {
         payment_link: linkPayload.url,
-        payment_link_id: linkPayload.payment_link, // LNK_xxx — para polling de estado
+        paymentLinkId: linkPayload.payment_link, // LNK_xxx — para polling de estado
       };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;

@@ -430,7 +430,11 @@ export class PaymentsService {
         select: { id: true },
       });
 
-      const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+      const year = new Date().getFullYear();
+      const orderCount = await this.prisma.order.count({
+        where: { tenantId },
+      });
+      const orderNumber = `ORD-${year}-${String(orderCount + 1).padStart(4, '0')}`;
       const newOrder = await this.prisma.order.create({
         data: {
           tenantId,
@@ -586,11 +590,11 @@ export class PaymentsService {
         notificationUrl,
       );
 
-      // Guardar el payment_link_id de Bold para polling fallback
-      if (boldResponse.payment_link_id && orderIdToUse) {
+      // Guardar el paymentLinkId de Bold para polling fallback
+      if (boldResponse.paymentLinkId && orderIdToUse) {
         await this.prisma.order.update({
           where: { id: orderIdToUse },
-          data: { paymentExternalId: boldResponse.payment_link_id },
+          data: { paymentExternalId: boldResponse.paymentLinkId },
         });
       }
 

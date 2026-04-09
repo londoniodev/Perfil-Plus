@@ -769,7 +769,7 @@ describe('OrdersService', () => {
   // ============ FILTRO ACTIVO PARA KDS ============
 
   describe('findAllAdmin con activeOnly', () => {
-    it('debería filtrar por activeOnly=true retornando PENDING,APPROVED,PROCESSING,PREPARING,READY', async () => {
+    it('debería filtrar por activeOnly=true ocultando PENDING con pago online', async () => {
       const activeOrders = [
         { ...MOCK_ORDER, status: 'PREPARING' },
         { ...MOCK_ORDER, id: 'order-2', status: 'READY' },
@@ -778,13 +778,26 @@ describe('OrdersService', () => {
 
       const result = await service.findAllAdmin(undefined, true);
 
-      // Debe haber llamado findMany al menos una vez con los statuses activos
+      // 1ra query: órdenes activas (sin PENDING)
       expect(mockClient.order.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             status: {
-              in: ['PENDING', 'APPROVED', 'PROCESSING', 'PREPARING', 'READY'],
+              in: ['APPROVED', 'ACCEPTED', 'COOKING', 'PROCESSING', 'PREPARING', 'READY'],
             },
+          },
+        }),
+      );
+
+      // 2da query: PENDING solo con providers no-online
+      expect(mockClient.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            status: 'PENDING',
+            OR: [
+              { paymentProvider: { notIn: ['BOLD', 'MERCADO_PAGO'] } },
+              { paymentProvider: null },
+            ],
           },
         }),
       );

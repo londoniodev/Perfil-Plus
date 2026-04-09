@@ -17,11 +17,11 @@ export default function Loading() {
                 <img
                     src={logoUrl}
                     alt="Cargando"
-                    className="w-20 h-20 object-contain rounded-2xl animate-pulse"
+                    className="w-auto h-20 max-w-[280px] md:h-24 md:max-w-[340px] object-contain animate-pulse"
                 />
             ) : (
                 <div
-                    className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin"
+                    className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin"
                 />
             )}
             

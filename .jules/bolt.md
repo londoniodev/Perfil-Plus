@@ -8,3 +8,6 @@
 ## 2026-03-27 - Product tenant query indexing
 **Learning:** Frequent queries that filter by `tenantId` AND multiple boolean flags (like `published` and `isAvailable`) on the `Product` table can cause full-table scans per tenant or slow sorts.
 **Action:** Always add a composite index like `@@index([tenantId, flag1, flag2])` (e.g., `@@index([tenantId, published, isAvailable])`) on widely queried models to help the database engine immediately pinpoint the exact subset of records.
+## 2026-03-27 - Optimize Prisma Update Logic in Loops
+ **Learning:** In Prisma interactive transactions, executing sequential queries such as individual updates using `for...of` loops results in N+1 query execution bottlenecks, significantly delaying response times. This pattern is often found when processing order items (e.g. `validateAndDeductStock`).
+ **Action:** Instead of `for...of`, aggregate quantities first using a Map to group operations by ID, then use `Array.map` combined with `Promise.all` to execute independent asynchronous transactional tasks (like `tx.productVariant.update`) in parallel safely, yielding vast performance improvements and fixing bugs where sequential loops bypass aggregate quantity validations.

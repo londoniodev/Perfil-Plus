@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { apiSettingsSchema, ApiSettingsValues } from "@alvarosky/features"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription, useToast } from "@alvarosky/ui"
 import { Loader2, MessageSquare, CheckCircle2, ExternalLink, BarChart3 } from "lucide-react"
 import { updateApiSettings } from "@/actions/admin/update-settings"
 import { TENANT_ID, META_HUB_DOMAIN } from "@/lib/config"

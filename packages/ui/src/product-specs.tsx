@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "./lib/utils"
-import { Check } from "lucide-react"
+import { Check, FileDown, ExternalLink } from "lucide-react"
 
 interface ProductSpecsProps {
     specs: Record<string, string | number | null> | null // Tipo compatible con Prisma Json
@@ -34,13 +34,22 @@ export function ProductSpecs({ specs, className }: ProductSpecsProps) {
         <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3", className)}>
             {Object.entries(specs).map(([key, value]) => {
                 if (value === null) return null
+                
+                // Filtrar SOURCE_URL
+                if (key.toLowerCase() === 'source_url') return null
+
                 const valStr = String(value);
-                const { isLink, url, label } = getLinkData(valStr);
+                const { isLink, url } = getLinkData(valStr);
+                const isPdf = url.toLowerCase().endsWith('.pdf');
 
                 return (
                     <div key={key} className="flex items-start gap-3 p-3 rounded-md border bg-muted/20 hover:bg-muted/30 transition-colors">
                         <div className="mt-0.5 text-muted-foreground shrink-0">
-                            <Check className="h-4 w-4" />
+                            {isLink ? (
+                                isPdf ? <FileDown className="h-4 w-4 text-primary" /> : <ExternalLink className="h-4 w-4 text-primary" />
+                            ) : (
+                                <Check className="h-4 w-4" />
+                            )}
                         </div>
                         <div className="flex flex-col text-sm min-w-0 w-full">
                             <span className="text-muted-foreground text-[10px] font-medium uppercase tracking-wider mb-1">
@@ -51,12 +60,9 @@ export function ProductSpecs({ specs, className }: ProductSpecsProps) {
                                     href={url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="font-semibold text-primary hover:underline flex flex-col gap-0.5"
+                                    className="font-semibold text-primary hover:underline flex items-center gap-1.5"
                                 >
-                                    <span className="text-xs text-foreground/80">{label}</span>
-                                    <span className="text-[10px] opacity-60 truncate w-full block font-normal">
-                                        {new URL(url).hostname}
-                                    </span>
+                                    Ver
                                 </a>
                             ) : (
                                 <span className="font-semibold text-foreground break-all" title={valStr}>

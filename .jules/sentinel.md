@@ -6,3 +6,7 @@
 **Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
 **Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
 **Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+## 2025-02-18 - Fix Cross-Tenant IDOR in OrdersService
+**Vulnerability:** Insecure Direct Object Reference (IDOR) due to missing tenant isolation checks.
+**Learning:** In a multi-tenant setup, using Prisma's `findUnique` or `update` with only an `id` parameter allows users to bypass Row-Level Security if they guess or obtain an `id` from another tenant. Prisma's strict unique constraints prevent simply adding `tenantId` to these queries.
+**Prevention:** Always use `findFirst` with explicit `tenantId` filtering for reads, and `updateMany` (coupled with a subsequent `findFirst` if the updated record is needed) for writes to securely enforce tenant boundaries without requiring composite unique keys.

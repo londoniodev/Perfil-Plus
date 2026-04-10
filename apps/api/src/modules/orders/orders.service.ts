@@ -199,8 +199,8 @@ export class OrdersService {
     userRole: Role,
     userId?: string,
   ) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, tenantId: this.getTenantId() },
     });
 
     if (!order) {
@@ -211,8 +211,8 @@ export class OrdersService {
       if (!userId) {
         throw new ForbiddenException('Usuario no autenticado');
       }
-      const driver = await this.prisma.deliveryDriver.findUnique({
-        where: { userId },
+      const driver = await this.prisma.deliveryDriver.findFirst({
+        where: { userId, tenantId: this.getTenantId() },
       });
       if (!driver || order.driverId !== driver.id) {
         throw new ForbiddenException(
@@ -438,8 +438,8 @@ export class OrdersService {
   }
 
   async getOrderForTracking(orderId: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, tenantId: this.getTenantId() },
       select: {
         id: true,
         orderNumber: true,
@@ -456,8 +456,8 @@ export class OrdersService {
   }
 
   async findOne(id: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
+    const order = await this.prisma.order.findFirst({
+      where: { id, tenantId: this.getTenantId() },
       select: {
         id: true,
         orderNumber: true,
@@ -629,8 +629,8 @@ export class OrdersService {
 
   async createPayment(orderId: string, dto: CreatePaymentDto) {
     return await this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
+      const order = await tx.order.findFirst({
+        where: { id: orderId, tenantId: this.getTenantId() },
         include: { items: true },
       });
 
@@ -663,14 +663,14 @@ export class OrdersService {
       }
 
       if (shouldClose) {
-        await tx.order.update({
-          where: { id: orderId },
+        await tx.order.updateMany({
+          where: { id: orderId, tenantId: this.getTenantId() },
           data: { status: 'DELIVERED' },
         });
       }
 
-      const updatedOrder = await tx.order.findUnique({
-        where: { id: orderId },
+      const updatedOrder = await tx.order.findFirst({
+        where: { id: orderId, tenantId: this.getTenantId() },
         include: {
           items: {
             include: {
@@ -703,14 +703,18 @@ export class OrdersService {
     isPrepared: boolean,
   ) {
     const item = await this.prisma.orderItem.findFirst({
-      where: { id: itemId, orderId },
+      where: { id: itemId, orderId, tenantId: this.getTenantId() },
     });
 
     if (!item) throw new NotFoundException('Item no encontrado en esta orden');
 
-    const updatedItem = await this.prisma.orderItem.update({
-      where: { id: itemId },
+    await this.prisma.orderItem.updateMany({
+      where: { id: itemId, tenantId: this.getTenantId() },
       data: { isPrepared },
+    });
+
+    const updatedItem = await this.prisma.orderItem.findFirst({
+      where: { id: itemId, tenantId: this.getTenantId() },
     });
 
     this.logger.log(
@@ -728,7 +732,7 @@ export class OrdersService {
 
   async assignDriver(orderId: string, driverId: string, userRole: Role) {
     return await this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({ where: { id: orderId } });
+      const order = await tx.order.findFirst({ where: { id: orderId, tenantId: this.getTenantId() } });
 
       if (!order) throw new NotFoundException('Orden no encontrada');
       if (order.orderType !== 'DELIVERY') {
@@ -742,8 +746,8 @@ export class OrdersService {
         );
       }
 
-      const driver = await tx.deliveryDriver.findUnique({
-        where: { id: driverId },
+      const driver = await tx.deliveryDriver.findFirst({
+        where: { id: driverId, tenantId: this.getTenantId() },
         include: { user: { select: { name: true } } },
       });
 
@@ -759,14 +763,18 @@ export class OrdersService {
       const now = new Date();
       const deliverySequence = driver.currentActiveOrders + 1;
 
-      const updated = await tx.order.update({
-        where: { id: orderId },
+      await tx.order.updateMany({
+        where: { id: orderId, tenantId: this.getTenantId() },
         data: {
           status: 'ASSIGNED',
           driverId,
           assignedAt: now,
           deliverySequence,
         },
+      });
+
+      const updated = await tx.order.findFirst({
+        where: { id: orderId, tenantId: this.getTenantId() },
         include: {
           items: { include: { modifiers: true } },
           driver: {
@@ -781,8 +789,8 @@ export class OrdersService {
       const newStatus =
         newActiveOrders >= driver.maxCapacity ? 'AT_CAPACITY' : driver.status;
 
-      await tx.deliveryDriver.update({
-        where: { id: driverId },
+      await tx.deliveryDriver.updateMany({
+        where: { id: driverId, tenantId: this.getTenantId() },
         data: { currentActiveOrders: newActiveOrders, status: newStatus },
       });
 
@@ -835,8 +843,8 @@ export class OrdersService {
   }
 
   async getDriverOrdersByUserId(userId: string) {
-    const driver = await this.prisma.deliveryDriver.findUnique({
-      where: { userId },
+    const driver = await this.prisma.deliveryDriver.findFirst({
+      where: { userId, tenantId: this.getTenantId() },
     });
 
     if (!driver)

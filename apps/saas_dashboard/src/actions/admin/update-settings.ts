@@ -39,19 +39,20 @@ export async function updateGeneralSettings(data: GeneralSettingsValues): Promis
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
         const newConfig = {
-            ...currentConfig,
-            storeName: validated.storeName ?? currentConfig.storeName,
-            storeEmail: validated.storeEmail ?? currentConfig.storeEmail,
-            enableBlog: validated.enableBlog ?? currentConfig.enableBlog,
-            enableStore: validated.enableStore ?? currentConfig.enableStore,
-            enableLMS: validated.enableLMS ?? currentConfig.enableLMS,
-            orderTrackingEnabled: validated.orderTrackingEnabled ?? currentConfig.orderTrackingEnabled,
+            storeName: validated.storeName ?? undefined,
+            storeEmail: validated.storeEmail ?? undefined,
+            enableBlog: validated.enableBlog ?? undefined,
+            enableStore: validated.enableStore ?? undefined,
+            enableLMS: validated.enableLMS ?? undefined,
+            orderTrackingEnabled: validated.orderTrackingEnabled ?? undefined,
             // Enviar llaves planas para que SystemSetting las acepte (el API filtra objetos complejos)
-            whatsapp: validated.whatsapp ?? currentConfig.whatsapp,
-            instagram: validated.instagram ?? currentConfig.instagram,
-            facebook: validated.facebook ?? currentConfig.facebook,
-            address: validated.address ?? currentConfig.address,
+            whatsapp: validated.whatsapp ?? undefined,
+            instagram: validated.instagram ?? undefined,
+            facebook: validated.facebook ?? undefined,
+            address: validated.address ?? undefined,
         }
+        
+        Object.keys(newConfig).forEach(key => newConfig[key as keyof typeof newConfig] === undefined && delete newConfig[key as keyof typeof newConfig])
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -75,21 +76,21 @@ export async function updateFinanceSettings(data: FinanceSettingsValues): Promis
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
         const newConfig = {
-            ...currentConfig,
-            activePaymentProvider: validated.activePaymentProvider ?? currentConfig.activePaymentProvider,
-            currency: validated.currency ?? currentConfig.currency,
-            deliveryFee: validated.deliveryFee ?? currentConfig.deliveryFee,
+            activePaymentProvider: validated.activePaymentProvider ?? undefined,
+            currency: validated.currency ?? undefined,
+            deliveryFee: validated.deliveryFee ?? undefined,
             // Claves planas para StoreSettings en el API
-            mp_public_key: validated.mpPublicKey ?? currentConfig.mp_public_key,
-            mp_access_token: validated.mpAccessToken ?? currentConfig.mp_access_token,
+            mp_public_key: validated.mpPublicKey ?? undefined,
+            mp_access_token: validated.mpAccessToken ?? undefined,
             // Claves planas para SystemSetting en el API
-            mpWebhookSecret: validated.mpWebhookSecret ?? currentConfig.mpWebhookSecret,
-            mpClientId: validated.mpClientId ?? currentConfig.mpClientId,
-            mpClientSecret: validated.mpClientSecret ?? currentConfig.mpClientSecret,
+            mpWebhookSecret: validated.mpWebhookSecret ?? undefined,
+            mpClientId: validated.mpClientId ?? undefined,
+            mpClientSecret: validated.mpClientSecret ?? undefined,
             // Bold credentials
-            boldApiKey: validated.boldApiKey ?? currentConfig.boldApiKey,
-            boldSecretKey: validated.boldSecretKey ?? currentConfig.boldSecretKey,
+            boldApiKey: validated.boldApiKey ?? undefined,
+            boldSecretKey: validated.boldSecretKey ?? undefined,
         }
+        Object.keys(newConfig).forEach(key => newConfig[key as keyof typeof newConfig] === undefined && delete newConfig[key as keyof typeof newConfig])
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -112,14 +113,14 @@ export async function updateEmailSettings(data: EmailSettingsValues): Promise<Up
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
         const newConfig = {
-            ...currentConfig,
             // Claves planas para SystemSetting en el API
-            smtpHost: validated.smtpHost ?? currentConfig.smtpHost,
-            smtpPort: validated.smtpPort ?? currentConfig.smtpPort,
-            smtpSecure: validated.smtpSecure ?? currentConfig.smtpSecure,
-            smtpUser: validated.smtpUser ?? currentConfig.smtpUser,
-            smtpPass: validated.smtpPass ?? currentConfig.smtpPass,
+            smtpHost: validated.smtpHost ?? undefined,
+            smtpPort: validated.smtpPort ?? undefined,
+            smtpSecure: validated.smtpSecure ?? undefined,
+            smtpUser: validated.smtpUser ?? undefined,
+            smtpPass: validated.smtpPass ?? undefined,
         }
+        Object.keys(newConfig).forEach(key => newConfig[key as keyof typeof newConfig] === undefined && delete newConfig[key as keyof typeof newConfig])
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
@@ -139,11 +140,13 @@ export async function updateApiSettings(data: ApiSettingsValues): Promise<Update
         const currentConfig = await serverFetch<any>('/settings/tenant-config') || {}
 
         const newConfig = {
-            ...currentConfig,
-            api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
-            tiktokPixelId: validated.tiktokPixelId ?? currentConfig.tiktokPixelId,
-            tiktokAccessToken: validated.tiktokAccessToken ?? currentConfig.tiktokAccessToken,
+            api_key_openai: validated.apiKeyOpenAI ?? undefined,
+            tiktokPixelId: validated.tiktokPixelId ?? undefined,
+            tiktokAccessToken: validated.tiktokAccessToken ?? undefined,
         }
+        
+        // Limpiar undefined para no mandar keys vacías innecesariamente
+        Object.keys(newConfig).forEach(key => newConfig[key as keyof typeof newConfig] === undefined && delete newConfig[key as keyof typeof newConfig])
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")

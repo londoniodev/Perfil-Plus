@@ -119,10 +119,27 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                     <FormControl>
                                         <Input {...field} type="password" placeholder="Token de acceso para la API de Conversiones" className="font-mono text-sm" autoComplete="new-password" />
                                     </FormControl>
+                                    <FormDescription>
+                                        Para encontrarlo, primero termina de crear tu píxel. Luego ve a su pestaña <strong>Configuración</strong>, baja hasta <strong>API de Eventos</strong> y haz clic en <strong>Generar token de acceso</strong>.
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        <div className="bg-muted p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <h4 className="text-sm font-medium">Verificar la configuración del código base</h4>
+                                <p className="text-sm text-muted-foreground mr-4">
+                                    Te recomendamos utilizar el plugin de Chrome <strong>Ayuda del píxel de TikTok</strong>. Puedes usarlo para comprobar si se activan los eventos y solucionar problemas de instalación.
+                                </p>
+                            </div>
+                            <Button variant="outline" size="sm" asChild className="shrink-0 bg-background">
+                                <a href="https://chromewebstore.google.com/detail/tiktok-pixel-helper/aelgobmabdmlfmiblddjfnjodalhidnn" target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" />
+                                    Instalar Pixel Helper
+                                </a>
+                            </Button>
+                        </div>
                         <div className="flex justify-center pt-2">
                             <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[180px]">
                                 {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Guardar TikTok"}

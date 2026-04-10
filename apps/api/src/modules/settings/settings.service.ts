@@ -101,9 +101,6 @@ export class SettingsService {
       // 7. TikTok Tracking
       tiktokPixelId: tenantSettings?.tiktokPixelId || '',
       ...(isAdmin && { tiktokAccessToken: tenantSettings?.tiktokAccessToken || '' }),
-
-      // 8. Branch context
-      branchId: resolvedBranchId || null,
     };
 
     return finalConfig;

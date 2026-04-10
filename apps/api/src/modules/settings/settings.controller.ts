@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { CurrentTenant } from '../../common/decorators/current-tenant.decorator';
 import { CurrentBranch } from '../../common/decorators/current-branch.decorator';
@@ -15,9 +15,12 @@ export class SettingsController {
   @Get()
   async getTenantConfig(
     @CurrentTenant() tenantId: string,
+    @Req() req: any,
     @CurrentBranch() branchId?: string,
   ) {
-    return this.settingsService.getTenantConfig(tenantId, branchId);
+    const userRole = req.user?.role;
+    const isAdmin = userRole === Role.ADMIN || userRole === Role.SUPERADMIN;
+    return this.settingsService.getTenantConfig(tenantId, branchId, isAdmin);
   }
 
   @Patch()

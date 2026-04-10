@@ -14,7 +14,7 @@ export class SettingsService {
    * @param tenantId - ID del tenant
    * @param branchId - ID de la sucursal (opcional, usa default si no se envía)
    */
-  async getTenantConfig(tenantId: string, branchId?: string) {
+  async getTenantConfig(tenantId: string, branchId?: string, isAdmin: boolean = false) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { name: true, slug: true },
@@ -23,7 +23,8 @@ export class SettingsService {
     const settings = await this.prisma.systemSetting.findMany({
       where: {
         tenantId,
-        isPublic: true,
+        // Si es admin, traemos las privadas también (ej. apiKeyOpenAI)
+        ...(isAdmin ? {} : { isPublic: true }),
       },
     });
 
@@ -97,8 +98,9 @@ export class SettingsService {
       // 6. Business Hours (Horarios de atención — por sucursal)
       businessHours: branchSettings?.businessHours || null,
 
-      // 7. TikTok Tracking (Solo Pixel ID público — el token JAMÁS se expone en HTTP responses)
+      // 7. TikTok Tracking
       tiktokPixelId: tenantSettings?.tiktokPixelId || '',
+      ...(isAdmin && { tiktokAccessToken: tenantSettings?.tiktokAccessToken || '' }),
 
       // 8. Branch context
       branchId: resolvedBranchId || null,

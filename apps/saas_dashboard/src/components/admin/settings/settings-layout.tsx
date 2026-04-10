@@ -101,7 +101,7 @@ export function SettingsLayout({ initialData: propsInitialData, brandingData }: 
     }), [initialData]);
 
     const apiData = useMemo(() => ({
-        apiKeyOpenAI: initialData?.api_key_openai || "",
+        apiKeyOpenAI: initialData?.apiKeyOpenAI || "",
         tiktokPixelId: initialData?.tiktokPixelId || "",
         tiktokAccessToken: initialData?.tiktokAccessToken || "",
     }), [initialData]);

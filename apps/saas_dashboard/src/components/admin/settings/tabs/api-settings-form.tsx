@@ -73,7 +73,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 <FormItem>
                                     <FormLabel>OpenAI API Key</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="password" placeholder="sk-..." className="font-mono text-sm" />
+                                        <Input {...field} type="password" placeholder="sk-..." className="font-mono text-sm" autoComplete="new-password" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -104,7 +104,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 <FormItem>
                                     <FormLabel>Pixel ID</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="text" placeholder="CXXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                                        <Input {...field} type="text" placeholder="CXXXXXXXXXXXXXXXXX" className="font-mono text-sm" autoComplete="off" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -117,7 +117,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 <FormItem>
                                     <FormLabel>Access Token (CAPI)</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="password" placeholder="Token de acceso para la API de Conversiones" className="font-mono text-sm" />
+                                        <Input {...field} type="password" placeholder="Token de acceso para la API de Conversiones" className="font-mono text-sm" autoComplete="new-password" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

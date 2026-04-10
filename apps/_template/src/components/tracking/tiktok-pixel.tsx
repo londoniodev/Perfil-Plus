@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import Script from "next/script"
+import { usePathname, useSearchParams } from "next/navigation"
 
 interface TikTokPixelProps {
   /** Pixel Code del tenant (ej: "CXXXXXXXXXXXXXXXXX") — Solo el ID público */
@@ -12,54 +13,32 @@ interface TikTokPixelProps {
  * TikTok Browser Pixel — Se inyecta en el layout del storefront.
  *
  * Responsabilidades:
- * 1. Carga el SDK de TikTok (ttq) de forma asíncrona y no-bloqueante.
+ * 1. Carga el SDK de TikTok (ttq).
  * 2. Inicializa el pixel con el ID del tenant.
- * 3. Dispara un PageView automático en cada montaje.
- *
- * Seguridad:
- * - Solo recibe el `pixelId` (público) — JAMÁS el accessToken.
- * - El accessToken es un secreto que solo vive en el servidor (NestJS/Server Actions).
- *
- * Deduplicación:
- * - Los eventos de conversión (CompletePayment) se disparan desde el checkout
- *   pasando el `orderId` como `event_id` para que TikTok deduplique
- *   Browser Pixel ↔ Server CAPI.
+ * 3. Dispara un PageView en rutas dinámicas.
  */
 export function TikTokPixel({ pixelId }: TikTokPixelProps) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isInitialLoad = useRef(true)
+
   useEffect(() => {
-    if (!pixelId || typeof window === "undefined") return
-
-    // Evitar doble inicialización
-    if ((window as any).ttq?._initialized) return
-
-    // Inicializar ttq instance después de que el script cargue
-    const checkAndInit = () => {
-      if ((window as any).ttq) {
-        ;(window as any).ttq.load(pixelId)
-        ;(window as any).ttq.page()
-        ;(window as any).ttq._initialized = true
-      }
+    // Evitar hacer track en el mount inicial ya que el Script lo hace automáticamente
+    if (isInitialLoad.current) {
+        isInitialLoad.current = false
+        return
     }
-
-    // Si ttq ya está disponible (script cargó antes del effect)
-    if ((window as any).ttq) {
-      checkAndInit()
-    } else {
-      // Esperar a que el script cargue
-      const interval = setInterval(() => {
-        if ((window as any).ttq) {
-          checkAndInit()
-          clearInterval(interval)
-        }
-      }, 100)
-
-      // Cleanup: limpiar interval si el componente se desmonta
-      return () => clearInterval(interval)
+    
+    // Disparar evento de PageView en cada cambio de ruta client-side
+    if (typeof window !== "undefined" && (window as any).ttq) {
+      ;(window as any).ttq.page()
     }
-  }, [pixelId])
+  }, [pathname, searchParams])
 
   if (!pixelId) return null
 
+  // Para que el TikTok Pixel Helper (la extensión de Chrome) detecte el Pixel,
+  // ttq.load() DEBE estar dentro del código fuente del script inyectado.
   return (
     <Script
       id="tiktok-pixel-sdk"
@@ -76,7 +55,11 @@ export function TikTokPixel({ pixelId }: TikTokPixelProps) {
   ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;
   ttq._o=ttq._o||{};ttq._o[e]=n||{};
   var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src=r+"?sdkid="+e+"&lib="+t;
-  var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(s,a)};
+  var a=document.getElementsByTagName("script")[0];
+  if(a) a.parentNode.insertBefore(s,a); else document.head.appendChild(s);
+  };
+  ttq.load('${pixelId}');
+  ttq.page();
 }(window, document, 'ttq');
         `.trim(),
       }}

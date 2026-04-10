@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
 
 
     const baseDomainEnv = process.env.BASE_DOMAIN || 'perfil.plus';
-    const techProviderEnv = process.env.TECH_PROVIDER_DOMAIN || 'xn--alvarolondoo-khb.dev';
+    const techProviderEnv = process.env.TECH_PROVIDER_DOMAIN || 'perfil.plus';
     const techProviderSlug = techProviderEnv.split('.')[0];
     
     // Si el dominio es localhost, el dominio base, o el tech provider, no intentamos resolver un tenant

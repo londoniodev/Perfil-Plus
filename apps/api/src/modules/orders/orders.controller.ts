@@ -19,7 +19,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Role, OrderStatus } from '@alvarosky/database';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)

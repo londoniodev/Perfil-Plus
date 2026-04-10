@@ -475,7 +475,7 @@ export class PaymentsService {
             create: orderItemsData, // Relación pre-construida
           },
         },
-        include: { items: { include: { productVariant: { include: { product: true } } } }, branch: true },
+        include: { items: { include: { variant: { include: { product: true } } } }, branch: true },
       });
       orderIdToUse = newOrder.id;
 

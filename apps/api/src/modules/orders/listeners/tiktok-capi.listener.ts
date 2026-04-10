@@ -54,7 +54,7 @@ export class TikTokCapiListener {
         select: { value: true },
       });
       if (currencySetting?.value) {
-        tenantCurrency = currencySetting.value;
+        tenantCurrency = String(currencySetting.value);
       }
 
       const success = await sendTikTokServerEvent({

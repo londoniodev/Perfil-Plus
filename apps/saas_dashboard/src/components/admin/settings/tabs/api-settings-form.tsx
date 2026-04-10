@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { apiSettingsSchema, ApiSettingsValues } from "@alvarosky/features"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, useToast } from "@alvarosky/ui"
-import { Loader2, MessageSquare, CheckCircle2, ExternalLink } from "lucide-react"
+import { Loader2, MessageSquare, CheckCircle2, ExternalLink, BarChart3 } from "lucide-react"
 import { updateApiSettings } from "@/actions/admin/update-settings"
 import { TENANT_ID, META_HUB_DOMAIN } from "@/lib/config"
 import { useRouter } from "next/navigation"
@@ -23,6 +23,8 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
         resolver: zodResolver(apiSettingsSchema),
         defaultValues: {
             apiKeyOpenAI: initialData?.apiKeyOpenAI || "",
+            tiktokPixelId: initialData?.tiktokPixelId || "",
+            tiktokAccessToken: initialData?.tiktokAccessToken || "",
         },
     })
 
@@ -80,6 +82,50 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                         <div className="flex justify-center pt-2">
                             <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[180px]">
                                 {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Guardar OpenAI"}
+                            </Button>
+                        </div>
+                    </Card>
+
+                    {/* ── TikTok CAPI ── */}
+                    <Card className="p-6 space-y-4 border-border/40">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-pink-100 dark:bg-pink-900/30">
+                                <BarChart3 className="h-4 w-4 text-pink-600 dark:text-pink-400" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">TikTok Tracking</h3>
+                                <p className="text-sm text-muted-foreground">Browser Pixel + Server-Side API (CAPI) con deduplicación</p>
+                            </div>
+                        </div>
+                        <FormField
+                            control={form.control}
+                            name="tiktokPixelId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Pixel ID</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} type="text" placeholder="CXXXXXXXXXXXXXXXXX" className="font-mono text-sm" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="tiktokAccessToken"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Access Token (CAPI)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} type="password" placeholder="Token de acceso para la API de Conversiones" className="font-mono text-sm" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="flex justify-center pt-2">
+                            <Button type="submit" disabled={form.formState.isSubmitting} className="min-w-[180px]">
+                                {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Guardar TikTok"}
                             </Button>
                         </div>
                     </Card>

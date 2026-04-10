@@ -320,6 +320,12 @@ export class TenantService {
         });
       }
 
+      // TikTok Pixel ID (PÚBLICO — el token secreto JAMÁS se expone aquí)
+      const tenantSettings = await this.prisma.tenantSettings.findUnique({
+        where: { tenantId: tenant.id },
+        select: { tiktokPixelId: true },
+      });
+
       const menuData = (menuSetting?.value as any) || {};
       const bs =
         (tenant.brandSettings as unknown as BrandSettingsWithAssets) || {};
@@ -354,6 +360,7 @@ export class TenantService {
         tagline,
         activePaymentProvider: branchSettings?.activePaymentProvider || 'NONE',
         brandSettings: tenant.brandSettings || null,
+        tiktokPixelId: tenantSettings?.tiktokPixelId || null,
       };
     }
 

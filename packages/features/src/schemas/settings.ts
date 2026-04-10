@@ -49,6 +49,8 @@ export type EmailSettingsValues = z.infer<typeof emailSettingsSchema>;
 // 4. Esquema de APIs (IA + Integraciones Externas)
 export const apiSettingsSchema = z.object({
     apiKeyOpenAI: z.string().optional().or(z.literal("")),
+    tiktokPixelId: z.string().optional().or(z.literal("")),
+    tiktokAccessToken: z.string().optional().or(z.literal("")),
 });
 
 export type ApiSettingsValues = z.infer<typeof apiSettingsSchema>;

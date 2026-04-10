@@ -254,6 +254,15 @@ export class UpdateTenantConfigDto {
   @IsOptional()
   boldSecretKey?: string;
 
+  // TikTok Tracking (Pixel + CAPI)
+  @IsString()
+  @IsOptional()
+  tiktokPixelId?: string;
+
+  @IsString()
+  @IsOptional()
+  tiktokAccessToken?: string;
+
   // Business Hours (horarios de atención)
   @IsObject()
   @IsOptional()

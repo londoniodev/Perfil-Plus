@@ -6,6 +6,10 @@ export class OrderCreatedEvent {
     public readonly tenantId: string,
     public readonly order: Order,
     public readonly dto: CreateOrderDto,
+    /** IP real del comprador (enviada por Next.js via header x-client-ip) */
+    public readonly clientIp?: string,
+    /** User-Agent real del navegador del comprador */
+    public readonly clientUserAgent?: string,
   ) {}
 }
 

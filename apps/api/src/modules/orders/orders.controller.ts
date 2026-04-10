@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -18,6 +19,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { Role, OrderStatus } from '@alvarosky/database';
+import { Request } from 'express';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -31,8 +33,25 @@ export class OrdersController {
   async createOrder(
     @CurrentUser('id') userId: string | undefined,
     @Body() createOrderDto: CreateOrderDto,
+    @Req() req: Request,
   ) {
-    return this.ordersService.createOrder(userId, createOrderDto);
+    // Capturar IP/UA del comprador para atribución TikTok CAPI
+    const clientIp =
+      (req.headers['x-client-ip'] as string) ||
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.ip ||
+      '0.0.0.0';
+    const clientUserAgent =
+      (req.headers['x-client-user-agent'] as string) ||
+      req.headers['user-agent'] ||
+      'unknown';
+
+    return this.ordersService.createOrder(
+      userId,
+      createOrderDto,
+      clientIp,
+      clientUserAgent,
+    );
   }
 
   @Get('my-orders')

@@ -141,10 +141,14 @@ export async function updateApiSettings(data: ApiSettingsValues): Promise<Update
         const newConfig = {
             ...currentConfig,
             api_key_openai: validated.apiKeyOpenAI ?? currentConfig.api_key_openai,
+            tiktokPixelId: validated.tiktokPixelId ?? currentConfig.tiktokPixelId,
+            tiktokAccessToken: validated.tiktokAccessToken ?? currentConfig.tiktokAccessToken,
         }
 
         await serverFetch('/settings/tenant-config', { method: 'PATCH', body: JSON.stringify(newConfig) })
         revalidateTag(`tenant-${user.tenantId}`, "default")
+        // Revalidar Storefront: El TikTok Pixel ID se inyecta via branding → layout.tsx
+        await revalidateStorefront({ tag: `tenant-${user.tenantId}-branding` })
         return { success: true }
     } catch (error: any) {
         return { success: false, error: error.message || "Error al actualizar configuración de APIs" }

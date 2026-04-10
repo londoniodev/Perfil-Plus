@@ -18,6 +18,7 @@ import { CustomerLeadListener } from './listeners/customer-lead.listener';
 import { OrderSseListener } from './listeners/order-sse.listener';
 import { WhatsappNotificationListener } from './listeners/whatsapp-notification.listener';
 import { DeliveryAssignmentListener } from './listeners/delivery-assignment.listener';
+import { TikTokCapiListener } from './listeners/tiktok-capi.listener';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { DeliveryAssignmentListener } from './listeners/delivery-assignment.list
     OrderSseListener,
     WhatsappNotificationListener,
     DeliveryAssignmentListener,
+    TikTokCapiListener,
   ],
   exports: [OrdersService, OrdersGateway],
 })

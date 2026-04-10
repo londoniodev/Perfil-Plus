@@ -52,11 +52,13 @@ export class PaymentsController {
   async createProductCheckout(
     @Req() req: any,
     @Body() dto: CreateCheckoutDto,
+    @Headers('x-client-ip') clientIp?: string,
+    @Headers('x-client-user-agent') clientUserAgent?: string,
   ) {
     // Obtenemos el tenantId inyectado en la request por el middleware Multi-tenant
     const tenantId =
       req.tenantId || (req.headers['x-tenant-id'] as string) || 'default';
-    return this.paymentsService.createProductCheckout(dto, tenantId);
+    return this.paymentsService.createProductCheckout(dto, tenantId, clientIp, clientUserAgent);
   }
 
   // ==================== WEBHOOKS ====================

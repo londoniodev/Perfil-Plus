@@ -20,6 +20,7 @@ import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import * as crypto from 'crypto';
 import type { Request } from 'express';
 import { CreateCheckoutDto } from './dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PaymentsService {
@@ -35,6 +36,7 @@ export class PaymentsService {
     private emailService: EmailService,
     private storageService: StorageService,
     private boldService: BoldService,
+    private eventEmitter: EventEmitter2,
   ) {
     // Initialization moved to async method
   }
@@ -291,7 +293,12 @@ export class PaymentsService {
 
   // ==================== PRODUCT PURCHASES ====================
 
-  async createProductCheckout(dto: CreateCheckoutDto, tenantId: string) {
+  async createProductCheckout(
+    dto: CreateCheckoutDto,
+    tenantId: string,
+    clientIp?: string,
+    clientUserAgent?: string,
+  ) {
     // Obtener BranchSettings de la sucursal default (credenciales de pago operativas)
     const defaultBranch = await (this.prisma as any).branch.findFirst({
       where: { tenantId, isDefault: true },
@@ -421,10 +428,7 @@ export class PaymentsService {
     // Determinar la estrategia final de pago
     const paymentStrategy = dto.paymentMethod === 'CASH' ? 'CASH' : activeProvider;
 
-    if (
-      !orderIdToUse &&
-      (paymentStrategy === 'BOLD' || paymentStrategy === 'CASH')
-    ) {
+    if (!orderIdToUse) {
       const defaultBranch = await this.prisma.branch.findFirst({
         where: { tenantId, isDefault: true },
         select: { id: true },
@@ -471,8 +475,17 @@ export class PaymentsService {
             create: orderItemsData, // Relación pre-construida
           },
         },
+        include: { items: { include: { productVariant: { include: { product: true } } } }, branch: true },
       });
       orderIdToUse = newOrder.id;
+
+      // Emitimos evento CAPI aquí mismo, pasándole los headers de atribución
+      this.eventEmitter.emit('order.created', {
+        tenantId,
+        order: newOrder,
+        clientIp,
+        clientUserAgent,
+      });
     }
 
     // ================= ESTRATEGIA SEGUN PROVEEDOR ================= //
@@ -549,6 +562,7 @@ export class PaymentsService {
           init_point: response.init_point,
           sandbox_init_point: response.sandbox_init_point,
           preferenceId: response.id,
+          orderId: orderIdToUse,
           totalAmount,
         };
       } catch (error) {

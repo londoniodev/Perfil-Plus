@@ -20,6 +20,10 @@ const TableDetector = dynamic(
   () => import("@/components/shop/table-detector").then((mod) => mod.TableDetector)
 );
 
+const TikTokPixel = dynamic(
+  () => import("@/components/tracking/tiktok-pixel").then((mod) => mod.TikTokPixel)
+);
+
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -107,6 +111,7 @@ export default async function RootLayout({
   const contactEmail = design?.contactEmail || null;
   const businessName = design?.name || null;
   const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
+  const tiktokPixelId = design?.tiktokPixelId || null;
 
   const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
@@ -172,6 +177,7 @@ export default async function RootLayout({
             {children}
             <PwaInstallPrompt />
             <TableDetector />
+            {tiktokPixelId && <TikTokPixel pixelId={tiktokPixelId} />}
           </ToastProvider>
         </AppProviders>
       </body>

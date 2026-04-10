@@ -1,0 +1,85 @@
+"use client"
+
+import { useEffect } from "react"
+import Script from "next/script"
+
+interface TikTokPixelProps {
+  /** Pixel Code del tenant (ej: "CXXXXXXXXXXXXXXXXX") — Solo el ID público */
+  pixelId: string
+}
+
+/**
+ * TikTok Browser Pixel — Se inyecta en el layout del storefront.
+ *
+ * Responsabilidades:
+ * 1. Carga el SDK de TikTok (ttq) de forma asíncrona y no-bloqueante.
+ * 2. Inicializa el pixel con el ID del tenant.
+ * 3. Dispara un PageView automático en cada montaje.
+ *
+ * Seguridad:
+ * - Solo recibe el `pixelId` (público) — JAMÁS el accessToken.
+ * - El accessToken es un secreto que solo vive en el servidor (NestJS/Server Actions).
+ *
+ * Deduplicación:
+ * - Los eventos de conversión (CompletePayment) se disparan desde el checkout
+ *   pasando el `orderId` como `event_id` para que TikTok deduplique
+ *   Browser Pixel ↔ Server CAPI.
+ */
+export function TikTokPixel({ pixelId }: TikTokPixelProps) {
+  useEffect(() => {
+    if (!pixelId || typeof window === "undefined") return
+
+    // Evitar doble inicialización
+    if ((window as any).ttq?._initialized) return
+
+    // Inicializar ttq instance después de que el script cargue
+    const checkAndInit = () => {
+      if ((window as any).ttq) {
+        ;(window as any).ttq.load(pixelId)
+        ;(window as any).ttq.page()
+        ;(window as any).ttq._initialized = true
+      }
+    }
+
+    // Si ttq ya está disponible (script cargó antes del effect)
+    if ((window as any).ttq) {
+      checkAndInit()
+    } else {
+      // Esperar a que el script cargue
+      const interval = setInterval(() => {
+        if ((window as any).ttq) {
+          checkAndInit()
+          clearInterval(interval)
+        }
+      }, 100)
+
+      // Cleanup: limpiar interval si el componente se desmonta
+      return () => clearInterval(interval)
+    }
+  }, [pixelId])
+
+  if (!pixelId) return null
+
+  return (
+    <Script
+      id="tiktok-pixel-sdk"
+      strategy="afterInteractive"
+      dangerouslySetInnerHTML={{
+        __html: `
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
+  ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];
+  ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+  for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+  ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
+  ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;
+  ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e]=+new Date;
+  ttq._o=ttq._o||{};ttq._o[e]=n||{};
+  var s=document.createElement("script");s.type="text/javascript";s.async=true;s.src=r+"?sdkid="+e+"&lib="+t;
+  var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(s,a)};
+}(window, document, 'ttq');
+        `.trim(),
+      }}
+    />
+  )
+}

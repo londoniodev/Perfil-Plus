@@ -97,7 +97,10 @@ export class SettingsService {
       // 6. Business Hours (Horarios de atención — por sucursal)
       businessHours: branchSettings?.businessHours || null,
 
-      // 7. Branch context
+      // 7. TikTok Tracking (Solo Pixel ID público — el token JAMÁS se expone en HTTP responses)
+      tiktokPixelId: tenantSettings?.tiktokPixelId || '',
+
+      // 8. Branch context
       branchId: resolvedBranchId || null,
     };
 
@@ -135,6 +138,8 @@ export class SettingsService {
       'businessHours',
       'storeName',
       'storeEmail',
+      'tiktokPixelId',
+      'tiktokAccessToken',
     ];
 
     const operations = Object.entries(updateDto)
@@ -211,7 +216,9 @@ export class SettingsService {
     if (
       updateDto.waPhoneNumberId !== undefined ||
       updateDto.storeName !== undefined ||
-      updateDto.storeEmail !== undefined
+      updateDto.storeEmail !== undefined ||
+      updateDto.tiktokPixelId !== undefined ||
+      updateDto.tiktokAccessToken !== undefined
     ) {
       const waPhoneNumberId =
         updateDto.waPhoneNumberId !== undefined
@@ -224,12 +231,16 @@ export class SettingsService {
           ...(waPhoneNumberId !== undefined && { waPhoneNumberId }),
           ...(updateDto.storeName !== undefined && { storeName: updateDto.storeName }),
           ...(updateDto.storeEmail !== undefined && { storeEmail: updateDto.storeEmail }),
+          ...(updateDto.tiktokPixelId !== undefined && { tiktokPixelId: updateDto.tiktokPixelId?.trim() || null }),
+          ...(updateDto.tiktokAccessToken !== undefined && { tiktokAccessToken: updateDto.tiktokAccessToken?.trim() || null }),
         },
         create: {
           tenantId,
           storeName: updateDto.storeName,
           storeEmail: updateDto.storeEmail,
           waPhoneNumberId,
+          tiktokPixelId: updateDto.tiktokPixelId?.trim() || null,
+          tiktokAccessToken: updateDto.tiktokAccessToken?.trim() || null,
         },
       });
     }

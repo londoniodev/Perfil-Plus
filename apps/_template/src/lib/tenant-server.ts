@@ -63,6 +63,7 @@ export async function getTenantDesign(tenantId: string) {
       contactPhone: data?.contactPhone || null,
       activePaymentProvider: data?.activePaymentProvider || 'NONE',
       brandSettings: data?.brandSettings || null,
+      tiktokPixelId: data?.tiktokPixelId || null,
     };
   } catch (e) {
     console.warn("⚠️ API de Branding inalcanzable. Usando UI de contingencia:", e);

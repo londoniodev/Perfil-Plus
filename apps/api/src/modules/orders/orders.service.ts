@@ -46,7 +46,12 @@ export class OrdersService {
     return this.cls.get<string>('tenantId') ?? 'unknown';
   }
 
-  async createOrder(userId: string | undefined, dto: CreateOrderDto) {
+  async createOrder(
+    userId: string | undefined,
+    dto: CreateOrderDto,
+    clientIp?: string,
+    clientUserAgent?: string,
+  ) {
     const tenantId = this.getTenantId();
     this.logger.log(
       `[CREATE_ORDER] Iniciando creación de orden para Tenant: ${tenantId}`,
@@ -167,7 +172,7 @@ export class OrdersService {
 
         this.eventEmitter.emit(
           'order.created',
-          new OrderCreatedEvent(tenantId, createdOrder, dto),
+          new OrderCreatedEvent(tenantId, createdOrder, dto, clientIp, clientUserAgent),
         );
 
         return createdOrder;

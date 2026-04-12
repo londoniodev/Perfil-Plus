@@ -925,32 +925,34 @@ export class PaymentsService {
                 `Dispatching ${digitalItemsDispatch.length} digital items to ${customerEmail}`,
               );
 
-              const dispatchLinks: {
-                productName: string;
-                downloadUrl: string;
-              }[] = [];
-
-              for (const product of digitalItemsDispatch) {
-                if (product.digitalFileUrl) {
+              const dispatchLinksPromises = digitalItemsDispatch
+                .filter((p) => p.digitalFileUrl)
+                .map(async (product) => {
                   try {
                     // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
                     const downloadUrl =
                       await this.storageService.getPresignedUrl(
-                        product.digitalFileUrl,
+                        product.digitalFileUrl!,
                         86400,
                       );
-                    dispatchLinks.push({
+                    return {
                       productName: product.name,
                       downloadUrl,
-                    });
+                    };
                   } catch (err) {
                     this.logger.error(
                       `Error generating presigned URL for ${product.name}`,
                       err,
                     );
+                    return null;
                   }
-                }
-              }
+                });
+
+              const resolvedLinks = await Promise.all(dispatchLinksPromises);
+              const dispatchLinks = resolvedLinks.filter(
+                (link): link is { productName: string; downloadUrl: string } =>
+                  link !== null,
+              );
 
               if (dispatchLinks.length > 0) {
                 // Ejecutar envío de email SIN await dentro del transaction.

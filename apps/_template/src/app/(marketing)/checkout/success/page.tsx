@@ -31,11 +31,24 @@ function CheckoutSuccessContent() {
     const returnLabel = isRestaurant ? "Volver al Menú" : "Volver a la Tienda"
     
     // Auto-open tracking modal when success
+    const hasTrackedCompletePayment = useRef(false)
     useEffect(() => {
         if (status === "success" && orderId) {
             setIsTrackingOpen(true)
+            
+            // ━━━ TIKTOK PIXEL: COMPLETE PAYMENT (CLIENT SIDE DEDUPLICATION) ━━━
+            if (!hasTrackedCompletePayment.current && typeof window !== 'undefined' && (window as any).ttq && orderData) {
+                try {
+                    ;(window as any).ttq.track('CompletePayment', {
+                        value: Number(orderData.totalAmount || 0),
+                        currency: 'COP',
+                        // Opcionalmente contents si están disponibles en orderData...
+                    }, { event_id: orderId }); 
+                } catch(e) {}
+                hasTrackedCompletePayment.current = true
+            }
         }
-    }, [status, orderId])
+    }, [status, orderId, orderData])
 
     // Clear cart effect
     useEffect(() => {

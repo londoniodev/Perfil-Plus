@@ -230,21 +230,28 @@ export class AdminLmsController {
   }
 
   @Post('evaluations')
-  async createEvaluation(@Body() dto: CreateEvaluationDto) {
-    return this.evaluationService.createEvaluation(dto);
+  async createEvaluation(
+    @Body() dto: CreateEvaluationDto,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.evaluationService.createEvaluation(dto, tenantId);
   }
 
   @Patch('evaluations/:id')
   async updateEvaluation(
     @Param('id') id: string,
     @Body() dto: UpdateEvaluationDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.updateEvaluation(id, dto);
+    return this.evaluationService.updateEvaluation(id, dto, tenantId);
   }
 
   @Delete('evaluations/:id')
-  async deleteEvaluation(@Param('id') id: string) {
-    return this.evaluationService.deleteEvaluation(id);
+  async deleteEvaluation(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.evaluationService.deleteEvaluation(id, tenantId);
   }
 
   // Questions
@@ -252,20 +259,25 @@ export class AdminLmsController {
   async addQuestion(
     @Param('evaluationId') evaluationId: string,
     @Body() dto: CreateQuestionDto,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.addQuestion(evaluationId, dto);
+    return this.evaluationService.addQuestion(evaluationId, dto, tenantId);
   }
 
   @Patch('questions/:id')
   async updateQuestion(
     @Param('id') id: string,
     @Body() dto: Partial<CreateQuestionDto>,
+    @CurrentTenant() tenantId: string,
   ) {
-    return this.evaluationService.updateQuestion(id, dto);
+    return this.evaluationService.updateQuestion(id, dto, tenantId);
   }
 
   @Delete('questions/:id')
-  async deleteQuestion(@Param('id') id: string) {
-    return this.evaluationService.deleteQuestion(id);
+  async deleteQuestion(
+    @Param('id') id: string,
+    @CurrentTenant() tenantId: string,
+  ) {
+    return this.evaluationService.deleteQuestion(id, tenantId);
   }
 }

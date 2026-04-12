@@ -6,3 +6,7 @@
 **Vulnerability:** The API endpoint returning tenant configuration did not properly filter for public settings (`isPublic: true`), exposing sensitive system data.
 **Learning:** System configurations can contain sensitive secrets. When providing configuration variables to the frontend, always filter and only expose explicit public keys or values marked as `isPublic: true`.
 **Prevention:** Always scope data queries to limit data returned explicitly to public contexts by filtering on database attributes designed to partition visibility, such as `isPublic: true`.
+## 2026-04-12 - [Tenant Isolation Gap in LMS Evaluations and Questions]
+**Vulnerability:** Cross-Tenant IDOR. Global models (`Evaluation`, `Question`) lacked direct `tenantId` fields, allowing users from one tenant to update or delete resources belonging to another tenant if they manipulated the resource IDs.
+**Learning:** RLS in the database or direct filtering is bypassed if models lack a tenant identifier and the API relies only on primary keys. For models linked hierarchically (e.g., `Theme` -> `Evaluation` -> `Question`), tenant association exists but must be manually enforced.
+**Prevention:** Always enforce tenant isolation on global models by injecting a relational lookup for `tenantId` (e.g., `where: { id, evaluation: { theme: { tenantId } } }`) using `findFirst` in the service layer before updates or deletions.

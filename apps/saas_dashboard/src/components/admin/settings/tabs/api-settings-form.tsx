@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { apiSettingsSchema, ApiSettingsValues } from "@alvarosky/features"
 import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription, useToast, Switch } from "@alvarosky/ui"
-import { Loader2, MessageSquare, CheckCircle2, ExternalLink, BarChart3 } from "lucide-react"
+import { Loader2, CheckCircle2, ExternalLink } from "lucide-react"
+import { SiTiktok, SiWhatsapp, SiFacebook, SiInstagram } from "react-icons/si"
 import { updateApiSettings } from "@/actions/admin/update-settings"
 import { TENANT_ID, META_HUB_DOMAIN } from "@/lib/config"
 import { useRouter } from "next/navigation"
@@ -90,8 +91,8 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                     {/* ── TikTok CAPI ── */}
                     <Card className="p-6 space-y-4 border-border/40">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-pink-100 dark:bg-pink-900/30">
-                                <BarChart3 className="h-4 w-4 text-pink-600 dark:text-pink-400" aria-hidden="true" />
+                            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-black dark:bg-white shadow-sm">
+                                <SiTiktok className="h-4 w-4 text-white dark:text-black" aria-hidden="true" />
                             </div>
                             <div>
                                 <h3 className="text-lg font-semibold">TikTok Tracking</h3>
@@ -151,8 +152,8 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                     <Card className="p-6 space-y-4 border-border/40">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-green-100 dark:bg-green-900/30">
-                                    <MessageSquare className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
+                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-[#25D366]/15 dark:bg-[#25D366]/20">
+                                    <SiWhatsapp className="h-5 w-5 text-[#25D366]" aria-hidden="true" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold">Integración de WhatsApp</h3>
@@ -243,6 +244,41 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 <p className="text-xs text-center text-muted-foreground">Este proceso es seguro y utiliza la autenticación oficial de Meta para registrar tu número para la API.</p>
                             </section>
                         )}
+                    </Card>
+                    {/* ── Facebook Shops (Próximamente) ── */}
+                    <Card className="p-6 space-y-4 border-dashed border-border/60 bg-muted/30">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-background shadow-sm">
+                                    <SiFacebook className="h-4 w-4 text-[#1877F2]" aria-hidden="true" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-muted-foreground">Facebook Shops</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">Sincroniza tu catálogo automáticamente</p>
+                                </div>
+                            </div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border/50">
+                                Próximamente
+                            </span>
+                        </div>
+                    </Card>
+
+                    {/* ── Instagram Shops (Próximamente) ── */}
+                    <Card className="p-6 space-y-4 border-dashed border-border/60 bg-muted/30">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center h-9 w-9 rounded-full bg-pink-100 dark:bg-pink-900/30 border border-background shadow-sm">
+                                    <SiInstagram className="h-4 w-4 text-[#E4405F]" aria-hidden="true" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-muted-foreground">Instagram Shops</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">Vende directamente desde tus publicaciones</p>
+                                </div>
+                            </div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border/50">
+                                Próximamente
+                            </span>
+                        </div>
                     </Card>
                 </div>
             </form>

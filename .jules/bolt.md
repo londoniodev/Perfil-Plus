@@ -8,3 +8,6 @@
 ## 2026-03-27 - Product tenant query indexing
 **Learning:** Frequent queries that filter by `tenantId` AND multiple boolean flags (like `published` and `isAvailable`) on the `Product` table can cause full-table scans per tenant or slow sorts.
 **Action:** Always add a composite index like `@@index([tenantId, flag1, flag2])` (e.g., `@@index([tenantId, published, isAvailable])`) on widely queried models to help the database engine immediately pinpoint the exact subset of records.
+## 2026-03-27 - [Optimize Sequential I/O in Loops]
+ **Learning:** In NestJS services, sequential operations like `await fetch(...)` or `await getPresignedUrl(...)` inside `for...of` loops cause massive N+1 I/O latency bottlenecks, especially when handling third-party integrations or AWS SDK calls in webhooks.
+ **Action:** Refactor `for...of` loops containing external I/O into concurrent `Promise.all(array.map(async () => ...))` blocks. Always wrap the inner block in a `try/catch` that returns `null` or a fallback to ensure the entire `Promise.all` doesn't reject if one element fails, maintaining the robustness of the original sequential implementation.

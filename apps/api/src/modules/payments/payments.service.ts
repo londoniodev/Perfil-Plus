@@ -925,32 +925,36 @@ export class PaymentsService {
                 `Dispatching ${digitalItemsDispatch.length} digital items to ${customerEmail}`,
               );
 
-              const dispatchLinks: {
-                productName: string;
-                downloadUrl: string;
-              }[] = [];
-
-              for (const product of digitalItemsDispatch) {
-                if (product.digitalFileUrl) {
-                  try {
-                    // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
-                    const downloadUrl =
-                      await this.storageService.getPresignedUrl(
-                        product.digitalFileUrl,
-                        86400,
+              const dispatchLinksRaw = await Promise.all(
+                digitalItemsDispatch.map(async (product) => {
+                  if (product.digitalFileUrl) {
+                    try {
+                      // Generar Pre-Signed URL con 24 horas de validez (86400 segundos)
+                      const downloadUrl =
+                        await this.storageService.getPresignedUrl(
+                          product.digitalFileUrl,
+                          86400,
+                        );
+                      return {
+                        productName: product.name,
+                        downloadUrl,
+                      };
+                    } catch (err) {
+                      this.logger.error(
+                        `Error generating presigned URL for ${product.name}`,
+                        err,
                       );
-                    dispatchLinks.push({
-                      productName: product.name,
-                      downloadUrl,
-                    });
-                  } catch (err) {
-                    this.logger.error(
-                      `Error generating presigned URL for ${product.name}`,
-                      err,
-                    );
+                      return null;
+                    }
                   }
-                }
-              }
+                  return null;
+                })
+              );
+
+              const dispatchLinks = dispatchLinksRaw.filter(
+                (link): link is { productName: string; downloadUrl: string } =>
+                  link !== null,
+              );
 
               if (dispatchLinks.length > 0) {
                 // Ejecutar envío de email SIN await dentro del transaction.

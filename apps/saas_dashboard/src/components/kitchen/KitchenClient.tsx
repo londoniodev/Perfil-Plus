@@ -23,6 +23,8 @@ function KitchenCard({ order, onAction, busy, tableName }: {
     tableName?: string
 }) {
     const nextAction: Record<string, { label: string; icon: React.ReactNode; status: string; color: string }> = {
+        ACCEPTED: { label: "Empezar", icon: <Play className="w-4 h-4" />, status: "COOKING", color: "bg-blue-600 hover:bg-blue-700" },
+        COOKING: { label: "Marcar Listo", icon: <CheckCircle2 className="w-4 h-4" />, status: "READY", color: "bg-green-600 hover:bg-green-700 text-white shadow-none ring-0 focus:ring-0" },
         APPROVED: { label: "Empezar", icon: <Play className="w-4 h-4" />, status: "PREPARING", color: "bg-blue-600 hover:bg-blue-700" },
         PREPARING: { label: "Marcar Listo", icon: <CheckCircle2 className="w-4 h-4" />, status: "READY", color: "bg-green-600 hover:bg-green-700 text-white shadow-none ring-0 focus:ring-0" },
     }
@@ -126,8 +128,8 @@ function KitchenClientContent({ initialTables = EMPTY_TABLES }: { initialTables?
     const fetchOrders = useCallback(async () => {
         try {
             const data = await getAdminOrders(undefined, true);
-            // Cocina solo ve APPROVED, PREPARING
-            const kitchenOrders = data.filter((o: any) => ["APPROVED", "PREPARING"].includes(o.status));
+            // Cocina ve APPROVED, PREPARING y los nuevos status ACCEPTED, COOKING
+            const kitchenOrders = data.filter((o: any) => ["APPROVED", "PREPARING", "ACCEPTED", "COOKING"].includes(o.status));
             // Sort por antigüedad
             kitchenOrders.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
@@ -167,8 +169,8 @@ function KitchenClientContent({ initialTables = EMPTY_TABLES }: { initialTables?
     const tableMap = new Map(initialTables.map(t => [t.id, t.label]))
 
     // ── Derived data ──
-    const approved = orders.filter(o => o.status === "APPROVED")
-    const preparing = orders.filter(o => o.status === "PREPARING")
+    const approved = orders.filter(o => o.status === "APPROVED" || o.status === "ACCEPTED")
+    const preparing = orders.filter(o => o.status === "PREPARING" || o.status === "COOKING")
     const active = [...approved, ...preparing] // All for "Activas" tab
 
     if (authLoading || loading) {

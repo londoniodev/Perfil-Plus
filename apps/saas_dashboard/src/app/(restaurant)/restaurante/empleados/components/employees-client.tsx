@@ -53,7 +53,7 @@ type Employee = {
     id: string;
     name: string;
     email: string;
-    role: "WAITER" | "KITCHEN" | "CASHIER";
+    role: "WAITER" | "KITCHEN" | "CASHIER" | "DRIVER";
     avatar?: string;
     createdAt: string;
 };
@@ -62,6 +62,7 @@ const ROLES = [
     { value: "WAITER", label: "Mesero" },
     { value: "KITCHEN", label: "Cocina" },
     { value: "CASHIER", label: "Cajero" },
+    { value: "DRIVER", label: "Domiciliario" },
 ];
 
 export function EmployeesClient() {
@@ -287,7 +288,7 @@ export function EmployeesClient() {
                                     <TableCell>
                                         <Badge variant="outline" className={cn(
                                             employee.role === "WAITER" ? "bg-blue-50 text-blue-700 border-blue-200" :
-                                                employee.role === "KITCHEN" ? "bg-orange-50 text-orange-700 border-orange-200" :
+                                                employee.role === "KITCHEN" ? "bg-orange-50 text-orange-700 border-orange-200" : employee.role === "DRIVER" ? "bg-purple-50 text-purple-700 border-purple-200" :
                                                     "bg-green-50 text-green-700 border-green-200"
                                         )}>
                                             {ROLES.find(r => r.value === employee.role)?.label || employee.role}

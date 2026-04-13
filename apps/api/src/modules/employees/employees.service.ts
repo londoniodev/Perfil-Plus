@@ -60,6 +60,27 @@ export class EmployeesService {
       },
     });
 
+    if (employee.role === Role.DRIVER) {
+      const defaultBranch = await this.prisma.branch.findFirst({
+        where: { tenantId, isDefault: true },
+        select: { id: true },
+      });
+      if (defaultBranch) {
+        await this.prisma.deliveryDriver.create({
+          data: {
+            tenantId,
+            branchId: defaultBranch.id,
+            userId: employee.id,
+            phone: '0000000000', // Numero default, se debe editar despues
+            vehicle: 'Por Definir',
+            status: 'AVAILABLE',
+            maxCapacity: 3,
+            currentActiveOrders: 0
+          }
+        });
+      }
+    }
+
     return employee;
   }
 

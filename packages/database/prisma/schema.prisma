@@ -378,6 +378,7 @@ model TenantSettings {
   waAccessToken     String?
   waPhoneNumberId   String?  @unique
   wabaId            String?  @unique
+  isWaBotActive     Boolean  @default(true)
   tiktokPixelId     String?
   tiktokAccessToken String?
   createdAt         DateTime @default(now())

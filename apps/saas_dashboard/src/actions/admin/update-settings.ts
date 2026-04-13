@@ -141,6 +141,7 @@ export async function updateApiSettings(data: ApiSettingsValues): Promise<Update
 
         const newConfig = {
             api_key_openai: validated.apiKeyOpenAI ?? undefined,
+            isWaBotActive: validated.isWaBotActive,
             tiktokPixelId: validated.tiktokPixelId ?? undefined,
             tiktokAccessToken: validated.tiktokAccessToken ?? undefined,
         }

@@ -80,6 +80,7 @@ export class SettingsService {
       // 4. TenantSettings (Global: WhatsApp)
       waPhoneNumberId:
         tenantSettings?.waPhoneNumberId || collapsed['waPhoneNumberId'] || '',
+      isWaBotActive: tenantSettings?.isWaBotActive ?? true,
       hero_image: brandSettings?.authBgUrl || '',
 
       // 5. BranchSettings (Operativa: pagos, delivery, horarios)
@@ -139,6 +140,7 @@ export class SettingsService {
       'storeEmail',
       'tiktokPixelId',
       'tiktokAccessToken',
+      'isWaBotActive',
     ];
 
     const operations = Object.entries(updateDto)
@@ -217,7 +219,8 @@ export class SettingsService {
       updateDto.storeName !== undefined ||
       updateDto.storeEmail !== undefined ||
       updateDto.tiktokPixelId !== undefined ||
-      updateDto.tiktokAccessToken !== undefined
+      updateDto.tiktokAccessToken !== undefined ||
+      updateDto.isWaBotActive !== undefined
     ) {
       const waPhoneNumberId =
         updateDto.waPhoneNumberId !== undefined
@@ -232,6 +235,7 @@ export class SettingsService {
           ...(updateDto.storeEmail !== undefined && { storeEmail: updateDto.storeEmail }),
           ...(updateDto.tiktokPixelId !== undefined && { tiktokPixelId: updateDto.tiktokPixelId?.trim() || null }),
           ...(updateDto.tiktokAccessToken !== undefined && { tiktokAccessToken: updateDto.tiktokAccessToken?.trim() || null }),
+          ...(updateDto.isWaBotActive !== undefined && { isWaBotActive: updateDto.isWaBotActive }),
         },
         create: {
           tenantId,
@@ -240,6 +244,7 @@ export class SettingsService {
           waPhoneNumberId,
           tiktokPixelId: updateDto.tiktokPixelId?.trim() || null,
           tiktokAccessToken: updateDto.tiktokAccessToken?.trim() || null,
+          isWaBotActive: updateDto.isWaBotActive ?? true,
         },
       });
     }

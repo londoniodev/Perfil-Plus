@@ -42,6 +42,7 @@ export class WhatsappProcessor {
         },
         select: {
           tenantId: true,
+          isWaBotActive: true,
           tenant: {
             select: { slug: true },
           },
@@ -55,7 +56,7 @@ export class WhatsappProcessor {
         return;
       }
 
-      const { tenantId, tenant } = tenantSetting as any;
+      const { tenantId, tenant, isWaBotActive } = tenantSetting as any;
       const tenantSlug = tenant?.slug || 'demo';
       this.logger.log(`Tenant resuelto: ${tenantId}`);
 
@@ -155,6 +156,11 @@ export class WhatsappProcessor {
         });
 
         // --- AQUÍ VA LA LÓGICA DE IA Y RESPUESTA ---
+
+        if (!isWaBotActive) {
+          this.logger.log(`[Tenant: ${tenantId}] IA Desactivada globalmente. Ignorando generación de respuesta (Coexistencia).`);
+          return;
+        }
 
         // 3. Validar límites de IA mensuales
         const isAllowed = await this.usageGuard.checkAiLimit(tenantId);

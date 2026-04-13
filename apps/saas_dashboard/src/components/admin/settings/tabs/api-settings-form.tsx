@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { apiSettingsSchema, ApiSettingsValues } from "@alvarosky/features"
-import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription, useToast } from "@alvarosky/ui"
+import { Button, Input, Card, Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription, useToast, Switch } from "@alvarosky/ui"
 import { Loader2, MessageSquare, CheckCircle2, ExternalLink, BarChart3 } from "lucide-react"
 import { updateApiSettings } from "@/actions/admin/update-settings"
 import { TENANT_ID, META_HUB_DOMAIN } from "@/lib/config"
@@ -23,6 +23,7 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
         resolver: zodResolver(apiSettingsSchema),
         defaultValues: {
             apiKeyOpenAI: initialData?.apiKeyOpenAI || "",
+            isWaBotActive: initialData?.isWaBotActive ?? true,
             tiktokPixelId: initialData?.tiktokPixelId || "",
             tiktokAccessToken: initialData?.tiktokAccessToken || "",
         },
@@ -153,7 +154,10 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                                 <div className="flex items-center justify-center h-9 w-9 rounded-full bg-green-100 dark:bg-green-900/30">
                                     <MessageSquare className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
                                 </div>
-                                <h3 className="text-lg font-semibold">Integración de WhatsApp</h3>
+                                <div>
+                                    <h3 className="text-lg font-semibold">Integración de WhatsApp</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">Conecta y administra tu botón de ventas virtual</p>
+                                </div>
                             </div>
                             {isConnected && (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
@@ -164,40 +168,79 @@ export function ApiSettingsForm({ initialData, waPhoneNumberId, wabaId }: ApiSet
                         </div>
 
                         {isConnected ? (
-                            <div className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Phone Number ID:</span>
-                                    <span className="font-mono">{waPhoneNumberId}</span>
-                                </div>
-                                {wabaId && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">WABA ID:</span>
-                                        <span className="font-mono">{wabaId}</span>
+                            <div className="space-y-6 pt-2">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1 bg-muted/50 p-3 rounded-md">
+                                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Phone Number ID</p>
+                                        <p className="font-mono text-sm">{waPhoneNumberId}</p>
                                     </div>
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleConnectWhatsApp}
-                                    className="w-full mt-2"
-                                >
-                                    <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
-                                    Reconectar con Meta
-                                </Button>
+                                    {wabaId && (
+                                        <div className="space-y-1 bg-muted/50 p-3 rounded-md">
+                                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">WABA ID</p>
+                                            <p className="font-mono text-sm">{wabaId}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="border-t border-border pt-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="isWaBotActive"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                                <div className="space-y-1">
+                                                    <FormLabel className="text-base">Asistente de IA Activo</FormLabel>
+                                                    <FormDescription>
+                                                        {field.value 
+                                                          ? "El bot está respondiendo automáticamente a los clientes." 
+                                                          : "Bot apagado. Leeremos los mensajes que lleguen, pero debes responder tú de forma manual o desde tu App de WhatsApp Business (Coexistencia)."}
+                                                    </FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                    <Button type="submit" disabled={form.formState.isSubmitting} className="flex-1">
+                                        {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" /> : "Guardar Ajustes de IA"}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleConnectWhatsApp}
+                                        className="flex-1"
+                                    >
+                                        <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
+                                        Reconectar con Meta
+                                    </Button>
+                                </div>
                             </div>
                         ) : (
-                            <section className="space-y-3" aria-label="Conectar WhatsApp">
-                                <p className="text-sm text-muted-foreground">
-                                    Conecta tu cuenta de Meta para empezar a usar el asistente inteligente de WhatsApp.
-                                </p>
+                            <section className="space-y-5 pt-2" aria-label="Conectar WhatsApp">
+                                <div className="bg-muted p-4 rounded-lg space-y-3">
+                                    <h4 className="text-sm font-semibold">¡Sigue estos pasos en la ventana emergente que se abrirá!</h4>
+                                    <ul className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                                        <li>Haz clic en <strong>"Continuar"</strong> y acepta los permisos.</li>
+                                        <li>En el desplegable, asegúrate de elegir <strong>"Crear una cuenta de WhatsApp Business"</strong>. (No uses cuentas/portfolios existentes si quieres aislar tu bot).</li>
+                                        <li>Más adelante, selecciona <strong>"Añadir un número nuevo"</strong> e ingresa el número donde vas a instalar el Bot.</li>
+                                    </ul>
+                                </div>
                                 <Button
                                     type="button"
                                     onClick={handleConnectWhatsApp}
-                                    className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white focus-visible:ring-green-500"
+                                    className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white focus-visible:ring-green-500 py-6"
                                 >
-                                    <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
-                                    Conectar con Meta
+                                    <ExternalLink className="mr-2 h-5 w-5" aria-hidden="true" />
+                                    Conectar WhatsApp con Meta
                                 </Button>
+                                <p className="text-xs text-center text-muted-foreground">Este proceso es seguro y utiliza la autenticación oficial de Meta para registrar tu número para la API.</p>
                             </section>
                         )}
                     </Card>

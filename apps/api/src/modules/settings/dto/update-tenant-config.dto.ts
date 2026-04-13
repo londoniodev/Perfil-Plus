@@ -126,6 +126,10 @@ export class UpdateTenantConfigDto {
 
   @IsBoolean()
   @IsOptional()
+  isWaBotActive?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   enableBlog?: boolean;
 
   @IsBoolean()

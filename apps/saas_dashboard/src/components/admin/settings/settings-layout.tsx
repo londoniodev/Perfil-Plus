@@ -101,6 +101,7 @@ export function SettingsLayout({ initialData: propsInitialData, brandingData }: 
     }), [initialData]);
 
     const apiData = useMemo(() => ({
+        isWaBotActive: initialData?.isWaBotActive ?? false,
         apiKeyOpenAI: initialData?.apiKeyOpenAI || "",
         tiktokPixelId: initialData?.tiktokPixelId || "",
         tiktokAccessToken: initialData?.tiktokAccessToken || "",

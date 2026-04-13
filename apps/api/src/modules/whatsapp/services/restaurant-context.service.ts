@@ -182,7 +182,24 @@ export class RestaurantContextService {
       include: {
         products: {
           include: {
-            product: true,
+            product: {
+              include: {
+                modifierGroups: {
+                  include: {
+                    modifiers: true,
+                  },
+                },
+                recipe: {
+                  include: {
+                    ingredients: {
+                      include: {
+                        inventoryItem: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -198,7 +215,28 @@ export class RestaurantContextService {
         const p = catProd.product;
         if (!p.published || !p.isAvailable || p.productType !== 'RESTAURANT')
           continue;
-        menuText += `- ${p.name}: $${p.basePrice} (${p.description || 'Sin descripción'})\n`;
+        
+        let productDetails = `- ${p.name}: $${p.basePrice} (${p.description || 'Sin descripción'})`;
+        
+        // Ingredientes
+        if (p.recipe?.ingredients && p.recipe.ingredients.length > 0) {
+          const ingNames = p.recipe.ingredients.map((ing: any) => ing.inventoryItem?.name).filter(Boolean);
+          if (ingNames.length > 0) {
+            productDetails += `\n  * Ingredientes detallados: ${ingNames.join(', ')}`;
+          }
+        }
+
+        // Modificadores / Extras
+        if (p.modifierGroups && p.modifierGroups.length > 0) {
+          productDetails += `\n  * Opciones/Extras permitidos: `;
+          const modGroupsText = p.modifierGroups.map((mg: any) => {
+            const mods = mg.modifiers.map((m: any) => `${m.name} (+$${Number(m.priceAdjustment)})`).join(', ');
+            return `[${mg.name} -> ${mods}]`;
+          });
+          productDetails += modGroupsText.join(' | ');
+        }
+        
+        menuText += `${productDetails}\n`;
       }
     }
 
@@ -228,20 +266,25 @@ ${menuText}
 - Respeta estrictamente los precios del catálogo. Muestra el precio exacto mencionado.
 - NUNCA enumeres ni imprimas el menú completo en el chat, es demasiado largo. Si el cliente quiere ver todo, envíale el enlace oficial al menú usando la herramienta o proporciónale: https://${tenantSlug}.${process.env.BASE_DOMAIN || 'perfil.plus'}/menu
 
-4. ENVÍO DE FOTOS (\`sendProductPhotos\`):
+4. TÉCNICAS DE VENTA Y AUMENTO DE TICKET (MUY IMPORTANTE):
+- CROSS-SELLING SIEMPRE: Justo antes de que el cliente confirme su pedido, sugiérele *siempre* de forma natural algún producto complementario. (Por ejemplo: "¿Te gustaría agregar unas papas fritas o una bebida para acompañar tu orden?").
+- UPSELLING NATURAL: Si el producto que solicitó tiene "Opciones/Extras permitidos" (modificadores), pregúntale de forma apetitosa si desea agregar alguno de esos extras (Por ejemplo: "¿Deseas agregar tocineta extra o queso doble por $XX a tu hamburguesa?").
+- NUNCA resultes pesado o insistente. Cita 1 sola sugerencia atractiva a la vez.
+
+5. ENVÍO DE FOTOS (\`sendProductPhotos\`):
 - Si el cliente pide ver fotos, imágenes o cómo se ven los productos, usa \`sendProductPhotos\` con los nombres de los productos.
 - Las fotos se enviarán automáticamente como mensajes separados debajo de tu respuesta.
 
-5. ESCALACIÓN A HUMANO (\`escalateToHuman\`):
+6. ESCALACIÓN A HUMANO (\`escalateToHuman\`):
 - Si el cliente pide EXPLÍCITAMENTE hablar con una persona, un humano, un agente, o muestra frustración/enojo extremo repetido, usa \`escalateToHuman\`.
 - NUNCA escales por tu cuenta. Solo cuando el cliente lo pida o la situación sea claramente insostenible.
 - Después de escalar, despídete amablemente indicando que un humano le atenderá pronto.
 
-6. ENLACE AL MENÚ COMPLETO:
+7. ENLACE AL MENÚ COMPLETO:
 - Si el cliente quiere ver el menú completo online, comparte este enlace: https://${tenantSlug}.${process.env.BASE_DOMAIN || 'perfil.plus'}/menu
 - NUNCA imprimas el menú completo en el chat, es demasiado largo.
 
-7. LÍMITES DEL SISTEMA:
+8. LÍMITES DEL SISTEMA:
 - Si no sabes la respuesta o el cliente hace preguntas fuera de contexto, responde amablemente que solo puedes ayudar con temas relacionados al restaurante.`;
   }
 

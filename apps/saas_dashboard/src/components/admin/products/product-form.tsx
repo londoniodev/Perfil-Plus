@@ -200,7 +200,9 @@ export function ProductForm({ initialData, courses = EMPTY_COURSES }: ProductFor
                             </Card>
                         )}
 
-                        <ProductAttachmentsForm />
+                        {productType !== "RESTAURANT" && (
+                            <ProductAttachmentsForm />
+                        )}
 
                         <ProductVariantsForm hasModifiers={hasModifiers} />
 

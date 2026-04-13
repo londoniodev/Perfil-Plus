@@ -12,6 +12,7 @@ import { OrderPricingService } from './services/order-pricing.service';
 import { OrderValidationService } from './services/order-validation.service';
 import { AuthModule } from '../auth/auth.module';
 import { WhatsappModule } from '../whatsapp/whatsapp.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 import { OrderAnalyticsListener } from './listeners/order-analytics.listener';
 import { CustomerLeadListener } from './listeners/customer-lead.listener';
@@ -25,6 +26,7 @@ import { TikTokCapiListener } from './listeners/tiktok-capi.listener';
     StorageModule,
     AuthModule,
     InventoryModule,
+    NotificationsModule,
     forwardRef(() => WhatsappModule),
   ],
   controllers: [

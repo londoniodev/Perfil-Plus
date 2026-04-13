@@ -408,6 +408,18 @@ export class OrdersService {
         data: updated,
       });
 
+      // Emitir evento para listeners (WhatsApp notification, etc.)
+      this.eventEmitter.emit(
+        'order.status_changed',
+        new OrderStatusChangedEvent(
+          orderId,
+          this.getTenantId(),
+          order.status,
+          dto.status,
+          updated,
+        ),
+      );
+
       return updated;
     });
   }

@@ -1,6 +1,8 @@
 export interface AiResponse {
   text: string;
   checkoutUrl?: string;
+  productImages?: { url: string; caption: string }[];
+  handoffTriggered?: boolean;
 }
 
 export interface AiProvider {

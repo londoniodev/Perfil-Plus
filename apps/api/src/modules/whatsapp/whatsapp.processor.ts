@@ -68,9 +68,12 @@ export class WhatsappProcessor {
         const from = message.from; // Número del cliente
         const messageId = message.id; // ID único del mensaje que da Meta
 
-        // ━━━ INTERCEPTOR DE UBICACIÓN GPS ━━━
-        // Si el usuario comparte su ubicación vía WhatsApp, guardamos las coordenadas
-        // y le damos a la IA un texto contextual en vez de "[Mensaje no es de texto]".
+        // ━━━ UX INMEDIATO: mark_as_read (fire-and-forget) ━━━
+        this.metaApiService
+          .markAsRead(tenantId, phone_number_id, messageId)
+          .catch(() => {});
+
+        // ━━━ INTERCEPTOR DE TIPO DE MENSAJE ━━━
         let textBody: string;
 
         if (message.type === 'location' && message.location) {
@@ -98,6 +101,25 @@ export class WhatsappProcessor {
           // Mensaje sintético para que la IA entienda qué pasó
           textBody =
             '*[Sistema: El cliente acaba de compartir su ubicación GPS exacta mediante WhatsApp. El backend ya la ha guardado exitosamente. Agradécele amablemente de forma breve y continúa con la conversación o despídete si el pedido ya terminó.]*';
+        } else if (message.type === 'audio' && message.audio) {
+          // ━━━ TRANSCRIPCIÓN DE AUDIO (Whisper) ━━━
+          this.logger.log(
+            `[Tenant: ${tenantId}] Audio recibido de ${from}. Transcribiendo con Whisper...`,
+          );
+          const transcription = await this.metaApiService.transcribeAudio(
+            tenantId,
+            message.audio.id,
+          );
+
+          if (transcription) {
+            textBody = transcription;
+            this.logger.log(
+              `[Tenant: ${tenantId}] Transcripción exitosa: "${transcription.substring(0, 80)}..."`,
+            );
+          } else {
+            textBody =
+              '*[El cliente envió un audio pero no fue posible entenderlo. Pídele amablemente que envíe un mensaje de texto.]*';
+          }
         } else if (message.type === 'text') {
           textBody = message.text?.body || '';
         } else {
@@ -130,6 +152,29 @@ export class WhatsappProcessor {
               status: 'OPEN',
             },
           });
+        }
+
+        // ━━━ HANDOFF CHECK: Si el bot está deshabilitado en esta conversación, no procesar con IA ━━━
+        if (!conversation.botEnabled) {
+          this.logger.log(
+            `[Tenant: ${tenantId}] Bot deshabilitado en conversación ${conversation.id} (handoff activo). Ignorando IA.`,
+          );
+          // Solo persistimos el mensaje pero no generamos respuesta
+          const existingMsg = await this.prisma.waMessage.findUnique({
+            where: { waMessageId: messageId },
+          });
+          if (!existingMsg) {
+            await this.prisma.waMessage.create({
+              data: {
+                tenantId,
+                conversationId: conversation.id,
+                waMessageId: messageId,
+                role: 'USER',
+                content: textBody,
+              },
+            });
+          }
+          return;
         }
 
         // 2. Guardar el Mensaje
@@ -181,12 +226,12 @@ export class WhatsappProcessor {
           from,
         );
 
-        // 5. Cargar Historial de Conversación Limitado (ej. últimos 10 mensajes)
+        // 5. Cargar Historial de Conversación Limitado (Sliding Window: últimos 15 mensajes)
         const rawHistory = await (this.prisma as any).waMessage.findMany(
           {
             where: { conversationId: conversation.id },
             orderBy: { createdAt: 'desc' },
-            take: 10,
+            take: 15,
           },
         );
 
@@ -217,6 +262,14 @@ export class WhatsappProcessor {
           aiResponse = {
             text: 'He tenido un problema procesando tu mensaje. Por favor, escríbeme en un momento.',
           };
+        }
+
+        // ━━━ HANDOFF TRIGGERED: Si la IA detectó que el cliente quiere hablar con humano ━━━
+        if (aiResponse.handoffTriggered) {
+          this.logger.warn(
+            `[Tenant: ${tenantId}] Handoff activado para conversación ${conversation.id}`,
+          );
+          // El flag ya se actualizó en el openai.provider.ts
         }
 
         // 7. Guardar Mensaje del Asistente
@@ -254,6 +307,19 @@ export class WhatsappProcessor {
             from,
             aiResponse.text,
           );
+        }
+
+        // 9. Enviar fotos de productos (si la IA las solicitó)
+        if (aiResponse.productImages && aiResponse.productImages.length > 0) {
+          for (const img of aiResponse.productImages) {
+            await this.metaApiService.sendImageMessage(
+              tenantId,
+              phone_number_id,
+              from,
+              img.url,
+              img.caption,
+            );
+          }
         }
       });
     } catch (error) {

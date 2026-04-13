@@ -45,6 +45,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { CoreModule } from './modules/core';
 import { BranchesModule } from './modules/branches/branches.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 // Interceptors
 // Interceptors removed
@@ -143,6 +144,7 @@ import { BranchesModule } from './modules/branches/branches.module';
     EmailModule,
     RestaurantModule,
     WhatsappModule,
+    NotificationsModule,
 
     // Rate Limiting
     ThrottlerModule.forRoot([

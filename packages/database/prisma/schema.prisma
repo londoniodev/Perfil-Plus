@@ -55,6 +55,7 @@ model Tenant {
   waConversations    WaConversation[]
   waCustomers        WaCustomer[]
   waMessages         WaMessage[]
+  notifications      AppNotification[]
   warehouses         Warehouse[]
   warehouseStocks    WarehouseStock[]
 }
@@ -570,6 +571,7 @@ model Order {
   driverId           String?
   guestCount         Int?                    @default(1)
   identification     String?
+  feedbackSentAt     DateTime?
   tenantId           String
   branchId           String
   branch             Branch                  @relation(fields: [branchId], references: [id])
@@ -877,6 +879,7 @@ model WaConversation {
   branchId      String?
   customerPhone String
   status        WaConversationStatus @default(OPEN)
+  botEnabled    Boolean              @default(true)
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   branch        Branch?              @relation(fields: [branchId], references: [id])
@@ -975,6 +978,7 @@ model Branch {
   tables          Table[]
   users           UserBranchAccess[]
   waConversations WaConversation[]
+  notifications   AppNotification[]
   warehouses      Warehouse[]
 
   @@unique([tenantId, slug])
@@ -1125,4 +1129,25 @@ enum PaymentProvider {
   BOLD
   CASH
   NONE
+}
+
+model AppNotification {
+  id        String           @id @default(cuid())
+  tenantId  String
+  branchId  String?
+  title     String
+  message   String
+  type      NotificationType
+  createdAt DateTime         @default(now())
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch    Branch?          @relation(fields: [branchId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, type])
+}
+
+enum NotificationType {
+  ALERT
+  NEW_ORDER
+  HANDOFF
 }

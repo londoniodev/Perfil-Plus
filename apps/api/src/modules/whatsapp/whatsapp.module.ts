@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WhatsappController } from './whatsapp.controller';
 import { WaCartController } from './wa-cart.controller';
 import { WhatsappProcessor } from './whatsapp.processor';
@@ -10,13 +9,11 @@ import { UsageGuardService } from './services/usage-guard.service';
 import { WhatsappOnboardingService } from './services/whatsapp-onboarding.service';
 import { WhatsappOnboardingController } from './whatsapp-onboarding.controller';
 import { WaCartCronService } from './services/wa-cart.cron';
+import { FeedbackCronService } from './services/feedback.cron';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [
-    // Asegurarse de que el EventEmitter global está importado en la aplicación.
-    // Lo importamos aquí en caso de que este módulo pueda funcionar standalone,
-    // pero idealmente EventEmitterModule.forRoot() se llama en AppModule.
-  ],
+  imports: [NotificationsModule],
   controllers: [
     WhatsappController,
     WaCartController,
@@ -30,7 +27,9 @@ import { WaCartCronService } from './services/wa-cart.cron';
     UsageGuardService,
     WhatsappOnboardingService,
     WaCartCronService,
+    FeedbackCronService,
   ],
   exports: [MetaApiService],
 })
 export class WhatsappModule {}
+

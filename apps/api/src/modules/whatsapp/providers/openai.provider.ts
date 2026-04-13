@@ -8,6 +8,7 @@ import {
   RestaurantContextService,
   CatalogProduct,
 } from '../services/restaurant-context.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import Fuse from 'fuse.js';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class OpenAiProvider implements AiProvider {
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly contextService: RestaurantContextService,
+    private readonly notificationsService: NotificationsService,
   ) {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -33,9 +35,11 @@ export class OpenAiProvider implements AiProvider {
     customerPhone?: string,
     tenantSlug?: string,
   ): Promise<AiResponse> {
-    // Variable para rastrear si se generó un checkoutUrl durante tool calls
+    // Variables para rastrear resultados de tool calls
     let detectedCheckoutUrl: string | undefined;
     let deterministicReceipt: string | undefined;
+    let detectedProductImages: { url: string; caption: string }[] = [];
+    let handoffTriggered = false;
 
     try {
       const messages: any[] = [
@@ -102,6 +106,45 @@ export class OpenAiProvider implements AiProvider {
                 },
               },
               required: ['items'],
+            },
+          },
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'escalateToHuman',
+            description:
+              'Escala la conversación a un agente humano. El bot se detendrá y no responderá más hasta que un humano reactive el bot. Usa esta herramienta SOLO cuando el cliente pide explícitamente hablar con un humano o muestra frustración/enojo extremo.',
+            parameters: {
+              type: 'object',
+              properties: {
+                reason: {
+                  type: 'string',
+                  description:
+                    'Motivo resumido de la escalación (ej: "cliente enojado", "pide hablar con humano")',
+                },
+              },
+              required: ['reason'],
+            },
+          },
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'sendProductPhotos',
+            description:
+              'Envía las fotos de los productos solicitados al cliente por WhatsApp. Usa esta herramienta cuando el cliente pida ver fotos, imágenes o cómo se ve un producto.',
+            parameters: {
+              type: 'object',
+              properties: {
+                productNames: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description:
+                    'Nombres de los productos cuyas fotos quiere ver el cliente',
+                },
+              },
+              required: ['productNames'],
             },
           },
         },
@@ -386,6 +429,116 @@ export class OpenAiProvider implements AiProvider {
               name: toolCall.function.name,
               content: toolResponseText,
             });
+          } else if (toolCall.function.name === 'escalateToHuman') {
+            this.logger.warn(
+              `[Tenant: ${tenantId}] OpenAI invocó escalateToHuman para ${customerPhone}`,
+            );
+            let toolResponseText = '';
+            try {
+              const args = JSON.parse(toolCall.function.arguments);
+              const reason = args.reason || 'El cliente pidió hablar con un humano';
+
+              // Desactivar bot en la conversación activa
+              const activeConversation = await this.prisma.waConversation.findFirst({
+                where: {
+                  customerPhone: customerPhone || '',
+                  status: 'OPEN',
+                },
+              });
+
+              if (activeConversation) {
+                await (this.prisma as any).waConversation.update({
+                  where: { id: activeConversation.id },
+                  data: { botEnabled: false },
+                });
+              }
+
+              // Crear notificación HANDOFF en el hub
+              await this.notificationsService.create(
+                tenantId,
+                `🚨 Handoff: Cliente pide atención humana`,
+                `Teléfono: ${customerPhone}. Motivo: ${reason}`,
+                'HANDOFF',
+              );
+
+              handoffTriggered = true;
+
+              toolResponseText = JSON.stringify({
+                success: true,
+                message: 'La conversación ha sido escalada a un agente humano. El bot se detendrá.',
+              });
+            } catch (err) {
+              this.logger.error(`Error en escalateToHuman: ${err.message}`);
+              toolResponseText = JSON.stringify({
+                error: 'Error al escalar la conversación.',
+              });
+            }
+
+            messages.push({
+              tool_call_id: toolCall.id,
+              role: 'tool',
+              name: toolCall.function.name,
+              content: toolResponseText,
+            });
+          } else if (toolCall.function.name === 'sendProductPhotos') {
+            this.logger.log(
+              `[Tenant: ${tenantId}] OpenAI invocó sendProductPhotos para ${customerPhone}`,
+            );
+            let toolResponseText = '';
+            try {
+              const args = JSON.parse(toolCall.function.arguments);
+              const productNames: string[] = args.productNames || [];
+
+              const catalog = await this.contextService.getProductCatalog(tenantId);
+              const fuse = new Fuse(catalog, {
+                keys: ['name'],
+                threshold: 0.4,
+                includeScore: true,
+                ignoreLocation: true,
+              });
+
+              const foundImages: { url: string; caption: string }[] = [];
+              const notFound: string[] = [];
+
+              for (const name of productNames) {
+                const results = fuse.search(name);
+                if (results.length > 0 && results[0].score !== undefined && results[0].score <= 0.4) {
+                  const match = results[0].item;
+                  if (match.images && match.images.length > 0) {
+                    foundImages.push({
+                      url: match.images[0],
+                      caption: `📸 ${match.name} — $${match.basePrice.toLocaleString('es-CO')}`,
+                    });
+                  } else {
+                    notFound.push(name);
+                  }
+                } else {
+                  notFound.push(name);
+                }
+              }
+
+              detectedProductImages = foundImages;
+
+              toolResponseText = JSON.stringify({
+                sent: foundImages.map((img) => img.caption),
+                notFound: notFound.length > 0 ? notFound : undefined,
+                message: foundImages.length > 0
+                  ? `Se enviarán ${foundImages.length} foto(s) al cliente.`
+                  : 'No se encontraron fotos para los productos solicitados.',
+              });
+            } catch (err) {
+              this.logger.error(`Error en sendProductPhotos: ${err.message}`);
+              toolResponseText = JSON.stringify({
+                error: 'Error al buscar fotos de productos.',
+              });
+            }
+
+            messages.push({
+              tool_call_id: toolCall.id,
+              role: 'tool',
+              name: toolCall.function.name,
+              content: toolResponseText,
+            });
           }
         }
 
@@ -406,7 +559,12 @@ export class OpenAiProvider implements AiProvider {
           finalText += deterministicReceipt;
         }
 
-        return { text: finalText, checkoutUrl: detectedCheckoutUrl };
+        return {
+          text: finalText,
+          checkoutUrl: detectedCheckoutUrl,
+          productImages: detectedProductImages.length > 0 ? detectedProductImages : undefined,
+          handoffTriggered,
+        };
       }
 
       return {

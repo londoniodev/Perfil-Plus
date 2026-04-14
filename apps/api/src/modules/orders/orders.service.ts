@@ -427,6 +427,7 @@ export class OrdersService {
   async findMyOrders(userId: string, take = 20, skip = 0) {
     return await this.prisma.order.findMany({
       where: {
+        tenantId: this.getTenantId(),
         userId,
         status: {
           in: [
@@ -551,7 +552,7 @@ export class OrdersService {
         await Promise.all([
           // Órdenes activas (ya confirmadas / en proceso)
           this.prisma.order.findMany({
-            where: { status: { in: activeStatuses } },
+            where: { tenantId: this.getTenantId(), status: { in: activeStatuses } },
             include: fullInclude,
             orderBy: { createdAt: 'desc' },
           }),
@@ -559,6 +560,7 @@ export class OrdersService {
           // (ej: efectivo, transferencia → sí se muestran para que el operador las acepte)
           this.prisma.order.findMany({
             where: {
+              tenantId: this.getTenantId(),
               status: 'PENDING',
               OR: [
                 { paymentProvider: { notIn: onlineProviders } },
@@ -569,7 +571,7 @@ export class OrdersService {
             orderBy: { createdAt: 'desc' },
           }),
           this.prisma.order.findMany({
-            where: { status: { in: completedStatuses } },
+            where: { tenantId: this.getTenantId(), status: { in: completedStatuses } },
             include: fullInclude,
             orderBy: { createdAt: 'desc' },
             take,
@@ -583,7 +585,7 @@ export class OrdersService {
     }
 
     return await this.prisma.order.findMany({
-      where: status ? { status } : undefined,
+      where: status ? { tenantId: this.getTenantId(), status } : { tenantId: this.getTenantId() },
       include: fullInclude,
       orderBy: { createdAt: 'desc' },
       take,
@@ -838,7 +840,7 @@ export class OrdersService {
 
   async getDriverOrders(driverId: string) {
     return this.prisma.order.findMany({
-      where: { driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
+      where: { tenantId: this.getTenantId(), driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
       include: {
         items: {
           include: {

@@ -518,8 +518,8 @@ export default function CashierPage() {
                                         <div className="flex items-center justify-end gap-1.5 mt-1">
                                             <Badge variant="secondary" className={`${getStatusColor(order.status)} border-0`}>{order.status}</Badge>
                                             {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) && (
-                                                <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
-                                                    💳 Pagado
+                                                <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5 flex items-center gap-1">
+                                                    <CreditCard className="w-3 h-3" /> Pagado
                                                 </Badge>
                                             )}
                                         </div>

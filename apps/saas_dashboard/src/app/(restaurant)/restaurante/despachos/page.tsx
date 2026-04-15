@@ -40,8 +40,8 @@ function DispatchCard({ order, onStatusChange }: { order: Order; onStatusChange:
                             {order.status === 'READY' ? 'Listo' : order.status}
                         </Badge>
                         {order.paymentProvider && ONLINE_PROVIDERS.includes(order.paymentProvider) ? (
-                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
-                                💳 PAGADO
+                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5 flex items-center gap-1">
+                                <CreditCard className="w-3 h-3" /> PAGADO
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="text-[10px] px-1.5 border-amber-400 text-amber-600">

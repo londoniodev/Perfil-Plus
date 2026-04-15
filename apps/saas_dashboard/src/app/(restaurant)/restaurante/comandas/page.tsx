@@ -18,7 +18,7 @@ import {
     TabsContent,
     useToast
 } from "@alvarosky/ui"
-import { RefreshCw, Clock, Utensils, CheckCircle, Truck, AlertCircle } from "lucide-react"
+import { RefreshCw, Clock, Utensils, CheckCircle, Truck, AlertCircle, CreditCard } from "lucide-react"
 
 const STATUS_GROUPS: Record<string, OrderStatus[]> = {
     NEW: ['PENDING', 'APPROVED'] as OrderStatus[],
@@ -46,8 +46,8 @@ function OrderCard({ order, onStatusChange }: { order: Order; onStatusChange: (o
                             {order.orderType === 'DINE_IN' ? `Mesa ${order.tableNumber || '?'}` : order.orderType}
                         </Badge>
                         {order.items?.some(i => i.isPaid) ? (
-                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5">
-                                💳 PAGADO
+                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-[10px] px-1.5 flex items-center gap-1">
+                                <CreditCard className="w-3 h-3" /> PAGADO
                             </Badge>
                         ) : (
                             <Badge variant="outline" className="text-[10px] px-1.5 border-amber-400 text-amber-600">

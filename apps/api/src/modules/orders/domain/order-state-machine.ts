@@ -11,18 +11,23 @@ export const ORDER_TRANSITIONS: AllowedTransition[] = [
   // 1. Initial Flow
   { from: ['PENDING'], to: 'APPROVED', roles: ['ADMIN', 'CASHIER', 'WAITER'] },
   {
-    from: ['PENDING', 'APPROVED'],
+    from: ['PENDING', 'APPROVED', 'PROCESSING'],
     to: 'ACCEPTED',
     roles: ['ADMIN', 'KITCHEN'],
   }, // Kitchen accepts/queue
   {
-    from: ['ACCEPTED'],
+    from: ['PENDING', 'APPROVED', 'PROCESSING'],
+    to: 'PREPARING',
+    roles: ['ADMIN', 'KITCHEN'],
+  }, // Kitchen starts cooking (legacy)
+  {
+    from: ['ACCEPTED', 'PROCESSING', 'APPROVED', 'PENDING'],
     to: 'COOKING',
     roles: ['ADMIN', 'KITCHEN'],
   }, // Kitchen starts cooking
 
   // 2. Kitchen Flow
-  { from: ['PREPARING', 'COOKING'], to: 'READY', roles: ['ADMIN', 'KITCHEN'] }, // Food is ready
+  { from: ['PREPARING', 'COOKING', 'PROCESSING'], to: 'READY', roles: ['ADMIN', 'KITCHEN'] }, // Food is ready
 
   // 3. Service Flow (Dine-in)
   { from: ['READY'], to: 'SERVED', roles: ['ADMIN', 'WAITER'] }, // Waiter serves table
@@ -41,7 +46,7 @@ export const ORDER_TRANSITIONS: AllowedTransition[] = [
 
   // 6. Cancellation (before delivery in transit)
   {
-    from: ['PENDING', 'APPROVED', 'PREPARING', 'ACCEPTED', 'COOKING', 'READY', 'ASSIGNED'],
+    from: ['PENDING', 'APPROVED', 'PREPARING', 'ACCEPTED', 'COOKING', 'READY', 'ASSIGNED', 'PROCESSING'],
     to: 'CANCELLED',
     roles: ['ADMIN', 'CASHIER', 'WAITER'],
   },

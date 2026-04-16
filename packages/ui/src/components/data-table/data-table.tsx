@@ -46,8 +46,6 @@ interface DataTableProps<TData, TValue> {
     toolbar?: React.ReactNode
     /** Additional table options for advanced customization */
     tableOptions?: Partial<TableOptions<TData>>
-    /** @deprecated Use toolbar with custom Input instead. Column key to filter by (backward compat) */
-    searchKey?: string
 }
 
 // ============================================================================
@@ -65,7 +63,6 @@ export function DataTable<TData, TValue>({
     emptyMessage = "No hay resultados.",
     toolbar,
     tableOptions,
-    searchKey,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -110,20 +107,6 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="space-y-4">
-            {/* Backward compat: searchKey filter */}
-            {searchKey && (
-                <div className="flex items-center py-4 px-1">
-                    <Input
-                        placeholder="Filtrar..."
-                        value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-                        onChange={(event) =>
-                            table.getColumn(searchKey)?.setFilterValue(event.target.value)
-                        }
-                        className="max-w-sm"
-                    />
-                </div>
-            )}
-
             {/* Toolbar */}
             {toolbar && <div className="flex items-center justify-between">{toolbar}</div>}
 

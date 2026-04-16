@@ -265,17 +265,25 @@ export class OrdersService {
 
           const updatePromises: any[] = [];
 
-          for (const [variantId, increment] of variantIncrements.entries()) {
+          const sortedVariantIds = Array.from(variantIncrements.keys()).sort((a, b) =>
+            a.localeCompare(b),
+          );
+
+          sortedVariantIds.forEach((variantId) => {
+            const increment = variantIncrements.get(variantId)!;
             updatePromises.push(
               tx.productVariant.update({
                 where: { id: variantId },
                 data: { stock: { increment } },
-              })
+              }),
             );
-          }
+          });
 
           if (modifierIncrements.size > 0) {
-            const modifierIds = Array.from(modifierIncrements.keys());
+            const modifierIds = Array.from(modifierIncrements.keys()).sort((a, b) =>
+              a.localeCompare(b),
+            );
+
             const modifiersToUpdate = await tx.modifier.findMany({
               where: {
                 id: { in: modifierIds },
@@ -284,17 +292,20 @@ export class OrdersService {
               select: { id: true },
             });
 
-            for (const mod of modifiersToUpdate) {
+            // Re-sort fetched modifiers just to be safe
+            modifiersToUpdate.sort((a, b) => a.id.localeCompare(b.id));
+
+            modifiersToUpdate.forEach((mod) => {
               const increment = modifierIncrements.get(mod.id);
               if (increment) {
                 updatePromises.push(
                   tx.modifier.update({
                     where: { id: mod.id },
                     data: { stock: { increment } },
-                  })
+                  }),
                 );
               }
-            }
+            });
           }
 
           await Promise.all(updatePromises);

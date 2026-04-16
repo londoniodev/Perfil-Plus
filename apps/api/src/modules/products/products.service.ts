@@ -184,7 +184,8 @@ export class ProductsService {
       throw new NotFoundException('Producto no encontrado');
     }
 
-    const { sku, stock, modifierGroups, categories, variants, ...productData } = data;
+    const { sku, stock, modifierGroups, categories, variants, ...productData } =
+      data;
 
     return await this.prisma.$transaction(async (tx) => {
       await tx.product.update({
@@ -206,50 +207,62 @@ export class ProductsService {
       // Sync Variants
       if (variants !== undefined && Array.isArray(variants)) {
         const incomingIds = variants.map((v) => v.id).filter(Boolean);
-        
+
         // Remove variants not in payload (only if not referenced by orders yet)
         try {
           await tx.productVariant.deleteMany({
             where: {
               productId: id,
-              ...(incomingIds.length > 0 ? { id: { notIn: incomingIds as string[] } } : {}),
-              orderItems: { none: {} }
-            }
+              ...(incomingIds.length > 0
+                ? { id: { notIn: incomingIds as string[] } }
+                : {}),
+              orderItems: { none: {} },
+            },
           });
         } catch (e) {
           // Ignore if foreign key constraint or other deletion error
         }
 
-        for (const [index, v] of variants.entries()) {
-          const skuVal = v.sku || `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
-          
-          if (v.id) {
-            await tx.productVariant.update({
-              where: { id: v.id },
-              data: {
-                name: v.name || 'Standard',
-                sku: skuVal,
-                price: v.price ?? productData.basePrice,
-                stock: v.stock ?? 0,
-                isDefault: v.isDefault ?? index === 0,
-                attributes: v.attributes ?? undefined,
-              }
-            });
-          } else {
-            await tx.productVariant.create({
-              data: {
-                tenantId: this.cls.get('tenantId'),
-                productId: id,
-                name: v.name || 'Standard',
-                sku: skuVal,
-                price: v.price ?? productData.basePrice,
-                stock: v.stock ?? 0,
-                isDefault: v.isDefault ?? index === 0,
-                attributes: v.attributes ?? undefined,
-              }
-            });
-          }
-        }
+        const promises = variants
+          .map((v, index) => {
+            const skuVal =
+              v.sku ||
+              `${productData.slug || existing.slug}-${Math.random()
+                .toString(36)
+                .substring(7)}`;
+            return { v, index, skuVal };
+          })
+          .sort((a, b) => a.skuVal.localeCompare(b.skuVal))
+          .map(({ v, index, skuVal }) => {
+            if (v.id) {
+              return tx.productVariant.update({
+                where: { id: v.id },
+                data: {
+                  name: v.name || 'Standard',
+                  sku: skuVal,
+                  price: v.price ?? productData.basePrice,
+                  stock: v.stock ?? 0,
+                  isDefault: v.isDefault ?? index === 0,
+                  attributes: v.attributes ?? undefined,
+                },
+              });
+            } else {
+              return tx.productVariant.create({
+                data: {
+                  tenantId: this.cls.get('tenantId'),
+                  productId: id,
+                  name: v.name || 'Standard',
+                  sku: skuVal,
+                  price: v.price ?? productData.basePrice,
+                  stock: v.stock ?? 0,
+                  isDefault: v.isDefault ?? index === 0,
+                  attributes: v.attributes ?? undefined,
+                },
+              });
+            }
+          });
+
+        await Promise.all(promises);
       }
 
       // Sync Categories
@@ -422,16 +435,18 @@ export class ProductsService {
     }
 
     const products = await this.prisma.product.findMany({
-      where: { 
+      where: {
         published: true,
-        ...(resolvedBranchId ? {
-          branchProducts: {
-            some: {
-              branchId: resolvedBranchId,
-              isAvailable: true,
+        ...(resolvedBranchId
+          ? {
+              branchProducts: {
+                some: {
+                  branchId: resolvedBranchId,
+                  isAvailable: true,
+                },
+              },
             }
-          }
-        } : {})
+          : {}),
       },
       select: {
         id: true,
@@ -496,14 +511,16 @@ export class ProductsService {
               ],
             }
           : {}),
-        ...(resolvedBranchId ? {
-          branchProducts: {
-            some: {
-              branchId: resolvedBranchId,
-              isAvailable: true,
+        ...(resolvedBranchId
+          ? {
+              branchProducts: {
+                some: {
+                  branchId: resolvedBranchId,
+                  isAvailable: true,
+                },
+              },
             }
-          }
-        } : {})
+          : {}),
       },
       take: safeLimit,
       orderBy: { createdAt: 'desc' },
@@ -511,11 +528,13 @@ export class ProductsService {
         variants: allVariants ? true : { where: { isDefault: true } },
         ...this.modifierGroupsInclude,
         categories: { include: { category: true } },
-        ...(resolvedBranchId ? { branchProducts: { where: { branchId: resolvedBranchId } } } : {})
+        ...(resolvedBranchId
+          ? { branchProducts: { where: { branchId: resolvedBranchId } } }
+          : {}),
       },
     });
 
-    const mappedResult = result.map(p => {
+    const mappedResult = result.map((p) => {
       if ((p as any).branchProducts && (p as any).branchProducts.length > 0) {
         const bp = (p as any).branchProducts[0];
         if (bp.priceOverride !== null && bp.priceOverride !== undefined) {
@@ -542,30 +561,39 @@ export class ProductsService {
     }
 
     const product = await this.prisma.product.findFirst({
-      where: { 
+      where: {
         slug,
-        ...(resolvedBranchId ? {
-          branchProducts: {
-            some: {
-              branchId: resolvedBranchId,
-              isAvailable: true,
+        ...(resolvedBranchId
+          ? {
+              branchProducts: {
+                some: {
+                  branchId: resolvedBranchId,
+                  isAvailable: true,
+                },
+              },
             }
-          }
-        } : {})
+          : {}),
       },
       include: {
         variants: true,
         ...this.modifierGroupsInclude,
         categories: { include: { category: true } },
-        ...(resolvedBranchId ? { branchProducts: { where: { branchId: resolvedBranchId } } } : {})
+        ...(resolvedBranchId
+          ? { branchProducts: { where: { branchId: resolvedBranchId } } }
+          : {}),
       },
     });
 
     if (!product || !product.published) {
-      throw new NotFoundException('Producto no encontrado o no disponible en esta sucursal');
+      throw new NotFoundException(
+        'Producto no encontrado o no disponible en esta sucursal',
+      );
     }
 
-    if ((product as any).branchProducts && (product as any).branchProducts.length > 0) {
+    if (
+      (product as any).branchProducts &&
+      (product as any).branchProducts.length > 0
+    ) {
       const bp = (product as any).branchProducts[0];
       if (bp.priceOverride !== null && bp.priceOverride !== undefined) {
         product.basePrice = bp.priceOverride;

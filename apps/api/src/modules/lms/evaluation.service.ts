@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 import {
   CreateEvaluationDto,
   UpdateEvaluationDto,
@@ -13,7 +14,10 @@ import {
 
 @Injectable()
 export class EvaluationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cls: ClsService,
+  ) {}
 
   // ==================== EVALUATIONS ====================
 
@@ -53,29 +57,55 @@ export class EvaluationService {
   }
 
   async updateEvaluation(id: string, dto: UpdateEvaluationDto) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
-    });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
+    return this.prisma.$transaction(async (tx) => {
+      const tenantId = this.cls.get<string>('tenantId');
 
-    return this.prisma.evaluation.update({
-      where: { id },
-      data: dto,
-      include: {
-        questions: { orderBy: { order: 'asc' } },
-        theme: { select: { id: true, title: true } },
-      },
+      const whereClause: any = { id };
+      if (tenantId) {
+        whereClause.theme = { tenantId };
+      }
+
+      const exists = await tx.evaluation.findFirst({
+        where: whereClause,
+        select: { id: true },
+      });
+
+      if (!exists) {
+        throw new NotFoundException('Evaluación no encontrada o no autorizada');
+      }
+
+      return tx.evaluation.update({
+        where: { id },
+        data: dto,
+        include: {
+          questions: { orderBy: { order: 'asc' } },
+          theme: { select: { id: true, title: true } },
+        },
+      });
     });
   }
 
   async deleteEvaluation(id: string) {
-    const evaluation = await this.prisma.evaluation.findUnique({
-      where: { id },
-    });
-    if (!evaluation) throw new NotFoundException('Evaluación no encontrada');
+    return this.prisma.$transaction(async (tx) => {
+      const tenantId = this.cls.get<string>('tenantId');
 
-    await this.prisma.evaluation.delete({ where: { id } });
-    return { message: 'Evaluación eliminada correctamente' };
+      const whereClause: any = { id };
+      if (tenantId) {
+        whereClause.theme = { tenantId };
+      }
+
+      const exists = await tx.evaluation.findFirst({
+        where: whereClause,
+        select: { id: true },
+      });
+
+      if (!exists) {
+        throw new NotFoundException('Evaluación no encontrada o no autorizada');
+      }
+
+      await tx.evaluation.delete({ where: { id } });
+      return { message: 'Evaluación eliminada correctamente' };
+    });
   }
 
   async findEvaluationById(id: string) {
@@ -118,27 +148,54 @@ export class EvaluationService {
   }
 
   async updateQuestion(id: string, dto: Partial<CreateQuestionDto>) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
-    });
-    if (!question) throw new NotFoundException('Pregunta no encontrada');
-
-    return this.prisma.question.update({
-      where: { id },
-      data: dto.options
+    return this.prisma.$transaction(async (tx) => {
+      const tenantId = this.cls.get<string>('tenantId');
+      const data = dto.options
         ? { ...dto, options: dto.options as any }
-        : (dto as any),
+        : (dto as any);
+
+      const whereClause: any = { id };
+      if (tenantId) {
+        whereClause.evaluation = { theme: { tenantId } };
+      }
+
+      const exists = await tx.question.findFirst({
+        where: whereClause,
+        select: { id: true },
+      });
+
+      if (!exists) {
+        throw new NotFoundException('Pregunta no encontrada o no autorizada');
+      }
+
+      return tx.question.update({
+        where: { id },
+        data,
+      });
     });
   }
 
   async deleteQuestion(id: string) {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
-    });
-    if (!question) throw new NotFoundException('Pregunta no encontrada');
+    return this.prisma.$transaction(async (tx) => {
+      const tenantId = this.cls.get<string>('tenantId');
 
-    await this.prisma.question.delete({ where: { id } });
-    return { message: 'Pregunta eliminada correctamente' };
+      const whereClause: any = { id };
+      if (tenantId) {
+        whereClause.evaluation = { theme: { tenantId } };
+      }
+
+      const exists = await tx.question.findFirst({
+        where: whereClause,
+        select: { id: true },
+      });
+
+      if (!exists) {
+        throw new NotFoundException('Pregunta no encontrada o no autorizada');
+      }
+
+      await tx.question.delete({ where: { id } });
+      return { message: 'Pregunta eliminada correctamente' };
+    });
   }
 
   // ==================== TAKE EVALUATION ====================

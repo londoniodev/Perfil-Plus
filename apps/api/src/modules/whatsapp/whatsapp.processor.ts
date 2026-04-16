@@ -283,7 +283,36 @@ export class WhatsappProcessor {
           },
         });
 
-        // 8. Enviar Vía WhatsApp Meta API
+        // 8. Enviar fotos de productos (si la IA las solicitó)
+        if (aiResponse.productImages && aiResponse.productImages.length > 0) {
+          const images = aiResponse.productImages;
+          const chunkSize = 5;
+
+          for (let i = 0; i < images.length; i += chunkSize) {
+            const chunk = images.slice(i, i + chunkSize);
+            const results = await Promise.allSettled(
+              chunk.map((img) =>
+                this.metaApiService.sendImageMessage(
+                  tenantId,
+                  phone_number_id,
+                  from,
+                  img.url,
+                  img.caption,
+                ),
+              ),
+            );
+
+            results.forEach((result, index) => {
+              if (result.status === 'rejected') {
+                this.logger.error(
+                  `[Tenant: ${tenantId}] Error enviando imagen ${chunk[index].url} a ${from}: ${result.reason}`,
+                );
+              }
+            });
+          }
+        }
+
+        // 9. Enviar Vía WhatsApp Meta API (El texto de respuesta DEBE ir al final)
         if (aiResponse.checkoutUrl) {
           // Limpiar el texto de cualquier URL para evitar redundancia con el botón CTA
           const cleanText = aiResponse.text
@@ -307,19 +336,6 @@ export class WhatsappProcessor {
             from,
             aiResponse.text,
           );
-        }
-
-        // 9. Enviar fotos de productos (si la IA las solicitó)
-        if (aiResponse.productImages && aiResponse.productImages.length > 0) {
-          for (const img of aiResponse.productImages) {
-            await this.metaApiService.sendImageMessage(
-              tenantId,
-              phone_number_id,
-              from,
-              img.url,
-              img.caption,
-            );
-          }
         }
       });
     } catch (error) {

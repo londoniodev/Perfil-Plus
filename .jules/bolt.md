@@ -8,3 +8,6 @@
 ## 2026-03-27 - Product tenant query indexing
 **Learning:** Frequent queries that filter by `tenantId` AND multiple boolean flags (like `published` and `isAvailable`) on the `Product` table can cause full-table scans per tenant or slow sorts.
 **Action:** Always add a composite index like `@@index([tenantId, flag1, flag2])` (e.g., `@@index([tenantId, published, isAvailable])`) on widely queried models to help the database engine immediately pinpoint the exact subset of records.
+## 2026-03-27 - Preventing Deadlocks in Parallel Updates
+ **Learning:** When executing multiple update operations inside a Prisma transaction via `Promise.all`, disordered operations on the same table can trigger deadlocks due to conflicting row locks.
+ **Action:** Always sort the input array alphanumerically by its ID before iterating/mapping and passing to `Promise.all` to ensure deterministic locking order.

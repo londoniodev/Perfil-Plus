@@ -1,4 +1,5 @@
-import { TenantFeature, AVAILABLE_FEATURES } from "@alvarosky/types";
+import { AVAILABLE_FEATURES } from "@alvarosky/types";
+import type { TenantFeature } from "@alvarosky/types";
 
 /**
  * Extrae y parsea limpiamente los módulos (features) activos del Tenant

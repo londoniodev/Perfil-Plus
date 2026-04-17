@@ -283,7 +283,26 @@ export class WhatsappProcessor {
           },
         });
 
-        // 8. Enviar Vía WhatsApp Meta API
+        // 8. Enviar fotos de productos primero (si la IA las solicitó)
+        if (aiResponse.productImages && aiResponse.productImages.length > 0) {
+          const CHUNK_SIZE = 5;
+          for (let i = 0; i < aiResponse.productImages.length; i += CHUNK_SIZE) {
+            const chunk = aiResponse.productImages.slice(i, i + CHUNK_SIZE);
+            await Promise.allSettled(
+              chunk.map((img) =>
+                this.metaApiService.sendImageMessage(
+                  tenantId,
+                  phone_number_id,
+                  from,
+                  img.url,
+                  img.caption,
+                ),
+              ),
+            );
+          }
+        }
+
+        // 9. Enviar Vía WhatsApp Meta API el mensaje de texto/CTA después de las imágenes
         if (aiResponse.checkoutUrl) {
           // Limpiar el texto de cualquier URL para evitar redundancia con el botón CTA
           const cleanText = aiResponse.text
@@ -307,19 +326,6 @@ export class WhatsappProcessor {
             from,
             aiResponse.text,
           );
-        }
-
-        // 9. Enviar fotos de productos (si la IA las solicitó)
-        if (aiResponse.productImages && aiResponse.productImages.length > 0) {
-          for (const img of aiResponse.productImages) {
-            await this.metaApiService.sendImageMessage(
-              tenantId,
-              phone_number_id,
-              from,
-              img.url,
-              img.caption,
-            );
-          }
         }
       });
     } catch (error) {

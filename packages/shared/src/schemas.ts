@@ -10,11 +10,12 @@ export const UserSchema = z.object({
 });
 
 export const LoginSchema = z.object({
-    email: z.string().email(),
+    email: z.string().min(1),
     password: z.string().min(6),
 });
 
 export const RegisterSchema = LoginSchema.extend({
+    email: z.string().email(),
     name: z.string().min(2),
 });
 

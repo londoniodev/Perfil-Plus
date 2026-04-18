@@ -174,12 +174,12 @@ function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Usuario o Email</FormLabel>
                   <FormControl>
                     <InputWithIcon
                       icon={<Mail className="h-5 w-5" />}
-                      type="email"
-                      placeholder="admin@example.com"
+                      type="text"
+                      placeholder="usuario o admin@ejemplo.com"
                       className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-0"
                       {...field}
                     />

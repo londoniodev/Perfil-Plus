@@ -15,7 +15,7 @@ import {
     CardTitle,
     useToast
 } from "@alvarosky/ui"
-import { RefreshCw, MapPin, Truck, CheckCircle } from "lucide-react"
+import { RefreshCw, MapPin, Truck, CheckCircle, CreditCard } from "lucide-react"
 import { AssignDriverModal } from "@/components/admin/orders/AssignDriverModal"
 import { DriverActiveRoute } from "@/components/admin/orders/DriverActiveRoute"
 

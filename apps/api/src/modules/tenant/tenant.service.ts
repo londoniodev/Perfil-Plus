@@ -533,7 +533,17 @@ export class TenantService {
     return resolvedTenant;
   }
 
-  async updateTenantBranding(tenantId: string, updateDto: UpdateBrandingDto) {
+  async updateTenantBranding(tenantIdOrSlug: string, updateDto: UpdateBrandingDto) {
+    const tenant = await this.prisma.unscoped.tenant.findFirst({
+      where: { OR: [{ id: tenantIdOrSlug }, { slug: tenantIdOrSlug }] },
+      select: { id: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant ${tenantIdOrSlug} no encontrado`);
+    }
+
+    const tenantId = tenant.id;
     const design = updateDto.design || {};
 
     const primaryColor = design.primary || design.primaryColor || '#09090b';
@@ -634,7 +644,18 @@ export class TenantService {
     }
   }
 
-  async updateBrandSettings(tenantId: string, dto: UpdateBrandSettingsDto) {
+  async updateBrandSettings(tenantIdOrSlug: string, dto: UpdateBrandSettingsDto) {
+    const tenant = await this.prisma.unscoped.tenant.findFirst({
+      where: { OR: [{ id: tenantIdOrSlug }, { slug: tenantIdOrSlug }] },
+      select: { id: true },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant ${tenantIdOrSlug} no encontrado`);
+    }
+
+    const tenantId = tenant.id;
+
     const updated = await this.prisma.brandSettings.upsert({
       where: { tenantId },
       create: {

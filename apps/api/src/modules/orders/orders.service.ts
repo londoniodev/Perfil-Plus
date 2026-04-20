@@ -204,8 +204,8 @@ export class OrdersService {
     userRole: Role,
     userId?: string,
   ) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, tenantId: this.getTenantId() },
     });
 
     if (!order) {
@@ -455,8 +455,8 @@ export class OrdersService {
   }
 
   async getOrderForTracking(orderId: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, tenantId: this.getTenantId() },
       select: {
         id: true,
         orderNumber: true,
@@ -473,8 +473,8 @@ export class OrdersService {
   }
 
   async findOne(id: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
+    const order = await this.prisma.order.findFirst({
+      where: { id, tenantId: this.getTenantId() },
       select: {
         id: true,
         orderNumber: true,
@@ -527,6 +527,8 @@ export class OrdersService {
       },
     };
 
+    const tenantId = this.getTenantId();
+
     if (activeOnly) {
       // Providers que requieren pago antes de aparecer en cocina
       const onlineProviders: PaymentProvider[] = ['BOLD', 'MERCADO_PAGO'];
@@ -551,7 +553,7 @@ export class OrdersService {
         await Promise.all([
           // Órdenes activas (ya confirmadas / en proceso)
           this.prisma.order.findMany({
-            where: { status: { in: activeStatuses } },
+            where: { tenantId, status: { in: activeStatuses } },
             include: fullInclude,
             orderBy: { createdAt: 'desc' },
           }),
@@ -559,6 +561,7 @@ export class OrdersService {
           // (ej: efectivo, transferencia → sí se muestran para que el operador las acepte)
           this.prisma.order.findMany({
             where: {
+              tenantId,
               status: 'PENDING',
               OR: [
                 { paymentProvider: { notIn: onlineProviders } },
@@ -569,7 +572,7 @@ export class OrdersService {
             orderBy: { createdAt: 'desc' },
           }),
           this.prisma.order.findMany({
-            where: { status: { in: completedStatuses } },
+            where: { tenantId, status: { in: completedStatuses } },
             include: fullInclude,
             orderBy: { createdAt: 'desc' },
             take,
@@ -583,7 +586,7 @@ export class OrdersService {
     }
 
     return await this.prisma.order.findMany({
-      where: status ? { status } : undefined,
+      where: status ? { status, tenantId } : { tenantId },
       include: fullInclude,
       orderBy: { createdAt: 'desc' },
       take,
@@ -646,8 +649,8 @@ export class OrdersService {
 
   async createPayment(orderId: string, dto: CreatePaymentDto) {
     return await this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
+      const order = await tx.order.findFirst({
+        where: { id: orderId, tenantId: this.getTenantId() },
         include: { items: true },
       });
 
@@ -745,7 +748,7 @@ export class OrdersService {
 
   async assignDriver(orderId: string, driverId: string, userRole: Role) {
     return await this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({ where: { id: orderId } });
+      const order = await tx.order.findFirst({ where: { id: orderId, tenantId: this.getTenantId() } });
 
       if (!order) throw new NotFoundException('Orden no encontrada');
       if (order.orderType !== 'DELIVERY') {
@@ -838,7 +841,7 @@ export class OrdersService {
 
   async getDriverOrders(driverId: string) {
     return this.prisma.order.findMany({
-      where: { driverId, status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
+      where: { driverId, tenantId: this.getTenantId(), status: { in: ['ASSIGNED', 'IN_TRANSIT'] } },
       include: {
         items: {
           include: {
@@ -852,8 +855,8 @@ export class OrdersService {
   }
 
   async getDriverOrdersByUserId(userId: string) {
-    const driver = await this.prisma.deliveryDriver.findUnique({
-      where: { userId },
+    const driver = await this.prisma.deliveryDriver.findFirst({
+      where: { userId, tenantId: this.getTenantId() },
     });
 
     if (!driver)

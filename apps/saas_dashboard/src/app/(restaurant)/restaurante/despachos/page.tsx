@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Order, OrderStatus } from "@/types/restaurant"
 import { getAdminOrders, updateOrderStatus } from "@/lib/api"
 import { useOrderEvents, OrderEvent } from "@/hooks/use-order-events"
@@ -30,7 +30,7 @@ function DispatchCard({ order, onStatusChange }: { order: Order; onStatusChange:
             <CardHeader className="p-4 pb-2">
                 <div className="flex justify-between items-start">
                     <div>
-                        <CardTitle className="text-base font-bold">#{order.orderNumber.split('-').pop()}</CardTitle>
+                        <CardTitle className="text-base font-bold">#{order.orderNumber?.split('-').pop() || 'N/A'}</CardTitle>
                         <p className="text-xs text-muted-foreground">
                             {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -95,6 +95,9 @@ export default function DespachosBoard() {
     const [loading, setLoading] = useState(true)
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
+    const toastRef = useRef(toast)
+    useEffect(() => { toastRef.current = toast }, [toast])
+
     const fetchOrders = useCallback(async () => {
         try {
             const data = await getAdminOrders(undefined, true)
@@ -108,15 +111,15 @@ export default function DespachosBoard() {
             setLastUpdated(new Date())
         } catch (error) {
             console.error("Failed to fetch orders:", error)
-            toast.error("Error", "No se pudieron cargar los despachos.")
+            toastRef.current.error("Error", "No se pudieron cargar los despachos.")
         } finally {
             setLoading(false)
         }
-    }, [toast]);
+    }, []);
 
     useEffect(() => {
         fetchOrders()
-    }, [fetchOrders])
+    }, []) // Solo al montar
 
     useOrderEvents(
         useCallback(

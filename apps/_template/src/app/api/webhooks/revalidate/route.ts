@@ -31,8 +31,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // @ts-expect-error - Next.js types locally require 2 arguments, but runtime expects 1
-    revalidateTag(tag);
+    // En Next.js 15, revalidateTag requiere un segundo argumento "max" o usar updateTag
+    // @ts-expect-error
+    revalidateTag(tag, "max");
 
     return NextResponse.json(
       { revalidated: true, now: Date.now(), tag },

@@ -121,6 +121,7 @@ export default async function MarketingLayout({
                 />
             }
         >
+            {/* DEBUG_LINKS: {JSON.stringify(headerLinksFromDb)} */}
             {children}
         </NavigationWrapper>
     );

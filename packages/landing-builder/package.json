@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.964.0",
+    "@types/pg": "^8.16.0",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "autoprefixer": "^10.4.20",
@@ -19,6 +20,7 @@
     "dotenv": "^16.5.0",
     "jsdom": "^26.1.0",
     "mime-types": "^2.1.35",
+    "pg": "^8.20.0",
     "postcss": "^8.4.49",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17"

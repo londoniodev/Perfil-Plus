@@ -2,6 +2,8 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { lookup as mimeTypeLookup } from "mime-types";
+import pg from 'pg';
+const { Client } = pg;
 
 // ─────────────────────────────────────────────
 //  Types
@@ -11,6 +13,7 @@ interface UploaderConfig {
   tenantSlug: string;
   landingSlug: string;
   domain?: string; // Opcional: Dominio del tenant para revalidación automática
+  label?: string;  // Opcional: Etiqueta para el menú en la base de datos
 }
 
 interface UploadResult {
@@ -97,6 +100,70 @@ function mutateBodyForProduction(
 
   log("🔗", `Mutated asset paths → ${cdnBase}`);
   return mutated;
+}
+
+// ─────────────────────────────────────────────
+//  Menu Sync (Database)
+// ─────────────────────────────────────────────
+
+async function syncMenu(tenantSlug: string, landingSlug: string, label?: string): Promise<any> {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    log("⚠️", "Menu sync skipped: DATABASE_URL not set in environment.");
+    return null;
+  }
+
+  const client = new Client({ connectionString: databaseUrl });
+  let tenant = null;
+  try {
+    await client.connect();
+    
+    // 1. Find Tenant
+    const tenantRes = await client.query('SELECT id, features, domain FROM "Tenant" WHERE slug = $1', [tenantSlug]);
+    if (tenantRes.rows.length === 0) {
+      log("⚠️", `Tenant ${tenantSlug} not found in DB. Menu sync skipped.`);
+      return null;
+    }
+    tenant = tenantRes.rows[0];
+
+    // 2. Ensure LANDING feature
+    if (!tenant.features.includes('LANDING')) {
+      log("➕", "Activating LANDING feature for tenant...");
+      await client.query('UPDATE "Tenant" SET features = $1 WHERE id = $2', [[...tenant.features, 'LANDING'], tenant.id]);
+    }
+
+    // 3. Get current menu
+    const settingRes = await client.query('SELECT value FROM "SystemSetting" WHERE "tenantId" = $1 AND key = $2', [tenant.id, 'menu']);
+    const menuData = settingRes.rows.length > 0 ? settingRes.rows[0].value : {};
+    const currentLinks = Array.isArray(menuData.headerLinks) ? menuData.headerLinks : [];
+
+    // 4. Upsert Link
+    const targetHref = `/${landingSlug}`;
+    const targetLabel = label || landingSlug.charAt(0).toUpperCase() + landingSlug.slice(1);
+    
+    let updatedLinks = [...currentLinks];
+    const existingIndex = updatedLinks.findIndex(l => l.href === targetHref);
+    
+    if (existingIndex >= 0) {
+      updatedLinks[existingIndex].label = targetLabel;
+    } else {
+      updatedLinks.push({ label: targetLabel, href: targetHref });
+    }
+
+    const newId = `id_${Math.random().toString(36).substr(2, 9)}`;
+    await client.query(`
+        INSERT INTO "SystemSetting" ("id", "tenantId", "key", "value", "isPublic", "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        ON CONFLICT ("tenantId", "key") DO UPDATE SET "value" = $4, "updatedAt" = NOW()
+    `, [newId, tenant.id, 'menu', JSON.stringify({ ...menuData, headerLinks: updatedLinks }), true]);
+
+    log("🚀", `Menu synchronized: "${targetLabel}" → ${targetHref}`);
+  } catch (err: any) {
+    log("❌", `DB Sync Error: ${err.message}`);
+  } finally {
+    await client.end();
+  }
+  return tenant;
 }
 
 // ─────────────────────────────────────────────
@@ -232,7 +299,10 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
 
   const publicUrl = `${s3Config.publicUrl}/${bucket}/${bodyKey}`;
 
-  // 8. Fire revalidation webhook
+  // 8. Sync Menu (New)
+  const tenant = await syncMenu(tenantSlug, landingSlug, config.label);
+
+  // 9. Fire revalidation webhook
   try {
     const secret = process.env.REVALIDATION_SECRET;
     // Prioridad: 1. Argumento --domain, 2. Env NEXT_PUBLIC_APP_URL, 3. Fallback perfil.plus
@@ -246,21 +316,46 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
       appUrl = appUrl.replace(/\/+$/, ""); // Quitar slash final
 
       const webhookUrl = `${appUrl}/api/webhooks/revalidate`;
-      log("🔄", `Firing revalidation webhook: ${webhookUrl}`);
       
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${secret}`,
-        },
-        body: JSON.stringify({ tag: `landings-${tenantSlug}` }),
-      });
+      // Tags a revalidar: la landing específica, el branding del tenant (con ID), y la resolución del edge proxy (con dominio)
+      // La API Next.js usa tenantId (CUID) para el branding, y el dominio para la resolución del middleware.
+      const tags = [
+        `landings-${tenantSlug}`
+      ];
 
-      if (!response.ok) {
-        log("⚠️", `Upload succeeded, but cache revalidation failed (${response.status}). The old version might still be served.`);
-      } else {
-        log("⚡", `Cache revalidated successfully for tag: landings-${tenantSlug}`);
+      if (tenant) {
+        tags.push(`tenant-branding-${tenant.id}`);
+        tags.push(`tenant-brand-${tenant.id}`);
+        tags.push(`tenant-${tenant.id}-branding`);
+      }
+
+      // Opcionalmente agregar el dominio de revalidación del middleware si se conoce
+      if (tenant.domain) {
+         tags.push(`tenant-resolve-${tenant.domain}`);
+         if (tenant.domain.startsWith('www.')) {
+             tags.push(`tenant-resolve-${tenant.domain.substring(4)}`);
+         } else {
+             tags.push(`tenant-resolve-www.${tenant.domain}`);
+         }
+      }
+
+      for (const tag of tags) {
+        log("🔄", `Firing revalidation webhook for tag: ${tag}`);
+        
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${secret}`,
+          },
+          body: JSON.stringify({ tag }),
+        });
+
+        if (!response.ok) {
+          log("⚠️", `Revalidation failed for tag ${tag} (${response.status}).`);
+        } else {
+          log("⚡", `Cache revalidated successfully: ${tag}`);
+        }
       }
     }
   } catch (error) {

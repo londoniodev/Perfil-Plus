@@ -34,6 +34,7 @@ function printHelp(): void {
 ║  Options (optional):                                     ║
 ║    --domain, -d      Target domain for revalidation      ║
 ║                      (example: perfil.plus)              ║
+║    --label, -b       Menu label (e.g. "Mi Historia")     ║
 ║                                                          ║
 ║  Source:                                                 ║
 ║    Reads from .local-landings/<tenant>/<landing>/         ║
@@ -72,6 +73,7 @@ async function main(): Promise<void> {
   const tenantSlug = parseArg(args, ["--tenant", "-t"]);
   const landingSlug = parseArg(args, ["--landing", "-l"]);
   const domain = parseArg(args, ["--domain", "-d"]);
+  const label = parseArg(args, ["--label", "-b"]);
 
   if (!tenantSlug) {
     console.error("❌ Error: --tenant (-t) is required.");
@@ -91,7 +93,7 @@ async function main(): Promise<void> {
   console.log("");
 
   try {
-    const result = await uploadLanding({ tenantSlug, landingSlug, domain });
+    const result = await uploadLanding({ tenantSlug, landingSlug, domain, label });
 
     console.log("");
     console.log(`🌐 Landing live at: ${result.publicUrl}`);

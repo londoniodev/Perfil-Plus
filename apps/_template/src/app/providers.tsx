@@ -96,6 +96,7 @@ export function AppProviders({
     design,
     primaryColor,
     activePaymentProvider = 'NONE',
+    defaultTheme,
 }: {
     children: React.ReactNode;
     tenantId: string;

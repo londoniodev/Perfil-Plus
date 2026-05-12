@@ -233,20 +233,36 @@ export default function LandingRenderer({
               transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
             }
             
-            /* Efecto Granular Premium (Background Only) */
+            /* Efecto Granular Animado y Fino */
             .grain-overlay {
               position: relative;
               background-color: #121212;
+              overflow: hidden;
             }
             .grain-overlay::before {
               content: "";
               position: absolute;
-              inset: 0;
+              inset: -200%; /* Más grande para permitir la animación de movimiento */
               z-index: 0;
               pointer-events: none;
-              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-              opacity: 0.08; /* Un poco más fuerte ya que ahora está detrás del contenido */
+              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.98' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+              opacity: 0.06;
+              animation: grain-dance 0.8s steps(10) infinite;
             }
+
+            @keyframes grain-dance {
+              0%, 100% { transform:translate(0, 0); }
+              10% { transform:translate(-1%, -2%); }
+              20% { transform:translate(-2%, 1%); }
+              30% { transform:translate(1%, -1%); }
+              40% { transform:translate(-1%, 2%); }
+              50% { transform:translate(-2%, -1%); }
+              60% { transform:translate(2%, 1%); }
+              70% { transform:translate(1%, 2%); }
+              80% { transform:translate(-1%, -2%); }
+              90% { transform:translate(2%, -1%); }
+            }
+
             .landing-content {
               position: relative;
               z-index: 1;

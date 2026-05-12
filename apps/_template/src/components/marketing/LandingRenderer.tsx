@@ -182,17 +182,25 @@ export default function LandingRenderer({
               transform: translate(0) scale(1) !important;
             }
 
+            .reveal-container {
+              background: #121212;
+            }
+      
+            /* Gesco Design System Fallbacks */
+            .bg-canvas { background-color: #121212 !important; }
+            .bg-lifted { background-color: #1a1a1a !important; }
+            .text-ink { color: #f0f0f0 !important; }
+            .bg-signal { background-color: #6a0004 !important; }
+            
             /* Efecto Granular Premium */
             .grain-overlay::after {
               content: "";
               position: fixed;
               inset: 0;
-              width: 100%;
-              height: 100%;
-              pointer-events: none;
               z-index: 9999;
+              pointer-events: none;
+              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
               opacity: 0.04;
-              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
             }
           `,
         }}

@@ -105,11 +105,6 @@ export default function LandingRenderer({
       const revealElements = containerRef.current?.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
       revealElements?.forEach((el) => {
         observer.observe(el);
-        // Force check for elements already in viewport
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-           el.classList.add("visible");
-        }
       });
     }, 100);
 
@@ -187,10 +182,19 @@ export default function LandingRenderer({
             }
       
             /* Gesco Design System Fallbacks */
-            .bg-canvas { background-color: #121212 !important; }
-            .bg-lifted { background-color: #1a1a1a !important; }
-            .text-ink { color: #f0f0f0 !important; }
+            .bg-canvas { background-color: #141414 !important; }
+            .bg-lifted { background-color: #1f1f1f !important; }
+            .text-ink { color: #f5f5f5 !important; }
             .bg-signal { background-color: #6a0004 !important; }
+            
+            /* Enhanced Glassmorphism Box */
+            .glass-box {
+              background-color: rgba(106, 0, 4, 0.85) !important;
+              backdrop-filter: blur(40px) saturate(150%) !important;
+              -webkit-backdrop-filter: blur(40px) saturate(150%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.15) !important;
+              box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7) !important;
+            }
             
             /* Efecto Granular Premium */
             .grain-overlay::after {
@@ -200,7 +204,7 @@ export default function LandingRenderer({
               z-index: 9999;
               pointer-events: none;
               background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-              opacity: 0.04;
+              opacity: 0.05;
             }
           `,
         }}

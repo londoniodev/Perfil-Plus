@@ -256,7 +256,7 @@ export default async function MarketingHubPage({ params }: Props) {
     //    Esto elimina el FOUC (Flash of Unstyled Content) porque el CSS
     //    viaja junto con el HTML inicial, sin esperar a useEffect del cliente.
     const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || undefined;
-    const primaryColor = design?.brandSettings?.primaryColor || "#3b82f6";
+    const primaryColor = design?.brandSettings?.primaryColor || design?.primary || "#3b82f6";
 
     return (
       <>

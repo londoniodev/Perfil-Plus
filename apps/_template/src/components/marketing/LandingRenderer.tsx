@@ -187,7 +187,7 @@ export default function LandingRenderer({
       {/* ── Contenido de la Landing ── */}
       <div
         ref={containerRef}
-        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay"
+        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay landing-content"
         style={{
           opacity: isReady ? 1 : 0,
           background: "#121212",
@@ -232,15 +232,23 @@ export default function LandingRenderer({
               transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
             }
             
-            /* Efecto Granular Premium */
-            .grain-overlay::after {
+            /* Efecto Granular Premium (Background Only) */
+            .grain-overlay {
+              position: relative;
+              background-color: #121212;
+            }
+            .grain-overlay::before {
               content: "";
-              position: fixed;
+              position: absolute;
               inset: 0;
-              z-index: 9999;
+              z-index: 0;
               pointer-events: none;
               background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-              opacity: 0.05;
+              opacity: 0.08; /* Un poco más fuerte ya que ahora está detrás del contenido */
+            }
+            .landing-content {
+              position: relative;
+              z-index: 1;
             }
           `,
         }}

@@ -37,8 +37,8 @@ export function Header({
             pathname={pathname}
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
-            transparentIsDark={false}
-            variant="pill"
+            transparentIsDark={isHome}
+            forceDark={true}
         />
     );
 }

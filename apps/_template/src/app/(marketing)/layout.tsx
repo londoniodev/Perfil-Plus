@@ -96,7 +96,7 @@ export default async function MarketingLayout({
     
     // Evitar duplicar 'Inicio' si los customLinks ya traen un Inicio o un /home
     const filteredNavLinks = navLinks.filter(navLink => 
-        !customLinks.some(customLink => 
+        !customLinks.some((customLink: any) => 
             customLink.href === navLink.href || 
             customLink.label.toLowerCase() === navLink.label.toLowerCase() ||
             (navLink.label.toLowerCase() === 'inicio' && customLink.href === '/home')
@@ -105,11 +105,11 @@ export default async function MarketingLayout({
 
     // Eliminamos duplicados de forma agresiva por etiqueta (case-insensitive) y por href
     const allLinks = [...filteredNavLinks, ...customLinks];
-    const finalLinks = allLinks.filter((link, index, self) => {
-        const isDuplicateLabel = index !== self.findIndex((t) => 
+    const finalLinks = allLinks.filter((link: any, index: number, self: any[]) => {
+        const isDuplicateLabel = index !== self.findIndex((t: any) => 
             t.label.toLowerCase().trim() === link.label.toLowerCase().trim()
         );
-        const isDuplicateHref = index !== self.findIndex((t) => {
+        const isDuplicateHref = index !== self.findIndex((t: any) => {
             const h1 = t.href === '/' || t.href === '' ? '/home' : t.href;
             const h2 = link.href === '/' || link.href === '' ? '/home' : link.href;
             return h1 === h2;

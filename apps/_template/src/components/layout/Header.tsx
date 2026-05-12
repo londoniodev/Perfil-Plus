@@ -28,6 +28,15 @@ export function Header({
 }: HeaderProps) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     const isHome = pathname === "/";
     const finalLogo = logo || siteConfig.branding.logo;
@@ -41,9 +50,13 @@ export function Header({
             pathname={pathname}
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
-            transparentIsDark={isHome || forceDark}
+            transparentIsDark={true} // Siempre letras blancas al ser tema oscuro
             forceDark={forceDark}
-            className=""
+            className={`transition-all duration-700 ease-in-out ${
+                isScrolled 
+                ? "opacity-100 translate-y-0" 
+                : "opacity-0 -translate-y-10 pointer-events-none"
+            }`}
         />
     );
 }

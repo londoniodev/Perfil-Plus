@@ -168,6 +168,8 @@ export default async function MarketingLayout({
             showAuthButtons={hasDashboardFeature}
             hideHeader={!hasLandingFeature && isHomePage}
             hideFooter={!hasLandingFeature && isHomePage}
+            primaryColor={design?.brandSettings?.primaryColor || design?.primary}
+            forceDark={true}
             footer={
                 <Footer
                     logo={logoUrl}

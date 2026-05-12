@@ -16,6 +16,8 @@ interface NavigationWrapperProps {
     links?: NavLink[];
     hideHeader?: boolean;
     hideFooter?: boolean;
+    primaryColor?: string;
+    forceDark?: boolean;
 }
 
 export function NavigationWrapper({ 
@@ -26,6 +28,8 @@ export function NavigationWrapper({
     links,
     hideHeader = false,
     hideFooter = false,
+    primaryColor,
+    forceDark = false,
 }: NavigationWrapperProps) {
     const pathname = usePathname();
 
@@ -57,6 +61,8 @@ export function NavigationWrapper({
                     showAuthButtons={showAuthButtons} 
                     logo={logo} 
                     links={links}
+                    primaryColor={primaryColor}
+                    forceDark={forceDark}
                 />
             )}
             <main>{children}</main>

@@ -15,12 +15,16 @@ interface HeaderProps {
     logo?: string;
     links?: NavLink[];
     showAuthButtons?: boolean;
+    primaryColor?: string;
+    forceDark?: boolean;
 }
 
 export function Header({ 
     logo, 
     links = [], 
     showAuthButtons = true,
+    primaryColor,
+    forceDark,
 }: HeaderProps) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
@@ -37,8 +41,9 @@ export function Header({
             pathname={pathname}
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
-            transparentIsDark={isHome}
-            forceDark={true}
+            transparentIsDark={isHome || forceDark}
+            forceDark={forceDark}
+            className={forceDark ? "bg-[#6a0004]/90 backdrop-blur-2xl" : ""}
         />
     );
 }

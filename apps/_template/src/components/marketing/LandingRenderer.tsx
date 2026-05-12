@@ -222,13 +222,14 @@ export default function LandingRenderer({
               background: #121212;
             }
             
-            /* Enhanced Glassmorphism Box (Agnostic) */
+            /* Enhanced Glassmorphism Box (Reddish Tint) */
             .glass-box {
-              background-color: ${hexToRgba(primaryColor, 0.8)} !important;
-              backdrop-filter: blur(40px) saturate(150%) !important;
-              -webkit-backdrop-filter: blur(40px) saturate(150%) !important;
-              border: 1px solid rgba(255, 255, 255, 0.15) !important;
-              box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7), 0 0 40px ${hexToRgba(primaryColor, 0.2)} !important;
+              background-color: ${hexToRgba(primaryColor, 0.7)} !important;
+              background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%) !important;
+              backdrop-filter: blur(40px) saturate(200%) !important;
+              -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7), 0 0 50px ${hexToRgba(primaryColor, 0.3)} !important;
               transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
             }
             

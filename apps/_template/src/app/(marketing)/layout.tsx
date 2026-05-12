@@ -169,7 +169,7 @@ export default async function MarketingLayout({
             hideHeader={!hasLandingFeature && isHomePage}
             hideFooter={!hasLandingFeature && isHomePage}
             primaryColor={design?.brandSettings?.primaryColor || design?.primary}
-            forceDark={true}
+            forceDark={false}
             footer={
                 <Footer
                     logo={logoUrl}

@@ -43,7 +43,7 @@ export function Header({
             showAuthButtons={showAuthButtons}
             transparentIsDark={isHome || forceDark}
             forceDark={forceDark}
-            className={forceDark ? "bg-[#6a0004]/90 backdrop-blur-2xl" : ""}
+            className=""
         />
     );
 }

@@ -109,6 +109,7 @@ export function AppProviders({
     design: any;
     primaryColor: string;
     activePaymentProvider?: 'MERCADO_PAGO' | 'BOLD' | 'CASH' | 'NONE';
+    defaultTheme?: string;
 }) {
     return (
         <TenantProvider
@@ -127,7 +128,7 @@ export function AppProviders({
         >
             <ThemeProvider
                 attribute="class"
-                defaultTheme="light"
+                defaultTheme={defaultTheme || "light"}
                 enableSystem
             >
                 <BrandProvider settings={{ ...design, primary: primaryColor } as any}>

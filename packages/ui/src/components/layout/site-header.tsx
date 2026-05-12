@@ -69,7 +69,7 @@ export function SiteHeader({
     return (
         <header className={cn(
             "fixed top-0 left-0 w-full z-50 transition duration-300",
-            forceDark ? "lg:dark lg:bg-zinc-950 lg:border-b lg:border-white/10 py-3" : "",
+            forceDark ? "lg:dark lg:bg-primary/90 lg:backdrop-blur-2xl lg:border-b lg:border-white/10 py-3" : "",
             !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
             !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className
@@ -128,7 +128,7 @@ export function SiteHeader({
                 </Link>
 
                 {/* Desktop Nav (Col 2 on Desktop) */}
-                <nav className="flex-none px-4 lg:px-8 shrink-0 items-center justify-center gap-8" style={{ display: 'none' }} data-header-desktop>
+                <nav className="flex-none px-2 lg:px-4 shrink-0 items-center justify-center gap-5" style={{ display: 'none' }} data-header-desktop>
                     <DesktopNavLinks
                         links={links}
                         isLoggedIn={isAuthenticated}
@@ -218,7 +218,7 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
                     ) : (
                         <>
                             <Button asChild variant="ghost" size="sm" className={cn("hidden xl:inline-flex hover:text-accent", isScrolled ? "text-black" : "text-foreground")}>
-                                <Link href={registerUrl}>Registrarse</Link>
+                                <Link href={registerUrl}>Registro</Link>
                             </Button>
                             <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                                 <Link href={loginUrl}>

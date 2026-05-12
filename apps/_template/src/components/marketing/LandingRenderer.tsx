@@ -86,31 +86,35 @@ export default function LandingRenderer({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.remove("exit");
             entry.target.classList.add("visible");
             
             // Soporte para staggered children si existen
             const children = entry.target.querySelectorAll('.reveal-scale, .reveal, .reveal-left, .reveal-right');
             children.forEach((c, i) => {
-              (c as HTMLElement).style.transitionDelay = `${i * 0.1}s`;
+              (c as HTMLElement).style.transitionDelay = `${i * 0.15}s`;
+              c.classList.add("visible");
             });
-          } else {
-            // Opcional: animar hacia afuera
-            if (entry.target.classList.contains("visible")) {
-               entry.target.classList.remove("visible");
-               entry.target.classList.add("exit");
-            }
           }
         });
       },
-      { threshold: 0.05, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0.05, rootMargin: "0px 0px -50px 0px" }
     );
 
-    const revealElements = containerRef.current.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
-    revealElements.forEach((el) => observer.observe(el));
+    // Pequeño delay para asegurar que el DOM inyectado está listo para querySelector
+    const timer = setTimeout(() => {
+      const revealElements = containerRef.current?.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
+      revealElements?.forEach((el) => {
+        observer.observe(el);
+        // Force check for elements already in viewport
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+           el.classList.add("visible");
+        }
+      });
+    }, 100);
 
     return () => {
-      revealElements.forEach((el) => observer.unobserve(el));
+      clearTimeout(timer);
       observer.disconnect();
     };
   }, [html, isReady]);
@@ -157,13 +161,39 @@ export default function LandingRenderer({
         />
       </div>
 
-      {/* ── Keyframes para animaciones del loader ── */}
+      {/* ── Keyframes y Estilos Globales para Landings ── */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
             @keyframes shimmer { 0%, 100% { opacity: 0.3; transform: scaleX(0.5); } 50% { opacity: 1; transform: scaleX(1); } }
-            .reveal, .reveal-left, .reveal-right, .reveal-scale { visibility: hidden; }
-            .reveal.visible, .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible { visibility: visible; }
+            
+            /* Animaciones de Reveal al hacer Scroll */
+            .reveal, .reveal-left, .reveal-right, .reveal-scale { 
+              opacity: 0; 
+              will-change: transform, opacity;
+            }
+            .reveal { transform: translateY(30px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+            .reveal-left { transform: translateX(-40px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+            .reveal-right { transform: translateX(40px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+            .reveal-scale { transform: scale(0.94); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+
+            .reveal.visible, .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible {
+              opacity: 1 !important;
+              transform: translate(0) scale(1) !important;
+            }
+
+            /* Efecto Granular Premium */
+            .grain-overlay::after {
+              content: "";
+              position: fixed;
+              inset: 0;
+              width: 100%;
+              height: 100%;
+              pointer-events: none;
+              z-index: 9999;
+              opacity: 0.04;
+              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            }
           `,
         }}
       />
@@ -171,10 +201,11 @@ export default function LandingRenderer({
       {/* ── Contenido de la Landing ── */}
       <div
         ref={containerRef}
-        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0"
+        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay"
         style={{
           opacity: isReady ? 1 : 0,
-          transition: "opacity 0.4s ease-in",
+          background: "#121212",
+          transition: "opacity 0.5s ease-in",
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />

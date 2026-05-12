@@ -5,11 +5,11 @@
 
 $pages = @(
   @{ folder="home"; label="Inicio" },
-  @{ folder="quienes-somos"; label="Quiénes Somos" },
-  @{ folder="areas-de-practica"; label="Áreas de Práctica" },
-  @{ folder="modalidades-del-servicio"; label="Modalidades del Servicio" },
+  @{ folder="quienes-somos"; label="Nosotros" },
+  @{ folder="areas-de-practica"; label="Servicios" },
+  @{ folder="modalidades-del-servicio"; label="Modalidades" },
   @{ folder="contacto"; label="Contacto" },
-  @{ folder="nuestros-clientes"; label="Nuestros Clientes" }
+  @{ folder="nuestros-clientes"; label="Clientes" }
 )
 
 Write-Host "==========================================" -ForegroundColor Cyan

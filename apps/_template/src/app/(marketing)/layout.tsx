@@ -6,6 +6,42 @@ import { FEATURE_ROUTES } from "@alvarosky/types";
 import { headers } from "next/headers";
 import React from "react";
 
+// ── Encoding Helpers ──
+/**
+ * Corrige errores comunes de codificación (UTF-8 interpretado como Latin-1)
+ * que provocan que caracteres como 'é' se vean como 'Ã©'.
+ */
+function fixEncoding(str: string): string {
+    if (!str) return str;
+    try {
+        // Truco estándar para decodificar UTF-8 mal interpretado
+        return decodeURIComponent(escape(str));
+    } catch (e) {
+        // Si falla (ej: ya estaba bien o tiene caracteres inválidos), devolvemos original
+        return str;
+    }
+}
+
+/**
+ * Acorta nombres largos para optimizar el espacio en el header.
+ */
+function shortenLabel(label: string): string {
+    if (!label) return label;
+    const lower = label.toLowerCase().trim();
+    const map: Record<string, string> = {
+        'quiénes somos': 'Nosotros',
+        'quienes somos': 'Nosotros',
+        'áreas de práctica': 'Servicios',
+        'areas de practica': 'Servicios',
+        'nuestros servicios': 'Servicios',
+        'modalidades del servicio': 'Modalidades',
+        'nuestros clientes': 'Clientes',
+        'contáctenos': 'Contacto',
+        'contactenos': 'Contacto',
+    };
+    return map[lower] || label;
+}
+
 export default async function MarketingLayout({
     children,
 }: {
@@ -36,10 +72,10 @@ export default async function MarketingLayout({
 
     const headerLinksFromDb = design?.headerLinks || null;
     const footerLinks = design?.footerLinks || null;
-    const contactPhone = design?.contactPhone || null;
-    const contactEmail = design?.contactEmail || null;
-    const businessName = design?.name || null;
-    const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
+    const contactPhone = fixEncoding(design?.contactPhone || null);
+    const contactEmail = fixEncoding(design?.contactEmail || null);
+    const businessName = fixEncoding(design?.name || null);
+    const tenantTagline = fixEncoding(design?.brandSettings?.tagline || design?.tagline || null);
     const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
 
     const tenantFeaturesRaw = headersList.get('x-tenant-features');
@@ -115,6 +151,12 @@ export default async function MarketingLayout({
             return h1 === h2;
         });
         return !isDuplicateLabel && !isDuplicateHref;
+    }).map(link => {
+        const cleanLabel = fixEncoding(link.label);
+        return {
+            ...link,
+            label: shortenLabel(cleanLabel)
+        };
     });
 
     const isHomePage = headersList.get('x-is-home') === 'true';
@@ -129,7 +171,7 @@ export default async function MarketingLayout({
             footer={
                 <Footer
                     logo={logoUrl}
-                    footerLinks={footerLinks}
+                    footerLinks={footerLinks?.map((l: any) => ({ ...l, label: fixEncoding(l.label) }))}
                     businessName={businessName || undefined}
                     businessEmail={contactEmail || undefined}
                     businessPhone={contactPhone || undefined}

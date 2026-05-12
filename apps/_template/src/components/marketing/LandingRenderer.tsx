@@ -105,27 +105,39 @@ export default function LandingRenderer({
             entry.target.classList.add("visible");
             
             // Soporte para staggered children si existen
-            const children = entry.target.querySelectorAll('.reveal-scale, .reveal, .reveal-left, .reveal-right');
+            const children = entry.target.querySelectorAll('.reveal-scale, .reveal, .reveal-left, .reveal-right, .card-hover');
             children.forEach((c, i) => {
-              (c as HTMLElement).style.transitionDelay = `${i * 0.15}s`;
-              c.classList.add("visible");
+              (c as HTMLElement).style.transitionDelay = `${(i + 1) * 0.1}s`;
+              setTimeout(() => c.classList.add("visible"), 50);
             });
+            
+            // Una vez visible, dejamos de observar para ahorrar recursos
+            observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.05, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0.01, rootMargin: "0px 0px -20px 0px" }
     );
 
-    // Pequeño delay para asegurar que el DOM inyectado está listo para querySelector
-    const timer = setTimeout(() => {
+    // Re-escaneo más robusto del DOM inyectado
+    const scanAndObserve = () => {
       const revealElements = containerRef.current?.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
       revealElements?.forEach((el) => {
+        // Aseguramos estado inicial si por algo se coló un 'visible'
+        if (el.getBoundingClientRect().top > window.innerHeight) {
+           el.classList.remove("visible");
+        }
         observer.observe(el);
       });
-    }, 100);
+    };
+
+    // Intentar observar en varios pasos para asegurar captura del DOM dinámico
+    const timer1 = setTimeout(scanAndObserve, 100);
+    const timer2 = setTimeout(scanAndObserve, 500);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
       observer.disconnect();
     };
   }, [html, isReady]);
@@ -172,7 +184,19 @@ export default function LandingRenderer({
         />
       </div>
 
-      {/* ── Keyframes y Estilos Globales para Landings ── */}
+      {/* ── Contenido de la Landing ── */}
+      <div
+        ref={containerRef}
+        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay"
+        style={{
+          opacity: isReady ? 1 : 0,
+          background: "#121212",
+          transition: "opacity 0.5s ease-in",
+        }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+
+      {/* ── Keyframes y Estilos Globales para Landings (Al final para mayor prioridad) ── */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -182,11 +206,12 @@ export default function LandingRenderer({
             .reveal, .reveal-left, .reveal-right, .reveal-scale { 
               opacity: 0; 
               will-change: transform, opacity;
+              transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
             }
-            .reveal { transform: translateY(30px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
-            .reveal-left { transform: translateX(-40px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
-            .reveal-right { transform: translateX(40px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
-            .reveal-scale { transform: scale(0.94); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+            .reveal { transform: translateY(60px); }
+            .reveal-left { transform: translateX(-60px); }
+            .reveal-right { transform: translateX(60px); }
+            .reveal-scale { transform: scale(0.92); }
 
             .reveal.visible, .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible {
               opacity: 1 !important;
@@ -204,6 +229,7 @@ export default function LandingRenderer({
               -webkit-backdrop-filter: blur(40px) saturate(150%) !important;
               border: 1px solid rgba(255, 255, 255, 0.15) !important;
               box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7) !important;
+              transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
             }
             
             /* Efecto Granular Premium */
@@ -218,18 +244,6 @@ export default function LandingRenderer({
             }
           `,
         }}
-      />
-
-      {/* ── Contenido de la Landing ── */}
-      <div
-        ref={containerRef}
-        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay"
-        style={{
-          opacity: isReady ? 1 : 0,
-          background: "#121212",
-          transition: "opacity 0.5s ease-in",
-        }}
-        dangerouslySetInnerHTML={{ __html: html }}
       />
     </>
   );

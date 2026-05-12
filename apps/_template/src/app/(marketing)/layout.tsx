@@ -94,8 +94,17 @@ export default async function MarketingLayout({
     // Esto evita que aparezcan enlaces a páginas de S3 si el sitio web está desactivado.
     const customLinks = hasLandingFeature ? (headerLinksFromDb || []) : [];
     
+    // Evitar duplicar 'Inicio' si los customLinks ya traen un Inicio o un /home
+    const filteredNavLinks = navLinks.filter(navLink => 
+        !customLinks.some(customLink => 
+            customLink.href === navLink.href || 
+            customLink.label.toLowerCase() === navLink.label.toLowerCase() ||
+            (navLink.label.toLowerCase() === 'inicio' && customLink.href === '/home')
+        )
+    );
+
     // Eliminamos duplicados por href para evitar redundancia
-    const allLinks = [...navLinks, ...customLinks];
+    const allLinks = [...filteredNavLinks, ...customLinks];
     const finalLinks = allLinks.filter((link, index, self) => 
         index === self.findIndex((t) => t.href === link.href)
     );

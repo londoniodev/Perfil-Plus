@@ -35,6 +35,7 @@ export interface SiteHeaderProps {
     showAuthButtons?: boolean;
     transparentIsDark?: boolean;
     forceDark?: boolean;
+    variant?: "default" | "pill";
     className?: string;
 }
 
@@ -53,6 +54,7 @@ export function SiteHeader({
     showAuthButtons = true,
     transparentIsDark = false,
     forceDark = false,
+    variant = "default",
     className,
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,14 +66,15 @@ export function SiteHeader({
         setMounted(true);
     }, []);
 
-    const isWhiteText = (forceDark) || (!isScrolled && transparentIsDark);
+    const isWhiteText = variant !== "pill" && (forceDark || (!isScrolled && transparentIsDark));
 
     return (
         <header className={cn(
-            "fixed top-0 left-0 w-full z-50 transition duration-300",
-            forceDark ? "lg:dark lg:bg-zinc-950 lg:border-b lg:border-white/10 py-3" : "",
-            !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
-            !forceDark && !isScrolled ? "bg-transparent py-6" : "",
+            "fixed top-0 left-0 w-full z-50 transition-all duration-300",
+            variant === "pill" ? "pt-4 px-4 pointer-events-none" : "",
+            variant !== "pill" && forceDark ? "lg:dark lg:bg-zinc-950 lg:border-b lg:border-white/10 py-3" : "",
+            variant !== "pill" && !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
+            variant !== "pill" && !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className
         )}>
             {/* Critical: inline CSS ensures responsive visibility even if Tailwind CSS chunks are not fully loaded */}
@@ -83,7 +86,12 @@ export function SiteHeader({
                     [data-header-desktop] { display: flex !important; }
                 }
             `}} />
-            <div className="relative w-full px-4 md:px-8 flex items-center">
+            <div className={cn(
+                "relative w-full flex items-center mx-auto",
+                variant === "pill" 
+                    ? "max-w-6xl bg-white/95 backdrop-blur-md rounded-full shadow-[0px_4px_24px_0px_rgba(0,0,0,0.04)] px-6 py-2 md:py-3 pointer-events-auto border border-black/5" 
+                    : "px-4 md:px-8"
+            )}>
 
                 {/* Mobile Trigger (Left, Col 1 on Mobile) */}
                 <div className="flex-1 flex items-center justify-start" style={{ display: 'flex' }} data-header-mobile>

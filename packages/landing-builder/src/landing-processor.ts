@@ -590,7 +590,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   
   // Extract inline scripts to preserve animations
   const inlineScripts: string[] = [];
-  $("body script").each((_i, el) => {
+  $("script").each((_i, el) => {
     if (!$(el).attr("src")) {
       inlineScripts.push($.html(el));
     }

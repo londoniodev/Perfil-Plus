@@ -86,14 +86,27 @@ export default function LandingRenderer({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("active");
+            entry.target.classList.remove("exit");
+            entry.target.classList.add("visible");
+            
+            // Soporte para staggered children si existen
+            const children = entry.target.querySelectorAll('.reveal-scale, .reveal, .reveal-left, .reveal-right');
+            children.forEach((c, i) => {
+              (c as HTMLElement).style.transitionDelay = `${i * 0.1}s`;
+            });
+          } else {
+            // Opcional: animar hacia afuera
+            if (entry.target.classList.contains("visible")) {
+               entry.target.classList.remove("visible");
+               entry.target.classList.add("exit");
+            }
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.05, rootMargin: "0px 0px -60px 0px" }
     );
 
-    const revealElements = containerRef.current.querySelectorAll(".reveal");
+    const revealElements = containerRef.current.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
     revealElements.forEach((el) => observer.observe(el));
 
     return () => {

@@ -103,11 +103,19 @@ export default async function MarketingLayout({
         )
     );
 
-    // Eliminamos duplicados por href para evitar redundancia
+    // Eliminamos duplicados de forma agresiva por etiqueta (case-insensitive) y por href
     const allLinks = [...filteredNavLinks, ...customLinks];
-    const finalLinks = allLinks.filter((link, index, self) => 
-        index === self.findIndex((t) => t.href === link.href)
-    );
+    const finalLinks = allLinks.filter((link, index, self) => {
+        const isDuplicateLabel = index !== self.findIndex((t) => 
+            t.label.toLowerCase().trim() === link.label.toLowerCase().trim()
+        );
+        const isDuplicateHref = index !== self.findIndex((t) => {
+            const h1 = t.href === '/' || t.href === '' ? '/home' : t.href;
+            const h2 = link.href === '/' || link.href === '' ? '/home' : link.href;
+            return h1 === h2;
+        });
+        return !isDuplicateLabel && !isDuplicateHref;
+    });
 
     const isHomePage = headersList.get('x-is-home') === 'true';
 

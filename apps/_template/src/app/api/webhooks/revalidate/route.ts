@@ -31,9 +31,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // En Next.js 15, revalidateTag requiere un segundo argumento "max" o usar updateTag
-    // @ts-expect-error
-    revalidateTag(tag, "max");
+    // Revalidar el tag
+    revalidateTag(tag);
 
     return NextResponse.json(
       { revalidated: true, now: Date.now(), tag },

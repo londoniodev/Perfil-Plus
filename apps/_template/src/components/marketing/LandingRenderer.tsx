@@ -126,10 +126,10 @@ export default function LandingRenderer({
           position: "fixed",
           inset: 0,
           zIndex: 9999,
-          background: `radial-gradient(ellipse at center, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.05) 50%, #000 100%)`,
+          background: "#000",
           opacity: isReady ? 0 : 1,
           pointerEvents: isReady ? "none" : "auto",
-          transition: "opacity 0.5s ease-out",
+          transition: "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {logoUrl ? (
@@ -139,13 +139,19 @@ export default function LandingRenderer({
             className="w-auto h-20 max-w-[280px] md:h-24 md:max-w-[340px] object-contain animate-pulse"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <div 
+            className="w-12 h-12 rounded-full border-4 animate-spin" 
+            style={{ 
+              borderColor: `${primaryColor}20`, 
+              borderTopColor: primaryColor 
+            }}
+          />
         )}
         
         <div
           className="w-10 h-1 rounded flex overflow-hidden opacity-80"
           style={{
-            background: `linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)`,
+            background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)`,
             animation: "shimmer 1.5s ease-in-out infinite",
           }}
         />
@@ -156,6 +162,8 @@ export default function LandingRenderer({
         dangerouslySetInnerHTML={{
           __html: `
             @keyframes shimmer { 0%, 100% { opacity: 0.3; transform: scaleX(0.5); } 50% { opacity: 1; transform: scaleX(1); } }
+            .reveal, .reveal-left, .reveal-right, .reveal-scale { visibility: hidden; }
+            .reveal.visible, .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible { visibility: visible; }
           `,
         }}
       />

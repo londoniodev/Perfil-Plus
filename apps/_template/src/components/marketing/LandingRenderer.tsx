@@ -222,45 +222,78 @@ export default function LandingRenderer({
               background: #121212;
             }
             
-            /* Enhanced Glassmorphism Box (Reddish Tint) */
-            .glass-box {
-              background-color: ${hexToRgba(primaryColor, 0.7)} !important;
-              background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%) !important;
-              backdrop-filter: blur(40px) saturate(200%) !important;
-              -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-              border: 1px solid rgba(255, 255, 255, 0.2) !important;
-              box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7), 0 0 50px ${hexToRgba(primaryColor, 0.3)} !important;
-              transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+            /* Reset Font to Poppins */
+            * {
+              font-family: 'Poppins', sans-serif !important;
             }
             
-            /* Efecto Granular Animado y Fino */
+            h1, h2, .font-serif {
+              font-family: 'Poppins', sans-serif !important;
+              font-weight: 700 !important;
+              letter-spacing: -0.03em !important;
+            }
+
+            /* Efecto Granular 'Arena Fina' con Animación Lenta (High Performance) */
             .grain-overlay {
               position: relative;
-              background-color: #121212;
+              background-color: #0d0d0d;
               overflow: hidden;
             }
             .grain-overlay::before {
               content: "";
               position: absolute;
-              inset: -200%; /* Más grande para permitir la animación de movimiento */
+              inset: -100px;
               z-index: 0;
               pointer-events: none;
-              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.98' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-              opacity: 0.06;
-              animation: grain-dance 0.8s steps(10) infinite;
+              background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+              opacity: 0.03;
+              will-change: transform;
+              animation: grain-slow-drift 40s linear infinite;
             }
 
-            @keyframes grain-dance {
-              0%, 100% { transform:translate(0, 0); }
-              10% { transform:translate(-1%, -2%); }
-              20% { transform:translate(-2%, 1%); }
-              30% { transform:translate(1%, -1%); }
-              40% { transform:translate(-1%, 2%); }
-              50% { transform:translate(-2%, -1%); }
-              60% { transform:translate(2%, 1%); }
-              70% { transform:translate(1%, 2%); }
-              80% { transform:translate(-1%, -2%); }
-              90% { transform:translate(2%, -1%); }
+            @keyframes grain-slow-drift {
+              0% { transform: translate(0, 0) scale(1); }
+              50% { transform: translate(-20px, -20px) scale(1.05); }
+              100% { transform: translate(0, 0) scale(1); }
+            }
+
+            /* Force White Header Text for Dark Theme */
+            header nav a, 
+            header .logo-text, 
+            header button,
+            header .nav-link {
+              color: white !important;
+            }
+            
+            header.scrolled {
+              backdrop-filter: blur(20px) saturate(180%) !important;
+              background-color: rgba(13, 13, 13, 0.8) !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Enhanced Glassmorphism Box (Pill Design) */
+            .glass-box {
+              background-color: ${hexToRgba(primaryColor, 0.75)} !important;
+              background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%) !important;
+              backdrop-filter: blur(40px) saturate(200%) !important;
+              -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 9999px !important; /* Force Pill shape */
+              padding-left: 3rem !important;
+              padding-right: 3rem !important;
+              box-shadow: 0 32px 64px -12px rgba(0, 0, 0, 0.7), 0 0 50px ${hexToRgba(primaryColor, 0.3)} !important;
+              transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out !important;
+            }
+
+            /* Applied Stadium Design to Section Dividers */
+            .section-divider {
+              border-radius: 9999px !important;
+              background: ${primaryColor} !important;
+              height: 4px !important;
+              width: 80px !important;
+              margin: 0 auto !important;
             }
 
             .landing-content {

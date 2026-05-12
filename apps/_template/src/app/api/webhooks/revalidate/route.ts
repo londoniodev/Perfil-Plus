@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Revalidar el tag
-    revalidateTag(tag);
+    // Revalidar el tag (Next.js 15 requiere segundo argumento)
+    revalidateTag(tag, "max" as any);
 
     return NextResponse.json(
       { revalidated: true, now: Date.now(), tag },

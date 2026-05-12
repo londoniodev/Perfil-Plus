@@ -52,7 +52,7 @@ export function Header({
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
             transparentIsDark={true} // Siempre letras blancas al ser tema oscuro
-            forceDark={forceDark}
+            forceDark={true} // Forzar texto blanco para contraste en tema oscuro
             className={`transition-all duration-700 ease-in-out ${
                 isScrolled 
                 ? "opacity-100 translate-y-0" 

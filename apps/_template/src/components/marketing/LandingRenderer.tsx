@@ -27,6 +27,22 @@ interface LandingRendererProps {
   primaryColor?: string;
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  let r = 0, g = 0, b = 0;
+  // Standardize hex
+  const cleanHex = hex.startsWith('#') ? hex : `#${hex}`;
+  if (cleanHex.length === 4) {
+    r = parseInt(cleanHex[1] + cleanHex[1], 16);
+    g = parseInt(cleanHex[2] + cleanHex[2], 16);
+    b = parseInt(cleanHex[3] + cleanHex[3], 16);
+  } else if (cleanHex.length === 7) {
+    r = parseInt(cleanHex.substring(1, 3), 16);
+    g = parseInt(cleanHex.substring(3, 5), 16);
+    b = parseInt(cleanHex.substring(5, 7), 16);
+  }
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export default function LandingRenderer({
   html,
   logoUrl,
@@ -180,16 +196,10 @@ export default function LandingRenderer({
             .reveal-container {
               background: #121212;
             }
-      
-            /* Gesco Design System Fallbacks */
-            .bg-canvas { background-color: #141414 !important; }
-            .bg-lifted { background-color: #1f1f1f !important; }
-            .text-ink { color: #f5f5f5 !important; }
-            .bg-signal { background-color: #6a0004 !important; }
             
-            /* Enhanced Glassmorphism Box */
+            /* Enhanced Glassmorphism Box (Agnostic) */
             .glass-box {
-              background-color: rgba(106, 0, 4, 0.85) !important;
+              background-color: ${hexToRgba(primaryColor, 0.85)} !important;
               backdrop-filter: blur(40px) saturate(150%) !important;
               -webkit-backdrop-filter: blur(40px) saturate(150%) !important;
               border: 1px solid rgba(255, 255, 255, 0.15) !important;

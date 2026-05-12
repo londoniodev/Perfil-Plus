@@ -171,7 +171,7 @@ export default async function RootLayout({
           design={design}
           primaryColor={primaryColor}
           activePaymentProvider={design?.activePaymentProvider || 'NONE'}
-          defaultTheme={tenantSlugRaw?.includes('gesco') ? 'dark' : 'light'}
+          defaultTheme={design?.brandSettings?.defaultTheme || 'dark'}
         >
           <GlobalSchemas />
           <ToastProvider>

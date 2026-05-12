@@ -128,7 +128,7 @@ export function AppProviders({
         >
             <ThemeProvider
                 attribute="class"
-                defaultTheme={defaultTheme || "light"}
+                defaultTheme={defaultTheme || "dark"}
                 enableSystem
             >
                 <BrandProvider settings={{ ...design, primary: primaryColor } as any}>

@@ -315,7 +315,7 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
       if (!appUrl.startsWith("http")) appUrl = `https://${appUrl}`;
       appUrl = appUrl.replace(/\/+$/, ""); // Quitar slash final
 
-      const webhookUrl = `${appUrl}/api/webhooks/revalidate`;
+      const webhookUrl = `${appUrl}/api/revalidate`;
       
       // Tags a revalidar: la landing específica, el branding del tenant (con ID), y la resolución del edge proxy (con dominio)
       // La API Next.js usa tenantId (CUID) para el branding, y el dominio para la resolución del middleware.
@@ -346,7 +346,7 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${secret}`,
+            "x-revalidate-secret": secret,
           },
           body: JSON.stringify({ tag }),
         });

@@ -587,6 +587,15 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   // CRITICAL: Capture the body's own classes (e.g., bg-background-light, text-text-light)
   // and transfer them to a wrapper <div> so the design is preserved after decapitation.
   const bodyClasses = $("body").attr("class") || "";
+  
+  // Extract inline scripts to preserve animations
+  const inlineScripts: string[] = [];
+  $("body script").each((_i, el) => {
+    if (!$(el).attr("src")) {
+      inlineScripts.push($.html(el));
+    }
+  });
+
   const bodyInnerHtml = $("body").html() || "";
   log("🔪", `Body classes captured: "${bodyClasses}"`);
 
@@ -602,10 +611,11 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   // ── Step 9: Inject CSS link, font links, and body-class wrapper ──
   const cssLink = '<link rel="stylesheet" href="./assets/styles.min.css">';
   const allLinks = [cssLink, ...headLinks].join("\n");
+  const allScripts = inlineScripts.join("\n");
   // Wrap in a <div> that inherits the original <body> classes
   const bodyWrapper = bodyClasses
-    ? `<div class="${bodyClasses}">\n${sanitizedBody}\n</div>`
-    : sanitizedBody;
+    ? `<div class="${bodyClasses}">\n${sanitizedBody}\n${allScripts}\n</div>`
+    : `${sanitizedBody}\n${allScripts}`;
   const finalBodyHtml = `${allLinks}\n${bodyWrapper}`;
 
   // ── Step 10: Write body.html ──

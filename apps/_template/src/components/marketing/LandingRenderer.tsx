@@ -275,33 +275,42 @@ export default function LandingRenderer({
             .drop-letter {
               display: inline-block;
               opacity: 0;
-              transform: translateY(-20px);
+              transform: translateY(-30px);
               transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             }
             
             .drop-letter.visible {
               opacity: 1;
-              transform: translateY(0);
+              transform: translateY(0) !important;
             }
 
-            /* Typewriter Animation (Multi-line Robust) */
+            /* Typewriter Animation (Clip-path Reveal - NO CLUSTERING) */
             .typewriter {
               display: inline-block;
-              overflow: hidden;
-              border-right: 2px solid ${primaryColor};
-              animation: typing 3s steps(60, end) forwards, blink-caret .75s step-end infinite;
-              white-space: normal; /* Allow wrapping */
-              width: 0;
+              position: relative;
+              clip-path: inset(0 100% 0 0);
+              animation: reveal-type 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+              animation-delay: 1.2s;
             }
 
-            @keyframes typing {
-              from { width: 0 }
-              to { width: 100% }
+            @keyframes reveal-type {
+              to { clip-path: inset(0 0 0 0); }
             }
 
-            @keyframes blink-caret {
-              from, to { border-color: transparent }
-              50% { border-color: ${primaryColor} }
+            .typewriter::after {
+              content: '';
+              position: absolute;
+              right: 0;
+              top: 0;
+              bottom: 0;
+              width: 2px;
+              background-color: ${primaryColor};
+              animation: blink-cursor 0.8s step-end infinite;
+            }
+
+            @keyframes blink-cursor {
+              from, to { opacity: 0 }
+              50% { opacity: 1 }
             }
 
             /* Enhanced Glassmorphism Box (Pill Design) */

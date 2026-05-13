@@ -69,7 +69,7 @@ export function SiteHeader({
     return (
         <header className={cn(
             "fixed top-0 left-0 w-full z-50 transition duration-300",
-            forceDark ? "lg:dark lg:bg-primary/90 lg:backdrop-blur-2xl lg:border-b lg:border-white/10 py-3" : "",
+            forceDark ? "py-3" : "",
             !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
             !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className

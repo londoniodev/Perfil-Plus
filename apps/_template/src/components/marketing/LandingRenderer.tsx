@@ -271,28 +271,27 @@ export default function LandingRenderer({
               border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
             }
 
-            /* Falling Letters Animation */
+            /* Falling Letters Animation (Enhanced) */
             .drop-letter {
               display: inline-block;
               opacity: 0;
-              transform: translateY(-50px);
-              animation: drop-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+              transform: translateY(-20px);
+              transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             }
             
-            @keyframes drop-in {
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
+            .drop-letter.visible {
+              opacity: 1;
+              transform: translateY(0);
             }
 
-            /* Typewriter Animation */
+            /* Typewriter Animation (Multi-line Robust) */
             .typewriter {
+              display: inline-block;
               overflow: hidden;
-              white-space: nowrap;
-              border-right: 2px solid transparent;
+              border-right: 2px solid ${primaryColor};
+              animation: typing 3s steps(60, end) forwards, blink-caret .75s step-end infinite;
+              white-space: normal; /* Allow wrapping */
               width: 0;
-              animation: typing 3.5s steps(40, end) forwards, blink-caret .75s step-end infinite;
             }
 
             @keyframes typing {

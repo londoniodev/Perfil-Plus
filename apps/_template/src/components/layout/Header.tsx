@@ -51,12 +51,12 @@ export function Header({
             pathname={pathname}
             cartComponent={<CartSheet />}
             showAuthButtons={showAuthButtons}
-            transparentIsDark={true} // Siempre letras blancas al ser tema oscuro
-            forceDark={true} // Forzar texto blanco para contraste en tema oscuro
-            className={`transition-all duration-700 ease-in-out ${
+            transparentIsDark={true}
+            forceDark={true}
+            className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isScrolled 
-                ? "bg-black/80 backdrop-blur-md border-b border-white/10" 
-                : "bg-transparent"
+                ? "translate-y-0 opacity-100 bg-black/90 backdrop-blur-xl border-b border-white/10" 
+                : "-translate-y-full opacity-0"
             }`}
         />
     );

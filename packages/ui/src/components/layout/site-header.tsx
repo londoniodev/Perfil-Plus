@@ -217,7 +217,7 @@ function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl
                         </Button>
                     ) : (
                         <>
-                            <Button asChild variant="ghost" size="sm" className={cn("hidden xl:inline-flex hover:text-accent", isScrolled ? "text-black" : "text-foreground")}>
+                            <Button asChild variant="ghost" size="sm" className={cn("hidden xl:inline-flex hover:text-accent", isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground"))}>
                                 <Link href={registerUrl}>Registro</Link>
                             </Button>
                             <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0">

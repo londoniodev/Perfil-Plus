@@ -55,8 +55,8 @@ export function Header({
             forceDark={true}
             className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isScrolled 
-                ? "bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl" 
-                : "bg-black/70 backdrop-blur-sm"
+                ? "translate-y-0 opacity-100 bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl" 
+                : "-translate-y-full opacity-0"
             }`}
         />
     );

@@ -259,18 +259,50 @@ export default function LandingRenderer({
               100% { transform: translate(0, 0) scale(1); }
             }
 
-            /* Force White Header Text for Dark Theme */
-            header nav a, 
-            header .logo-text, 
-            header button,
-            header .nav-link {
-              color: white !important;
+            /* Force Dark Header by Default */
+            header {
+              background-color: #0d0d0d !important;
+              transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
             }
             
             header.scrolled {
               backdrop-filter: blur(40px) saturate(200%) !important;
-              background-color: #0d0d0d !important;
+              background-color: rgba(13, 13, 13, 0.8) !important;
               border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Falling Letters Animation */
+            .drop-letter {
+              display: inline-block;
+              opacity: 0;
+              transform: translateY(-50px);
+              animation: drop-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+            
+            @keyframes drop-in {
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+
+            /* Typewriter Animation */
+            .typewriter {
+              overflow: hidden;
+              white-space: nowrap;
+              border-right: 2px solid transparent;
+              width: 0;
+              animation: typing 3.5s steps(40, end) forwards, blink-caret .75s step-end infinite;
+            }
+
+            @keyframes typing {
+              from { width: 0 }
+              to { width: 100% }
+            }
+
+            @keyframes blink-caret {
+              from, to { border-color: transparent }
+              50% { border-color: ${primaryColor} }
             }
 
             /* Enhanced Glassmorphism Box (Pill Design) */

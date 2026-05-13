@@ -55,8 +55,8 @@ export function Header({
             forceDark={true} // Forzar texto blanco para contraste en tema oscuro
             className={`transition-all duration-700 ease-in-out ${
                 isScrolled 
-                ? "opacity-100 translate-y-0" 
-                : "opacity-0 -translate-y-10 pointer-events-none"
+                ? "bg-black/80 backdrop-blur-md border-b border-white/10" 
+                : "bg-transparent"
             }`}
         />
     );

@@ -166,13 +166,16 @@ export default function LandingRenderer({
             className="w-auto h-20 max-w-[280px] md:h-24 md:max-w-[340px] object-contain animate-pulse"
           />
         ) : (
-          <div 
-            className="w-12 h-12 rounded-full border-4 animate-spin" 
-            style={{ 
-              borderColor: `${primaryColor}20`, 
-              borderTopColor: primaryColor 
-            }}
-          />
+          <div className="flex flex-col items-center gap-4">
+             <div 
+              className="w-12 h-12 rounded-full border-4 animate-spin" 
+              style={{ 
+                borderColor: `${primaryColor}20`, 
+                borderTopColor: primaryColor 
+              }}
+            />
+            <span className="text-white/40 text-xs font-medium tracking-[0.2em] uppercase">Gesco Abogados</span>
+          </div>
         )}
         
         <div
@@ -190,10 +193,37 @@ export default function LandingRenderer({
         className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 grain-overlay landing-content"
         style={{
           opacity: isReady ? 1 : 0,
-          background: "#121212",
+          background: "#0d0d0d",
           transition: "opacity 0.5s ease-in",
         }}
         dangerouslySetInnerHTML={{ __html: html }}
+      />
+
+      {/* Logic to wrap letters for animations after DOM is ready */}
+      <script 
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              const observer = new MutationObserver(() => {
+                const dropHeaders = document.querySelectorAll('.animate-drop:not(.processed)');
+                dropHeaders.forEach(header => {
+                  header.classList.add('processed');
+                  const text = header.textContent.trim();
+                  header.textContent = '';
+                  [...text].forEach((char, i) => {
+                    const span = document.createElement('span');
+                    span.textContent = char === ' ' ? '\\u00A0' : char;
+                    span.className = 'drop-letter';
+                    span.style.transitionDelay = (i * 0.05) + 's';
+                    header.appendChild(span);
+                    setTimeout(() => span.classList.add('visible'), 100 + (i * 50));
+                  });
+                });
+              });
+              observer.observe(document.body, { childList: true, subtree: true });
+            })();
+          `
+        }}
       />
 
       {/* ── Keyframes y Estilos Globales para Landings (Al final para mayor prioridad) ── */}

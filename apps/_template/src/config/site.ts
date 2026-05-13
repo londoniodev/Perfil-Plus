@@ -1,16 +1,16 @@
 export const siteConfig = {
-    name: "Template Client",
-    description: "Plantilla Base para Clientes",
-    domain: "template.local",
-    tenantId: "template",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+    name: "Gesco Abogados",
+    description: "Asesoría jurídica integral y gestión de cobro",
+    domain: "gesco.perfil.plus",
+    tenantId: "gesco",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://gesco.perfil.plus",
     ogImage: "",
-    keywords: ["template", "client"],
-    phone: "+00 000 000 0000",
-    email: "info@template.local",
+    keywords: ["abogados", "colombia", "cobro de cartera", "juridico"],
+    phone: "+57 311 372 5245",
+    email: "info@gescoabogados.com",
     branding: {
         logo: "/favicon.ico",
-        logoAlt: "Template Client Logo"
+        logoAlt: "Gesco Abogados"
     },
     whatsappMessage: "Hola, me gustaría recibir más información.",
     features: {

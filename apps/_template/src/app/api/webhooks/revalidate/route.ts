@@ -3,7 +3,6 @@ import { revalidateTag } from "next/cache";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
     const secret = process.env.REVALIDATION_SECRET;
 
     if (!secret) {
@@ -14,7 +13,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (authHeader !== `Bearer ${secret}`) {
+    // Soportar ambos headers: el custom x-revalidate-secret (usado por landing-builder)
+    // y el estándar Authorization Bearer (para clientes genéricos)
+    const customHeader = req.headers.get("x-revalidate-secret");
+    const authHeader = req.headers.get("Authorization");
+    const isAuthorized = customHeader === secret || authHeader === `Bearer ${secret}`;
+
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

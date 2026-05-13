@@ -330,7 +330,7 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
       }
 
       // Opcionalmente agregar el dominio de revalidación del middleware si se conoce
-      if (tenant.domain) {
+      if (tenant?.domain) {
          tags.push(`tenant-resolve-${tenant.domain}`);
          if (tenant.domain.startsWith('www.')) {
              tags.push(`tenant-resolve-${tenant.domain.substring(4)}`);

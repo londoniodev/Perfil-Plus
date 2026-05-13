@@ -267,6 +267,7 @@ export default async function MarketingHubPage({ params }: Props) {
           html={finalCleanBody}
           logoUrl={logoUrl}
           primaryColor={primaryColor}
+          businessName={design?.name || undefined}
         />
       </>
     );

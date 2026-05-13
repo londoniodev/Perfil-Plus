@@ -268,8 +268,8 @@ export default function LandingRenderer({
             }
             
             header.scrolled {
-              backdrop-filter: blur(20px) saturate(180%) !important;
-              background-color: rgba(13, 13, 13, 0.8) !important;
+              backdrop-filter: blur(40px) saturate(200%) !important;
+              background-color: #0d0d0d !important;
               border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
             }
 

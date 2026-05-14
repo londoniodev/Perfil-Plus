@@ -65,7 +65,6 @@ COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 # sobreescribiendo el symlink roto.
 COPY --from=builder --chown=nestjs:nodejs /app/packages/database ./node_modules/@alvarosky/database
 COPY --from=builder --chown=nestjs:nodejs /app/packages/shared ./node_modules/@alvarosky/shared
-COPY --from=builder --chown=nestjs:nodejs /app/packages/types ./node_modules/@alvarosky/types
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./package.json
 
 USER nestjs

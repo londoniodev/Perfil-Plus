@@ -12,7 +12,9 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "swr": "^2.2.5",
-        "zustand": "^4.5.2"
+        "zustand": "^4.5.2",
+        "@alvarosky/features": "workspace:*",
+        "@alvarosky/database": "workspace:*"
     },
     "devDependencies": {
         "@alvarosky/eslint-config": "workspace:*",

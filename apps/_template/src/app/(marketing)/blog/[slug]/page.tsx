@@ -8,6 +8,8 @@ import { getTenantFeatures } from "@alvarosky/shared";
 import { TenantFeature } from "@alvarosky/features";
 import { PostHeader, RelatedTopics, AdaptiveImage, Button, IconLock, IconDocument, IconFile, ShareButtons, TableOfContents, type TocItem } from "@alvarosky/ui";
 import { BlogBackButton } from "../BlogBackButton";
+import { BlogPostingSchema } from "@/components/seo/JsonLd";
+import { getTenantDesign } from "@/lib/tenant-server";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -103,42 +105,20 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  // JSON-LD Structured Data for SEO
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.metaDescription || post.excerpt,
-    "image": post.coverImage || undefined,
-    "author": {
-      "@type": "Person",
-      "name": post.authorName,
-      "url": dynamicSiteUrl
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": post.authorName,
-      "url": dynamicSiteUrl
-    },
-    "datePublished": post.publishedAt || post.createdAt,
-    "dateModified": post.updatedAt || post.createdAt,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `${dynamicSiteUrl}/blog/${slug}`
-    },
-    "wordCount": post.content?.split(/\s+/).length || 0,
-    "articleSection": post.categories?.[0]?.name || "General",
-    "keywords": post.tags?.map((t: { name: string }) => t.name).join(", ") || ""
-  };
+  const design = await getTenantDesign(tenantId);
+  const businessName = design?.name || "Tienda";
+  const logo = design?.brandSettings?.logoUrl || design?.logo || `${dynamicSiteUrl}/favicon.ico`;
 
   const { html, toc } = processContent(post.content || "");
   const postUrl = `${dynamicSiteUrl}/blog/${slug}`;
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <BlogPostingSchema 
+        post={post} 
+        url={dynamicSiteUrl} 
+        businessName={businessName} 
+        logo={logo} 
       />
 
       <article className="min-h-screen bg-zinc-950 text-white pb-20 relative">

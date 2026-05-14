@@ -6,6 +6,8 @@ import { headers } from "next/headers"
 import { Metadata } from "next"
 import { getTenantFeatures } from "@alvarosky/shared"
 import { TenantFeature } from "@alvarosky/features"
+import { ProductSchema } from "@/components/seo/JsonLd"
+import { getTenantDesign } from "@/lib/tenant-server"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>
@@ -71,6 +73,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
         return notFound()
     }
 
+    const tenantId = headersList.get("x-tenant-id") || "template";
+    const design = await getTenantDesign(tenantId);
+    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+    const url = `https://${host}`;
+
     // Si no hay variantes activas (edge case), mostramos mensaje
     if (product.variants.length === 0) {
         return (
@@ -84,6 +91,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     return (
         <div className="min-h-screen bg-zinc-950 flex flex-col pt-24">
+            <ProductSchema 
+                product={product} 
+                url={url} 
+                businessName={design?.name || "Tienda"} 
+            />
             <div className="container py-8 md:py-12 relative z-10">
                 {/* Breadcrumbs simplificados */}
                 <div className="hidden md:block mb-8">

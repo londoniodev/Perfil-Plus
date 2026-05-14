@@ -1,26 +1,10 @@
 import { siteConfig } from '@/config/site';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url;
-
-// ============================================================================
-// SCHEMAS GLOBALES
-// ============================================================================
-
-// Schema para la persona (Puede modificarse si es marca personal)
-export function PersonSchema() {
-    const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: siteConfig.name,
-        description: siteConfig.description,
-        url: SITE_URL,
-        image: siteConfig.ogImage || `${SITE_URL}/images/branding/menu_logo.png`,
-        sameAs: [
-            // urls de redes sociales
-            'https://wa.me/573183771838',
-        ],
-    };
-
+/**
+ * Componente base para inyectar JSON-LD en el head.
+ */
+function JsonLdScript({ schema }: { schema: any }) {
+    if (!schema) return null;
     return (
         <script
             type="application/ld+json"
@@ -29,104 +13,159 @@ export function PersonSchema() {
     );
 }
 
-// Schema para la organización/marca
-export function OrganizationSchema() {
-    const schema = {
+interface SchemaProps {
+    tenantId: string;
+    design: any;
+    url: string;
+}
+
+/**
+ * Genera el Schema de Organización/Negocio Local de forma dinámica.
+ */
+export function OrganizationSchema({ tenantId, design, url }: SchemaProps) {
+    const businessName = design?.name || siteConfig.name;
+    const description = design?.brandSettings?.tagline || design?.tagline || siteConfig.description;
+    const logo = design?.brandSettings?.logoUrl || design?.logo || `${url}/favicon.ico`;
+    
+    // Determinar el tipo de negocio basado en features
+    const features = (design?.features || []).map((f: any) => typeof f === 'string' ? f : f.type);
+    const isRestaurant = features.includes('RESTAURANT');
+    
+    const schema: any = {
         '@context': 'https://schema.org',
-        '@type': 'ProfessionalService',
-        name: siteConfig.name,
-        description: siteConfig.description,
-        url: SITE_URL,
-        logo: `${SITE_URL}/images/branding/menu_logo.png`,
-        image: siteConfig.ogImage || `${SITE_URL}/images/branding/menu_logo.png`,
-        telephone: siteConfig.phone || '',
+        '@type': isRestaurant ? 'Restaurant' : 'ProfessionalService',
+        name: businessName,
+        description: description,
+        url: url,
+        logo: logo,
+        image: design?.brandSettings?.ogImage || logo,
+        telephone: design?.contactPhone || siteConfig.phone,
+        email: design?.contactEmail || siteConfig.email,
         priceRange: '$$',
-        address: {
-            '@type': 'PostalAddress',
-            streetAddress: 'Calle 18a #55-105',
-            addressLocality: 'Cañaverales',
-            postalCode: '760063',
-            addressCountry: 'CO',
-        },
-        contactPoint: {
-            '@type': 'ContactPoint',
-            telephone: '+57-318-377-1838',
-            contactType: 'customer service',
-            availableLanguage: ['Spanish'],
-        },
-        areaServed: {
-            '@type': 'Country',
-            name: 'Colombia',
-        },
-        serviceType: [
-            'Consultoría Organizacional',
-            'Coaching Ejecutivo',
-            'Psicoterapia',
-            'Orientación Vocacional',
-        ],
     };
 
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
+    if (design?.address) {
+        schema.address = {
+            '@type': 'PostalAddress',
+            streetAddress: design.address,
+            addressLocality: design.city || 'Colombia',
+            addressCountry: 'CO',
+        };
+    }
+
+    if (isRestaurant && design?.menuUrl) {
+        schema.hasMenu = design.menuUrl;
+    }
+
+    return <JsonLdScript schema={schema} />;
 }
 
-// Schema para el sitio web
-export function WebSiteSchema() {
+/**
+ * Genera el Schema del Sitio Web.
+ */
+export function WebSiteSchema({ tenantId, design, url }: SchemaProps) {
+    const businessName = design?.name || siteConfig.name;
+    
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: siteConfig.name,
-        description: siteConfig.description,
-        url: SITE_URL,
+        name: businessName,
+        url: url,
         inLanguage: 'es',
         publisher: {
             '@type': 'Organization',
-            name: siteConfig.name,
+            name: businessName,
         },
         potentialAction: {
             '@type': 'SearchAction',
             target: {
                 '@type': 'EntryPoint',
-                urlTemplate: `${SITE_URL}/?search={search_term_string}`,
+                urlTemplate: `${url}/?search={search_term_string}`,
             },
             'query-input': 'required name=search_term_string',
         },
     };
 
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
+    return <JsonLdScript schema={schema} />;
 }
 
-// Schema combinado para incluir en el layout
-export function GlobalSchemas() {
+/**
+ * Componente que agrupa los esquemas globales para el Layout.
+ */
+export function GlobalSchemas({ tenantId, design, url }: SchemaProps) {
     return (
         <>
-            <PersonSchema />
-            <OrganizationSchema />
-            <WebSiteSchema />
+            <OrganizationSchema tenantId={tenantId} design={design} url={url} />
+            <WebSiteSchema tenantId={tenantId} design={design} url={url} />
         </>
     );
 }
 
-// ============================================================================
-// SCHEMAS DE NAVEGACIÓN
-// ============================================================================
+// --- SCHEMAS ESPECÍFICOS PARA PÁGINAS ---
 
-// Schema para breadcrumbs
-interface BreadcrumbItem {
-    name: string;
-    url: string;
+/**
+ * Schema para productos individuales (Store).
+ */
+export function ProductSchema({ product, url, businessName }: { product: any, url: string, businessName: string }) {
+    const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        description: product.description,
+        image: product.images?.[0] || '',
+        brand: {
+            '@type': 'Brand',
+            name: businessName
+        },
+        offers: {
+            '@type': 'Offer',
+            price: product.basePrice,
+            priceCurrency: 'COP',
+            availability: product.isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: `${url}/tienda/${product.slug}`,
+        }
+    };
+
+    return <JsonLdScript schema={schema} />;
 }
 
-export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
+/**
+ * Schema para artículos de Blog.
+ */
+export function BlogPostingSchema({ post, url, businessName, logo }: { post: any, url: string, businessName: string, logo?: string }) {
+    const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt,
+        image: post.coverImage,
+        datePublished: post.createdAt,
+        dateModified: post.updatedAt || post.createdAt,
+        author: {
+            '@type': 'Organization',
+            name: businessName
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: businessName,
+            logo: {
+                '@type': 'ImageObject',
+                url: logo
+            }
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${url}/blog/${post.slug}`
+        }
+    };
+
+    return <JsonLdScript schema={schema} />;
+}
+
+/**
+ * Schema para Breadcrumbs.
+ */
+export function BreadcrumbSchema({ items }: { items: { name: string; url: string }[] }) {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
@@ -138,372 +177,5 @@ export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
         })),
     };
 
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
+    return <JsonLdScript schema={schema} />;
 }
-
-// ============================================================================
-// SCHEMAS DE SERVICIOS
-// ============================================================================
-
-export interface ServiceSchemaProps {
-    name: string;
-    description: string;
-    url: string;
-    serviceType?: string;
-    offers?: {
-        price?: number;
-        priceCurrency?: string;
-        priceRange?: string;
-    };
-}
-
-export function ServiceSchema({ name, description, url, serviceType, offers }: ServiceSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'Service',
-        name,
-        description,
-        url,
-        serviceType: serviceType || name,
-        provider: {
-            '@type': 'Person',
-            name: 'Mauricio Mera',
-            url: SITE_URL,
-        },
-        areaServed: {
-            '@type': 'Country',
-            name: 'Colombia',
-        },
-    };
-
-    if (offers) {
-        schema.offers = {
-            '@type': 'Offer',
-            ...offers,
-        };
-    }
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-// Schema múltiple para página de servicios
-export function ServicesPageSchema() {
-    const services = [
-        {
-            '@type': 'Service',
-            name: 'Consultoría Organizacional',
-            description: 'Diagnóstico de cultura y clima organizacional, desarrollo de liderazgo, team coaching y gestión del cambio para empresas.',
-            url: `${SITE_URL}/servicios#empresas`,
-            serviceType: 'Business Consulting',
-            provider: { '@type': 'Person', name: 'Mauricio Mera' },
-        },
-        {
-            '@type': 'Service',
-            name: 'Explora - Orientación Vocacional',
-            description: 'Orientación vocacional y profesional con tecnología de IA. Test de perfil vocacional, análisis de resultados y roadmap de carreras.',
-            url: `${SITE_URL}/servicios#explora`,
-            serviceType: 'Career Counseling',
-            provider: { '@type': 'Person', name: 'Mauricio Mera' },
-        },
-        {
-            '@type': 'Service',
-            name: 'Psicoterapia y Coaching',
-            description: 'Psicoterapia para ansiedad, depresión, estrés. Coaching de propósito y desarrollo personal. Modalidad online y presencial.',
-            url: `${SITE_URL}/servicios#psicoterapia`,
-            serviceType: 'PsychologicalTreatment',
-            provider: { '@type': 'Person', name: 'Mauricio Mera' },
-        },
-    ];
-
-    const schema = {
-        '@context': 'https://schema.org',
-        '@graph': services,
-    };
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-// ============================================================================
-// SCHEMAS PARA CURSOS Y EBOOKS
-// ============================================================================
-
-export interface CourseSchemaProps {
-    name: string;
-    description: string;
-    url: string;
-    provider?: string;
-    image?: string;
-    duration?: string;
-    educationalLevel?: string;
-    hasCourseInstance?: {
-        startDate?: string;
-        endDate?: string;
-        courseMode?: 'online' | 'onsite' | 'blended';
-    };
-}
-
-export function CourseSchema({
-    name,
-    description,
-    url,
-    provider = 'Mauricio Mera',
-    image,
-    duration,
-    educationalLevel,
-    hasCourseInstance
-}: CourseSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'Course',
-        name,
-        description,
-        url,
-        provider: {
-            '@type': 'Person',
-            name: provider,
-            url: SITE_URL,
-        },
-        inLanguage: 'es',
-    };
-
-    if (image) schema.image = image;
-    if (duration) schema.timeRequired = duration;
-    if (educationalLevel) schema.educationalLevel = educationalLevel;
-
-    if (hasCourseInstance) {
-        schema.hasCourseInstance = {
-            '@type': 'CourseInstance',
-            courseMode: hasCourseInstance.courseMode || 'online',
-            ...hasCourseInstance,
-        };
-    }
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-export interface ProductSchemaProps {
-    name: string;
-    description: string;
-    url: string;
-    image: string;
-    price: number;
-    priceCurrency?: string;
-    author?: string;
-    datePublished?: string;
-}
-
-export function ProductSchema({
-    name,
-    description,
-    url,
-    image,
-    price,
-    priceCurrency = 'COP',
-    author = 'Mauricio Mera',
-    datePublished
-}: ProductSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'Book',
-        name,
-        description,
-        url,
-        image,
-        author: {
-            '@type': 'Person',
-            name: author,
-        },
-        publisher: {
-            '@type': 'Person',
-            name: 'Mauro Mera',
-        },
-        bookFormat: 'EBook',
-        inLanguage: 'es',
-        offers: {
-            '@type': 'Offer',
-            price,
-            priceCurrency,
-            availability: 'https://schema.org/InStock',
-            url,
-        },
-    };
-
-    if (datePublished) schema.datePublished = datePublished;
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-// ============================================================================
-// SCHEMAS DE CONTENIDO
-// ============================================================================
-
-export interface FAQItem {
-    question: string;
-    answer: string;
-}
-
-export function FAQSchema({ items }: { items: FAQItem[] }) {
-    const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: items.map((item) => ({
-            '@type': 'Question',
-            name: item.question,
-            acceptedAnswer: {
-                '@type': 'Answer',
-                text: item.answer,
-            },
-        })),
-    };
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-export interface VideoSchemaProps {
-    name: string;
-    description: string;
-    thumbnailUrl: string;
-    uploadDate: string;
-    duration?: string;
-    embedUrl?: string;
-    contentUrl?: string;
-}
-
-export function VideoSchema({
-    name,
-    description,
-    thumbnailUrl,
-    uploadDate,
-    duration,
-    embedUrl,
-    contentUrl
-}: VideoSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'VideoObject',
-        name,
-        description,
-        thumbnailUrl,
-        uploadDate,
-        publisher: {
-            '@type': 'Person',
-            name: 'Mauricio Mera',
-        },
-    };
-
-    if (duration) schema.duration = duration;
-    if (embedUrl) schema.embedUrl = embedUrl;
-    if (contentUrl) schema.contentUrl = contentUrl;
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-// Schema para páginas de colección (blog, ebooks, cursos)
-export interface CollectionPageSchemaProps {
-    name: string;
-    description: string;
-    url: string;
-    itemListElement?: { name: string; url: string }[];
-}
-
-export function CollectionPageSchema({
-    name,
-    description,
-    url,
-    itemListElement
-}: CollectionPageSchemaProps) {
-    const schema: any = {
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name,
-        description,
-        url,
-        isPartOf: {
-            '@type': 'WebSite',
-            name: 'Mauro Mera',
-            url: SITE_URL,
-        },
-    };
-
-    if (itemListElement && itemListElement.length > 0) {
-        schema.mainEntity = {
-            '@type': 'ItemList',
-            itemListElement: itemListElement.map((item, index) => ({
-                '@type': 'ListItem',
-                position: index + 1,
-                name: item.name,
-                url: item.url,
-            })),
-        };
-    }
-
-    return (
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-    );
-}
-
-// Schema para paginación del blog
-export interface PaginationSchemaProps {
-    currentPage: number;
-    totalPages: number;
-    baseUrl: string;
-}
-
-export function generatePaginationLinks({ currentPage, totalPages, baseUrl }: PaginationSchemaProps) {
-    const links: { rel: string; href: string }[] = [];
-
-    if (currentPage > 1) {
-        links.push({
-            rel: 'prev',
-            href: currentPage === 2 ? baseUrl : `${baseUrl}?page=${currentPage - 1}`,
-        });
-    }
-
-    if (currentPage < totalPages) {
-        links.push({
-            rel: 'next',
-            href: `${baseUrl}?page=${currentPage + 1}`,
-        });
-    }
-
-    return links;
-}
-

@@ -179,7 +179,11 @@ export default async function RootLayout({
           activePaymentProvider={design?.activePaymentProvider || 'NONE'}
           defaultTheme={design?.brandSettings?.defaultTheme || 'dark'}
         >
-          <GlobalSchemas />
+          <GlobalSchemas 
+            tenantId={tenantId} 
+            design={design} 
+            url={process.env.NEXT_PUBLIC_SITE_URL || `https://${headersList.get('host')}`} 
+          />
           <ToastProvider>
             {children}
             <PwaInstallPrompt />

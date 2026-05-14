@@ -42,13 +42,15 @@ function shortenLabel(label: string): string {
     return map[lower] || label;
 }
 
+import { getDynamicUrl } from "@/lib/network";
+
 export default async function MarketingLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const headersList = await headers();
-    const host = headersList.get('host') || '';
+    const host = new URL(getDynamicUrl(headersList)).host;
     
     let tenantId = await getTenantId();
     let design = await getTenantDesign(tenantId);

@@ -10,6 +10,7 @@ import { PostHeader, RelatedTopics, AdaptiveImage, Button, IconLock, IconDocumen
 import { BlogBackButton } from "../BlogBackButton";
 import { BlogPostingSchema } from "@/components/seo/JsonLd";
 import { getTenantDesign } from "@/lib/tenant-server";
+import { getDynamicUrl } from "@/lib/network";
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -30,10 +31,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
 
     const tenantId = headersList.get("x-tenant-id") || "template"
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
-    const protocol = isLocal ? "http" : "https";
-    const dynamicSiteUrl = `${protocol}://${host}`;
+    const dynamicSiteUrl = getDynamicUrl(headersList);
 
     const post = await getPostBySlug(slug, tenantId);
     const title = post.metaTitle || post.title;
@@ -97,10 +95,7 @@ export default async function PostPage({ params }: PostPageProps) {
     }
 
     const tenantId = headersList.get("x-tenant-id") || "template"
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
-    const protocol = isLocal ? "http" : "https";
-    dynamicSiteUrl = `${protocol}://${host}`;
+    dynamicSiteUrl = getDynamicUrl(headersList);
 
     post = await getPostBySlug(slug, tenantId);
     

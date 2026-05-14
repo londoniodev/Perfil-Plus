@@ -1,9 +1,11 @@
 import { headers } from "next/headers";
 import { Metadata } from "next";
+import { getDynamicUrl } from "@/lib/network";
 
 export async function generateMetadata(): Promise<Metadata> {
     const headersList = await headers();
-    const host = headersList.get("host") || "";
+    const urlBase = getDynamicUrl(headersList);
+    const host = new URL(urlBase).host;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
     let tenantName = "Nuestra plataforma";
 
@@ -31,7 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TermsAndConditionsPage() {
     const headersList = await headers();
-    const host = headersList.get("host") || "";
+    const urlBase = getDynamicUrl(headersList);
+    const host = new URL(urlBase).host;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
     let tenantName = "este sitio web";

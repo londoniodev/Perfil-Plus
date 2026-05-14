@@ -5,6 +5,7 @@ import { ProductConfigurator } from "@/components/shop/product-configurator"
 import { headers } from "next/headers"
 import { Metadata } from "next"
 import { getTenantFeatures } from "@alvarosky/shared"
+import { getDynamicUrl } from "@/lib/network"
 import { TenantFeature } from "@alvarosky/features"
 import { ProductSchema } from "@/components/seo/JsonLd"
 import { getTenantDesign } from "@/lib/tenant-server"
@@ -75,8 +76,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     const tenantId = headersList.get("x-tenant-id") || "template";
     const design = await getTenantDesign(tenantId);
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-    const url = `https://${host}`;
+    const url = getDynamicUrl(headersList);
 
     // Si no hay variantes activas (edge case), mostramos mensaje
     if (product.variants.length === 0) {

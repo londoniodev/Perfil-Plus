@@ -2,6 +2,7 @@ import React from "react";
 import { headers } from "next/headers";
 import { getTenantId } from "@/lib/config-server";
 import { Metadata } from "next";
+import { getDynamicUrl } from "@/lib/network";
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
@@ -16,7 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PrivacyPolicyPage() {
     const headersList = await headers();
     const tenantId = await getTenantId();
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "este sitio web";
+    const urlBase = getDynamicUrl(headersList);
+    const host = new URL(urlBase).host;
 
     // Datos por defecto
     let tenantName = "nuestra plataforma";

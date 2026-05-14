@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { getPostBySlug } from '@/lib/api';
 import { getTenantId } from '@/lib/config-server';
 import { headers } from 'next/headers';
+import { getDynamicUrl } from '@/lib/network';
 
 export const runtime = 'edge';
 
@@ -22,7 +23,8 @@ export default async function Image({ params }: Props) {
     
     const tenantId = await getTenantId();
     const headersList = await headers();
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
+    const urlBase = getDynamicUrl(headersList);
+    const host = new URL(urlBase).host;
 
     // Intentamos cargar el diseño del Tenant
     let tenantName = 'Blog';

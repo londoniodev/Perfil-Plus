@@ -8,7 +8,7 @@ import { AppProviders } from "./providers";
 import { getTenantId } from "@/lib/config-server";
 import { getTenantDesign } from "@/lib/tenant-server";
 import { baseMetadata } from "@/config/metadata";
-import { siteConfig } from "@/config/site";
+import { getDynamicUrl } from "@/lib/network";
 import { headers } from "next/headers";
 import { hexToHsl, getContrastForegroundHsl, getReadablePrimaryHsl } from "@alvarosky/shared";
 import { getDynamicUrl } from "@/lib/network";
@@ -39,10 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const seoDescription = brand?.metaDescription || brand?.tagline || design?.tagline || siteConfig.description;
 
   const headersList = await headers();
-  const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-  const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
-  const protocol = isLocal ? "http" : "https";
-  const currentUrl = `${protocol}://${host}`;
+  const currentUrl = getDynamicUrl(headersList);
 
   const faviconUrl = design?.brandSettings?.faviconUrl 
     ? `${design.brandSettings.faviconUrl}?v=${new Date(design.brandSettings.updatedAt || Date.now()).getTime()}` 
@@ -112,15 +109,13 @@ export default async function RootLayout({
   const rawPrimaryColor = design?.brandSettings?.primaryColor || design?.primary || "zinc";
   const primaryColor = rawPrimaryColor;
   const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
-  const headerLinksFromDb = design?.headerLinks || null;
-  const footerLinks = design?.footerLinks || null;
-  const contactPhone = design?.contactPhone || null;
+  const headersList = await headers();
+  const urlBase = getDynamicUrl(headersList);
   const contactEmail = design?.contactEmail || null;
   const businessName = design?.name || null;
   const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;
   const tiktokPixelId = design?.tiktokPixelId || null;
 
-  const headersList = await headers();
   const tenantFeaturesRaw = headersList.get('x-tenant-features');
   const tenantSlugRaw = headersList.get('x-tenant-slug') || tenantId; 
   

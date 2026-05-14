@@ -13,13 +13,19 @@ interface FooterProps {
 
 export function Footer({ 
     logo, 
-    businessName = "Cliente Plataforma", 
-    businessEmail = "hola@plataforma.com", 
-    businessPhone = "+57 300 000 0000", 
-    tagline = "Creciendo contigo",
+    businessName, 
+    businessEmail, 
+    businessPhone, 
+    tagline,
     footerLinks = null,
     features = []
 }: FooterProps) {
+    // Use siteConfig as fallback for all values
+    const finalName = businessName || siteConfig.name || "Cliente Plataforma";
+    const finalEmail = businessEmail || siteConfig.email || "hola@plataforma.com";
+    const finalPhone = businessPhone || siteConfig.phone || "+57 300 000 0000";
+    const finalTagline = tagline || siteConfig.description || "Creciendo contigo";
+
     let finalFooterLinks = footerLinks;
 
     // Fallback Automático si no hay links configurados en DB
@@ -37,19 +43,19 @@ export function Footer({
     const finalLogo = logo || siteConfig.branding.logo;
 
     return (
-        <div className="hidden md:flex flex-col w-full bg-background relative z-10 border-t border-border/40 pb-8">
+        <div className="flex flex-col w-full bg-background relative z-10 border-t border-border/40 pb-8">
             <SiteFooter
                 logo={finalLogo}
                 logoAlt={siteConfig.branding.logoAlt}
-                tagline={tagline}
+                tagline={finalTagline}
                 links={finalFooterLinks as any}
-                companyName={businessName}
+                companyName={finalName}
                 className="border-none py-8 pb-4"
                 contactInfo={
                     <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs text-muted-foreground/60 font-medium whitespace-nowrap">
-                        <span>Email: <a href={`mailto:${businessEmail}`} className="hover:text-foreground hover:underline transition-all">{businessEmail}</a></span>
+                        <span>Email: <a href={`mailto:${finalEmail}`} className="hover:text-foreground hover:underline transition-all">{finalEmail}</a></span>
                         <span className="hidden sm:inline text-border">•</span>
-                        <span>Teléfono: {businessPhone}</span>
+                        <span>Teléfono: {finalPhone}</span>
                     </div>
                 }
             />

@@ -18,6 +18,8 @@ interface NavigationWrapperProps {
     hideFooter?: boolean;
     primaryColor?: string;
     forceDark?: boolean;
+    hideThemeToggle?: boolean;
+    hideCart?: boolean;
 }
 
 export function NavigationWrapper({ 
@@ -30,6 +32,8 @@ export function NavigationWrapper({
     hideFooter = false,
     primaryColor,
     forceDark = false,
+    hideThemeToggle = false,
+    hideCart = false,
 }: NavigationWrapperProps) {
     const pathname = usePathname();
 
@@ -63,6 +67,8 @@ export function NavigationWrapper({
                     links={links}
                     primaryColor={primaryColor}
                     forceDark={forceDark}
+                    hideThemeToggle={hideThemeToggle}
+                    hideCart={hideCart}
                 />
             )}
             <main>{children}</main>

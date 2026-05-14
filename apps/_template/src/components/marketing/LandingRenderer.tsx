@@ -55,22 +55,18 @@ export default function LandingRenderer({
 
   // Detectar cuando el contenido + CSS están listos
   useEffect(() => {
-    // Esperar a que todos los stylesheets del documento estén cargados
+    // Esperar a que todos los <link rel="stylesheet"> del documento estén cargados
     const checkStylesheets = () => {
-      const sheets = document.styleSheets;
-      try {
-        // Intentar acceder a las reglas de cada stylesheet
-        // Si no están cargadas, lanzan un error
-        for (let i = 0; i < sheets.length; i++) {
-          const sheet = sheets[i];
-          if (sheet.href) {
-            sheet.cssRules; // Lanza error si no está cargado (CORS ok en nuestro caso)
-          }
+      const linkElements = document.querySelectorAll('link[rel="stylesheet"]');
+      for (let i = 0; i < linkElements.length; i++) {
+        const link = linkElements[i] as HTMLLinkElement;
+        // Un stylesheet cross-origin lanza SecurityError al acceder a cssRules,
+        // pero .sheet será null si aún no terminó de cargar.
+        if (link.href && !link.sheet) {
+          return false;
         }
-        return true;
-      } catch {
-        return false;
       }
+      return true;
     };
 
     // Polling corto — máximo 3 segundos, luego mostramos de todas formas
@@ -209,14 +205,28 @@ export default function LandingRenderer({
                 const dropHeaders = document.querySelectorAll('.animate-drop:not(.processed)');
                 dropHeaders.forEach(header => {
                   header.classList.add('processed');
-                  const text = header.textContent.trim();
-                  header.textContent = '';
-                  [...text].forEach((char, i) => {
-                    const span = document.createElement('span');
-                    span.textContent = char === ' ' ? '\\u00A0' : char;
-                    span.className = 'drop-letter';
-                    span.style.transitionDelay = (i * 0.05) + 's';
-                    header.appendChild(span);
+                  // Use innerHTML to preserve <br> tags, then process only text nodes
+                  const fragment = document.createDocumentFragment();
+                  const childNodes = Array.from(header.childNodes);
+                  header.innerHTML = '';
+                  childNodes.forEach(node => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                      const text = node.textContent.trim();
+                      [...text].forEach((char, i) => {
+                        const span = document.createElement('span');
+                        span.textContent = char === ' ' ? '\\u00A0' : char;
+                        span.className = 'drop-letter';
+                        span.style.transitionDelay = (i * 0.05) + 's';
+                        fragment.appendChild(span);
+                      });
+                    } else {
+                      // Preserve non-text nodes like <br>
+                      fragment.appendChild(node.cloneNode(true));
+                    }
+                  });
+                  header.appendChild(fragment);
+                  const spans = header.querySelectorAll('.drop-letter');
+                  spans.forEach((span, i) => {
                     setTimeout(() => span.classList.add('visible'), 100 + (i * 50));
                   });
                 });

@@ -35,6 +35,7 @@ export interface SiteHeaderProps {
     showAuthButtons?: boolean;
     transparentIsDark?: boolean;
     forceDark?: boolean;
+    hideThemeToggle?: boolean;
     className?: string;
 }
 
@@ -53,6 +54,7 @@ export function SiteHeader({
     showAuthButtons = true,
     transparentIsDark = false,
     forceDark = false,
+    hideThemeToggle = false,
     className,
 }: SiteHeaderProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,8 +70,9 @@ export function SiteHeader({
 
     return (
         <header className={cn(
-            "fixed top-0 left-0 w-full z-50 transition duration-300",
-            forceDark ? "py-3" : "",
+            "fixed top-0 left-0 w-full z-50 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            forceDark && isScrolled ? "translate-y-0 opacity-100 bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl py-3" : "",
+            forceDark && !isScrolled ? "-translate-y-full opacity-0 py-3" : "",
             !forceDark && isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3" : "",
             !forceDark && !isScrolled ? "bg-transparent py-6" : "",
             className
@@ -144,7 +147,7 @@ export function SiteHeader({
 
                 {/* Actions (Toggle Theme + Cart, Col 3 on Both) */}
                 <div className="flex-1 flex items-center justify-end gap-1">
-                    {mounted && (
+                    {mounted && !hideThemeToggle && (
                         <button 
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                             className={cn(
@@ -185,7 +188,7 @@ interface DesktopNavLinksProps {
 function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true, isWhiteText = false, isScrolled = false }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
         "text-base font-medium transition-colors hover:text-primary",
-        currentPath === path ? "text-primary font-bold" : (isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground/80"))
+        currentPath === path ? (isWhiteText ? "text-white font-bold underline underline-offset-4 decoration-2" : "text-primary font-bold") : (isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground/80"))
     );
 
     return (

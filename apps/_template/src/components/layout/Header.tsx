@@ -18,6 +18,8 @@ interface HeaderProps {
     showAuthButtons?: boolean;
     primaryColor?: string;
     forceDark?: boolean;
+    hideThemeToggle?: boolean;
+    hideCart?: boolean;
 }
 
 export function Header({ 
@@ -25,21 +27,13 @@ export function Header({
     links = [], 
     showAuthButtons = true,
     primaryColor,
-    forceDark,
+    forceDark = false,
+    hideThemeToggle = false,
+    hideCart = false,
 }: HeaderProps) {
     const pathname = usePathname();
     const { isAuthenticated } = useAuth();
-    const [isScrolled, setIsScrolled] = React.useState(false);
 
-    React.useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    const isHome = pathname === "/";
     const finalLogo = logo || siteConfig.branding.logo;
 
     return (
@@ -49,16 +43,11 @@ export function Header({
             links={links}
             isAuthenticated={isAuthenticated}
             pathname={pathname}
-            cartComponent={<CartSheet />}
+            cartComponent={hideCart ? undefined : <CartSheet />}
             showAuthButtons={showAuthButtons}
-            transparentIsDark={true}
-            forceDark={true}
-            className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isScrolled 
-                ? "translate-y-0 opacity-100 bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl" 
-                : "-translate-y-full opacity-0"
-            }`}
+            transparentIsDark={forceDark}
+            forceDark={forceDark}
+            hideThemeToggle={hideThemeToggle}
         />
     );
 }
-

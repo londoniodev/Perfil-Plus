@@ -1,27 +1,29 @@
 export const siteConfig = {
-    name: "Gesco Abogados",
-    description: "Asesoría jurídica integral y gestión de cobro",
-    domain: "gesco.perfil.plus",
-    tenantId: "gesco",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://gesco.perfil.plus",
+    name: "Tienda Template",
+    description: "Plataforma multi-tenant de Perfil Plus",
+    domain: "template.perfil.plus",
+    tenantId: "template",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://template.perfil.plus",
     ogImage: "",
-    keywords: ["abogados", "colombia", "cobro de cartera", "juridico"],
-    phone: "+57 311 372 5245",
-    email: "info@gescoabogados.com",
+    keywords: ["saas", "multi-tenant", "ecommerce", "perfil plus"],
+    phone: "+57 000 000 0000",
+    email: "hola@perfil.plus",
     branding: {
         logo: "/favicon.ico",
-        logoAlt: "Gesco Abogados"
+        logoAlt: "Logo"
     },
-    whatsappMessage: "Hola, me gustaría recibir más información.",
+    whatsappMessage: "Hola, vengo desde la web.",
     features: {
-        blog: { enabled: false },
-        store: { enabled: false },
+        blog: { enabled: true },
+        store: { enabled: true },
         lms: { enabled: false },
         portfolio: { enabled: false },
         ebooks: { enabled: false },
     },
     mainNav: [
         { title: "Inicio", href: "/" },
+        { title: "Tienda", href: "/tienda" },
+        { title: "Blog", href: "/blog" },
     ],
-    salesPageUrl: "https://www.google.com"
+    salesPageUrl: "https://perfil.plus"
 };

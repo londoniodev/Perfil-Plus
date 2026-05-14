@@ -336,7 +336,7 @@ export class TenantService {
         bs.tagline ||
         menuData.tagline ||
         tenant.notes ||
-        'Plataforma Profesional';
+        null;
 
       const contactPhone =
         (whatsappSetting?.value as string) || menuData.contactPhone || null;

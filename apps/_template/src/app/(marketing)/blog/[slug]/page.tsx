@@ -84,6 +84,8 @@ export default async function PostPage({ params }: PostPageProps) {
 
   let post;
   let dynamicSiteUrl = "http://localhost:3000";
+  let businessName = "Tienda";
+  let logo = "";
   try {
     const headersList = await headers()
     const features = getTenantFeatures(headersList);
@@ -101,13 +103,14 @@ export default async function PostPage({ params }: PostPageProps) {
     dynamicSiteUrl = `${protocol}://${host}`;
 
     post = await getPostBySlug(slug, tenantId);
+    
+    // Obtener diseño para el SEO
+    const design = await getTenantDesign(tenantId);
+    businessName = design?.name || "Tienda";
+    logo = design?.brandSettings?.logoUrl || design?.logo || `${dynamicSiteUrl}/favicon.ico`;
   } catch {
     notFound();
   }
-
-  const design = await getTenantDesign(tenantId);
-  const businessName = design?.name || "Tienda";
-  const logo = design?.brandSettings?.logoUrl || design?.logo || `${dynamicSiteUrl}/favicon.ico`;
 
   const { html, toc } = processContent(post.content || "");
   const postUrl = `${dynamicSiteUrl}/blog/${slug}`;

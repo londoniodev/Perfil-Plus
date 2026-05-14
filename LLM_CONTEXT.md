@@ -70,6 +70,8 @@ Usa Promise.allSettled para llamadas de red independientes (ej. pedir 10 Signed 
 - **`apps/saas_dashboard`**: Código de la aplicación SaaS (Panel de admin, POS, cocina). Separado del template para optimizar builds.
 - **`apps/api`**: Backend único en NestJS. Atiende a todos los tenants diferenciando por el header `x-tenant-id`.
 - **`apps/platform`**: Panel SuperAdmin. Gestiona la creación de tenants.
+- **`packages/`**: Reservado ESTRICTAMENTE para librerías compartidas de TypeScript (`ui`, `features`, `database`).
+- **`tooling/`**: Herramientas ejecutables, CLI y scripts independientes (`landing-builder`, `load-testing`).
 
 ---
 

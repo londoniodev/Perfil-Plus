@@ -28,6 +28,9 @@ Además, las reglas fraccionadas de arquitectura, backend y seguridad se encuent
 │   ├── ui               # Componentes compartidos de React (Shadcn UI)
 │   ├── features         # Lógica compartida, validaciones (Zod)
 │   └── restaurant-sdk   # Hooks y lógica específica de negocio
+├── tooling/
+│   ├── landing-builder  # CLI de procesamiento HTML y MinIO
+│   └── load-testing     # Pruebas de estrés con K6
 ├── .agents/rules/       # Reglas detalladas de arquitectura para IAs
 └── LLM_CONTEXT.md       # Reglas unificadas de desarrollo
 ```

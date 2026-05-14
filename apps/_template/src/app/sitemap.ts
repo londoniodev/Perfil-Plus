@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { API_BASE } from '@/lib/config';
 import { getTenantId } from '@/lib/config-server';
 import { headers } from 'next/headers';
+import { getDynamicUrl } from '@/lib/network';
 
 interface Post {
     slug: string;
@@ -68,11 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const tenantId = await getTenantId();
     const headersList = await headers();
     
-    // 1. Calcular el dominio actual (dinámico por Tenant)
-    const host = headersList.get("x-forwarded-host") || headersList.get("host") || "localhost";
-    const isLocal = host.includes("localhost") || host.includes("127.0.0.1") || host.includes(":");
-    const protocol = isLocal ? "http" : "https";
-    const urlBase = `${protocol}://${host}`;
+    const urlBase = getDynamicUrl(headersList);
 
     // 2. Leer Features
     const featuresHeader = headersList.get("x-tenant-features") || "[]";

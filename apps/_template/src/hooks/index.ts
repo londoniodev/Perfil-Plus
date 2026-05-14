@@ -12,3 +12,6 @@ export { useAuth } from "./use-auth";
 // Domain Hooks
 export { useBlog } from "./use-blog";
 
+
+// Analytics Hook
+export { useAnalytics } from "./use-analytics";

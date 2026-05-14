@@ -11,6 +11,7 @@ import { baseMetadata } from "@/config/metadata";
 import { siteConfig } from "@/config/site";
 import { headers } from "next/headers";
 import { hexToHsl, getContrastForegroundHsl, getReadablePrimaryHsl } from "@alvarosky/shared";
+import { getDynamicUrl } from "@/lib/network";
 
 const PwaInstallPrompt = dynamic(
   () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt)
@@ -182,7 +183,7 @@ export default async function RootLayout({
           <GlobalSchemas 
             tenantId={tenantId} 
             design={design} 
-            url={process.env.NEXT_PUBLIC_SITE_URL || `https://${headersList.get('host')}`} 
+          url={getDynamicUrl(headersList)} 
           />
           <ToastProvider>
             {children}

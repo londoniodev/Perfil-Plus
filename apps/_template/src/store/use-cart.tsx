@@ -3,6 +3,7 @@
 import { createContext, useRef, useContext, useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import { createCartStore, CartStore, CartState, CartItem, CartActions } from './cart-store';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 export type { CartStore, CartState, CartItem, CartActions };
 
@@ -38,10 +39,32 @@ export function useCart(): CartStore;
 export function useCart<T>(selector: (state: CartStore) => T): T;
 export function useCart<T>(selector?: (state: CartStore) => T): T | CartStore {
   const store = useContext(CartStoreContext);
+  const { trackAddToCart } = useAnalytics();
+
   if (!store) {
       throw new Error('Missing CartProvider in the React tree');
   }
-  return useStore(store, selector || ((state: CartStore) => state as any));
+  
+  const cartStore = useStore(store, selector || ((state: CartStore) => state as any));
+
+  // Si se solicitó el store completo, envolvemos addItem para incluir tracking
+  if (!selector) {
+    const originalAddItem = (cartStore as CartStore).addItem;
+    return {
+      ...cartStore as CartStore,
+      addItem: (data: Omit<CartItem, 'cartItemId'>) => {
+        trackAddToCart({
+            id: data.productId,
+            name: data.title,
+            price: data.price,
+            quantity: data.quantity
+        });
+        originalAddItem(data);
+      }
+    };
+  }
+
+  return cartStore;
 }
 
 /**

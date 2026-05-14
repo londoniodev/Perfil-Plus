@@ -80,22 +80,6 @@ export const createCartStore = (
                 },
 
                 addItem: (data) => {
-                    // TIKTOK PIXEL: AddToCart
-                    if (typeof window !== 'undefined' && (window as any).ttq) {
-                        try {
-                            ;(window as any).ttq.track('AddToCart', {
-                                contents: [{
-                                    content_id: data.productId,
-                                    content_name: data.title,
-                                    quantity: data.quantity,
-                                    price: data.price
-                                }],
-                                value: data.price * data.quantity,
-                                currency: 'COP'
-                            })
-                        } catch(e) {}
-                    }
-
                     const currentItems = get().items
                     // Generar Hash Determinista para el identificador de la línea en carrito
                     const modifiersHash = JSON.stringify([...(data.modifiers || [])].sort((a,b) => a.id.localeCompare(b.id)))

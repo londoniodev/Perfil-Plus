@@ -3,7 +3,7 @@ import MenuClient from "@/components/menu/MenuClient"
 import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { getTenantDesign } from "@/lib/tenant-server"
-import { TenantFeature } from "@alvarosky/types"
+import { TenantFeature } from "@alvarosky/features"
 import { getTenantFeatures } from "@alvarosky/shared"
 
 // ─────────────────────────────────────────────

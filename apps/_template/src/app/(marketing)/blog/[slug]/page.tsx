@@ -5,7 +5,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import { headers } from "next/headers";
 import { Metadata } from "next";
 import { getTenantFeatures } from "@alvarosky/shared";
-import { TenantFeature } from "@alvarosky/types";
+import { TenantFeature } from "@alvarosky/features";
 import { PostHeader, RelatedTopics, AdaptiveImage, Button, IconLock, IconDocument, IconFile, ShareButtons, TableOfContents, type TocItem } from "@alvarosky/ui";
 import { BlogBackButton } from "../BlogBackButton";
 

@@ -5,7 +5,7 @@ import { ProductConfigurator } from "@/components/shop/product-configurator"
 import { headers } from "next/headers"
 import { Metadata } from "next"
 import { getTenantFeatures } from "@alvarosky/shared"
-import { TenantFeature } from "@alvarosky/types"
+import { TenantFeature } from "@alvarosky/features"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTenantId } from "@/lib/config-server";
 import { getTenantDesign } from "@/lib/tenant-server";
-import { FEATURE_ROUTES } from "@alvarosky/types";
+import { FEATURE_ROUTES } from "@alvarosky/features";
 import { TenantMarketingData } from "@/types/marketing";
 import { getBucketName } from "@alvarosky/shared";
 import { Metadata } from "next";

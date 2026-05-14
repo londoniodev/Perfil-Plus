@@ -118,65 +118,6 @@ export async function getTags(tenantId?: string): Promise<Tag[]> {
     return fetchAPI<Tag[]>('/blog/tags', undefined, tenantId);
 }
 
-// ============ LMS ============
-import { Theme, Course, Lesson } from '@/types/lms';
-
-export async function getThemes(tenantId?: string): Promise<Theme[]> {
-    return fetchAPI<Theme[]>('/lms/themes', undefined, tenantId);
-}
-
-export async function getThemeBySlug(slug: string, tenantId?: string): Promise<Theme> {
-    return fetchAPI<Theme>(`/lms/themes/${slug}`, undefined, tenantId);
-}
-
-export async function getCourseBySlug(slug: string, tenantId?: string): Promise<Course> {
-    return fetchAPI<Course>(`/lms/courses/${slug}`, undefined, tenantId);
-}
-
-export async function getLessonBySlug(courseSlug: string, lessonSlug: string, token?: string, tenantId?: string): Promise<Lesson> {
-    const headers: any = {};
-    if (token) headers.Authorization = `Bearer ${token}`;
-    return fetchAPI<Lesson>(`/lms/courses/${courseSlug}/lessons/${lessonSlug}`, { headers }, tenantId);
-}
-
-// ============ SHOP & RESTAURANT ============
-import { Order, OrderStatus } from '@/types/restaurant';
-
-export async function createOrder(data: any, tenantId?: string): Promise<any> {
-    return fetchAPI('/orders', {
-        method: 'POST',
-        body: JSON.stringify(data),
-    }, tenantId);
-}
-
-export async function getAdminOrders(status?: OrderStatus, activeOnly: boolean = false, tenantId?: string): Promise<Order[]> {
-    const queryParams = new URLSearchParams();
-    if (status) queryParams.append('status', status);
-    if (activeOnly) queryParams.append('activeOnly', 'true');
-    return fetchAPI<Order[]>(`/admin/orders?${queryParams.toString()}`, undefined, tenantId);
-}
-
-export async function updateOrderStatus(orderId: string, status: OrderStatus, tenantId?: string): Promise<Order> {
-    return fetchAPI<Order>(`/admin/orders/${orderId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-    }, tenantId);
-}
-
-export async function toggleItemPrepared(orderId: string, itemId: string, isPrepared: boolean, tenantId?: string): Promise<any> {
-    return fetchAPI(`/admin/orders/${orderId}/items/${itemId}/prepared`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isPrepared }),
-    }, tenantId);
-}
-
-export async function payOrder(orderId: string, data: { amount: number, method: string, itemIds?: string[], closeOrder?: boolean, reference?: string }, tenantId?: string): Promise<any> {
-    return fetchAPI(`/admin/orders/${orderId}/pay`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-    }, tenantId);
-}
-
 export async function trackOrder(orderId: string, tenantId?: string): Promise<any> {
     return fetchAPI(`/orders/track/${orderId}`, undefined, tenantId);
 }

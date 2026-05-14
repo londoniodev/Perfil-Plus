@@ -85,13 +85,19 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // App-like feel, no zoom
-  themeColor: "#09090b", // Dark theme match
-};
+export async function generateViewport(): Promise<Viewport> {
+  const tenantId = await getTenantId();
+  const design = await getTenantDesign(tenantId);
+  const themeColor = design?.brandSettings?.primaryColor || "#09090b";
+
+  return {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    themeColor: themeColor,
+  };
+}
 
 export default async function RootLayout({
   children,

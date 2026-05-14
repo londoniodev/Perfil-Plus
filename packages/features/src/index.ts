@@ -11,3 +11,6 @@ export * from './api';
 
 // Constants (Brand Catalog, etc.)
 export * from './constants/brand-catalog';
+
+// Types
+export * from './types';

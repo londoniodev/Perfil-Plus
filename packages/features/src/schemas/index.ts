@@ -9,6 +9,7 @@ export * from './inventory';
 
 // Shop and Checkout schemas
 export * from './shop';
+export * from './brand.schema';
 
 // Blog schemas
 export * from './blog';

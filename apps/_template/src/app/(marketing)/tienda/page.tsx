@@ -10,7 +10,7 @@ export const metadata = {
     openGraph: { url: "/tienda" }
 }
 
-import { TenantFeature } from "@alvarosky/types"
+import { TenantFeature } from "@alvarosky/features"
 import { getTenantFeatures } from "@alvarosky/shared"
 
 export default async function TiendaPage() {

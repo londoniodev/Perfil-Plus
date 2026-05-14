@@ -4,7 +4,7 @@ import { serverFetch } from "@/lib/api-server";
 import { revalidateTag } from "next/cache";
 import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { getSessionUser } from "@/lib/auth-server";
-import { BrandSettingsFormValues } from "@alvarosky/shared";
+import { BrandSettingsFormValues } from "@alvarosky/features";
 
 /**
  * Server Action para actualizar BrandSettings (Motor de Marca Blanca)

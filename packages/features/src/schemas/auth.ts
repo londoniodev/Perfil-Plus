@@ -55,4 +55,14 @@ export const ResetPasswordSchema = z.object({
 
 export type ResetPasswordValues = z.infer<typeof ResetPasswordSchema>;
 
-
+// ============================================================================
+// USER SCHEMA
+// ============================================================================
+export const UserSchema = z.object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    name: z.string().min(2),
+    role: z.enum(["ADMIN", "USER", "PSYCHOLOGIST"]),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});

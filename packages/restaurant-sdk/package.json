@@ -9,15 +9,10 @@
         "type-check": "tsc --noEmit"
     },
     "dependencies": {
-        "clsx": "^2.1.0",
-        "lucide-react": "^0.344.0",
-        "pnpm": "*",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "swr": "^2.2.5",
-        "tailwind-merge": "^2.2.1",
-        "zustand": "^4.5.2",
-        "@alvarosky/database": "workspace:*"
+        "zustand": "^4.5.2"
     },
     "devDependencies": {
         "@alvarosky/eslint-config": "workspace:*",

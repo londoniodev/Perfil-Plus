@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { getTenantId } from "@/lib/config-server";
 import TrainingCatalog from "@/components/marketing/TrainingCatalog";
 import { notFound } from "next/navigation";
-import { TenantFeature } from "@alvarosky/types";
+import { TenantFeature } from "@alvarosky/features";
 import { getTenantFeatures } from "@alvarosky/shared";
 
 export const metadata = {

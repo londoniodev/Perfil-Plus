@@ -24,7 +24,7 @@ import {
     Globe
 } from "lucide-react";
 import { S3Uploader } from "./S3Uploader";
-import { AVAILABLE_FEATURES, TenantFeature } from "@alvarosky/types";
+import { AVAILABLE_FEATURES, TenantFeature } from "@alvarosky/features";
 import { 
     getTenantFeaturesAction, 
     updateTenantFeatures, 

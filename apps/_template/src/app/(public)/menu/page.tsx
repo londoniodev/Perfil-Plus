@@ -2,7 +2,7 @@ import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import MenuClient from "@/components/menu/MenuClient"
 import { getTenantDesign } from "@/lib/tenant-server"
-import { TenantFeature } from "@alvarosky/types"
+import { TenantFeature } from "@alvarosky/features"
 import { getTenantFeatures } from "@alvarosky/shared"
 
 export default async function MenuPage({

@@ -10,13 +10,11 @@
   },
   "dependencies": {
     "@alvarosky/database": "workspace:*",
-    "@alvarosky/database-management": "workspace:*",
     "@alvarosky/shared": "workspace:*",
     "@alvarosky/eslint-config": "workspace:*",
     "@alvarosky/features": "workspace:*",
     "@alvarosky/restaurant-sdk": "workspace:*",
     "@alvarosky/tailwind-config": "workspace:*",
-    "@alvarosky/types": "workspace:*",
     "@alvarosky/typescript-config": "workspace:*",
     "@alvarosky/ui": "workspace:*",
     "@dnd-kit/core": "^6.3.1",

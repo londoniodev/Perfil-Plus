@@ -8,7 +8,7 @@ const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/
 
 import { getPosts } from "@/lib/api";
 import { notFound } from "next/navigation";
-import { TenantFeature } from "@alvarosky/types";
+import { TenantFeature } from "@alvarosky/features";
 import { getTenantFeatures } from "@alvarosky/shared";
 
 export default async function BlogPage() {

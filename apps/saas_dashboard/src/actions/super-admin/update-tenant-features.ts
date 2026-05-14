@@ -4,7 +4,7 @@ import { serverFetch } from "@/lib/api-server"
 import { getSessionUser } from "@/lib/auth-server"
 import { redirect } from "next/navigation"
 import { z } from "zod"
-import { VALID_FEATURE_VALUES } from "@alvarosky/types"
+import { VALID_FEATURE_VALUES } from "@alvarosky/features"
 
 // --- Schema Zod (derivado del SSOT) ---
 const updateFeaturesSchema = z.object({

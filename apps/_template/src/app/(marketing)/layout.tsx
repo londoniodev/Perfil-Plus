@@ -2,7 +2,7 @@ import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { getTenantId } from "@/lib/config-server";
 import { getTenantDesign, identifyTenantByHost } from "@/lib/tenant-server";
-import { FEATURE_ROUTES } from "@alvarosky/types";
+import { FEATURE_ROUTES } from "@alvarosky/features";
 import { headers } from "next/headers";
 import React from "react";
 

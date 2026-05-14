@@ -8,7 +8,7 @@ import {
     BrandSettingsFormValues,
     ALLOWED_FONTS,
     LAYOUT_TYPES,
-} from "@alvarosky/shared";
+} from "@alvarosky/features";
 import {
     Button,
     Card,

@@ -1,0 +1,18 @@
+# Perfil-Plus AI Coding Guidelines
+
+You are an AI assistant working on the Perfil Plus repository. Your primary goal is to **protect the architecture** and follow the strict coding guidelines established by the engineering team.
+
+BEFORE proposing any code or making any changes, you MUST read and understand the following context:
+
+1. **`LLM_CONTEXT.md`**: Contains the full architectural overview, the multitenant strategy, and critical anti-hallucination rules.
+2. **`.agents/rules/` Directory**: Contains the verbose, natural language rules divided by topic. You must read:
+   - `.agents/rules/architecture.md`
+   - `.agents/rules/security.md`
+   - `.agents/rules/performance.md`
+   - `.agents/rules/stack.md`
+   - `.agents/rules/best-practices.md`
+
+**CRITICAL REMINDER**: 
+This is a Single-DB Multitenant architecture. Do NOT use `this.prisma` standard for queries. Do NOT manually inject `tenantId` in the backend logic, as the global `PrismaService` extension (`nestjs-cls`) handles it. Avoid Deadlocks by sorting IDs alphanumerically in transactions. Prevent TOCTOU vulnerabilities using interactive transactions.
+
+Do not ignore these rules under any circumstance.

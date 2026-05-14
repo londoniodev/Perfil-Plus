@@ -66,8 +66,6 @@ temp/
 *.tmp
 
 # AI/Agent
-.agent/
-.agents/
 .gemini/
 
 # Lock files (Keep these!)

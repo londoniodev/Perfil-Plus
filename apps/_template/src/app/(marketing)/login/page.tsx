@@ -26,7 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@alvarosky/ui";
-import { LoginSchema, type LoginValues } from "@/schemas/auth";
+import { LoginSchema, type LoginValues } from "@alvarosky/features";
 
 function LoginForm() {
   const { tenantId } = useTenant();

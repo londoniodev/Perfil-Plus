@@ -11,6 +11,5 @@ export { useScroll } from "./use-scroll";
 export { useAuth } from "./use-auth";
 
 // Domain Hooks
-export { useCourses } from "./use-courses";
 export { useBlog } from "./use-blog";
 

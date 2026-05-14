@@ -4,7 +4,6 @@
  */
 
 // UI Hooks
-export { useMobile } from "./use-mobile";
 export { useScroll } from "./use-scroll";
 
 // Auth Hook (re-export)

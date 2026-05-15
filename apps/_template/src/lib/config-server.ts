@@ -1,8 +1,9 @@
-// ============================================================================
-// SERVER-ONLY TENANT CONFIGURATION
-// ============================================================================
-
 import { headers } from 'next/headers';
+
+// ── Environment Configuration ──
+export const INTERNAL_API_URL = (process.env.INTERNAL_API_URL || 'http://localhost:3001/api').replace(/\/+$/, "");
+export const S3_PUBLIC_ENDPOINT = (process.env.S3_ENDPOINT || "http://localhost:9000").replace(/\/+$/, "");
+export const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
 /**
  * Get tenant ID from request headers (Server Components only)

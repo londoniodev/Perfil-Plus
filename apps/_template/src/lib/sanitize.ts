@@ -1,41 +1,36 @@
-import DOMPurify from 'isomorphic-dompurify';
-
-const ALLOWED_TAGS = [
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'p', 'br', 'strong', 'em', 'u', 'strike', 's',
-    'a', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
-    'img', 'figure', 'figcaption', 'table', 'thead', 'tbody',
-    'tr', 'th', 'td', 'hr', 'div', 'span', 'sub', 'sup'
-];
-
-const ALLOWED_ATTR = [
-    'href', 'src', 'alt', 'title', 'class', 'id',
-    'target', 'rel', 'width', 'height', 'style',
-    'loading', 'decoding'
-];
+import DOMPurify from "isomorphic-dompurify";
 
 /**
- * Sanitiza contenido HTML para prevenir ataques XSS.
- * Permite solo tags y atributos seguros para contenido editorial.
+ * Configuración estándar de sanitización para Perfil-Plus.
+ * Permite estructuras comunes de landing pages pero bloquea scripts maliciosos.
  */
-export function sanitizeHtml(dirty: string): string {
-    return DOMPurify.sanitize(dirty, {
-        ALLOWED_TAGS,
-        ALLOWED_ATTR,
-        ALLOW_DATA_ATTR: false,
-        ADD_ATTR: ['target'],
-    });
-}
+const DEFAULT_CONFIG = {
+    ALLOWED_TAGS: [
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
+        'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
+        'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'iframe',
+        'img', 'span', 'section', 'main', 'article', 'aside', 'footer', 'header',
+        'nav', 'details', 'summary', 'picture', 'source', 'video', 'audio'
+    ],
+    ALLOWED_ATTR: [
+        'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'id', 'style',
+        'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'autoplay',
+        'controls', 'muted', 'loop', 'poster', 'preload', 'type'
+    ],
+    ALLOWED_IFRAME_DOMAINS: ['youtube.com', 'youtu.be', 'vimeo.com', 'google.com']
+};
 
 /**
- * Sanitiza contenido HTML de forma más estricta.
- * Para contenido generado por usuarios (comentarios, etc).
+ * Sanitiza contenido HTML para su renderizado seguro en el cliente.
+ * @param html El HTML bruto a sanitizar.
+ * @returns El HTML limpio.
  */
-export function sanitizeHtmlStrict(dirty: string): string {
-    return DOMPurify.sanitize(dirty, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a', 'ul', 'ol', 'li'],
-        ALLOWED_ATTR: ['href', 'target', 'rel'],
-        ALLOW_DATA_ATTR: false,
-    });
+export function sanitizeHtml(html: string): string {
+    if (!html) return '';
+    
+    return DOMPurify.sanitize(html, {
+        ...DEFAULT_CONFIG,
+        ADD_TAGS: ['iframe'], // Asegurar que iframe esté permitido
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling']
+    }) as string;
 }
-

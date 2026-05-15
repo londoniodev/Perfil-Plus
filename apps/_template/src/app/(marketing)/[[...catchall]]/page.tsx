@@ -6,36 +6,12 @@ import { FEATURE_ROUTES } from "@alvarosky/features";
 import { TenantMarketingData } from "@/types/marketing";
 import { getBucketName } from "@alvarosky/shared";
 import { Metadata } from "next";
-import DOMPurify from "isomorphic-dompurify";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { INTERNAL_API_URL, S3_PUBLIC_ENDPOINT, INTERNAL_API_KEY } from "@/lib/config-server";
 import DefaultStorefront from "@/components/storefronts/shared/DefaultStorefront";
 import LinktreeFallback from "@/components/marketing/LinktreeFallback";
 import LandingRenderer from "@/components/marketing/LandingRenderer";
 
-// ── Constants ──
-const INTERNAL_API_URL = process.env.INTERNAL_API_URL || "http://127.0.0.1:3001/api";
-const S3_PUBLIC_ENDPOINT = (process.env.S3_ENDPOINT || "http://127.0.0.1:9000").replace(/\/+$/, "");
-
-// ── Domain Resilience ──
-// Dominios S3 históricos/legados que pueden estar quemados en archivos body.html almacenados.
-// Al añadir la URL actual también, nos aseguramos de que la regex no haga reemplazos rotos.
-const LEGACY_S3_DOMAINS = [
-  /https?:\/\/s3\.xn--alvarolondoo-khb\.dev/g,   // Punycode del dominio anterior
-  /https?:\/\/s3\.alvarolondo[ñn]o\.dev/g,        // Unicode del dominio anterior
-  /https?:\/\/localhost:9000/g,                     // Entorno de desarrollo local
-];
-
-/**
- * Reescribe cualquier referencia a un dominio S3 legacy/anterior en el HTML
- * por el endpoint S3 actual configurado en la variable de entorno.
- * Esto hace al renderer inmune a futuras migraciones de dominio.
- */
-function rebaseAssetUrls(html: string, currentEndpoint: string): string {
-  let result = html;
-  for (const pattern of LEGACY_S3_DOMAINS) {
-    result = result.replace(pattern, currentEndpoint);
-  }
-  return result;
-}
 
 // ── Types ──
 interface LandingData {
@@ -120,7 +96,7 @@ async function getMarketingData(tenantId: string): Promise<TenantMarketingData |
   try {
     const res = await fetch(`${INTERNAL_API_URL}/tenant/marketing?tenant=${tenantId}`, {
       headers: {
-        "x-internal-token": process.env.INTERNAL_API_KEY || "default_dev_secret_key",
+        "x-internal-token": INTERNAL_API_KEY,
       },
       next: {
         tags: ["tenant-marketing", `tenant-marketing-${tenantId}`],
@@ -204,8 +180,8 @@ export default async function MarketingHubPage({ params }: Props) {
   const landing = await fetchLandingFromS3(tenantId, tenantSlug, pageSlug);
 
   if (landing?.body) {
-    // 1. Rebase: normalizar URLs de S3 legadas al endpoint actual
-    const rebasedBody = rebaseAssetUrls(landing.body, S3_PUBLIC_ENDPOINT);
+    // 1. Ya no se requiere rebase de dominios legados (Purgado)
+    const rebasedBody = landing.body;
 
     // 2. Convertir rutas RELATIVAS a URLs absolutas de S3
     //    El body.html puede usar href="./assets/..." o src="../../nuevas imagenes/..."
@@ -249,9 +225,7 @@ export default async function MarketingHubPage({ params }: Props) {
     // 5. Purificación estricta (XSS Shield)
     // DOMPurify elimina <link>, <style> importados y scripts.
     // Los stylesheets ya fueron extraídos en el paso 3 y se inyectarán aparte.
-    const finalCleanBody = DOMPurify.sanitize(preSanitizedBody, {
-      USE_PROFILES: { html: true, svg: true },
-    });
+    const finalCleanBody = sanitizeHtml(preSanitizedBody);
     // 6. Renderizar los <link> de CSS directamente como JSX server-side
     //    Esto elimina el FOUC (Flash of Unstyled Content) porque el CSS
     //    viaja junto con el HTML inicial, sin esperar a useEffect del cliente.

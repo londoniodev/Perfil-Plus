@@ -11,7 +11,6 @@ import { baseMetadata } from "@/config/metadata";
 import { getDynamicUrl } from "@/lib/network";
 import { headers } from "next/headers";
 import { hexToHsl, getContrastForegroundHsl, getReadablePrimaryHsl } from "@alvarosky/shared";
-import { getDynamicUrl } from "@/lib/network";
 
 const PwaInstallPrompt = dynamic(
   () => import("@alvarosky/ui/pwa-install-prompt").then((mod) => mod.PwaInstallPrompt)

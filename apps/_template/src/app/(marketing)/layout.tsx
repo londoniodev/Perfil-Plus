@@ -5,6 +5,7 @@ import { getTenantDesign, identifyTenantByHost } from "@/lib/tenant-server";
 import { FEATURE_ROUTES } from "@alvarosky/features";
 import { headers } from "next/headers";
 import React from "react";
+import { getDynamicUrl } from "@/lib/network";
 
 // ── Encoding Helpers ──
 /**
@@ -41,8 +42,6 @@ function shortenLabel(label: string): string {
     };
     return map[lower] || label;
 }
-
-import { getDynamicUrl } from "@/lib/network";
 
 export default async function MarketingLayout({
     children,

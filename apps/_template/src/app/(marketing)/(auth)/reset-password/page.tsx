@@ -104,7 +104,7 @@ function ResetPasswordFormContent() {
                         El enlace de recuperación es inválido o ha expirado. Por favor solicita uno nuevo.
                     </p>
                     <Button asChild variant="outline">
-                        <Link href="/auth/forgot-password">Solicitar nuevo enlace</Link>
+                        <Link href="/forgot-password">Solicitar nuevo enlace</Link>
                     </Button>
                 </CardContent>
             </Card>

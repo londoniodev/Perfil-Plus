@@ -197,7 +197,7 @@ function LoginForm() {
                   <div className="flex items-center justify-between">
                     <FormLabel>Contraseña</FormLabel>
                     <a
-                      href="/auth/forgot-password"
+                      href="/forgot-password"
                       className="text-sm font-medium text-primary hover:text-primary-light hover:underline underline-offset-4 transition-colors"
                       tabIndex={-1}
                     >

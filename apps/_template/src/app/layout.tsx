@@ -111,6 +111,9 @@ export default async function RootLayout({
   const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
   const headersList = await headers();
   const urlBase = getDynamicUrl(headersList);
+  const headerLinksFromDb = design?.headerLinks || null;
+  const footerLinks = design?.footerLinks || null;
+  const contactPhone = design?.contactPhone || null;
   const contactEmail = design?.contactEmail || null;
   const businessName = design?.name || null;
   const tenantTagline = design?.brandSettings?.tagline || design?.tagline || null;

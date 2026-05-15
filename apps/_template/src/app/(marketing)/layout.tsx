@@ -23,25 +23,6 @@ function fixEncoding(str: string): string {
     }
 }
 
-/**
- * Acorta nombres largos para optimizar el espacio en el header.
- */
-function shortenLabel(label: string): string {
-    if (!label) return label;
-    const lower = label.toLowerCase().trim();
-    const map: Record<string, string> = {
-        'quiénes somos': 'Nosotros',
-        'quienes somos': 'Nosotros',
-        'áreas de práctica': 'Servicios',
-        'areas de practica': 'Servicios',
-        'nuestros servicios': 'Servicios',
-        'modalidades del servicio': 'Modalidades',
-        'nuestros clientes': 'Clientes',
-        'contáctenos': 'Contacto',
-        'contactenos': 'Contacto',
-    };
-    return map[lower] || label;
-}
 
 export default async function MarketingLayout({
     children,
@@ -153,10 +134,9 @@ export default async function MarketingLayout({
         });
         return !isDuplicateLabel && !isDuplicateHref;
     }).map(link => {
-        const cleanLabel = fixEncoding(link.label);
         return {
             ...link,
-            label: shortenLabel(cleanLabel)
+            label: fixEncoding(link.label)
         };
     });
 

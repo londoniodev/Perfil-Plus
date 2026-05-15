@@ -33,7 +33,16 @@ const TenantContext = createContext<TenantContextType>({
 });
 
 export function useTenant() {
-    return useContext(TenantContext);
+    const context = useContext(TenantContext);
+    const upperFeatures = (context.features || []).map(f => f.toUpperCase());
+    
+    return {
+        ...context,
+        isRestaurant: upperFeatures.includes('RESTAURANT'),
+        isShop: upperFeatures.includes('SHOP'),
+        hasLms: upperFeatures.includes('LMS'),
+        hasBlog: upperFeatures.includes('BLOG'),
+    };
 }
 
 export function TenantProvider({ 

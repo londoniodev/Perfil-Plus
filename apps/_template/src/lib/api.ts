@@ -130,6 +130,10 @@ export async function resolveTableInfo(id: string, tenantId?: string): Promise<{
     return fetchAPI(`/tables/resolve/${id}`, undefined, tenantId);
 }
 
+export async function verifyOrderPayment(orderId: string, tenantId?: string): Promise<{ status: string; verified: boolean; paidVia?: string; reason?: string }> {
+    return fetchAPI(`/payments/verify/${orderId}`, { cache: 'no-store' }, tenantId);
+}
+
 export async function verifyBoldPayment(orderId: string, tenantId?: string): Promise<{ status: string; verified: boolean; paidVia?: string; boldStatus?: string; reason?: string }> {
     return fetchAPI(`/payments/verify-bold/${orderId}`, { cache: 'no-store' }, tenantId);
 }

@@ -8,6 +8,7 @@ import { AppProviders } from "./providers";
 import { getTenantId } from "@/lib/config-server";
 import { getTenantDesign } from "@/lib/tenant-server";
 import { baseMetadata } from "@/config/metadata";
+import { siteConfig } from "@/config/site";
 import { getDynamicUrl } from "@/lib/network";
 import { headers } from "next/headers";
 import { hexToHsl, getContrastForegroundHsl, getReadablePrimaryHsl } from "@alvarosky/shared";

@@ -167,6 +167,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // --- SERVICIOS / PORTAFOLIO ---
+    const host = new URL(urlBase).host;
     const isMasterTenant = host.includes("perfil.plus") && tenantId === "alvarolondono" || tenantId === "alvarolondono";
     if (isMasterTenant || upperFeatures.includes("PORTFOLIO")) {
         staticPages.push(

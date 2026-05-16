@@ -18,7 +18,7 @@ model Tenant {
   ownerEmail         String?
   notes              String?
   design             Json?
-  features           String[]
+  features           TenantFeature[]     @default([])
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   domain             String?             @unique
@@ -1150,4 +1150,18 @@ enum NotificationType {
   ALERT
   NEW_ORDER
   HANDOFF
+}
+
+enum TenantFeature {
+  HAS_DIGITAL_MENU
+  HAS_WEB_CHECKOUT
+  HAS_WHATSAPP_CHECKOUT
+  HAS_POS
+}
+
+model JobLock {
+  id        String   @id
+  lockedAt  DateTime @default(now())
+  expiresAt DateTime
+  instance  String?
 }

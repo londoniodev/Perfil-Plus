@@ -13,8 +13,8 @@ export async function fetchAPI<T>(endpoint: string, options?: RequestInit): Prom
             'Content-Type': 'application/json',
             ...options?.headers,
         },
-        next: { revalidate: config.revalidate },
-    });
+        ...(config.revalidate !== undefined ? { next: { revalidate: config.revalidate } } : {}),
+    } as any);
 
     if (!res.ok) {
         throw new Error(`API Error: ${res.status}`);

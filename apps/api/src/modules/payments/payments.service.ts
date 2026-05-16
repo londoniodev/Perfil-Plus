@@ -21,6 +21,8 @@ import * as crypto from 'crypto';
 import type { Request } from 'express';
 import { CreateCheckoutDto } from './dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PLAN_FEATURE_MAP } from '@alvarosky/shared';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentsService {
@@ -170,6 +172,7 @@ export class PaymentsService {
     userId: string,
     email?: string,
     frontUrl?: string,
+    planId?: string,
   ) {
     await this.initMercadoPago();
 
@@ -222,6 +225,8 @@ export class PaymentsService {
       external_reference: userId,
       metadata: {
         userId,
+        tenant_id: this.getTenantId(),
+        plan_id: planId || 'free',
         type: 'subscription',
       },
     };
@@ -639,11 +644,11 @@ export class PaymentsService {
       return { status: 'ignored', reason: 'not a payment notification' };
     }
 
-    return this.processWebhook(dataId);
+    return this.syncPaymentById(dataId, this.getTenantId());
   }
 
-  private async processWebhook(dataId: string) {
-    // En este punto aún no sabemos el tenantId seguro.
+  public async syncPaymentById(dataId: string, tenantId: string) {
+    const resolvedTenantId = tenantId;
     // 1. Debemos hacer un fetch global a todas las configs o iterar si no tenemos el tenantId a priori.
     // Dado que MercadoPago envía la notificación globalmente, a menos que el webhook URL tenga ?tenantId=...
     // Aquí asumimos que el Request inicial lo trajo, PERO si no lo trae, buscaremos el tenant iterativamente o de la metadata si logramos desencriptar.
@@ -718,6 +723,7 @@ export class PaymentsService {
               userId,
               dataId,
               paymentData.payer?.id?.toString(),
+              metadata,
             );
           }
         } else if (paymentType === 'order') {
@@ -995,10 +1001,50 @@ export class PaymentsService {
     userId: string,
     mpPaymentId: string,
     mpPayerId?: string,
+    metadata?: any,
   ) {
+    // 0. Control de Idempotencia estricta
+    const alreadyProcessed = await this.prisma.subscription.findFirst({
+      where: { mpSubscriptionId: mpPaymentId }
+    });
+
+    if (alreadyProcessed && alreadyProcessed.status === 'ACTIVE') {
+      this.logger.log(`Subscription for payment ${mpPaymentId} already processed. Skipping.`);
+      return;
+    }
+
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1); // 1 mes de suscripción
+
+    // 1. Sincronización de Feature Flags Atómicos (Fase 4)
+    const tenantId = metadata?.tenant_id;
+    const planId = metadata?.plan_id;
+
+    if (tenantId && planId) {
+      const newFeatures = PLAN_FEATURE_MAP[planId] || [];
+      
+      this.logger.log(`Syncing features for tenant ${tenantId} [Plan: ${planId}]: ${JSON.stringify(newFeatures)}`);
+
+      await this.prisma.tenant.update({
+        where: { id: tenantId },
+        data: { 
+          features: newFeatures as any,
+          plan: planId // Mantenemos el plan_id para propósitos administrativos
+        },
+      });
+
+      // 2. Revalidación de Caché en el Frontend (Fase 4)
+      try {
+        const apiUrl = this.config.get<string>('API_PUBLIC_URL') || 'http://localhost:3001';
+        const frontendUrl = apiUrl.replace(':3001', ':3000'); // Intento simple de encontrar el frontend en local
+        
+        await axios.get(`${frontendUrl}/api/revalidate?tag=tenant-features-${tenantId}`);
+        this.logger.log(`Cache revalidation triggered for tenant ${tenantId}`);
+      } catch (revalidateError) {
+        this.logger.warn(`Failed to trigger revalidation for tenant ${tenantId}: ${revalidateError.message}`);
+      }
+    }
 
     await this.prisma.subscription.upsert({
       where: { userId },

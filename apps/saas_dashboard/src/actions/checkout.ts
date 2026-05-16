@@ -5,6 +5,7 @@ import { serverFetch } from "@/lib/api-server"
 import { revalidateTag } from "next/cache"
 import { headers } from "next/headers"
 import { z } from "zod"
+import { getTenantFeatures, checkTenantFeature } from "@alvarosky/shared"
 
 // ========== SCHEMAS DE VALIDACIÓN FRONTEND ==========
 const cartItemSchema = z.object({
@@ -61,6 +62,12 @@ export async function placeOrder(
             || headersList.get("x-real-ip")
             || "0.0.0.0"
         const clientUserAgent = headersList.get("user-agent") || "unknown"
+        
+        // 4. Validar Feature Flag Atómico: HAS_WEB_CHECKOUT
+        const features = getTenantFeatures(headersList)
+        if (!checkTenantFeature(features, "HAS_WEB_CHECKOUT")) {
+            throw new Error("El servicio de venta web no está habilitado para este comercio.")
+        }
 
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 

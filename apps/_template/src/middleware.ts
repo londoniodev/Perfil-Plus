@@ -130,6 +130,7 @@ export async function middleware(request: NextRequest) {
         { path: '/tienda', feature: 'SHOP' },
         { path: '/blog', feature: 'BLOG' },
         { path: '/formacion', feature: 'LMS' },
+        { path: '/checkout', feature: 'HAS_WEB_CHECKOUT' },
     ];
 
     // Normalización defensiva de Features (ECOMMERCE -> SHOP)

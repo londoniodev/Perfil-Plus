@@ -120,7 +120,7 @@ export class TenantService {
           dbName: 'web-projects', // Estandarizado
           status: 'ACTIVE',
           plan: 'free',
-          features: finalFeatures,
+          features: finalFeatures as any,
           design: defaultDesign,
           ownerEmail: ownerEmail.toLowerCase(),
           users: {
@@ -264,7 +264,7 @@ export class TenantService {
       return {
         id: 'default',
         name: 'SaaS Platform',
-        features: ['dashboard'],
+        features: ['HAS_DIGITAL_MENU'],
         design: {
           colors: { primary: '#09090b', secondary: '#ffffff' },
           radius: 0.5,
@@ -739,12 +739,12 @@ export class TenantService {
     // 2. Actualizar features en la base de datos (Contexto Global)
     // Normalizamos a MAYÚSCULAS para evitar duplicados por casing (ej: dashboard vs DASHBOARD)
     const normalizedFeatures = Array.from(
-      new Set([...features.map((f) => f.toUpperCase()), 'DASHBOARD']),
+      new Set([...features.map((f) => f.toUpperCase())]),
     );
 
     const updated = await this.prisma.unscoped.tenant.update({
       where: { id: tenant.id },
-      data: { features: normalizedFeatures },
+      data: { features: normalizedFeatures as any },
       select: { id: true, slug: true, features: true },
     });
 

@@ -4,6 +4,7 @@ import Image from "next/image"
 import { Package, CloudDownload, ShoppingCart } from "lucide-react"
 import { Button } from "@alvarosky/ui"
 import { formatCurrency } from "@/lib/utils"
+import { useTenant } from "@/app/providers"
 
 export interface ProductCardProps {
     product: {
@@ -89,16 +90,18 @@ export function ProductCard({ product, onAddToCart, onViewDetails }: ProductCard
                         </span>
                     </div>
 
-                    <Button
-                        onClick={() => onAddToCart ? onAddToCart(product) : onViewDetails?.(product)}
-                        disabled={!isAvailable}
-                        size="sm"
-                        className="rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
-                        aria-label="Añadir al carrito"
-                    >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Añadir
-                    </Button>
+                    {useTenant().canOrder && (
+                        <Button
+                            onClick={() => onAddToCart ? onAddToCart(product) : onViewDetails?.(product)}
+                            disabled={!isAvailable}
+                            size="sm"
+                            className="rounded-full shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95"
+                            aria-label="Añadir al carrito"
+                        >
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            Añadir
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

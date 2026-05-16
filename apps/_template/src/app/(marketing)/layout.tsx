@@ -152,7 +152,7 @@ export default async function MarketingLayout({
             primaryColor={design?.brandSettings?.primaryColor || design?.primary}
             forceDark={hasLandingFeature}
             hideThemeToggle={!upperFeatures.has('SHOP') && !upperFeatures.has('RESTAURANT')}
-            hideCart={!upperFeatures.has('SHOP')}
+            hideCart={!upperFeatures.has('HAS_WEB_CHECKOUT')}
             footer={
                 <Footer
                     logo={logoUrl}

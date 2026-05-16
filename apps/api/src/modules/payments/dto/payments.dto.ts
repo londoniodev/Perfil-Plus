@@ -17,6 +17,10 @@ export class CreateSubscriptionDto {
   @IsOptional()
   @IsString()
   frontUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  planId?: string;
 }
 
 // ==================== CHECKOUT DTOs ====================

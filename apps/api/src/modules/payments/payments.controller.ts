@@ -34,6 +34,7 @@ export class PaymentsController {
       userId,
       dto.email,
       dto.frontUrl,
+      dto.planId,
     );
   }
 

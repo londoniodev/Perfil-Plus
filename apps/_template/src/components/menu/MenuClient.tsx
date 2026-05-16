@@ -63,7 +63,7 @@ export default function MenuClient({
     table?: string,
     layoutType?: 'CLASSIC' | 'INSTAGRAM' | 'MINIMAL'
 }) {
-    const { tenantId } = useTenant();
+    const { tenantId, canOrder, hasWhatsAppCheckout, hasWebCheckout } = useTenant();
     const router = useRouter()
     const { categories, products, restaurant, isLoading, isError } = useMenu(tenantId)
 
@@ -144,6 +144,19 @@ export default function MenuClient({
 
     const handleCheckout = () => {
         if (cart.length === 0) return
+        
+        // Si tiene WhatsApp Checkout pero NO Web Checkout, redirigir a WhatsApp
+        if (hasWhatsAppCheckout && !hasWebCheckout) {
+            const message = `Hola ${restaurantName}, me gustaría realizar un pedido:\n\n` +
+                cart.map(item => `* ${item.title} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`).join('\n') +
+                `\n\n*Total: ${formatCurrency(total)}*`;
+            
+            const phone = restaurant.phone || "570000000000"; // Fallback o usar config del tenant
+            const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            return;
+        }
+
         setIsCartOpen(false)
         if (table) {
             setTableId(table)
@@ -450,7 +463,7 @@ export default function MenuClient({
 
             <AnimatePresence>
                 {/* Floating Cart Button */}
-                {totalUniqueItems > 0 && (
+                {totalUniqueItems > 0 && canOrder && (
                     <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -485,7 +498,7 @@ export default function MenuClient({
                         suggestedProducts={products.filter(p => p.id !== selectedProduct.id).slice(0, 5)}
                         onProductSelect={setSelectedProduct}
                         onClose={() => setSelectedProduct(null)}
-                        onAddToCart={(p: PublicProduct, v: string, m: any[], q: number) => {
+                        onAddToCart={canOrder ? (p: PublicProduct, v: string, m: any[], q: number) => {
                             addItem({
                                 productId: p.id,
                                 title: p.name,
@@ -502,7 +515,7 @@ export default function MenuClient({
                                 productType: "RESTAURANT"
                             })
                             setSelectedProduct(null)
-                        }}
+                        } : undefined}
                         restaurantName={restaurantName}
                         restaurantLogo={logo}
                     />
@@ -575,7 +588,7 @@ export default function MenuClient({
                                     <span className="text-primary">{formatCurrency(total())}</span>
                                 </div>
                                 <Button className="w-full h-14 text-lg font-bold shadow-lg shadow-primary/20 rounded-xl" onClick={handleCheckout} disabled={isSubmitting || cart.length === 0}>
-                                    {isSubmitting ? "Procesando..." : "Confirmar Pedido"}
+                                    {isSubmitting ? "Procesando..." : (hasWhatsAppCheckout && !hasWebCheckout ? "Pedir por WhatsApp" : "Confirmar Pedido")}
                                 </Button>
                             </div>
                         </motion.div>

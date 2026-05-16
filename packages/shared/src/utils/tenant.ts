@@ -30,3 +30,4 @@ export function getTenantFeatures(headersList: Headers): Set<TenantFeature> {
   
     return new Set(validFeatures);
 }
+

@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth-server"
 import { z } from "zod"
 import { API_BASE, getApiHeaders } from "../lib/config"
 import { headers } from "next/headers"
+import { getTenantFeatures, checkTenantFeature } from "@alvarosky/shared"
 
 
 // --- TYPES ---
@@ -105,6 +106,13 @@ export async function getPOSProducts() {
 
 export async function createPOSOrder(data: z.infer<typeof createPOSOrderSchema>) {
     try {
+        const headersList = await headers()
+        const features = getTenantFeatures(headersList)
+        
+        if (!checkTenantFeature(features, "HAS_POS")) {
+            throw new Error("El servicio de Punto de Venta (POS) no está habilitado para este comercio.")
+        }
+
         const { tableId, items } = createPOSOrderSchema.parse(data)
 
         // Transform items to match API expected DTO

@@ -32,16 +32,22 @@ const TenantContext = createContext<TenantContextType>({
     activePaymentProvider: 'NONE',
 });
 
+import { TenantFeature, checkTenantFeature } from "@alvarosky/shared";
+
 export function useTenant() {
     const context = useContext(TenantContext);
-    const upperFeatures = (context.features || []).map(f => f.toUpperCase());
+    const featuresSet = new Set((context.features || []).map(f => f.toUpperCase() as TenantFeature));
     
     return {
         ...context,
-        isRestaurant: upperFeatures.includes('RESTAURANT'),
-        isShop: upperFeatures.includes('SHOP'),
-        hasLms: upperFeatures.includes('LMS'),
-        hasBlog: upperFeatures.includes('BLOG'),
+        featuresSet,
+        check: (feature: TenantFeature) => checkTenantFeature(featuresSet, feature),
+        // Helpers semánticos basados estrictamente en flags
+        hasDigitalMenu: featuresSet.has('HAS_DIGITAL_MENU'),
+        hasWebCheckout: featuresSet.has('HAS_WEB_CHECKOUT'),
+        hasWhatsAppCheckout: featuresSet.has('HAS_WHATSAPP_CHECKOUT'),
+        hasPos: featuresSet.has('HAS_POS'),
+        canOrder: featuresSet.has('HAS_WEB_CHECKOUT') || featuresSet.has('HAS_WHATSAPP_CHECKOUT'),
     };
 }
 

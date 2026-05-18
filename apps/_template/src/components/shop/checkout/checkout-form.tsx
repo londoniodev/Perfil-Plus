@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react"
 import { useRef } from "react"
 
 export function CheckoutForm() {
-    const { tenantId, features } = useTenant()
+    const { tenantId, features, isRestaurant } = useTenant()
     const { setCart, items, totalPrice } = useCart()
     const { toast } = useToast()
     const router = useRouter()
@@ -19,7 +19,6 @@ export function CheckoutForm() {
     
     const waParam = searchParams.get("wa")
     const [waData, setWaData] = useState<{ customerData?: any; items?: any[] } | undefined>(undefined)
-    const isRestaurant = features?.includes("RESTAURANT")
     const isQuickCommerce = !!waParam || isRestaurant || !!waData
     const [isLoadingWaCart, setIsLoadingWaCart] = useState(!!waParam)
     const [cartLoaded, setCartLoaded] = useState(false)

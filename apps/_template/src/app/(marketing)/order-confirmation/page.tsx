@@ -9,11 +9,8 @@ import { useTenant } from "@/app/providers"
 function OrderConfirmationContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const { features } = useTenant()
+    const { isRestaurant, isShop: isEcommerce } = useTenant()
     const orderId = searchParams.get("orderId")
-
-    const isRestaurant = features.map(f => f.toUpperCase()).includes("RESTAURANT")
-    const isEcommerce = features.map(f => f.toUpperCase()).includes("ECOMMERCE") || features.map(f => f.toUpperCase()).includes("STORE")
 
     if (!isRestaurant && !isEcommerce) {
         return notFound()

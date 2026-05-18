@@ -29,7 +29,7 @@ export function OrganizationSchema({ tenantId, design, url }: SchemaProps) {
     
     // Determinar el tipo de negocio basado en features
     const features = (design?.features || []).map((f: any) => typeof f === 'string' ? f : f.type);
-    const isRestaurant = features.includes('RESTAURANT');
+    const isRestaurant = features.includes('RESTAURANT') || features.includes('HAS_DIGITAL_MENU');
     
     const schema: any = {
         '@context': 'https://schema.org',

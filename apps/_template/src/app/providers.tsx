@@ -48,6 +48,9 @@ export function useTenant() {
         hasWhatsAppCheckout: featuresSet.has('HAS_WHATSAPP_CHECKOUT'),
         hasPos: featuresSet.has('HAS_POS'),
         canOrder: featuresSet.has('HAS_WEB_CHECKOUT') || featuresSet.has('HAS_WHATSAPP_CHECKOUT'),
+        // Helpers de compatibilidad hacia atrás
+        isRestaurant: featuresSet.has('HAS_DIGITAL_MENU') || (context.features || []).map(f => f.toUpperCase()).includes('RESTAURANT'),
+        isShop: featuresSet.has('HAS_WEB_CHECKOUT') || (context.features || []).map(f => f.toUpperCase()).includes('SHOP') || (context.features || []).map(f => f.toUpperCase()).includes('STORE') || (context.features || []).map(f => f.toUpperCase()).includes('ECOMMERCE'),
     };
 }
 

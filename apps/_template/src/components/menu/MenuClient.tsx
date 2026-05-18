@@ -149,7 +149,7 @@ export default function MenuClient({
         if (hasWhatsAppCheckout && !hasWebCheckout) {
             const message = `Hola ${restaurantName}, me gustaría realizar un pedido:\n\n` +
                 cart.map(item => `* ${item.title} x${item.quantity} - ${formatCurrency(item.price * item.quantity)}`).join('\n') +
-                `\n\n*Total: ${formatCurrency(total)}*`;
+                `\n\n*Total: ${formatCurrency(total())}*`;
             
             const phone = restaurant.phone || "570000000000"; // Fallback o usar config del tenant
             const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
@@ -498,7 +498,8 @@ export default function MenuClient({
                         suggestedProducts={products.filter(p => p.id !== selectedProduct.id).slice(0, 5)}
                         onProductSelect={setSelectedProduct}
                         onClose={() => setSelectedProduct(null)}
-                        onAddToCart={canOrder ? (p: PublicProduct, v: string, m: any[], q: number) => {
+                        onAddToCart={(p: PublicProduct, v: string, m: any[], q: number) => {
+                            if (!canOrder) return
                             addItem({
                                 productId: p.id,
                                 title: p.name,
@@ -515,7 +516,7 @@ export default function MenuClient({
                                 productType: "RESTAURANT"
                             })
                             setSelectedProduct(null)
-                        } : undefined}
+                        }}
                         restaurantName={restaurantName}
                         restaurantLogo={logo}
                     />

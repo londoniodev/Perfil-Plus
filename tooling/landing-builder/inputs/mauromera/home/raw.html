@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mauro Mera | Liderazgo y Cultura Organizacional</title>
+    <meta name="description" content="Consultoría estratégica en liderazgo, desarrollo de cultura organizacional y transformación personal. Potencia tu impacto y el de tu equipo.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#d946ef', // Fuchsia 500
+                        secondary: '#a855f7', // Purple 500
+                        dark: '#09090b', // Zinc 950
+                        glass: 'rgba(255, 255, 255, 0.03)',
+                        'glass-border': 'rgba(255, 255, 255, 0.1)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #09090b;
+            color: #fafafa;
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #f5d0fe 0%, #d946ef 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-dark text-zinc-100 selection:bg-primary/30">
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none overflow-hidden">
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
+        </div>
+
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-medium mb-8 reveal">
+                <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                Consultoría de Alto Impacto
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight mb-8 reveal">
+                Transforma tu <span class="text-gradient">Liderazgo.</span><br>
+                Eleva tu <span class="text-gradient">Cultura.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed reveal">
+                Ayudo a líderes y organizaciones a desbloquear su máximo potencial a través de estrategias de cultura organizacional y desarrollo personal de vanguardia.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal">
+                <a href="#contacto" class="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/20">
+                    Comienza la Transformación
+                </a>
+                <a href="#metodologia" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all">
+                    Nuestra Metodología
+                </a>
+            </div>
+        </div>
+        
+        <!-- Hero Image (Simulated) -->
+        <div class="container mx-auto px-6 mt-20 reveal">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                <div class="relative aspect-video rounded-2xl overflow-hidden glass border border-white/10">
+                    <img src="./assets/hero.png" alt="Estrategia y Liderazgo" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/60 to-transparent"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Philosphy Section -->
+    <section id="metodologia" class="py-24 bg-dark/50">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Pillar 1 -->
+                <div class="p-8 rounded-3xl glass border border-white/10 hover:border-primary/30 transition-colors reveal">
+                    <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Liderazgo Consciente</h3>
+                    <p class="text-zinc-400 leading-relaxed">
+                        Desarrollo de líderes que inspiran, conectan y guían con propósito y empatía en entornos BANI.
+                    </p>
+                </div>
+                
+                <!-- Pillar 2 -->
+                <div class="p-8 rounded-3xl glass border border-white/10 hover:border-primary/30 transition-colors reveal" style="transition-delay: 0.1s">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Cultura Vibrante</h3>
+                    <p class="text-zinc-400 leading-relaxed">
+                        Construcción de ecosistemas organizacionales basados en la confianza, la agilidad y el alto desempeño.
+                    </p>
+                </div>
+                
+                <!-- Pillar 3 -->
+                <div class="p-8 rounded-3xl glass border border-white/10 hover:border-primary/30 transition-colors reveal" style="transition-delay: 0.2s">
+                    <div class="w-12 h-12 bg-fuchsia-500/10 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04 inter-serif font-bold text-lg mb-2">Impacto Real</h3>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold mb-4">Desarrollo Humano</h3>
+                    <p class="text-zinc-400 leading-relaxed">
+                        Herramientas prácticas para el crecimiento personal que se traducen en mejores resultados colectivos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="w-full lg:w-1/2 reveal">
+                    <h2 class="text-4xl md:text-5xl font-display font-bold mb-8">
+                        Detrás de la <span class="text-gradient">Visión.</span>
+                    </h2>
+                    <p class="text-lg text-zinc-300 mb-6 leading-relaxed">
+                        Con más de 15 años de experiencia transformando equipos de alto nivel, Mauro Mera combina la psicología organizacional con estrategias de negocio de vanguardia.
+                    </p>
+                    <p class="text-lg text-zinc-300 mb-8 leading-relaxed">
+                        Su enfoque no es solo teórico; es profundamente práctico y orientado a resultados que perduran en el tiempo.
+                    </p>
+                    <div class="flex items-center gap-6">
+                        <div>
+                            <div class="text-3xl font-display font-bold text-primary">50+</div>
+                            <div class="text-sm text-zinc-500 uppercase tracking-widest">Empresas</div>
+                        </div>
+                        <div class="w-px h-12 bg-white/10"></div>
+                        <div>
+                            <div class="text-3xl font-display font-bold text-primary">5000+</div>
+                            <div class="text-sm text-zinc-500 uppercase tracking-widest">Líderes</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2 reveal" style="transition-delay: 0.2s">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-primary/20 rounded-[40px] blur-2xl"></div>
+                        <div class="relative aspect-[4/5] bg-zinc-900 rounded-[32px] overflow-hidden border border-white/10">
+                            <!-- Placeholder for Portrait -->
+                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-950">
+                                <span class="text-zinc-700 font-display font-bold text-4xl">MM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-24 bg-zinc-900/30">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-5xl font-display font-bold mb-4">Servicios Estratégicos</h2>
+                <p class="text-zinc-400 max-w-2xl mx-auto">Soluciones personalizadas para los desafíos complejos de hoy.</p>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Service 1 -->
+                <div class="group p-8 rounded-3xl glass border border-white/10 hover:border-primary/50 transition-all reveal">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold mb-2 group-hover:text-primary transition-colors">Consultoría de Cultura</h3>
+                            <p class="text-zinc-400">Diagnóstico, diseño y despliegue de valores y comportamientos organizacionales.</p>
+                        </div>
+                        <a href="#" class="text-primary font-semibold flex items-center gap-2 group-hover:gap-4 transition-all">
+                            Saber más
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Service 2 -->
+                <div class="group p-8 rounded-3xl glass border border-white/10 hover:border-primary/50 transition-all reveal" style="transition-delay: 0.1s">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold mb-2 group-hover:text-primary transition-colors">Programas de Liderazgo</h3>
+                            <p class="text-zinc-400">Workshops intensivos y coaching ejecutivo para equipos de alto desempeño.</p>
+                        </div>
+                        <a href="#" class="text-primary font-semibold flex items-center gap-2 group-hover:gap-4 transition-all">
+                            Saber más
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Service 3 -->
+                <div class="group p-8 rounded-3xl glass border border-white/10 hover:border-primary/50 transition-all reveal" style="transition-delay: 0.2s">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold mb-2 group-hover:text-primary transition-colors">Keynote Speaking</h3>
+                            <p class="text-zinc-400">Conferencias inspiracionales sobre el futuro del trabajo y liderazgo humano.</p>
+                        </div>
+                        <a href="#" class="text-primary font-semibold flex items-center gap-2 group-hover:gap-4 transition-all">
+                            Saber más
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-24 overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="glass p-12 md:p-20 rounded-[48px] border border-white/10 relative reveal">
+                <svg class="absolute top-10 left-10 w-20 h-20 text-primary/10" fill="currentColor" viewBox="0 0 32 32"><path d="M10 8v8h6l-3 7h-6l3-7h-3v-8h3zm12 0v8h6l-3 7h-6l3-7h-3v-8h3z"/></svg>
+                <div class="relative z-10 max-w-4xl">
+                    <p class="text-2xl md:text-3xl lg:text-4xl font-display font-medium mb-12 leading-tight">
+                        "La intervención de Mauro fue un punto de inflexión para nuestro comité ejecutivo. Logró alinear nuestra visión y humanizar nuestra cultura de una forma que nunca creímos posible."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary/20"></div>
+                        <div>
+                            <div class="font-bold">Director General</div>
+                            <div class="text-sm text-zinc-500">Multinacional de Tecnología</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section id="contacto" class="py-24 relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center reveal">
+            <h2 class="text-5xl md:text-7xl font-display font-bold mb-8">
+                ¿Listo para el <span class="text-gradient">Siguiente Nivel?</span>
+            </h2>
+            <p class="text-xl text-zinc-400 max-w-xl mx-auto mb-12">
+                Hablemos sobre cómo podemos potenciar el liderazgo y la cultura de tu organización.
+            </p>
+            <a href="mailto:hola@mauromera.com" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-dark hover:bg-zinc-200 font-bold rounded-2xl transition-all hover:scale-105 active:scale-95">
+                Agenda una Consultoría
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // Simple reveal script for preview
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

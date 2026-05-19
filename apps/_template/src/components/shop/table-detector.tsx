@@ -5,9 +5,11 @@ import { useEffect, Suspense, useState } from "react"
 import { useCart } from "@/store/use-cart"
 import { resolveTableInfo, getBranches } from "@/lib/api"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, Button } from "@alvarosky/ui"
+import { useTenant } from "@/app/providers"
 
 function TableDetectorContent() {
     const searchParams = useSearchParams()
+    const { tenantId } = useTenant()
     const { setTableId, setTableInfo, setBranchId, branchId } = useCart()
     const [branches, setBranches] = useState<{id: string, name: string}[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -20,7 +22,7 @@ function TableDetectorContent() {
             if (urlT) {
                 // Nuevo flujo: resolver ID de mesa genérico
                 try {
-                    const info = await resolveTableInfo(urlT)
+                    const info = await resolveTableInfo(urlT, tenantId)
                     setTableInfo({
                         tableId: urlT,
                         tableNumber: info.tableNumber,
@@ -44,7 +46,7 @@ function TableDetectorContent() {
              if (branchId) return;
 
              try {
-                const availableBranches = await getBranches()
+                const availableBranches = await getBranches(tenantId)
                 if (availableBranches.length > 1) {
                     setBranches(availableBranches)
                     setIsModalOpen(true)
@@ -57,7 +59,7 @@ function TableDetectorContent() {
         }
 
         initBranchContext()
-    }, [searchParams, setTableId, setTableInfo, setBranchId])
+    }, [searchParams, setTableId, setTableInfo, setBranchId, tenantId])
 
     if (!isModalOpen) return null
 

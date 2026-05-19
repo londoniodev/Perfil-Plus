@@ -10,7 +10,7 @@ const DEFAULT_CONFIG = {
         'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
         'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'iframe',
         'img', 'span', 'section', 'main', 'article', 'aside', 'footer', 'header',
-        'nav', 'details', 'summary', 'picture', 'source', 'video', 'audio'
+        'nav', 'details', 'summary', 'picture', 'source', 'video', 'audio', 'style'
     ],
     ALLOWED_ATTR: [
         'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'id', 'style',

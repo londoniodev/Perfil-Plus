@@ -54,113 +54,50 @@
             opacity: 1;
             transform: translateY(0);
         }
-        
-        /* Custom Hero Styles (Mobile default + Desktop overrides) */
-        .custom-hero {
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 10;
-            padding-top: 90px;
-        }
-        .custom-hero-visual {
-            width: 100%;
-            height: 45vh;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .custom-hero-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: center bottom;
-            mask-image: linear-gradient(to top, transparent 0%, transparent 5%, black 40%);
-            -webkit-mask-image: linear-gradient(to top, transparent 0%, transparent 5%, black 40%);
-            transform-origin: bottom;
-            transition: all 0.7s;
-            pointer-events: auto;
-        }
-        .custom-hero-text {
-            width: 100%;
-            padding: 1rem 1.5rem 3rem 1.5rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 20;
-        }
-
-        /* Desktop Overrides */
-        @media (min-width: 1024px) {
-            .custom-hero {
-                min-height: 100dvh;
-                padding-top: 0;
-                justify-content: center; /* vertically centers text container */
-            }
-            .custom-hero-container {
-                max-width: 1280px;
-                margin: 0 auto;
-                width: 100%;
-                display: flex;
-                z-index: 20;
-            }
-            .custom-hero-text {
-                width: 48%; /* Fix desktop layout overlap */
-                text-align: left;
-                align-items: flex-start;
-                padding: 0 3rem;
-            }
-            .custom-hero-visual {
-                position: absolute;
-                right: 0;
-                bottom: 0;
-                width: 48%; /* Fix desktop layout overlap */
-                height: 85vh; /* 85vh tied to absolute bottom of 100dvh screen */
-            }
-        }
-        
-        /* Force hero text visibility immediately to prevent empty hero spaces */
-        .custom-hero-text .reveal {
-            opacity: 1 !important;
-            transform: none !important;
-        }
     </style>
 </head>
 <body class="bg-dark text-zinc-100 selection:bg-primary/30">
 
-    <section class="custom-hero">
-        <!-- Hero Visual Mobile / Right Absolute Desktop -->
-        <div class="custom-hero-visual" id="heroVisual">
-            <div class="absolute bottom-20 right-10 bg-neonCyan/5 rounded-full blur-[100px] w-96 h-96 z-0 pointer-events-none hidden lg:block"></div>
-            <img src="./assets/hero.png" alt="Mauro Mera - Psicología" class="custom-hero-img drop-shadow-[0_0_30px_rgba(34,211,238,0.3)]">
+    <!-- Hero Section -->
+    <section class="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none overflow-hidden">
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s"></div>
         </div>
 
-        <!-- Text Content -->
-        <div class="custom-hero-container w-full">
-            <div class="custom-hero-text">
-                <h1 class="reveal delay-100 text-3xl sm:text-4xl lg:text-5xl xl:text-[4.5rem] 2xl:text-[5rem] leading-[1.1] font-extrabold tracking-tight mb-4 sm:mb-8 text-white w-full">
-                    Psicología y <br class="hidden sm:block">
-                    <span class="text-gradient">Desarrollo Humano.</span>
-                </h1>
-                
-                <p class="reveal delay-200 text-base sm:text-lg lg:text-xl text-[#d4d4d8] lg:text-textMuted max-w-xl mx-auto lg:mx-0 mb-8 sm:mb-12 leading-relaxed font-light drop-shadow-md lg:drop-shadow-none">
-                    Experiencias educativas individuales y grupales que transforman, con método y tecnología.
-                </p>
-                
-                <div class="reveal delay-300 flex flex-row flex-wrap gap-3 sm:gap-5 w-full justify-center lg:justify-start">
-                    <a href="#contacto" class="flex-1 lg:flex-none lg:w-auto bg-[#3b82f6] hover:bg-[#2563eb] px-4 lg:px-8 py-3 lg:py-4 rounded-xl text-white font-bold tracking-wide flex items-center justify-center transition-colors shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                        Conoce más
-                    </a>
-                    <a href="https://wa.me/573183771838?text=Hola%20Mauro,%20mi%20nombre%20es%20_____%20y%20quisiera%20conocer%20m%C3%A1s%20de%20tus%20servicios" class="flex-1 lg:flex-none lg:w-auto px-4 lg:px-8 py-3 lg:py-4 rounded-xl text-white font-semibold border border-white/20 hover:bg-white/10 transition-colors backdrop-blur-md glass-panel flex items-center justify-center gap-2 group bg-[#01040A]/40 lg:bg-transparent">
-                        Contacto
-                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </a>
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-medium mb-8 reveal">
+                <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                Consultoría de Alto Impacto
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tight mb-8 reveal">
+                Transforma tu <span class="text-gradient">Liderazgo.</span><br>
+                Eleva tu <span class="text-gradient">Cultura.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-12 leading-relaxed reveal">
+                Ayudo a líderes y organizaciones a desbloquear su máximo potencial a través de estrategias de cultura organizacional y desarrollo personal de vanguardia.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 reveal">
+                <a href="#contacto" class="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/20">
+                    Comienza la Transformación
+                </a>
+                <a href="#metodologia" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all">
+                    Nuestra Metodología
+                </a>
+            </div>
+        </div>
+        
+        <!-- Hero Image (Simulated) -->
+        <div class="container mx-auto px-6 mt-20 reveal">
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                <div class="relative aspect-video rounded-2xl overflow-hidden glass border border-white/10">
+                    <img src="./assets/hero.png" alt="Estrategia y Liderazgo" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/60 to-transparent"></div>
                 </div>
             </div>
         </div>

@@ -101,12 +101,16 @@ export default function LandingRenderer({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
+            entry.target.classList.add("active"); // Fallback para templates que usan .active en su CSS
             
             // Soporte para staggered children si existen
             const children = entry.target.querySelectorAll('.reveal-scale, .reveal, .reveal-left, .reveal-right, .card-hover');
             children.forEach((c, i) => {
               (c as HTMLElement).style.transitionDelay = `${(i + 1) * 0.1}s`;
-              setTimeout(() => c.classList.add("visible"), 50);
+              setTimeout(() => {
+                c.classList.add("visible");
+                c.classList.add("active"); // Fallback
+              }, 50);
             });
             
             // Una vez visible, dejamos de observar para ahorrar recursos
@@ -124,6 +128,7 @@ export default function LandingRenderer({
         // Aseguramos estado inicial si por algo se coló un 'visible'
         if (el.getBoundingClientRect().top > window.innerHeight) {
            el.classList.remove("visible");
+           el.classList.remove("active");
         }
         observer.observe(el);
       });

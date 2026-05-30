@@ -140,29 +140,77 @@ export class TenantService {
     const newTenant = await this.prisma.$transaction(async (tx) => {
       // 1. Crear Tenant (Usando this.prisma regular, bypass .secure)
       // Se crea el usuario inicial de forma atómica usando un 'nested write'
-      const tenant = await tx.tenant.create({
-        data: {
-          slug: slug.toLowerCase(),
-          domain: domain.toLowerCase(),
-          name: name || slug,
-          dbName: 'web-projects', // Estandarizado
-          status: 'ACTIVE',
-          plan: 'free',
-          features: filteredFeatures as any,
-          design: defaultDesign,
-          ownerEmail: ownerEmail.toLowerCase(),
-          users: {
-            create: {
-              email: ownerEmail.toLowerCase(),
-              name: ownerName || 'Administrador Inicial',
-              password: hashedPassword,
-              role: ownerRole || 'ADMIN',
-              emailVerified: true,
-              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${slug.toLowerCase()}`,
+      let tenant;
+      try {
+        tenant = await tx.tenant.create({
+          data: {
+            slug: slug.toLowerCase(),
+            domain: domain.toLowerCase(),
+            name: name || slug,
+            dbName: 'web-projects', // Estandarizado
+            status: 'ACTIVE',
+            plan: 'free',
+            features: filteredFeatures as any,
+            design: defaultDesign,
+            ownerEmail: ownerEmail.toLowerCase(),
+            users: {
+              create: {
+                email: ownerEmail.toLowerCase(),
+                name: ownerName || 'Administrador Inicial',
+                password: hashedPassword,
+                role: ownerRole || 'ADMIN',
+                emailVerified: true,
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${slug.toLowerCase()}`,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error: any) {
+        if (
+          error?.message?.includes('22P02') ||
+          error?.message?.includes('TenantFeature') ||
+          error?.message?.includes('enum')
+        ) {
+          this.logger.warn(
+            `[Prisma Fallback] La base de datos no tiene todas las enums registradas de la fase de unificación. Reintentando creación con features core...`,
+          );
+          const coreFeatures = [
+            'HAS_DIGITAL_MENU',
+            'HAS_WEB_CHECKOUT',
+            'HAS_WHATSAPP_CHECKOUT',
+            'HAS_POS',
+          ];
+          const fallbackFeatures = filteredFeatures.filter((f) =>
+            coreFeatures.includes(f),
+          );
+
+          tenant = await tx.tenant.create({
+            data: {
+              slug: slug.toLowerCase(),
+              domain: domain.toLowerCase(),
+              name: name || slug,
+              dbName: 'web-projects', // Estandarizado
+              status: 'ACTIVE',
+              plan: 'free',
+              features: fallbackFeatures as any,
+              design: defaultDesign,
+              ownerEmail: ownerEmail.toLowerCase(),
+              users: {
+                create: {
+                  email: ownerEmail.toLowerCase(),
+                  name: ownerName || 'Administrador Inicial',
+                  password: hashedPassword,
+                  role: ownerRole || 'ADMIN',
+                  emailVerified: true,
+                  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${slug.toLowerCase()}`,
+                },
+              },
+            },
+          });
+        } else {
+          throw error;
+        }
+      }
 
       // 3. Crear Branch por defecto "Sede Principal"
       const defaultBranch = await tx.branch.create({
@@ -793,14 +841,44 @@ export class TenantService {
       ),
     );
 
-    const updated = await this.prisma.unscoped.tenant.update({
-      where: { id: tenant.id },
-      data: { features: normalizedFeatures as any },
-      select: { id: true, slug: true, features: true },
-    });
+    let updated;
+    try {
+      updated = await this.prisma.unscoped.tenant.update({
+        where: { id: tenant.id },
+        data: { features: normalizedFeatures as any },
+        select: { id: true, slug: true, features: true },
+      });
+    } catch (error: any) {
+      if (
+        error?.message?.includes('22P02') ||
+        error?.message?.includes('TenantFeature') ||
+        error?.message?.includes('enum')
+      ) {
+        this.logger.warn(
+          `[Prisma Fallback] La base de datos no tiene todas las enums registradas de la fase de unificación. Guardando solo features core...`,
+        );
+        const coreFeatures = [
+          'HAS_DIGITAL_MENU',
+          'HAS_WEB_CHECKOUT',
+          'HAS_WHATSAPP_CHECKOUT',
+          'HAS_POS',
+        ];
+        const fallbackFeatures = normalizedFeatures.filter((f) =>
+          coreFeatures.includes(f),
+        );
+
+        updated = await this.prisma.unscoped.tenant.update({
+          where: { id: tenant.id },
+          data: { features: fallbackFeatures as any },
+          select: { id: true, slug: true, features: true },
+        });
+      } else {
+        throw error;
+      }
+    }
 
     this.logger.log(
-      `Features actualizadas para Tenant "${tenant.slug}" (${tenant.id}): [${normalizedFeatures.join(', ')}]`,
+      `Features actualizadas para Tenant "${tenant.slug}" (${tenant.id}): [${updated.features.join(', ')}]`,
     );
 
     // 3. Invalidar caché Redis (el middleware cachea la resolución del tenant)

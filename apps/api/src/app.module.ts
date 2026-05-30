@@ -245,6 +245,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     TablesModule,
 
     AnalyticsModule,
+
+    BranchesModule,
   ],
   controllers: [AppController],
   providers: [

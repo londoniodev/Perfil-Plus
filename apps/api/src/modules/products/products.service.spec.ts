@@ -105,6 +105,12 @@ function createMockPrismaClient() {
     purchase: {
       findFirst: jest.fn(),
     },
+    branch: {
+      findMany: jest.fn().mockResolvedValue([{ id: 'branch-1' }]),
+    },
+    branchProduct: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn((fn) => fn(client)),
   };
   client.secure = client;

@@ -161,6 +161,28 @@ export class ProductsService {
         );
       }
 
+      // Asociar automáticamente el nuevo producto a todas las sucursales del tenant
+      const branches = await tx.branch.findMany({
+        where: { tenantId: this.cls.get('tenantId') },
+        select: { id: true },
+      });
+
+      if (branches.length > 0) {
+        await Promise.all(
+          branches.map((branch) =>
+            tx.branchProduct.create({
+              data: {
+                tenantId: this.cls.get('tenantId'),
+                branchId: branch.id,
+                productId: product.id,
+                isAvailable: true,
+                sortOrder: 0,
+              },
+            }),
+          ),
+        );
+      }
+
       const result = await tx.product.findFirst({
         where: { id: product.id },
         include: {

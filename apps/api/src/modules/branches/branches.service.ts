@@ -6,15 +6,15 @@ export class BranchesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.branch.findMany({
+    return this.prisma.secure.branch.findMany({
       orderBy: { name: 'asc' },
     });
   }
 
   async findOne(id: string) {
-    const branch = await this.prisma.branch.findUnique({
+    const branch = await this.prisma.secure.branch.findUnique({
       where: { id },
-            include: {
+      include: {
         branchSettings: true,
       },
     });
@@ -30,7 +30,7 @@ export class BranchesService {
     // Asegurar que la sucursal existe dentro del tenant
     await this.findOne(branchId);
 
-    return this.prisma.branchSettings.update({
+    return this.prisma.secure.branchSettings.update({
       where: { branchId },
       data,
     });

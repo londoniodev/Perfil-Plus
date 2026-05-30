@@ -1,14 +1,11 @@
+import { TenantFeature } from '@alvarosky/features';
+
 /**
  * Fase 2: Capa Compartida (Single Source of Truth)
  * Implementación de validación de capacidades atómicas y mapeo de planes.
  */
 
-// Definición estricta de los flags atómicos según el mandato
-export type TenantFeature = 
-  | 'HAS_DIGITAL_MENU' 
-  | 'HAS_WEB_CHECKOUT' 
-  | 'HAS_WHATSAPP_CHECKOUT' 
-  | 'HAS_POS';
+export { TenantFeature };
 
 /**
  * Función pura y estrictamente tipada para validar features.

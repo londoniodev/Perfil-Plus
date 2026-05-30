@@ -24,9 +24,9 @@ export class CreateModifierDto {
   priceAdjustment?: number = 0;
 
   @IsInt()
-  @Min(0)
+  @Min(-1)
   @IsOptional()
-  stock?: number; // null = sin límite
+  stock?: number; // null / -1 = sin límite
 
   @IsBoolean()
   @IsOptional()

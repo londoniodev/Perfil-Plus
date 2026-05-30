@@ -22,6 +22,7 @@ export class PrismaService
    * 3. El uso de .unscoped anula el aislamiento Zero-Trust. Debe auditarse con extrema precaución.
    */
   public unscoped: PrismaClient;
+  public secure: PrismaService;
 
   constructor(private readonly cls: ClsService) {
     super({
@@ -122,8 +123,9 @@ export class PrismaService
     // Inversión de Control: Retornamos un Proxy para que la clase exponga 
     // por defecto al Cliente Seguro
     return new Proxy(this, {
-      get: (target, prop) => {
+      get: (target, prop, receiver) => {
         // Excepciones explícitas de capa de Servicio
+        if (prop === 'secure') return receiver;
         if (prop === 'unscoped') return target;
         if (prop === 'logger') return target.logger;
         if (prop === 'onModuleInit') return target.onModuleInit.bind(target);

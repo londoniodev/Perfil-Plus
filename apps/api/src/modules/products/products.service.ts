@@ -46,11 +46,13 @@ export class ProductsService {
     await Promise.all(patterns.map((key) => this.cacheManager.del(key)));
 
     // ✅ On-Demand Storefront Revalidation
-    const storefrontUrl = process.env.STOREFRONT_URL || 'http://web-storefront:3000';
-    const nextjsRevalidationUrl = storefrontUrl.endsWith('/api/revalidate') 
-      ? storefrontUrl 
-      : `${storefrontUrl}/api/revalidate`;
-    const internalApiKey = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+    const nextjsRevalidationUrl =
+      process.env.INTERNAL_STOREFRONT_URL ||
+      (process.env.STOREFRONT_URL
+        ? `${process.env.STOREFRONT_URL}/api/revalidate`
+        : 'http://web-storefront:3000/api/revalidate');
+    const internalApiKey =
+      process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
 
     try {
       const tag = `tenant-${tenantId}-store`;

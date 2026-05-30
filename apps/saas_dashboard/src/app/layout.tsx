@@ -87,7 +87,7 @@ export default async function DashboardLayout({
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
-    const features = Array.from(new Set((dbFeatures || []).flatMap((f: string) => {
+    const features: FeatureKey[] = Array.from(new Set((dbFeatures || []).flatMap((f: string) => {
         const upper = f.toUpperCase();
         const mapped: FeatureKey[] = [];
         

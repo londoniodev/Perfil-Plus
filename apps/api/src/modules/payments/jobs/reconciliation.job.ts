@@ -70,7 +70,7 @@ export class PaymentsReconciliationJob {
     beginDate.setHours(beginDate.getHours() - 12); // Reducido a 12h por mayor frecuencia del cron
 
     const searchResults = await paymentClient.search({
-      qs: {
+      options: {
         status: 'approved',
         range: 'date_created',
         begin_date: beginDate.toISOString(),
@@ -84,7 +84,9 @@ export class PaymentsReconciliationJob {
 
     // 3. Operación en Bloque (Optimización 3)
     // Extraer IDs y verificar existencia en UNA sola consulta a DB
-    const mpIds = mpPayments.map(p => p.id.toString());
+    const mpIds = mpPayments
+      .map(p => p.id?.toString())
+      .filter((id): id is string => !!id);
     
     // Verificamos en suscripciones y órdenes (usando mpPaymentId o mpSubscriptionId según corresponda)
     const [existingSubs, existingOrders] = await Promise.all([
@@ -103,14 +105,20 @@ export class PaymentsReconciliationJob {
       ...existingOrders.map(o => o.mpPaymentId)
     ]);
 
-    const missingPayments = mpPayments.filter(p => !existingSet.has(p.id.toString()));
+    const missingPayments = mpPayments.filter(p => {
+      const idStr = p.id?.toString();
+      return idStr !== undefined && !existingSet.has(idStr);
+    });
 
     for (const payment of missingPayments) {
+      const paymentId = payment.id?.toString();
+      if (!paymentId) continue;
+
       try {
-        await this.paymentsService.syncPaymentById(payment.id.toString(), tenantId);
-        await this.notifyRecovery(payment.id.toString(), tenantId);
+        await this.paymentsService.syncPaymentById(paymentId, tenantId);
+        await this.notifyRecovery(paymentId, tenantId);
       } catch (error) {
-        this.logger.error(`Recovery failed for payment ${payment.id}: ${error.message}`);
+        this.logger.error(`Recovery failed for payment ${paymentId}: ${error.message}`);
       }
     }
   }

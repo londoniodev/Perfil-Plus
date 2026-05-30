@@ -647,27 +647,15 @@ export class PaymentsService {
     return this.syncPaymentById(dataId, this.getTenantId());
   }
 
-  public async syncPaymentById(dataId: string, tenantId: string) {
-    const resolvedTenantId = tenantId;
-    // 1. Debemos hacer un fetch global a todas las configs o iterar si no tenemos el tenantId a priori.
-    // Dado que MercadoPago envía la notificación globalmente, a menos que el webhook URL tenga ?tenantId=...
-    // Aquí asumimos que el Request inicial lo trajo, PERO si no lo trae, buscaremos el tenant iterativamente o de la metadata si logramos desencriptar.
+  public async syncPaymentById(dataId: string, tenantId?: string) {
+    const resolvedTenantId = tenantId || this.getTenantId();
 
-    // Estrategia segura: Instanciar MP "a ciegas" aquí es imposible sin accessToken.
-    // PERO si el controlador forzó la inyección de tenantId via query param (ej: /webhook?tenantId=xxx),
-    // this.getTenantId() funcionará. Si no, tenemos un problema de diseño en MP oauth vs access_token.
-    // Asumiendo que tenantId viene por URL query (`this.getTenantId()`) o fue inyectado por el interceptor:
-
-    const tenantId = this.getTenantId();
-
-    if (tenantId === 'default') {
+    if (!resolvedTenantId || resolvedTenantId === 'default') {
       this.logger.error(
         `Webhook rejected: Unable to determine tenant for data.id=${dataId}`,
       );
       return { status: 'error', reason: 'tenant not identified in webhook' };
     }
-
-    const resolvedTenantId = tenantId;
 
     try {
       // 1. Recuperar Credenciales desde BranchSettings (sucursal default)

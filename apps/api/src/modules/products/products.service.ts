@@ -44,6 +44,35 @@ export class ProductsService {
       `tenant:${tenantId}:product_catalog`,
     ];
     await Promise.all(patterns.map((key) => this.cacheManager.del(key)));
+
+    // ✅ On-Demand Storefront Revalidation
+    const storefrontUrl = process.env.STOREFRONT_URL || 'http://web-storefront:3000';
+    const nextjsRevalidationUrl = storefrontUrl.endsWith('/api/revalidate') 
+      ? storefrontUrl 
+      : `${storefrontUrl}/api/revalidate`;
+    const internalApiKey = process.env.INTERNAL_API_KEY || 'default_dev_secret_key';
+
+    try {
+      const tag = `tenant-${tenantId}-store`;
+      const response = await fetch(nextjsRevalidationUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-revalidate-secret': internalApiKey,
+        },
+        body: JSON.stringify({ tag }),
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (response.ok) {
+        this.logger.log(`[Next.js ISR] Caché de tienda purgado para tag: ${tag}`);
+      } else {
+        const errBody = await response.text();
+        this.logger.error(`[Next.js ISR] Revalidación falló en ${nextjsRevalidationUrl}: Status ${response.status} - ${errBody}`);
+      }
+    } catch (e: any) {
+      this.logger.warn(`[Next.js ISR] Fallo al revalidar cache en ${nextjsRevalidationUrl}: ${e.message}`);
+    }
   }
 
   // ============ INCLUDES REUTILIZABLES ============

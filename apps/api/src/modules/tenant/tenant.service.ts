@@ -101,6 +101,34 @@ export class TenantService {
       finalFeatures.push('DASHBOARD');
     }
 
+    // Filtro defensivo contra el catálogo de enums válidos en la base de datos
+    const VALID_DB_FEATURES = [
+      'HAS_DIGITAL_MENU',
+      'HAS_WEB_CHECKOUT',
+      'HAS_WHATSAPP_CHECKOUT',
+      'HAS_POS',
+      'SHOP',
+      'BLOG',
+      'LMS',
+      'RESTAURANT',
+      'POS',
+      'INVENTORY',
+      'ANALYTICS',
+      'DASHBOARD',
+      'SETTINGS',
+      'PORTFOLIO',
+      'BOT_WHATSAPP',
+      'LANDING',
+    ];
+
+    const filteredFeatures = Array.from(
+      new Set(
+        finalFeatures
+          .map((f) => f.toUpperCase())
+          .filter((f) => VALID_DB_FEATURES.includes(f)),
+      ),
+    );
+
     const defaultDesign = {
       colors: { primary: '#000000', secondary: '#ffffff' },
       radius: 0.5,
@@ -120,7 +148,7 @@ export class TenantService {
           dbName: 'web-projects', // Estandarizado
           status: 'ACTIVE',
           plan: 'free',
-          features: finalFeatures as any,
+          features: filteredFeatures as any,
           design: defaultDesign,
           ownerEmail: ownerEmail.toLowerCase(),
           users: {
@@ -738,8 +766,31 @@ export class TenantService {
     // 2. Actualizar features en la DB usando el ID real (Contexto Global)
     // 2. Actualizar features en la base de datos (Contexto Global)
     // Normalizamos a MAYÚSCULAS para evitar duplicados por casing (ej: dashboard vs DASHBOARD)
+    const VALID_DB_FEATURES = [
+      'HAS_DIGITAL_MENU',
+      'HAS_WEB_CHECKOUT',
+      'HAS_WHATSAPP_CHECKOUT',
+      'HAS_POS',
+      'SHOP',
+      'BLOG',
+      'LMS',
+      'RESTAURANT',
+      'POS',
+      'INVENTORY',
+      'ANALYTICS',
+      'DASHBOARD',
+      'SETTINGS',
+      'PORTFOLIO',
+      'BOT_WHATSAPP',
+      'LANDING',
+    ];
+
     const normalizedFeatures = Array.from(
-      new Set([...features.map((f) => f.toUpperCase())]),
+      new Set(
+        features
+          .map((f) => f.toUpperCase())
+          .filter((f) => VALID_DB_FEATURES.includes(f)),
+      ),
     );
 
     const updated = await this.prisma.unscoped.tenant.update({

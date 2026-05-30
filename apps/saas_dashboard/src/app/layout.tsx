@@ -87,11 +87,22 @@ export default async function DashboardLayout({
     const tenantName = name || process.env.NEXT_PUBLIC_TENANT_NAME || "Dashboard";
 
     // Normalize features from DB (uppercase) to Config (lowercase/mapped)
-    const features = (dbFeatures || []).map((f: string) => {
-        const lower = f.toLowerCase();
-        if (lower === 'ecommerce') return 'shop';
-        return lower as FeatureKey;
-    }).filter((f: string): f is FeatureKey => ['shop', 'blog', 'lms', 'restaurant'].includes(f));
+    const features = Array.from(new Set((dbFeatures || []).flatMap((f: string) => {
+        const upper = f.toUpperCase();
+        const mapped: FeatureKey[] = [];
+        
+        // Direct matches
+        if (upper === 'SHOP' || upper === 'ECOMMERCE') mapped.push('shop');
+        if (upper === 'BLOG') mapped.push('blog');
+        if (upper === 'LMS') mapped.push('lms');
+        if (upper === 'RESTAURANT') mapped.push('restaurant');
+        
+        // Capability mappings (backward compatibility / zero-trust fallback)
+        if (upper === 'HAS_DIGITAL_MENU' || upper === 'HAS_POS') mapped.push('restaurant');
+        if (upper === 'HAS_WEB_CHECKOUT' || upper === 'HAS_WHATSAPP_CHECKOUT') mapped.push('shop');
+        
+        return mapped;
+    })));
 
     // --- Branding & Theme Logic (SSR Anti-FOUC) ---
     const brandingSettings = {

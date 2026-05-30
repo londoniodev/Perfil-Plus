@@ -26,18 +26,33 @@ export async function middleware(request: NextRequest) {
 
     const baseDomainEnv = process.env.BASE_DOMAIN || 'perfil.plus';
     const techProviderEnv = process.env.TECH_PROVIDER_DOMAIN || 'perfil.plus';
-    const techProviderSlug = techProviderEnv.split('.')[0];
     
-    // Si el dominio es localhost, el dominio base, o el tech provider, no intentamos resolver un tenant
-    const isBaseDomain = ['localhost', '127.0.0.1', baseDomainEnv, techProviderEnv].some(d => 
+    // Parsear múltiples dominios de Tech Provider (ej: 'alvarolondoño.dev, xn--alvarolondoo-khb.dev')
+    const techProviderDomains = techProviderEnv
+        .split(',')
+        .map((d) => d.trim().toLowerCase())
+        .filter(Boolean);
+
+    // Obtener el slug base del Tech Provider
+    const techProviderSlug =
+        process.env.TECH_PROVIDER_SLUG ||
+        (techProviderDomains[0] ? techProviderDomains[0].split('.')[0] : 'alvarolondono');
+    
+    // Si el dominio es localhost, el dominio base, o uno de los dominios del tech provider, no intentamos resolver un tenant
+    const isBaseDomain = [
+        'localhost',
+        '127.0.0.1',
+        baseDomainEnv,
+        ...techProviderDomains,
+    ].some((d) => 
         domainToQuery === d || domainToQuery.includes('localhost') || domainToQuery.includes('127.0.0.1')
     );
 
     let tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'default_tenant';
     let tenantSlug = process.env.NEXT_PUBLIC_TENANT_ID || domainToQuery; // Fallback al dominio
 
-    // Forzar tenantId correcto si estamos en el dominio del Tech Provider (SaaS Owner)
-    if (domainToQuery === techProviderEnv || domainToQuery === 'alvarolondoño.dev' || domainToQuery === 'xn--alvarolondoo-khb.dev') {
+    // Forzar tenantId correcto si estamos en cualquiera de los dominios del Tech Provider (SaaS Owner)
+    if (techProviderDomains.includes(domainToQuery)) {
         tenantId = techProviderSlug;
         tenantSlug = techProviderSlug;
     }

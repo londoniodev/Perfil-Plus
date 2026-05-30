@@ -168,7 +168,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // --- SERVICIOS / PORTAFOLIO ---
     const host = new URL(urlBase).host;
-    const isMasterTenant = host.includes("perfil.plus") && tenantId === "alvarolondono" || tenantId === "alvarolondono";
+    const techProviderSlug = process.env.TECH_PROVIDER_SLUG || "alvarolondono";
+    const isMasterTenant = host.includes("perfil.plus") && tenantId === techProviderSlug || tenantId === techProviderSlug;
     if (isMasterTenant || upperFeatures.includes("PORTFOLIO")) {
         staticPages.push(
             {

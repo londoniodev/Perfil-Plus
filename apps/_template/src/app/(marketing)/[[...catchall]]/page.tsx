@@ -82,7 +82,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // Fallback metadata
-  if (tenantSlug === "alvarolondono") {
+  const techProviderSlug = process.env.TECH_PROVIDER_SLUG || "alvarolondono";
+  if (tenantSlug === techProviderSlug) {
     return {
       title: "Álvaro Londoño | Consultoría Tech & SaaS",
     };

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
         // Validar secreto de revalidación estrictamente
         const secret = req.headers.get("x-revalidate-secret") || body.secret;
-        const expectedSecret = process.env.REVALIDATION_SECRET;
+        const expectedSecret = process.env.REVALIDATION_SECRET || process.env.INTERNAL_API_KEY;
 
         if (!expectedSecret || secret !== expectedSecret) {
             console.warn(`[ISR Webhook] Unauthorized attempt`);

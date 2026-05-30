@@ -5,7 +5,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class BranchesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(tenantId?: string) {
+    if (tenantId) {
+      return this.prisma.branch.findMany({
+        where: { tenantId },
+        orderBy: { name: 'asc' },
+      });
+    }
     return this.prisma.secure.branch.findMany({
       orderBy: { name: 'asc' },
     });

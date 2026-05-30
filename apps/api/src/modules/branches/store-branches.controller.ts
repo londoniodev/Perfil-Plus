@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Headers } from '@nestjs/common';
 import { BranchesService } from './branches.service';
 import { Public } from '../../common/decorators/public.decorator';
 
@@ -8,8 +8,8 @@ export class StoreBranchesController {
 
   @Public()
   @Get()
-  async findAll() {
-    const branches = await this.branchesService.findAll();
+  async findAll(@Headers('x-tenant-id') tenantId?: string) {
+    const branches = await this.branchesService.findAll(tenantId);
     // Retornamos solo ID y nombre para el storefront público
     return branches.map(b => ({
       id: b.id,

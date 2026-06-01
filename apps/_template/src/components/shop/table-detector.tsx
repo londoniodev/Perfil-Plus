@@ -47,12 +47,16 @@ function TableDetectorContent() {
 
              try {
                 const availableBranches = await getBranches(tenantId)
+                console.log(`[TableDetector] tenantId=${tenantId}, branches=${availableBranches.length}`)
+                
                 if (availableBranches.length > 1) {
                     setBranches(availableBranches)
                     setIsModalOpen(true)
                 } else if (availableBranches.length === 1) {
+                    // Solo hay una sede → seleccionarla automáticamente sin modal
                     setBranchId(availableBranches[0].id)
                 }
+                // Si length === 0, no hacemos nada
              } catch (e) {
                 console.error("Error al obtener sucursales", e)
              }
@@ -61,7 +65,7 @@ function TableDetectorContent() {
         initBranchContext()
     }, [searchParams, setTableId, setTableInfo, setBranchId, tenantId])
 
-    if (!isModalOpen) return null
+    if (!isModalOpen || branches.length <= 1) return null
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -96,3 +100,4 @@ export function TableDetector() {
         </Suspense>
     )
 }
+

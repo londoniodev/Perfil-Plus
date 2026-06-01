@@ -123,7 +123,7 @@ export async function trackOrder(orderId: string, tenantId?: string): Promise<an
 }
 
 export async function getBranches(tenantId?: string): Promise<{id: string, name: string}[]> {
-    return fetchAPI(`/store/branches`, undefined, tenantId);
+    return fetchAPI(`/store/branches`, { cache: 'no-store' }, tenantId);
 }
 
 export async function resolveTableInfo(id: string, tenantId?: string): Promise<{tableNumber: string, tenantSlug: string, branchId: string}> {

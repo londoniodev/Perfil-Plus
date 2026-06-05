@@ -25,7 +25,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTena
 
     const getHeaders = (authToken: string | null) => ({
         'Content-Type': 'application/json',
-        ...(tenantId ? { 'x-tenant-id': tenantId } : {}), // Only send if we have it, otherwise let host resolution work
+        'x-tenant-id': effectiveTenantId,
         ...(localBranchId ? { 'x-branch-id': localBranchId } : {}),
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         ...options?.headers,
@@ -40,11 +40,17 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTena
         currentEndpoint = `${currentEndpoint}${separator}_tenantCacheId=${effectiveTenantId}`;
     }
 
+    // Determinar estrategia de caché: respetar options.cache si fue explícito,
+    // de lo contrario usar 'force-cache' para GET y 'no-store' para mutaciones.
+    const resolvedCache = options?.cache 
+        ? options.cache 
+        : ((!options?.method || options.method === 'GET') ? 'force-cache' : 'no-store');
+
     let res = await fetch(`${API_BASE_URL}${currentEndpoint}`, {
         ...options,
         credentials: 'include',
         headers: getHeaders(token),
-        cache: (!options?.method || options.method === 'GET') ? 'force-cache' : 'no-store',
+        cache: resolvedCache,
         next: { tags: [`tenant-${effectiveTenantId}`, `tenant-${effectiveTenantId}-${baseTag}`] },
     });
 
@@ -74,7 +80,7 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit, explicitTena
                             ...options,
                             credentials: 'include',
                             headers: getHeaders(data.accessToken),
-                            cache: (!options?.method || options.method === 'GET') ? 'force-cache' : 'no-store',
+                            cache: resolvedCache,
                             next: { tags: [`tenant-${effectiveTenantId}`, `tenant-${effectiveTenantId}-${baseTag}`] },
                         });
                     }

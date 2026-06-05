@@ -91,7 +91,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] bg-zinc-950 flex flex-col overflow-y-auto">
+        <div className="min-h-[calc(100vh-4rem)] bg-zinc-950 flex flex-col">
             <ProductSchema 
                 product={product} 
                 url={url} 

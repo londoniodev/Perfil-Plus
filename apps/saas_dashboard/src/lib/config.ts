@@ -5,10 +5,10 @@
 // API Base URL
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001/api";
 
-// Enforce explicit NEXT_PUBLIC_TENANT_ID in ALL environments
 const envTenantId = process.env.NEXT_PUBLIC_TENANT_ID?.trim();
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
 
-if (!envTenantId) {
+if (!envTenantId && !isBuildTime) {
     throw new Error(
         "❌ [FATAL ERROR] Missing NEXT_PUBLIC_TENANT_ID environment variable.\n" +
         "Set it in .env.local for development or as a build-time argument in Dokploy/Vercel for production.\n" +
@@ -16,7 +16,7 @@ if (!envTenantId) {
     );
 }
 
-export const TENANT_ID = envTenantId;
+export const TENANT_ID = envTenantId || 'admin_build';
 
 // ── Meta Embedded Signup Hub ──
 // Dominio del Tech Provider donde se ejecuta el flujo de Embedded Signup.

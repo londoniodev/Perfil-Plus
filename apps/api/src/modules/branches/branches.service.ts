@@ -1,18 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class BranchesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cls: ClsService,
+  ) {}
 
   async findAll(tenantId?: string) {
-    if (tenantId) {
-      return this.prisma.branch.findMany({
-        where: { tenantId },
-        orderBy: { name: 'asc' },
-      });
+    const activeTenantId = tenantId || this.cls.get('tenantId');
+    if (!activeTenantId) {
+      return [];
     }
-    return this.prisma.secure.branch.findMany({
+    return this.prisma.branch.findMany({
+      where: { tenantId: activeTenantId },
       orderBy: { name: 'asc' },
     });
   }

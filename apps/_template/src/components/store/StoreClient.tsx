@@ -1,7 +1,8 @@
 "use client"
 
 import { ProductCard } from "./ProductCard"
-import { useCart, type PublicProduct } from "@alvarosky/restaurant-sdk"
+import { type PublicProduct } from "@alvarosky/restaurant-sdk"
+import { useCart } from "@/store/use-cart"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -73,12 +74,14 @@ export function StoreClient({ tenantId, initialData = [] }: { tenantId: string, 
     const handleAddToCart = (product: PublicProduct) => {
         addItem({
             productId: product.id,
-            name: product.name,
-            variantId: product.variants?.[0]?.id || product.id, // Fallback si no hay variantes explícitas
+            variantId: product.variants?.[0]?.id || product.id,
+            title: product.name,
+            subtitle: product.variants?.[0]?.name || undefined,
+            imageSrc: product.images?.[0] || "",
             price: Number(product.variants?.[0]?.price ?? product.basePrice) || 0,
             quantity: 1,
-            modifiers: [],
-            image: product.images?.[0]
+            productType: (product as any).productType || "PHYSICAL",
+            modifiers: []
         })
         toast.success(`Añadido al carrito: ${product.name}`)
     }

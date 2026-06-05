@@ -6,8 +6,9 @@ function getApiBaseUrl() {
     const internalUrl = process.env.INTERNAL_API_URL;
     const publicUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // Validación Fail-fast: En el servidor (SSR), INTERNAL_API_URL debe existir en producción
-    if (!internalUrl && process.env.NODE_ENV === 'production') {
+    // Validación Fail-fast: En el servidor (SSR), INTERNAL_API_URL debe existir en producción, exceptuando compilación
+    const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+    if (!internalUrl && process.env.NODE_ENV === 'production' && !isBuildTime) {
         throw new Error("INTERNAL_API_URL is not defined for SSR fetch. Ensure it is set in Dokploy environment variables.");
     }
 

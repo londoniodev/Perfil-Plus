@@ -62,6 +62,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
     )
     const [mounted, setMounted] = React.useState(false)
     const [isExpanded, setIsExpanded] = React.useState(false)
+    const [activeImageIndex, setActiveImageIndex] = React.useState(0)
 
     React.useEffect(() => {
         setMounted(true)
@@ -78,7 +79,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                 variantId: selectedVariant.id,
                 title: product.name,
                 subtitle: selectedVariant.name || "Estándar",
-                imageSrc: product.images[0],
+                imageSrc: product.images[activeImageIndex] || product.images[0] || "",
                 price: Number(selectedVariant.price),
                 quantity: 1,
                 productType: product.productType
@@ -95,55 +96,79 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
             {/* COLUMNA IZQUIERDA: Galería */}
             <div 
                 className={cn(
-                    "space-y-4 transition duration-700 ease-out transform",
+                    "space-y-6 transition duration-700 ease-out transform",
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
                 <div 
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-xl bg-muted cursor-pointer"
+                    className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-2xl bg-zinc-900 border border-white/5 cursor-pointer shadow-xl group"
                 >
                     <AdaptiveImage
-                        src={product.images[0] || "/placeholder.jpg"}
+                        src={product.images[activeImageIndex] || "/placeholder.jpg"}
                         alt={product.name}
                         aspectRatio={isDigital ? "portrait" : "9/10"}
                         priority
-                        className="transition"
+                        className="transition-transform duration-700 hover:scale-105"
                     />
                     {isDigital && (
-                        <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">Digital</Badge>
+                        <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground shadow-md font-semibold">Digital</Badge>
                     )}
                     
                     {/* Overlay de Título para Móvil (Se oculta al expandir) */}
                     <div className={cn(
-                        "absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent md:hidden flex flex-col justify-end min-h-[140px] transition-opacity duration-300",
+                        "absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent md:hidden flex flex-col justify-end min-h-[160px] transition-opacity duration-300",
                         isExpanded ? "opacity-0" : "opacity-100"
                     )}>
-                        <h1 className="text-xl font-medium tracking-wide text-white leading-tight">
+                        <h1 className="text-2xl font-bold tracking-wide text-white leading-tight">
                             {product.name}
                         </h1>
                     </div>
                 </div>
+
+                {/* Lista horizontal de Miniaturas (Thumbnails) */}
+                {product.images && product.images.length > 1 && (
+                    <div className="flex gap-3 overflow-x-auto py-2 px-1 scrollbar-hide justify-center md:justify-start">
+                        {product.images.map((img, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setActiveImageIndex(idx)}
+                                className={cn(
+                                    "relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 transform active:scale-95 shrink-0 shadow-sm",
+                                    activeImageIndex === idx
+                                        ? "border-primary scale-105 shadow-lg shadow-primary/20"
+                                        : "border-white/5 bg-white/[0.02] hover:border-white/20 hover:scale-102"
+                                )}
+                            >
+                                <img
+                                    src={img}
+                                    alt={`${product.name} mini ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                />
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* COLUMNA DERECHA: Info y Acciones */}
             <div 
                 className={cn(
-                    "flex flex-col gap-6 transition duration-700 delay-200 ease-out transform",
+                    "flex flex-col gap-8 transition duration-700 delay-200 ease-out transform",
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl hidden md:block">
+                <div className="space-y-4">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl hidden md:block">
                         {product.name}
                     </h1>
 
                     {/* Botón de Compartir */}
-                    <div className="mt-4 flex">
+                    <div className="flex">
                         <Button 
                             variant="outline" 
                             size="sm" 
-                            className="text-xs flex items-center gap-2 border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-full"
+                            className="text-xs flex items-center gap-2 border-white/5 bg-white/[0.02] text-zinc-300 hover:text-white hover:bg-white/[0.08] hover:border-white/15 rounded-full transition-all duration-300 px-4 py-2"
                             onClick={() => {
                                 if (navigator.share) {
                                     navigator.share({
@@ -157,11 +182,11 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                             }}
                         >
                             <Share2 className="h-3.5 w-3.5" />
-                            Compartir
+                            Compartir Producto
                         </Button>
                     </div>
 
-                    <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
+                    <p className="text-zinc-300 text-base leading-relaxed font-light">
                         {product.description}
                     </p>
                 </div>
@@ -169,52 +194,72 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                 {/* Selector de Variantes (Solo si existen múltiples) */}
                 {hasVariants && (
                     <div className="space-y-3">
-                        <span className="text-sm font-medium text-muted-foreground">Opciones Disponibles:</span>
-                        <div className="flex flex-wrap gap-3">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Opciones Disponibles</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {product.variants.map((variant) => (
                                 <button
                                     key={variant.id}
                                     onClick={() => setSelectedVariant(variant)}
                                     disabled={variant.stock === 0}
                                     className={cn(
-                                        "relative flex items-center justify-between gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                        "relative flex items-center justify-between gap-4 rounded-xl border p-4 text-sm font-medium transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-ring transform hover:scale-[1.02] active:scale-[0.98] text-left",
                                         selectedVariant.id === variant.id
-                                            ? "border-primary bg-primary/5 ring-1 ring-primary"
-                                            : "hover:bg-muted/50 hover:text-foreground",
-                                        variant.stock === 0 && "opacity-50 cursor-not-allowed"
+                                            ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/10 ring-1 ring-primary"
+                                            : "border-white/5 bg-white/[0.02] text-zinc-300 hover:border-white/10 hover:bg-white/[0.05] hover:text-white",
+                                        variant.stock === 0 && "opacity-40 cursor-not-allowed hover:scale-100 active:scale-100"
                                     )}
                                 >
-                                    <span className="flex flex-col items-start">
-                                        <span>{variant.name || "Estándar"}</span>
-                                        {variant.stock > 0 && variant.stock < 10 && (
-                                            <span className="text-[10px] text-orange-600 font-normal">
-                                                ¡Solo quedan {variant.stock}!
-                                            </span>
+                                    <div className="flex flex-col items-start gap-0.5">
+                                        <span className="font-semibold text-white tracking-wide">{variant.name || "Estándar"}</span>
+                                        <span className="text-xs text-zinc-400 font-normal">
+                                            {variant.stock > 0 ? (
+                                                variant.stock < 10 ? (
+                                                    <span className="text-amber-500 font-medium">¡Solo quedan {variant.stock}!</span>
+                                                ) : (
+                                                    "Disponible"
+                                                )
+                                            ) : (
+                                                "Agotado"
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        {selectedVariant.id === variant.id ? (
+                                            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground animate-in zoom-in-50 duration-200">
+                                                <Check className="h-3 w-3 stroke-[3]" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 rounded-full border border-white/20" />
                                         )}
-                                    </span>
-
-                                    {selectedVariant.id === variant.id && (
-                                        <Check className="h-4 w-4 text-primary" />
-                                    )}
+                                    </div>
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
 
-                {/* Zona de Precio y Acción */}
-                <div className="mt-4 p-6 rounded-xl border bg-card text-card-foreground shadow-sm space-y-6">
-                    <div className="flex items-end justify-between">
-                        <div className="space-y-1">
-                            <span className="text-sm font-medium text-muted-foreground">Precio Total</span>
+                {/* Zona de Precio y Acción - Estilo Glassmorphism Premium */}
+                <div className="mt-4 p-8 rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1.5">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Precio Total</span>
                             <PriceDisplay
                                 price={Number(selectedVariant.price)}
                                 size="lg"
+                                className="text-white font-extrabold tracking-tight text-3xl"
                             />
                         </div>
                         {/* Indicador de Stock */}
                         {!isDigital && (
-                            <Badge variant={isOutOfStock ? "destructive" : "outline"} className="h-fit">
+                            <Badge 
+                                variant={isOutOfStock ? "destructive" : "outline"} 
+                                className={cn(
+                                    "px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-300",
+                                    isOutOfStock 
+                                        ? "bg-red-500/10 border-red-500/20 text-red-400" 
+                                        : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                )}
+                            >
                                 {isOutOfStock ? "Agotado" : "En Stock"}
                             </Badge>
                         )}
@@ -222,47 +267,54 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
 
                     <Button
                         size="lg"
-                        className="w-full text-lg h-12"
+                        className={cn(
+                            "w-full text-base font-bold h-14 rounded-xl transition-all duration-300 flex items-center justify-center gap-2",
+                            isOutOfStock
+                                ? "bg-zinc-850 border border-zinc-800 text-zinc-500 cursor-not-allowed"
+                                : "bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/35 transform hover:-translate-y-0.5 active:translate-y-0"
+                        )}
                         disabled={isOutOfStock}
                         onClick={handleAddToCart}
                     >
                         {isDigital ? (
                             <>
-                                <Download className="mr-2 h-5 w-5" /> Descargar Ahora
+                                <Download className="h-5 w-5 animate-pulse" /> Descargar Ahora
                             </>
                         ) : (
                             <>
-                                <ShoppingCart className="mr-2 h-5 w-5" />
+                                <ShoppingCart className="h-5 w-5" />
                                 {isOutOfStock ? "Sin Stock" : "Añadir al Carrito"}
                             </>
                         )}
                     </Button>
 
-                    <p className="text-xs text-center text-muted-foreground">
-                        {isDigital
-                            ? "Entrega inmediata vía email tras la compra."
-                            : "Envío calculado en el siguiente paso."}
+                    <p className="text-xs text-center text-zinc-400 flex items-center justify-center gap-1.5 font-medium">
+                        {isDigital ? (
+                            <span>✨ Entrega inmediata vía email tras la compra.</span>
+                        ) : (
+                            <span>🚚 Envío calculado en el siguiente paso.</span>
+                        )}
                     </p>
                 </div>
 
                 {/* Especificaciones Técnicas (JSON) */}
                 {product.specs && Object.keys(product.specs).filter(k => k !== 'attachments').length > 0 && (
-                    <div className="pt-6 border-t">
-                        <h3 className="mb-4 text-sm font-medium">Especificaciones</h3>
+                    <div className="pt-6 border-t border-white/10">
+                        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-400">Especificaciones</h3>
                         <ProductSpecs specs={Object.fromEntries(Object.entries(product.specs).filter(([k]) => k !== 'attachments'))} />
                     </div>
                 )}
 
                 {/* Documentos Adjuntos (Dinámicos) */}
                 {product.specs?.attachments && Array.isArray(product.specs.attachments) && product.specs.attachments.length > 0 && (
-                    <div className="pt-6 border-t space-y-3">
-                        <h3 className="text-sm font-medium">Documentos Adjuntos</h3>
+                    <div className="pt-6 border-t border-white/10 space-y-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Documentos Adjuntos</h3>
                         <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                             {product.specs.attachments.map((doc: any, i: number) => (
                                 doc.url && (
-                                    <Button key={i} variant="outline" className="w-full sm:w-auto" asChild>
+                                    <Button key={i} variant="outline" className="w-full sm:w-auto border-white/5 bg-white/[0.02] text-zinc-300 hover:text-white hover:bg-white/[0.08]" asChild>
                                         <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                                            <FileText className="mr-2 h-4 w-4" />
+                                            <FileText className="mr-2 h-4 w-4 text-primary" />
                                             {doc.name || `Documento ${i + 1}`}
                                         </a>
                                     </Button>

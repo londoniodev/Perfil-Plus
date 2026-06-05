@@ -7,7 +7,7 @@ import { AdaptiveImage } from "../../adaptive-image"
 import { Button } from "../../button"
 import { Badge } from "../../badge"
 import { useToast } from "../../toast"
-import { Check, ShoppingCart, Download, FileText, Share2 } from "lucide-react"
+import { Check, ShoppingCart, Download, FileText, Share2, ArrowLeft } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 // ============================================
@@ -47,13 +47,15 @@ export interface ProductConfiguratorProps {
     product: ProductData
     /** Callback when user adds item to cart */
     onAddToCart: (item: AddToCartItem) => void
+    /** Tenant primary color for themed elements */
+    primaryColor?: string
 }
 
 // ============================================
 // ProductConfigurator Component
 // ============================================
 
-export function ProductConfigurator({ product, onAddToCart }: ProductConfiguratorProps) {
+export function ProductConfigurator({ product, onAddToCart, primaryColor = '#e11d48' }: ProductConfiguratorProps) {
     const toast = useToast()
 
     // Estado: Variante seleccionada (Por defecto la default o la primera con stock)
@@ -92,14 +94,34 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
     }
 
     return (
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            {/* COLUMNA IZQUIERDA: Galería */}
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-10">
+            {/* COLUMNA IZQUIERDA: Back + Galería */}
             <div 
                 className={cn(
-                    "space-y-6 transition duration-700 ease-out transform",
+                    "space-y-4 transition duration-700 ease-out transform",
                     mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}
             >
+                {/* Botón de regreso con color del tenant */}
+                <button
+                    onClick={() => window.history.back()}
+                    className="group flex items-center gap-2.5 cursor-pointer transition-all duration-200 hover:gap-3"
+                    aria-label="Volver a la tienda"
+                >
+                    <div 
+                        className="flex items-center justify-center w-9 h-9 rounded-full border transition-all duration-300 group-hover:scale-110 active:scale-95"
+                        style={{ 
+                            backgroundColor: `${primaryColor}12`,
+                            borderColor: `${primaryColor}30`,
+                        }}
+                    >
+                        <ArrowLeft 
+                            className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" 
+                            style={{ color: primaryColor }}
+                        />
+                    </div>
+                    <span className="text-sm font-medium text-zinc-400 group-hover:text-white transition-colors duration-200">Tienda</span>
+                </button>
                 <div 
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-2xl bg-zinc-900 border border-white/5 cursor-pointer shadow-xl group"
@@ -238,15 +260,15 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     </div>
                 )}
 
-                {/* Zona de Precio y Acción - Estilo Glassmorphism Premium */}
-                <div className="mt-4 p-8 rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl space-y-6">
+                {/* Zona de Precio y Acción - Compacta y Premium */}
+                <div className="mt-2 p-5 rounded-2xl bg-white/[0.02] backdrop-blur-xl border border-white/5 shadow-2xl space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Precio Total</span>
+                        <div className="space-y-0.5">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Precio Total</span>
                             <PriceDisplay
                                 price={Number(selectedVariant.price)}
                                 size="lg"
-                                className="text-white font-extrabold tracking-tight text-3xl"
+                                className="text-white font-extrabold tracking-tight text-2xl"
                             />
                         </div>
                         {/* Indicador de Stock */}
@@ -254,7 +276,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                             <Badge 
                                 variant={isOutOfStock ? "destructive" : "outline"} 
                                 className={cn(
-                                    "px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-300",
+                                    "px-2.5 py-0.5 rounded-full text-[11px] font-semibold border",
                                     isOutOfStock 
                                         ? "bg-red-500/10 border-red-500/20 text-red-400" 
                                         : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
@@ -268,7 +290,7 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     <Button
                         size="lg"
                         className={cn(
-                            "w-full text-base font-bold h-14 rounded-xl transition-all duration-300 flex items-center justify-center gap-2",
+                            "w-full text-sm font-bold h-12 rounded-xl transition-all duration-300 flex items-center justify-center gap-2",
                             isOutOfStock
                                 ? "bg-zinc-850 border border-zinc-800 text-zinc-500 cursor-not-allowed"
                                 : "bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/35 transform hover:-translate-y-0.5 active:translate-y-0"
@@ -278,22 +300,18 @@ export function ProductConfigurator({ product, onAddToCart }: ProductConfigurato
                     >
                         {isDigital ? (
                             <>
-                                <Download className="h-5 w-5 animate-pulse" /> Descargar Ahora
+                                <Download className="h-4 w-4 animate-pulse" /> Descargar Ahora
                             </>
                         ) : (
                             <>
-                                <ShoppingCart className="h-5 w-5" />
+                                <ShoppingCart className="h-4 w-4" />
                                 {isOutOfStock ? "Sin Stock" : "Añadir al Carrito"}
                             </>
                         )}
                     </Button>
 
-                    <p className="text-xs text-center text-zinc-400 flex items-center justify-center gap-1.5 font-medium">
-                        {isDigital ? (
-                            <span>✨ Entrega inmediata vía email tras la compra.</span>
-                        ) : (
-                            <span>🚚 Envío calculado en el siguiente paso.</span>
-                        )}
+                    <p className="text-[11px] text-center text-zinc-500 font-medium">
+                        {isDigital ? "✨ Entrega inmediata vía email." : "🚚 Envío calculado en el siguiente paso."}
                     </p>
                 </div>
 

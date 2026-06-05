@@ -6,9 +6,10 @@ import { useCart } from "@/store/use-cart"
 
 interface ProductConfiguratorProps {
     product: Product & { variants: ProductVariant[] }
+    primaryColor?: string
 }
 
-export function ProductConfigurator({ product }: ProductConfiguratorProps) {
+export function ProductConfigurator({ product, primaryColor }: ProductConfiguratorProps) {
     const cart = useCart()
 
     const handleAddToCart = (item: AddToCartItem) => {
@@ -45,6 +46,7 @@ export function ProductConfigurator({ product }: ProductConfiguratorProps) {
         <SharedProductConfigurator
             product={productData}
             onAddToCart={handleAddToCart}
+            primaryColor={primaryColor}
         />
     )
 }

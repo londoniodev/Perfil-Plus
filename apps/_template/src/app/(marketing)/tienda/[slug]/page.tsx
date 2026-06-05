@@ -8,7 +8,6 @@ import { getDynamicUrl } from "@/lib/network"
 import { TenantFeature } from "@alvarosky/features"
 import { ProductSchema } from "@/components/seo/JsonLd"
 import { getTenantDesign } from "@/lib/tenant-server"
-import { ProductPageBackButton } from "@/components/shop/product-back-button"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>
@@ -91,19 +90,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-zinc-950 flex flex-col">
+        <div className="h-[100dvh] bg-zinc-950 flex flex-col relative overflow-hidden">
+            {/* Gradiente sutil del color del tenant */}
+            <div 
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: `radial-gradient(ellipse 80% 50% at 20% 50%, ${primaryColor}08 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 80% 80%, ${primaryColor}05 0%, transparent 60%)`,
+                }}
+            />
             <ProductSchema 
                 product={product} 
                 url={url} 
                 businessName={design?.name || "Tienda"} 
             />
-            <div className="container py-6 md:py-8 relative z-10 flex-1">
-                {/* Botón de regreso con color del tenant */}
-                <ProductPageBackButton primaryColor={primaryColor} productName={product.name} />
-
+            <div className="container py-4 md:py-6 relative z-10 flex-1 overflow-y-auto">
                 {/* Renderizamos el Cliente Component */}
-                <div className="dark text-foreground mt-4">
-                    <ProductConfigurator product={product} />
+                <div className="dark text-foreground">
+                    <ProductConfigurator product={product} primaryColor={primaryColor} />
                 </div>
             </div>
         </div>

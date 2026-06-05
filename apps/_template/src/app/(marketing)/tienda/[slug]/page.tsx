@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { serverFetch } from "@/lib/api-server"
-import { PageHeader } from "@alvarosky/ui"
 import { ProductConfigurator } from "@/components/shop/product-configurator"
 import { headers } from "next/headers"
 import { Metadata } from "next"
@@ -9,6 +8,7 @@ import { getDynamicUrl } from "@/lib/network"
 import { TenantFeature } from "@alvarosky/features"
 import { ProductSchema } from "@/components/seo/JsonLd"
 import { getTenantDesign } from "@/lib/tenant-server"
+import { ProductPageBackButton } from "@/components/shop/product-back-button"
 
 interface ProductPageProps {
     params: Promise<{ slug: string }>
@@ -77,6 +77,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     const tenantId = headersList.get("x-tenant-id") || "template";
     const design = await getTenantDesign(tenantId);
     const url = getDynamicUrl(headersList);
+    const primaryColor = design?.brandSettings?.primaryColor || design?.primary || '#e11d48';
 
     // Si no hay variantes activas (edge case), mostramos mensaje
     if (product.variants.length === 0) {
@@ -90,27 +91,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex flex-col pt-24">
+        <div className="min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] bg-zinc-950 flex flex-col overflow-y-auto">
             <ProductSchema 
                 product={product} 
                 url={url} 
                 businessName={design?.name || "Tienda"} 
             />
-            <div className="container py-8 md:py-12 relative z-10">
-                {/* Breadcrumbs simplificados */}
-                <div className="hidden md:block mb-8">
-                    <PageHeader
-                        title="Tienda"
-                        description={`/ ${product.name}`}
-                        className="py-0 md:py-0 text-white"
-                    />
-                </div>
+            <div className="container py-6 md:py-8 relative z-10 flex-1">
+                {/* Botón de regreso con color del tenant */}
+                <ProductPageBackButton primaryColor={primaryColor} productName={product.name} />
 
                 {/* Renderizamos el Cliente Component */}
-                <div className="dark text-foreground">
+                <div className="dark text-foreground mt-4">
                     <ProductConfigurator product={product} />
                 </div>
             </div>
         </div>
     )
 }
+

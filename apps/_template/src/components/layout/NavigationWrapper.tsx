@@ -53,6 +53,9 @@ export function NavigationWrapper({
     const isMenuPage = pathname === "/menu" || pathname?.endsWith("/menu");
     const isCheckoutPage = pathname?.startsWith("/checkout");
 
+    // Página de producto individual (/tienda/slug) - sin footer, layout 100vh
+    const isSingleProductPage = pathname?.startsWith("/tienda/") && pathname !== "/tienda/status";
+
     // Dashboard, Auth, Menu and Checkout pages don't show Header/Footer
     if (isDashboard || isAuthPage || isMenuPage || isCheckoutPage) {
         return <>{children}</>;
@@ -72,7 +75,7 @@ export function NavigationWrapper({
                 />
             )}
             <main>{children}</main>
-            {!hideFooter && footer}
+            {!hideFooter && !isSingleProductPage && footer}
         </>
     );
 }

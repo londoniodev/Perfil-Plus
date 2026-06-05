@@ -124,7 +124,10 @@ export function ProductConfigurator({ product, onAddToCart, primaryColor = '#e11
                 </button>
                 <div 
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-2xl bg-zinc-900 border border-white/5 cursor-pointer shadow-xl group"
+                    className={cn(
+                        "w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] md:w-full md:left-auto md:right-auto md:ml-0 md:mr-0 z-0 overflow-hidden md:rounded-2xl bg-zinc-900 border border-white/5 cursor-pointer shadow-xl group lg:mx-auto lg:max-h-[calc(100dvh-220px)]",
+                        isDigital ? "lg:max-w-[calc((100dvh-220px)*0.67)]" : "lg:max-w-[calc((100dvh-220px)*0.9)]"
+                    )}
                 >
                     <AdaptiveImage
                         src={product.images[activeImageIndex] || "/placeholder.jpg"}

@@ -1,66 +1,78 @@
 import { SiteFooter } from "@alvarosky/ui";
-import { siteConfig } from "@/config/site";
+import type { SocialLinks } from "@alvarosky/ui";
 
 interface FooterProps {
     logo?: string;
+    horizontalLogo?: string;
     businessName?: string;
     businessEmail?: string;
     businessPhone?: string;
     tagline?: string;
     footerLinks?: { label: string; href: string; external?: boolean }[] | null;
+    navLinks?: { label: string; href: string }[];
     features?: string[];
+    socialLinks?: SocialLinks | null;
+    primaryColor?: string;
 }
+
+// Phone numbers that are clearly placeholders
+const PLACEHOLDER_PHONES = [
+    "+57 000 000 0000",
+    "+57 300 000 0000",
+    "000 000 0000",
+    "+57000000000",
+];
 
 export function Footer({ 
     logo, 
+    horizontalLogo,
     businessName, 
     businessEmail, 
     businessPhone, 
     tagline,
     footerLinks = null,
-    features = []
+    navLinks = [],
+    features = [],
+    socialLinks,
+    primaryColor,
 }: FooterProps) {
-    // Use siteConfig as fallback for all values
-    const finalName = businessName || siteConfig.name || "Cliente Plataforma";
-    const finalEmail = businessEmail || siteConfig.email || "hola@plataforma.com";
-    const finalPhone = businessPhone || siteConfig.phone || "+57 300 000 0000";
+    const finalName = businessName || "Cliente Plataforma";
+    
+    // Only show email if it's real (not a placeholder)
+    const finalEmail = businessEmail || undefined;
+    
+    // Only show phone if it's real (not a placeholder from siteConfig)
+    const isPlaceholderPhone = !businessPhone || PLACEHOLDER_PHONES.includes(businessPhone);
+    const finalPhone = isPlaceholderPhone ? undefined : businessPhone;
+
     const finalTagline = tagline || "";
 
     let finalFooterLinks = footerLinks;
 
-    // Fallback Automático si no hay links configurados en DB
+    // Fallback: If no footer links from DB, generate from features
     if (!finalFooterLinks || finalFooterLinks.length === 0) {
         finalFooterLinks = [
-            { label: "Inicio", href: "/" },
             { label: "Términos", href: "/terminos-y-condiciones" },
-            { label: "Privacidad", href: "/politica-de-privacidad" }
+            { label: "Privacidad", href: "/politica-de-privacidad" },
         ];
-        if (features.includes("SHOP")) finalFooterLinks.push({ label: "Tienda", href: "/tienda" });
-        if (features.includes("BLOG")) finalFooterLinks.push({ label: "Blog", href: "/blog" });
-        if (features.includes("RESTAURANT")) finalFooterLinks.push({ label: "Menú", href: "/menu" });
     }
 
-    const finalLogo = logo || siteConfig.branding.logo;
-    const hasLanding = features.includes("LANDING");
+    const finalLogo = logo || "/favicon.ico";
 
     return (
-        <div className="flex flex-col w-full bg-background relative z-10 border-t border-border/40 pb-8">
-            <SiteFooter
-                logo={finalLogo}
-                logoAlt={siteConfig.branding.logoAlt}
-                tagline={finalTagline}
-                links={finalFooterLinks as any}
-                companyName={finalName}
-                className="border-none py-8 pb-4"
-                hideTopSection={hasLanding}
-                contactInfo={
-                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs text-muted-foreground/60 font-medium whitespace-nowrap">
-                        <span>Email: <a href={`mailto:${finalEmail}`} className="hover:text-foreground hover:underline transition-all">{finalEmail}</a></span>
-                        <span className="hidden sm:inline text-border">•</span>
-                        <span>Teléfono: {finalPhone}</span>
-                    </div>
-                }
-            />
-        </div>
+        <SiteFooter
+            logo={finalLogo}
+            horizontalLogo={horizontalLogo}
+            logoAlt="Logo"
+            tagline={finalTagline}
+            links={finalFooterLinks as any}
+            navLinks={navLinks as any}
+            companyName={finalName}
+            className="bg-background"
+            contactEmail={finalEmail}
+            contactPhone={finalPhone}
+            socialLinks={socialLinks}
+            primaryColor={primaryColor}
+        />
     );
 }

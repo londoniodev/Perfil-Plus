@@ -59,6 +59,10 @@ export default async function MarketingLayout({
     const businessName = fixEncoding(design?.name || null);
     const tenantTagline = fixEncoding(design?.brandSettings?.tagline || design?.tagline || null);
     const logoUrl = design?.brandSettings?.logoUrl || design?.brandSettings?.faviconUrl || design?.logo || '/images/branding/icon.png';
+    // Logo horizontal (prioridad) vs logo cuadrado para footer
+    const horizontalLogo = design?.brandSettings?.logoUrl || design?.logo || undefined;
+    const socialLinks = design?.socialLinks || null;
+    const primaryColor = design?.brandSettings?.primaryColor || design?.primary || undefined;
 
     const tenantFeaturesRaw = headersList.get('x-tenant-features');
     const tenantCustomLinksRaw = headersList.get('x-tenant-custom-links');
@@ -156,12 +160,16 @@ export default async function MarketingLayout({
             footer={
                 <Footer
                     logo={logoUrl}
+                    horizontalLogo={horizontalLogo}
                     footerLinks={footerLinks?.map((l: any) => ({ ...l, label: fixEncoding(l.label) }))}
+                    navLinks={finalLinks}
                     businessName={businessName || undefined}
                     businessEmail={contactEmail || undefined}
                     businessPhone={contactPhone || undefined}
                     tagline={tenantTagline || undefined}
                     features={allFeatures}
+                    socialLinks={socialLinks}
+                    primaryColor={primaryColor}
                 />
             }
         >

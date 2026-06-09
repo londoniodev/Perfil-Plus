@@ -38,6 +38,7 @@ interface ProcessingResult {
   base64ImagesConverted: number;
   externalImagesDownloaded: number;
   localImagesProcessed: number;
+  totalVideosProcessed: number;
   originalSizeBytes: number;
   finalBodySizeBytes: number;
 }
@@ -505,11 +506,12 @@ function sanitizeBodyHtml(bodyHtml: string): string {
 
   const sanitized = purify.sanitize(bodyHtml, {
     WHOLE_DOCUMENT: false, // Fragment mode — no <html>/<head>/<body> wrapping
-    ADD_TAGS: ["link", "style"],
+    ADD_TAGS: ["link", "style", "video", "source"],
     ADD_ATTR: [
       "rel", "href", "media", "class", "id", "role", "aria-label", "aria-hidden", 
       "loading", "decoding", "width", "height", "viewBox", "fill", "stroke", 
-      "stroke-width", "stroke-linecap", "stroke-linejoin"
+      "stroke-width", "stroke-linecap", "stroke-linejoin",
+      "autoplay", "loop", "muted", "playsinline", "src", "type", "poster", "controls", "preload"
     ],
     FORBID_TAGS: ["script", "iframe", "object", "embed", "form"],
     FORBID_ATTR: [
@@ -522,6 +524,53 @@ function sanitizeBodyHtml(bodyHtml: string): string {
 
   log("🔒", "Body HTML sanitized — all <script> tags and inline event handlers removed");
   return sanitized;
+}
+
+async function processLocalVideos(
+  $: cheerio.CheerioAPI,
+  assetsDir: string,
+  inputHtmlPath: string,
+): Promise<number> {
+  const localVideos = $("video, source").filter((_i, el) => {
+    const src = $(el).attr("src") || "";
+    return src && !src.startsWith("http") && !src.startsWith("//") && !src.startsWith("data:");
+  });
+
+  const INPUT_DIR = path.dirname(inputHtmlPath);
+  let count = 0;
+
+  for (let i = 0; i < localVideos.length; i++) {
+    const el = localVideos[i];
+    if (!el) continue;
+
+    const src = $(el).attr("src");
+    if (!src) continue;
+
+    try {
+      const decodedSrc = decodeURIComponent(src);
+      const sourcePath = path.resolve(INPUT_DIR, decodedSrc);
+
+      const exists = await fs.access(sourcePath).then(() => true).catch(() => false);
+      if (!exists) {
+        log("⚠️", `Local video asset not found: ${sourcePath} — skipping`);
+        continue;
+      }
+
+      const filename = path.basename(decodedSrc);
+      const outputPath = path.join(assetsDir, filename);
+
+      log("📹  (Local Video)", `Copying video: ${src} → ${filename}`);
+      await fs.copyFile(sourcePath, outputPath);
+
+      $(el).attr("src", `./assets/${filename}`);
+      count++;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      log("❌", `Failed to process local video ${src}: ${message}`);
+    }
+  }
+
+  return count;
 }
 
 // ─────────────────────────────────────────────
@@ -558,6 +607,9 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
 
   // ── Step 2.5: Process local images ──
   const localCount = await processLocalImages($, assetsDir, webpQuality, inputHtmlPath);
+
+  // ── Step 2.6: Process local videos ──
+  const localVideosCount = await processLocalVideos($, assetsDir, inputHtmlPath);
 
   // ── Step 3a: Extract Tailwind config from inline script (BEFORE removing it) ──
   const extractedConfig = extractTailwindConfig($);
@@ -633,6 +685,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
   log("🎉", "Processing complete!");
   log("📊", `Original: ${(originalSizeBytes / 1024).toFixed(1)} KB → Body: ${(finalBodySizeBytes / 1024).toFixed(1)} KB`);
   log("🖼️", `Images: ${base64Count} base64 + ${externalCount} external + ${localCount} local = ${base64Count + externalCount + localCount} total`);
+  log("📹", `Videos: ${localVideosCount} processed`);
   log("📄", `Body: ${bodyHtmlPath}`);
   log("📋", `Meta: ${metaJsonPath}`);
   log("🎨", `CSS: ${cssPath}`);
@@ -646,6 +699,7 @@ export async function processLanding(config: ProcessorConfig): Promise<Processin
     base64ImagesConverted: base64Count,
     externalImagesDownloaded: externalCount,
     localImagesProcessed: localCount,
+    totalVideosProcessed: localVideosCount,
     originalSizeBytes,
     finalBodySizeBytes,
   };

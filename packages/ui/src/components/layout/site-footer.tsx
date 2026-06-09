@@ -18,6 +18,7 @@ export interface SiteFooterProps {
     developerUrl?: string;
     className?: string;
     contactInfo?: React.ReactNode;
+    hideTopSection?: boolean;
 }
 
 export function SiteFooter({
@@ -30,48 +31,69 @@ export function SiteFooter({
     developerUrl = "https://perfil.plus",
     className,
     contactInfo,
+    hideTopSection = false,
 }: SiteFooterProps) {
     const currentYear = new Date().getFullYear();
 
     return (
         <footer className={cn("bg-background border-t border-border py-6", className)}>
+            <style dangerouslySetInnerHTML={{__html: `
+                @media (max-width: 1023px) {
+                    .site-footer-top-section {
+                        display: none !important;
+                    }
+                }
+            `}} />
             <div className="container mx-auto px-4 md:px-8">
                 {/* Full Footer - Hidden on Mobile */}
-                <div className="hidden lg:flex flex-col items-center gap-8 mb-12">
-                    {/* Logo y tagline */}
-                    <div className="text-center">
-                        <div className="relative h-8 w-auto mx-auto mb-4 inline-block">
-                            <Image
-                                src={logo}
-                                alt={logoAlt}
-                                width={120}
-                                height={32}
-                                className="h-8 w-auto"
-                            />
+                {!hideTopSection && (
+                    <div className="site-footer-top-section flex flex-col items-center gap-8 mb-12">
+                        {/* Logo y tagline */}
+                        <div className="text-center">
+                            {logo && 
+                             logo !== "" && 
+                             logo !== "/favicon.ico" && 
+                             logo !== "/images/branding/icon.png" && 
+                             !logo.endsWith("icon.png") ? (
+                                <div className="relative h-8 w-auto mx-auto mb-4 inline-block">
+                                    <Image
+                                        src={logo}
+                                        alt={logoAlt}
+                                        width={120}
+                                        height={32}
+                                        className="h-8 w-auto"
+                                        unoptimized
+                                    />
+                                </div>
+                            ) : (
+                                <span className="block text-xl font-bold tracking-tight mb-4 text-foreground">
+                                    {companyName}
+                                </span>
+                            )}
+
+                            {tagline && tagline !== "Plataforma multi-tenant de Perfil Plus" && (
+                                <span className="block text-muted-foreground text-sm font-light tracking-wide">
+                                    {tagline}
+                                </span>
+                            )}
                         </div>
 
-                        {tagline && (
-                            <span className="block text-muted-foreground text-sm font-light tracking-wide">
-                                {tagline}
-                            </span>
-                        )}
+                        {/* Enlaces */}
+                        <nav className="flex items-center gap-8">
+                            {links.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    target={link.external ? "_blank" : undefined}
+                                    rel={link.external ? "noopener noreferrer" : undefined}
+                                    className="text-foreground/60 hover:text-foreground transition-colors text-sm"
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </nav>
                     </div>
-
-                    {/* Enlaces */}
-                    <nav className="flex items-center gap-8">
-                        {links.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                target={link.external ? "_blank" : undefined}
-                                rel={link.external ? "noopener noreferrer" : undefined}
-                                className="text-foreground/60 hover:text-foreground transition-colors text-sm"
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </div>
+                )}
 
                 {/* Copyright & Credits - Adapted for Mobile */}
                 <div className="flex flex-col lg:flex-row items-center justify-between pt-8 lg:pt-0 lg:border-t-0 border-t border-border/50 gap-4">

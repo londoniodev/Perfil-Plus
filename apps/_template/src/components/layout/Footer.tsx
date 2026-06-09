@@ -24,7 +24,7 @@ export function Footer({
     const finalName = businessName || siteConfig.name || "Cliente Plataforma";
     const finalEmail = businessEmail || siteConfig.email || "hola@plataforma.com";
     const finalPhone = businessPhone || siteConfig.phone || "+57 300 000 0000";
-    const finalTagline = tagline || siteConfig.description || "Creciendo contigo";
+    const finalTagline = tagline || "";
 
     let finalFooterLinks = footerLinks;
 
@@ -41,6 +41,7 @@ export function Footer({
     }
 
     const finalLogo = logo || siteConfig.branding.logo;
+    const hasLanding = features.includes("LANDING");
 
     return (
         <div className="flex flex-col w-full bg-background relative z-10 border-t border-border/40 pb-8">
@@ -51,6 +52,7 @@ export function Footer({
                 links={finalFooterLinks as any}
                 companyName={finalName}
                 className="border-none py-8 pb-4"
+                hideTopSection={hasLanding}
                 contactInfo={
                     <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs text-muted-foreground/60 font-medium whitespace-nowrap">
                         <span>Email: <a href={`mailto:${finalEmail}`} className="hover:text-foreground hover:underline transition-all">{finalEmail}</a></span>

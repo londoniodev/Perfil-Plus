@@ -82,16 +82,16 @@ async function extractBase64Images(
       }
 
       const buffer = Buffer.from(matches[2], "base64");
-      const filename = `img-b64-${i + 1}.webp`;
+      const filename = `img-b64-${i + 1}.avif`;
       const outputPath = path.join(assetsDir, filename);
 
       await sharp(buffer)
-        .webp({ quality })
+        .avif({ quality })
         .toFile(outputPath);
 
       $(el).attr("src", `./assets/${filename}`);
       count++;
-      log("🖼️", `Base64 image #${i + 1} → ${filename} (${(buffer.length / 1024).toFixed(0)} KB → webp)`);
+      log("🖼️", `Base64 image #${i + 1} → ${filename} (${(buffer.length / 1024).toFixed(0)} KB → avif)`);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       log("❌", `Failed to process base64 image #${i + 1}: ${message}`);
@@ -154,10 +154,10 @@ async function downloadExternalImages(
             });
 
             const buffer = Buffer.from(response.data);
-            const filename = `img-ext-${i + 1}.webp`;
+            const filename = `img-ext-${i + 1}.avif`;
             const outputPath = path.join(assetsDir, filename);
 
-            await sharp(buffer).webp({ quality }).toFile(outputPath);
+            await sharp(buffer).avif({ quality }).toFile(outputPath);
             $(el).attr("src", `./assets/${filename}`);
             count++;
         } catch (error: any) {
@@ -212,11 +212,11 @@ async function processLocalImages(
       const buffer = await fs.readFile(sourcePath);
       const originalExt = path.extname(src).replace(".", "");
       const baseName = path.basename(src, path.extname(src));
-      const filename = `${baseName}-${originalExt}.webp`;
+      const filename = `${baseName}-${originalExt}.avif`;
       const outputPath = path.join(assetsDir, filename);
 
       log("🖼️  (Local)", `Optimizing: ${src} → ${filename}`);
-      await sharp(buffer).webp({ quality }).toFile(outputPath);
+      await sharp(buffer).avif({ quality }).toFile(outputPath);
 
       $(el).attr("src", `./assets/${filename}`);
       count++;
@@ -260,13 +260,13 @@ async function processLocalImages(
         const buffer = await fs.readFile(sourcePath);
         const originalExt = path.extname(src).replace(".", "");
         const baseName = path.basename(src, path.extname(src));
-        const filename = `${baseName}-${originalExt}.webp`;
+        const filename = `${baseName}-${originalExt}.avif`;
         const outputPath = path.join(assetsDir, filename);
 
         log("🖼️  (Local BG)", `Optimizing: ${src} → ${filename}`);
-        await sharp(buffer).webp({ quality }).toFile(outputPath);
+        await sharp(buffer).avif({ quality }).toFile(outputPath);
 
-        // Convert to inline style to avoid Tailwind class mismatch after CDN mutation
+        // Convert to inline style to avoid Tailwind class mismatch after CDN mismatch
         modifiedCls = modifiedCls.replace(`bg-[url('${src}')]`, "").replace(`bg-[url("${src}")]`, "").replace(`bg-[url(${src})]`, "");
         
         let currentStyle = $(el).attr("style") || "";

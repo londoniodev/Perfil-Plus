@@ -68,6 +68,7 @@ function resolveContentType(filePath: string): string {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
     ".webp": "image/webp",
+    ".avif": "image/avif",
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",

@@ -137,17 +137,25 @@ export default function LandingRenderer({
     const timer1 = setTimeout(scanAndObserve, 100);
     const timer2 = setTimeout(scanAndObserve, 500);
 
-    // ── Lógica de Parallax Nativo ──
+    // ── Lógica de Parallax Nativo y Horizontal ──
     const parallaxImages = containerRef.current.querySelectorAll(".parallax-img") as NodeListOf<HTMLElement>;
+    const horizontalParallaxImages = containerRef.current.querySelectorAll(".parallax-horizontal-img") as NodeListOf<HTMLElement>;
+    const stickySections = containerRef.current.querySelectorAll(".sticky-parallax-section") as NodeListOf<HTMLElement>;
     
     const updateParallax = () => {
-      if (window.innerWidth < 1024) {
+      const isLargeScreen = window.innerWidth >= 1024;
+      
+      if (!isLargeScreen) {
         parallaxImages.forEach(img => {
+          img.style.transform = "none";
+        });
+        horizontalParallaxImages.forEach(img => {
           img.style.transform = "none";
         });
         return;
       }
 
+      // Parallax Y (vertical)
       parallaxImages.forEach(img => {
         const parent = img.closest("section");
         if (!parent) return;
@@ -155,15 +163,45 @@ export default function LandingRenderer({
         const rect = parent.getBoundingClientRect();
         const viewHeight = window.innerHeight;
 
-        // Solo actualizar si la sección está visible en pantalla
         if (rect.top < viewHeight && rect.bottom > 0) {
           const centerScreen = viewHeight / 2;
           const parentCenter = rect.top + (rect.height / 2);
           const relativeOffset = parentCenter - centerScreen;
           
-          // Desplazamiento lento en el eje Y basado en la posición en pantalla
           const translateY = relativeOffset * -0.15;
           img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.03)`;
+        }
+      });
+
+      // Parallax X (horizontal + pinning)
+      stickySections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        const viewHeight = window.innerHeight;
+        const sectionHeight = rect.height;
+
+        const endScroll = sectionHeight - viewHeight;
+        const currentScroll = -rect.top;
+
+        const img = section.querySelector(".parallax-horizontal-img") as HTMLElement;
+        if (!img) return;
+
+        const direction = img.getAttribute("data-direction") || "left";
+        const imgWidthPercent = 140; // width: 140%
+        const maxTranslatePercent = -((imgWidthPercent - 100) / (imgWidthPercent / 100)); // -28.57%
+
+        if (currentScroll >= 0 && currentScroll <= endScroll) {
+          const t = currentScroll / endScroll;
+          let translateX;
+          if (direction === "left") {
+            translateX = t * maxTranslatePercent;
+          } else {
+            translateX = maxTranslatePercent + (t * -maxTranslatePercent);
+          }
+          img.style.transform = `translate3d(${translateX}%, 0, 0)`;
+        } else if (currentScroll < 0) {
+          img.style.transform = direction === "left" ? "translate3d(0%, 0, 0)" : `translate3d(${maxTranslatePercent}%, 0, 0)`;
+        } else if (currentScroll > endScroll) {
+          img.style.transform = direction === "left" ? `translate3d(${maxTranslatePercent}%, 0, 0)` : "translate3d(0%, 0, 0)";
         }
       });
     };
@@ -235,10 +273,11 @@ export default function LandingRenderer({
       {/* ── Contenido de la Landing ── */}
       <div
         ref={containerRef}
-        className="w-full min-h-screen max-w-[100vw] overflow-x-hidden p-0 m-0 landing-content"
+        className="w-full min-h-screen max-w-[100vw] p-0 m-0 landing-content"
         style={{
           opacity: isReady ? 1 : 0,
           transition: "opacity 0.5s ease-in",
+          overflowX: "clip",
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />

@@ -256,11 +256,12 @@
         </section>
 
         <!-- Sección Introductoria: Mi Historia -->
-        <section class="py-24 bg-[#0a0a0c] relative w-full w-screen max-w-[100vw] overflow-hidden border-t border-zinc-900/60">
+        <section class="py-24 bg-[#0a0a0c] relative w-full w-screen max-w-[100vw] min-h-[70vh] flex items-center overflow-hidden border-t border-zinc-900/60">
             <div class="absolute top-0 right-1/4 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-[100px] pointer-events-none"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
-                    <div class="reveal-left">
+            <div class="container mx-auto px-4 relative z-20">
+                <div class="max-w-5xl mx-auto flex flex-col lg:flex-row items-center">
+                    <!-- Columna de Texto -->
+                    <div class="w-full lg:w-1/2 lg:pr-16 reveal-left">
                         <span class="text-xs font-black text-fuchsia-500 uppercase tracking-[0.3em] mb-4 block">Mi Historia</span>
                         <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-[0.95] mb-6">UNA TRAYECTORIA DE <br><span class="text-fuchsia-500 italic">RESILIENCIA</span> Y LIDERAZGO</h2>
                         <p class="text-zinc-400 text-base md:text-lg mb-8 leading-relaxed">Conoce los contrastes de mi camino, desde la disciplina de un hogar militar hasta el liderazgo de organizaciones internacionales. Mi propósito es guiar tu transformación desde mi propia experiencia de vida.</p>
@@ -269,28 +270,39 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </a>
                     </div>
-                    <div class="relative reveal-right">
-                        <div class="relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
-                            <img src="./mi-historia.avif" alt="Mi Historia - Deborah Moscoso" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
-                        </div>
+                    
+                    <!-- Imagen de fallback para móviles -->
+                    <div class="w-full mt-8 block lg:hidden relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
+                        <img src="./mi-historia.avif" alt="Mi Historia - Deborah Moscoso" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Imagen absoluta en desktop con Parallax -->
+            <div class="absolute top-0 right-0 w-1/2 h-full hidden lg:block z-10 overflow-hidden pointer-events-none select-none">
+                <!-- Máscara de gradiente suave -->
+                <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-[#0a0a0c]/85 to-transparent z-20"></div>
+                <img src="./mi-historia.avif" alt="Mi Historia - Deborah Moscoso" class="w-full h-[120%] object-cover object-center absolute -top-[10%] left-0 parallax-img will-change-transform">
             </div>
         </section>
 
         <!-- Sección Introductoria: Servicios -->
-        <section class="py-24 bg-zinc-950 relative w-full w-screen max-w-[100vw] overflow-hidden border-t border-zinc-900/60">
+        <section class="py-24 bg-zinc-950 relative w-full w-screen max-w-[100vw] min-h-[70vh] flex items-center overflow-hidden border-t border-zinc-900/60">
             <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
-                    <div class="relative order-2 lg:order-1 reveal-left">
-                        <div class="relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
-                            <img src="./asesoria-profesional.avif" alt="Asesoría Profesional" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
-                        </div>
+            <div class="container mx-auto px-4 relative z-20">
+                <div class="max-w-5xl mx-auto flex flex-col lg:flex-row items-center">
+                    <!-- Imagen de fallback para móviles -->
+                    <div class="w-full mb-8 block lg:hidden relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
+                        <img src="./asesoria-profesional.avif" alt="Asesoría Profesional" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
                     </div>
-                    <div class="order-1 lg:order-2 reveal-right">
+                    
+                    <!-- Espacio para la columna izquierda en desktop -->
+                    <div class="w-full lg:w-1/2 hidden lg:block"></div>
+
+                    <!-- Columna de Texto -->
+                    <div class="w-full lg:w-1/2 lg:pl-16 reveal-right">
                         <span class="text-xs font-black text-blue-500 uppercase tracking-[0.3em] mb-4 block">Asesoría Profesional</span>
                         <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-[0.95] mb-6">BIENESTAR Y ALTO <br><span class="text-blue-500 italic">RENDIMIENTO</span> CIENTÍFICO</h2>
                         <p class="text-zinc-400 text-base md:text-lg mb-8 leading-relaxed">Programas de entrenamiento y planes de nutrición personalizados basados en la bioquímica celular. Olvídate de modas, trabajamos con ciencia demostrable.</p>
@@ -301,14 +313,22 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Imagen absoluta en desktop con Parallax a la izquierda -->
+            <div class="absolute top-0 left-0 w-1/2 h-full hidden lg:block z-10 overflow-hidden pointer-events-none select-none">
+                <!-- Máscara de gradiente suave (inversa) -->
+                <div class="absolute inset-0 bg-gradient-to-l from-zinc-950 via-zinc-950/85 to-transparent z-20"></div>
+                <img src="./asesoria-profesional.avif" alt="Asesoría Profesional" class="w-full h-[120%] object-cover object-center absolute -top-[10%] left-0 parallax-img will-change-transform">
+            </div>
         </section>
 
         <!-- Sección Introductoria: Emprendimiento -->
-        <section class="py-24 bg-[#0a0a0c] relative w-full w-screen max-w-[100vw] overflow-hidden border-t border-zinc-900/60">
+        <section class="py-24 bg-[#0a0a0c] relative w-full w-screen max-w-[100vw] min-h-[70vh] flex items-center overflow-hidden border-t border-zinc-900/60">
             <div class="absolute top-0 right-1/4 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-[100px] pointer-events-none"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
-                    <div class="reveal-left">
+            <div class="container mx-auto px-4 relative z-20">
+                <div class="max-w-5xl mx-auto flex flex-col lg:flex-row items-center">
+                    <!-- Columna de Texto -->
+                    <div class="w-full lg:w-1/2 lg:pr-16 reveal-left">
                         <span class="text-xs font-black text-fuchsia-500 uppercase tracking-[0.3em] mb-4 block">Negocios &amp; Libertad</span>
                         <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-[0.95] mb-6">TRANSFORMA TU PASIÓN EN <br><span class="text-fuchsia-500 italic">LIBERTAD</span> FINANCIERA</h2>
                         <p class="text-zinc-400 text-base md:text-lg mb-8 leading-relaxed">Descubre cómo construir un negocio escalable en la industria del bienestar y liderar tu propia economía. Únete a una comunidad de más de 1000 emprendedores exitosos.</p>
@@ -317,15 +337,88 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                         </a>
                     </div>
-                    <div class="relative reveal-right">
-                        <div class="relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
-                            <img src="./negocios-libertad.avif" alt="Negocios y Libertad" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
-                        </div>
+                    
+                    <!-- Imagen de fallback para móviles -->
+                    <div class="w-full mt-8 block lg:hidden relative aspect-video rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl">
+                        <img src="./negocios-libertad.avif" alt="Negocios y Libertad" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/60 to-transparent z-10"></div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Imagen absoluta en desktop con Parallax -->
+            <div class="absolute top-0 right-0 w-1/2 h-full hidden lg:block z-10 overflow-hidden pointer-events-none select-none">
+                <!-- Máscara de gradiente suave -->
+                <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-[#0a0a0c]/85 to-transparent z-20"></div>
+                <img src="./negocios-libertad.avif" alt="Negocios y Libertad" class="w-full h-[120%] object-cover object-center absolute -top-[10%] left-0 parallax-img will-change-transform">
+            </div>
         </section>
     </div>
+
+    <!-- Script de Efectos: Parallax y Scroll Reveal -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const parallaxImages = document.querySelectorAll(".parallax-img");
+            
+            // Función para actualizar las posiciones de las imágenes en parallax
+            const updateParallax = () => {
+                if (window.innerWidth < 1024) {
+                    parallaxImages.forEach(img => {
+                        img.style.transform = 'none';
+                    });
+                    return;
+                }
+                
+                parallaxImages.forEach(img => {
+                    const parent = img.closest("section");
+                    if (!parent) return;
+                    
+                    const rect = parent.getBoundingClientRect();
+                    const viewHeight = window.innerHeight;
+                    
+                    // Si la sección está visible en pantalla
+                    if (rect.top < viewHeight && rect.bottom > 0) {
+                        // relativeRatio va indicando la posición de la sección respecto a la pantalla
+                        const centerScreen = viewHeight / 2;
+                        const parentCenter = rect.top + (rect.height / 2);
+                        const relativeOffset = parentCenter - centerScreen;
+                        
+                        // Movimiento sutil en el eje Y basado en la distancia al centro de la pantalla
+                        const translateY = relativeOffset * -0.15;
+                        img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.08)`;
+                    }
+                });
+            };
+
+            // Escuchar el evento de scroll en fase de captura para soportar contenedores internos con overflow
+            document.addEventListener("scroll", () => {
+                requestAnimationFrame(updateParallax);
+            }, { capture: true, passive: true });
+
+            // Ejecutar al cargar la página para posicionar inicialmente las imágenes
+            setTimeout(updateParallax, 100);
+
+            // 2. Animaciones de Entrada (Scroll Reveal)
+            const reveals = document.querySelectorAll(".reveal-left, .reveal-right");
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("opacity-100", "translate-x-0");
+                        entry.target.classList.remove("opacity-0", "-translate-x-10", "translate-x-10");
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+            reveals.forEach(el => {
+                el.classList.add("transition-all", "duration-[1200ms]", "ease-out", "opacity-0");
+                if (el.classList.contains("reveal-left")) {
+                    el.classList.add("-translate-x-10");
+                } else if (el.classList.contains("reveal-right")) {
+                    el.classList.add("translate-x-10");
+                }
+                observer.observe(el);
+            });
+        });
+    </script>
 </body>
 </html>

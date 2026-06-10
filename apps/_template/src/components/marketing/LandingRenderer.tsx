@@ -92,7 +92,7 @@ export default function LandingRenderer({
     };
   }, []);
 
-  // IntersectionObserver para animaciones .reveal
+  // IntersectionObserver para animaciones .reveal y Parallax
   useEffect(() => {
     if (!containerRef.current || !isReady) return;
 
@@ -134,14 +134,56 @@ export default function LandingRenderer({
       });
     };
 
-    // Intentar observar en varios pasos para asegurar captura del DOM dinámico
     const timer1 = setTimeout(scanAndObserve, 100);
     const timer2 = setTimeout(scanAndObserve, 500);
+
+    // ── Lógica de Parallax Nativo ──
+    const parallaxImages = containerRef.current.querySelectorAll(".parallax-img") as NodeListOf<HTMLElement>;
+    
+    const updateParallax = () => {
+      if (window.innerWidth < 1024) {
+        parallaxImages.forEach(img => {
+          img.style.transform = "none";
+        });
+        return;
+      }
+
+      parallaxImages.forEach(img => {
+        const parent = img.closest("section");
+        if (!parent) return;
+
+        const rect = parent.getBoundingClientRect();
+        const viewHeight = window.innerHeight;
+
+        // Solo actualizar si la sección está visible en pantalla
+        if (rect.top < viewHeight && rect.bottom > 0) {
+          const centerScreen = viewHeight / 2;
+          const parentCenter = rect.top + (rect.height / 2);
+          const relativeOffset = parentCenter - centerScreen;
+          
+          // Desplazamiento lento en el eje Y basado en la posición en pantalla
+          const translateY = relativeOffset * -0.15;
+          img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.08)`;
+        }
+      });
+    };
+
+    // Capturar scroll en cualquier nivel del documento
+    const handleScroll = () => {
+      requestAnimationFrame(updateParallax);
+    };
+
+    document.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    
+    // Posicionamiento inicial
+    const initialTimer = setTimeout(updateParallax, 150);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(initialTimer);
       observer.disconnect();
+      document.removeEventListener("scroll", handleScroll, { capture: true });
     };
   }, [html, isReady]);
 

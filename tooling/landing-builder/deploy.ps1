@@ -56,7 +56,7 @@ foreach ($page in $pages) {
   
   Write-Host ""
   Write-Host "PROCESSING: ${f}" -ForegroundColor Yellow
-  npx tsx src/cli.ts $inputPath -t $Tenant -l $f
+  pnpm exec tsx src/cli.ts $inputPath -t $Tenant -l $f
   
   if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed processing ${f}" -ForegroundColor Red
@@ -65,7 +65,7 @@ foreach ($page in $pages) {
   
   if (-not $SkipUpload) {
     Write-Host "UPLOADING, SYNCING AND REVALIDATING: ${f} (Menu Label: ${l})" -ForegroundColor Yellow
-    npx tsx src/cli-upload.ts -t $Tenant -l $f -d $Domain -b "${l}"
+    pnpm exec tsx src/cli-upload.ts -t $Tenant -l $f -d $Domain -b "${l}"
     
     if ($LASTEXITCODE -ne 0) {
       Write-Host "Failed uploading ${f}" -ForegroundColor Red

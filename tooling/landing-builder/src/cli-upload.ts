@@ -98,7 +98,6 @@ async function main(): Promise<void> {
     console.log("");
     console.log(`🌐 Landing live at: ${result.publicUrl}`);
     console.log("");
-    process.exit(0);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`\n❌ Fatal error: ${message}\n`);

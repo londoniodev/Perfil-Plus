@@ -216,8 +216,9 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
     forcePathStyle: true, // CRITICAL for MinIO
   });
 
-  const bucket = `${tenantSlug}-public`;
-  log("🪣", `Target bucket: ${bucket}`);
+  try {
+    const bucket = `${tenantSlug}-public`;
+    log("🪣", `Target bucket: ${bucket}`);
 
   // 3.5 Ensure bucket exists (best effort)
   try {
@@ -348,6 +349,7 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
           headers: {
             "Content-Type": "application/json",
             "x-revalidate-secret": secret,
+            "Connection": "close",
           },
           body: JSON.stringify({ tag }),
         });
@@ -363,18 +365,21 @@ export async function uploadLanding(config: UploaderConfig): Promise<UploadResul
     log("⚠️", `Upload succeeded, but cache revalidation request failed. The old version might still be served.`);
   }
 
-  log("", "─────────────────────────────────────");
-  log("🎉", "Upload complete!");
-  log("📊", `Files uploaded: ${filesUploaded}`);
-  log("🌐", `Body URL: ${publicUrl}`);
-  log("📋", `Meta URL: ${s3Config.publicUrl}/${bucket}/${metaKey}`);
-  log("", "─────────────────────────────────────");
+    log("", "─────────────────────────────────────");
+    log("🎉", "Upload complete!");
+    log("📊", `Files uploaded: ${filesUploaded}`);
+    log("🌐", `Body URL: ${publicUrl}`);
+    log("📋", `Meta URL: ${s3Config.publicUrl}/${bucket}/${metaKey}`);
+    log("", "─────────────────────────────────────");
 
-  return {
-    bucket,
-    filesUploaded,
-    bodyKey,
-    metaKey,
-    publicUrl,
-  };
+    return {
+      bucket,
+      filesUploaded,
+      bodyKey,
+      metaKey,
+      publicUrl,
+    };
+  } finally {
+    s3.destroy();
+  }
 }

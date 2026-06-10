@@ -145,24 +145,8 @@ export function SiteHeader({
                     />
                 </nav>
 
-                {/* Actions (Toggle Theme + Cart, Col 3 on Both) */}
+                {/* Actions (Cart, Col 3 on Both) */}
                 <div className="flex-1 flex items-center justify-end gap-1">
-                    {mounted && !hideThemeToggle && (
-                        <button 
-                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className={cn(
-                                "inline-flex items-center justify-center rounded-full p-2 transition-colors",
-                                isWhiteText ? "text-white/80 hover:bg-white/10 hover:text-white" : (isScrolled ? "text-black/70 hover:bg-black/5 hover:text-black" : "text-muted-foreground hover:bg-muted hover:text-foreground")
-                            )} 
-                            aria-label="Cambiar tema"
-                        >
-                            {theme === 'dark' ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sun transition-transform duration-300"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-moon transition-transform duration-300"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                            )}
-                        </button>
-                    )}
                     <div className={cn("ml-1", isWhiteText ? "text-white" : (isScrolled ? "text-black" : ""))}>
                         {cartComponent}
                     </div>
@@ -188,7 +172,7 @@ interface DesktopNavLinksProps {
 function DesktopNavLinks({ links, isLoggedIn, currentPath, loginUrl, registerUrl, profileUrl, showAuthButtons = true, isWhiteText = false, isScrolled = false }: DesktopNavLinksProps) {
     const linkClass = (path: string) => cn(
         "text-base font-medium transition-colors hover:text-primary",
-        currentPath === path ? (isWhiteText ? "text-white font-bold underline underline-offset-4 decoration-2" : "text-primary font-bold") : (isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground/80"))
+        currentPath === path ? (isWhiteText ? "text-white font-bold" : "text-primary font-bold") : (isWhiteText ? "text-white/90" : (isScrolled ? "text-black" : "text-foreground/80"))
     );
 
     return (

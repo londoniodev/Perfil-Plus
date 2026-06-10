@@ -163,7 +163,7 @@ export default function LandingRenderer({
           
           // Desplazamiento lento en el eje Y basado en la posición en pantalla
           const translateY = relativeOffset * -0.15;
-          img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.08)`;
+          img.style.transform = `translate3d(0, ${translateY}px, 0) scale(1.03)`;
         }
       });
     };

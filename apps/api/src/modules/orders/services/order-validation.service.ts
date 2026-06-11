@@ -6,6 +6,8 @@ export class OrderValidationService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateAndDeductStock(orderItemsData: any[], tx: any) {
+    const variantDeductions = new Map<string, number>();
+
     for (const item of orderItemsData) {
       // -1 indica stock ilimitado (infinito). Solo validamos y deducimos si es >= 0.
       if (item.stockType >= 0) {
@@ -14,11 +16,9 @@ export class OrderValidationService {
             `Stock insuficiente para ${item.productName} (${item.variantName})`,
           );
         }
-        // Deducción atómica dentro de la transacción
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: { stock: { decrement: item.quantity } },
-        });
+        // Accumulate deductions per variant
+        const existing = variantDeductions.get(item.variantId) || 0;
+        variantDeductions.set(item.variantId, existing + item.quantity);
       }
 
       for (const mod of item.modifiers) {
@@ -33,6 +33,20 @@ export class OrderValidationService {
           );
         }
       }
+    }
+
+    // Execute atomic deductions concurrently after sorting to prevent deadlocks
+    const variantUpdates = Array.from(variantDeductions.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([variantId, decrement]) =>
+        tx.productVariant.update({
+          where: { id: variantId },
+          data: { stock: { decrement } },
+        })
+      );
+
+    if (variantUpdates.length > 0) {
+      await Promise.all(variantUpdates);
     }
   }
 

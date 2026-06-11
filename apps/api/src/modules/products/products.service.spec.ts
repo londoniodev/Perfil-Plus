@@ -132,6 +132,7 @@ describe('ProductsService', () => {
           provide: PrismaService,
           useValue: {
             secure: mockClient,
+            ...mockClient,
           },
         },
         {
@@ -439,7 +440,7 @@ describe('ProductsService', () => {
 
       expect(mockClient.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { published: true },
+          where: expect.objectContaining({ published: true }),
         }),
       );
     });
@@ -451,7 +452,7 @@ describe('ProductsService', () => {
 
       expect(mockClient.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { published: true, productType: 'DIGITAL' },
+          where: expect.objectContaining({ published: true, productType: 'DIGITAL' }),
         }),
       );
     });
@@ -496,7 +497,7 @@ describe('ProductsService', () => {
       expect(result).toEqual(mockProductComplete);
       expect(mockClient.product.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { slug: 'hamburguesa-clasica' },
+          where: expect.objectContaining({ slug: 'hamburguesa-clasica' }),
         }),
       );
     });

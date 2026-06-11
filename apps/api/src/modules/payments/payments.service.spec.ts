@@ -38,6 +38,7 @@ const MOCK_ORDER = {
   id: 'order-1',
   orderNumber: 'ORD-2026-0001',
   userId: 'user-1',
+  tenantId: 'test-tenant',
   status: 'PENDING',
   totalAmount: 25.5,
   items: [
@@ -70,10 +71,14 @@ function createMockPrisma() {
   const client: any = {
     systemSetting: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     order: {
       findUnique: jest.fn(),
       update: jest.fn(),
+      findFirst: jest.fn(),
+      updateMany: jest.fn(),
+      create: jest.fn(),
     },
     subscription: {
       findUnique: jest.fn(),
@@ -125,22 +130,33 @@ describe('PaymentsService', () => {
   let mockConfig: ReturnType<typeof createMockConfigService>;
   let mockEmail: ReturnType<typeof createMockEmailService>;
   let mockStorage: ReturnType<typeof createMockStorageService>;
+  let mockCls: any;
+  let mockBoldService: any;
+  let mockEventEmitter: any;
 
   beforeEach(() => {
     mockPrisma = createMockPrisma();
     mockConfig = createMockConfigService();
     mockEmail = createMockEmailService();
     mockStorage = createMockStorageService();
+    mockCls = {
+      get: jest.fn().mockReturnValue('test-tenant'),
+    };
+    mockBoldService = {
+      createPaymentLink: jest.fn(),
+    };
+    mockEventEmitter = {
+      emit: jest.fn(),
+    };
 
-    // Instanciación manual porque PaymentsService usa Scope.REQUEST
-    // y NestJS no permite resolverlo con Test.createTestingModule
-    const mockRequest = { tenantId: 'test-tenant', headers: {} } as any;
     service = new PaymentsService(
-      mockRequest,
-      mockPrisma as any,
+      mockCls as any,
+      mockPrisma.client as any,
       mockConfig as any,
       mockEmail as any,
       mockStorage as any,
+      mockBoldService as any,
+      mockEventEmitter as any,
     );
   });
 
@@ -148,30 +164,30 @@ describe('PaymentsService', () => {
 
   describe('Configuración de MercadoPago', () => {
     it('debería obtener config de MP desde SystemSetting en DB', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockResolvedValue(
+      mockPrisma.client.systemSetting.findFirst.mockResolvedValue(
         MOCK_MP_CONFIG_SETTING,
       );
 
       // verifyWebhookSignature llama getMercadoPagoConfig internamente
       await service.verifyWebhookSignature('ts=123;v1=abc', 'req-1', 'data-1');
 
-      expect(mockPrisma.client.systemSetting.findUnique).toHaveBeenCalledWith({
-        where: { key: 'MERCADOPAGO_CONFIG' },
+      expect(mockPrisma.client.systemSetting.findFirst).toHaveBeenCalledWith({
+        where: { tenantId: 'test-tenant', key: 'MERCADOPAGO_CONFIG' },
       });
     });
 
     it('debería manejar config ausente (MP no configurado — admin debe configurar)', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockResolvedValue(null);
+      mockPrisma.client.systemSetting.findFirst.mockResolvedValue(null);
 
       // Sin config de MP, verifyWebhookSignature debería:
       // 1. Intentar fallback a env
-      // 2. Si tampoco hay env, skip verification → retorna true
+      // 2. Si tampoco hay env, retorna false por seguridad
       const result = await service.verifyWebhookSignature(
         'ts=123;v1=abc',
         'req-1',
         'data-1',
       );
-      expect(result).toBe(true); // No secret → skip verification
+      expect(result).toBe(false); // No secret → reject webhook
     });
   });
 
@@ -179,7 +195,7 @@ describe('PaymentsService', () => {
 
   describe('verifyWebhookSignature', () => {
     it('debería verificar firma HMAC válida correctamente', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockResolvedValue({
+      mockPrisma.client.systemSetting.findFirst.mockResolvedValue({
         key: 'MERCADOPAGO_CONFIG',
         value: MOCK_MP_CONFIG,
       });
@@ -205,7 +221,7 @@ describe('PaymentsService', () => {
     });
 
     it('debería rechazar firma inválida', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockResolvedValue({
+      mockPrisma.client.systemSetting.findFirst.mockResolvedValue({
         key: 'MERCADOPAGO_CONFIG',
         value: MOCK_MP_CONFIG,
       });
@@ -219,7 +235,7 @@ describe('PaymentsService', () => {
     });
 
     it('debería retornar false si falta xSignature o xRequestId o dataId', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockResolvedValue({
+      mockPrisma.client.systemSetting.findFirst.mockResolvedValue({
         key: 'MERCADOPAGO_CONFIG',
         value: MOCK_MP_CONFIG,
       });
@@ -236,7 +252,7 @@ describe('PaymentsService', () => {
     });
 
     it('debería usar fallback a MP_WEBHOOK_SECRET del .env si DB falla', async () => {
-      mockPrisma.client.systemSetting.findUnique.mockRejectedValue(
+      mockPrisma.client.systemSetting.findFirst.mockRejectedValue(
         new Error('DB error'),
       );
       mockConfig.get.mockReturnValue('env-secret');
@@ -308,21 +324,23 @@ describe('PaymentsService', () => {
       mockPrisma.client.order.findUnique.mockResolvedValue(MOCK_ORDER);
       mockPrisma.client.order.update.mockResolvedValue({
         ...MOCK_ORDER,
-        status: 'APPROVED',
+        status: 'ACCEPTED',
       });
 
       // Mock variant lookup para email digital
-      mockPrisma.client.productVariant.findUnique.mockResolvedValue({
-        id: 'var-1',
-        product: { productType: 'PHYSICAL', slug: 'test' },
-      });
+      mockPrisma.client.productVariant.findMany.mockResolvedValue([
+        {
+          id: 'var-1',
+          product: { productType: 'PHYSICAL', slug: 'test' },
+        },
+      ]);
 
       await (service as any).approveOrder('order-1', 'mp-pay-123');
 
       expect(mockPrisma.client.order.update).toHaveBeenCalledWith({
         where: { id: 'order-1' },
         data: {
-          status: 'APPROVED',
+          status: 'ACCEPTED',
           mpPaymentId: 'mp-pay-123',
         },
       });
@@ -332,13 +350,15 @@ describe('PaymentsService', () => {
       mockPrisma.client.order.findUnique.mockResolvedValue(MOCK_ORDER);
       mockPrisma.client.order.update.mockResolvedValue({
         ...MOCK_ORDER,
-        status: 'APPROVED',
+        status: 'ACCEPTED',
       });
 
-      mockPrisma.client.productVariant.findUnique.mockResolvedValue({
-        id: 'var-1',
-        product: { productType: 'DIGITAL', slug: 'ebook-test' },
-      });
+      mockPrisma.client.productVariant.findMany.mockResolvedValue([
+        {
+          id: 'var-1',
+          product: { productType: 'DIGITAL', slug: 'ebook-test' },
+        },
+      ]);
 
       await (service as any).approveOrder('order-1', 'mp-pay-123');
 
@@ -354,13 +374,15 @@ describe('PaymentsService', () => {
       mockPrisma.client.order.findUnique.mockResolvedValue(MOCK_ORDER);
       mockPrisma.client.order.update.mockResolvedValue({
         ...MOCK_ORDER,
-        status: 'APPROVED',
+        status: 'ACCEPTED',
       });
 
-      mockPrisma.client.productVariant.findUnique.mockResolvedValue({
-        id: 'var-1',
-        product: { productType: 'PHYSICAL', slug: 'camiseta' },
-      });
+      mockPrisma.client.productVariant.findMany.mockResolvedValue([
+        {
+          id: 'var-1',
+          product: { productType: 'PHYSICAL', slug: 'camiseta' },
+        },
+      ]);
 
       await (service as any).approveOrder('order-1', 'mp-pay-123');
 
@@ -382,7 +404,7 @@ describe('PaymentsService', () => {
 
       expect(result).toEqual({
         activeSubscriptions: 5,
-        totalEbookPurchases: 10,
+        totalEbookPurchases: 0,
         pendingSubscriptions: 2,
         recentSubscriptions: [],
       });

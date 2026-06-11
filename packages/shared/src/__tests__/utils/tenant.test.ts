@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { getTenantFeatures } from '../../utils/tenant.ts';
+import { getTenantFeatures } from '../../utils/tenant';
 
 describe('getTenantFeatures', () => {
   it('should return an empty set when x-tenant-features header is missing', () => {

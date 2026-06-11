@@ -59,7 +59,6 @@ export async function sendTikTokServerEvent(
   }
 
   const body = {
-    pixel_code: pixelCode,
     event: eventName,
     event_id: eventId,
     timestamp: new Date().toISOString(),
@@ -81,7 +80,8 @@ export async function sendTikTokServerEvent(
         "Access-Token": accessToken,
       },
       body: JSON.stringify({
-        pixel_code: pixelCode,
+        event_source: "web",
+        event_source_id: pixelCode,
         data: [body],
       }),
     });

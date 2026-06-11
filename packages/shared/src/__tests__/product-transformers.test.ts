@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { formatProductForTable } from '../utils/product-transformers.ts';
+import { formatProductForTable } from '../utils/product-transformers';
 
 test('formatProductForTable', async (t) => {
     await t.test('formats a basic product with no variants', () => {

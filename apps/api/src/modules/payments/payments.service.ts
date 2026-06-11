@@ -22,6 +22,7 @@ import type { Request } from 'express';
 import { CreateCheckoutDto } from './dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PLAN_FEATURE_MAP } from '@alvarosky/shared';
+import { OrderCreatedEvent } from '../orders/events/order.events';
 import axios from 'axios';
 
 @Injectable()
@@ -484,13 +485,39 @@ export class PaymentsService {
       });
       orderIdToUse = newOrder.id;
 
-      // Emitimos evento CAPI aquí mismo, pasándole los headers de atribución
-      this.eventEmitter.emit('order.created', {
-        tenantId,
-        order: newOrder,
-        clientIp,
-        clientUserAgent,
-      });
+      const mappedDto = {
+        orderType: dto.orderType || 'DELIVERY',
+        status: 'PENDING',
+        customerName: dto.customer?.name,
+        customerPhone: dto.customer?.phone,
+        customerEmail: dto.customer?.email,
+        identification: dto.customer?.identification,
+        notes: dto.customer?.notes,
+        paymentMethod: dto.paymentMethod || activeProvider,
+        shippingData: dto.customer?.address
+          ? {
+              address: dto.customer.address,
+              city: dto.customer.city || '',
+              lat: dto.customer.lat,
+              lng: dto.customer.lng,
+            }
+          : undefined,
+        items: dto.items.map((item) => ({
+          variantId: item.variantId,
+          quantity: item.quantity,
+          notes: item.notes,
+          modifiers: item.modifiers?.map((m) => ({
+            modifierId: m.modifierId,
+            quantity: m.quantity,
+          })),
+        })),
+      };
+
+      // Emitimos evento CAPI y de negocio, pasándole los headers de atribución y el DTO mapeado
+      this.eventEmitter.emit(
+        'order.created',
+        new OrderCreatedEvent(tenantId, newOrder, mappedDto as any, clientIp, clientUserAgent),
+      );
     }
 
     // ================= ESTRATEGIA SEGUN PROVEEDOR ================= //

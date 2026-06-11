@@ -806,6 +806,10 @@ export class OrdersService {
         },
       });
 
+      if (!updated) {
+        throw new NotFoundException('Orden no encontrada tras actualización');
+      }
+
       const newActiveOrders = driver.currentActiveOrders + 1;
       const newStatus =
         newActiveOrders >= driver.maxCapacity ? 'AT_CAPACITY' : driver.status;

@@ -203,7 +203,7 @@ describe('ProductsService', () => {
     it('debería crear producto con modifier groups y variante default', async () => {
       mockClient.product.findFirst
         .mockResolvedValueOnce(null) // slug check
-        .mockResolvedValueOnce(mockProductComplete); // final findUnique
+        .mockResolvedValueOnce(mockProductComplete); // final findFirst
       mockClient.product.create.mockResolvedValue(mockProduct);
       mockClient.modifierGroup.create.mockResolvedValue(mockModifierGroup);
       mockClient.productVariant.create.mockResolvedValue(mockVariant);
@@ -360,7 +360,7 @@ describe('ProductsService', () => {
     };
 
     it('debería actualizar producto y reemplazar modifier groups (replace strategy)', async () => {
-      mockClient.product.findUnique
+      mockClient.product.findFirst
         .mockResolvedValueOnce(mockProduct) // exists check
         .mockResolvedValueOnce(mockProductComplete); // final find
       mockClient.modifierGroup.findMany.mockResolvedValueOnce([mockModifierGroup]);
@@ -387,7 +387,7 @@ describe('ProductsService', () => {
     });
 
     it('debería lanzar NotFoundException si el producto no existe', async () => {
-      mockClient.product.findUnique.mockResolvedValueOnce(null);
+      mockClient.product.findFirst.mockResolvedValueOnce(null);
 
       await expect(
         service.update('no-existe', updateDto),

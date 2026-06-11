@@ -15,3 +15,8 @@
 **Vulnerability:** Insecure Direct Object Reference (IDOR) due to missing tenant isolation checks.
 **Learning:** In a multi-tenant setup, using Prisma's `findUnique` or `update` with only an `id` parameter allows users to bypass Row-Level Security if they guess or obtain an `id` from another tenant. Prisma's strict unique constraints prevent simply adding `tenantId` to these queries.
 **Prevention:** Always use `findFirst` with explicit `tenantId` filtering for reads, and `updateMany` (coupled with a subsequent `findFirst` if the updated record is needed) for writes to securely enforce tenant boundaries without requiring composite unique keys.
+
+## 2024-04-08 - [High] Fix Cross-Tenant IDOR in Products Service
+ **Vulnerability:** Cross-Tenant IDOR on product mutation endpoints (`update`, `updateAvailability`, `remove`). The endpoints used `findUnique` on `id` without verifying the `tenantId` of the target resource, allowing users to modify or delete products from other tenants if they knew the ID.
+ **Learning:** In multi-tenant environments relying on row-level isolation via the application layer or scoped Prisma clients, queries checking resource existence prior to modification MUST explicitly validate the `tenantId`. `findUnique` cannot do this if `tenantId` is not part of the unique constraint.
+ **Prevention:** Use `findFirst` instead of `findUnique` when querying by `id` to allow including `tenantId: this.cls.get('tenantId')` in the `where` clause, ensuring the resource definitively belongs to the authenticated user's tenant before performing update or delete operations.

@@ -427,6 +427,7 @@ export class OrdersService {
   async findMyOrders(userId: string, take = 20, skip = 0) {
     return await this.prisma.order.findMany({
       where: {
+        tenantId: this.getTenantId(),
         userId,
         status: {
           in: [

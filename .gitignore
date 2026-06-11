@@ -94,3 +94,6 @@ unlighthouse.config.*
 # Landing builder local workspace
 .local-landings/
 apps/_template/landings
+
+# Scratch scripts and temporary analysis logs
+scratch/

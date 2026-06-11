@@ -31,7 +31,26 @@ export default async function OrdersPage() {
             name: order.user.name,
             email: order.user.email
         } : null,
-        shippingData: {}, // Map if available in prisma schema
+        shippingData: (() => {
+            const rawShipping = order.shippingData;
+            let shipping: any = {};
+            if (rawShipping) {
+                try {
+                    shipping = typeof rawShipping === 'string' ? JSON.parse(rawShipping) : rawShipping;
+                } catch (e) {
+                    shipping = {};
+                }
+            }
+            return {
+                name: order.customerName,
+                email: order.customerEmail,
+                phone: order.customerPhone,
+                address: shipping.address,
+                city: shipping.city,
+                lat: shipping.lat,
+                lng: shipping.lng,
+            };
+        })(),
         items: order.items ? order.items.map((item: any) => ({
             id: item.id,
             quantity: item.quantity,
@@ -64,32 +83,34 @@ export default async function OrdersPage() {
             title="Órdenes"
             description="Gestiona las ventas y pedidos de tu tienda"
         >
-            {/* Stats Summary */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
-                    <div className="text-sm font-medium text-muted-foreground">Total Ventas</div>
-                    <div className="text-2xl font-bold mt-2">
-                        <PriceDisplay price={stats.totalSales} />
+            <div className="mt-8 space-y-8">
+                {/* Stats Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
+                        <div className="text-sm font-medium text-muted-foreground">Total Ventas</div>
+                        <div className="text-2xl font-bold mt-2">
+                            <PriceDisplay price={stats.totalSales} />
+                        </div>
+                    </div>
+                    <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
+                        <div className="text-sm font-medium text-muted-foreground">Órdenes</div>
+                        <div className="text-2xl font-bold mt-2">{stats.totalOrders}</div>
+                    </div>
+                    <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
+                        <div className="text-sm font-medium text-muted-foreground">Ticket Medio</div>
+                        <div className="text-2xl font-bold mt-2">
+                            <PriceDisplay price={stats.averageTicket} />
+                        </div>
+                    </div>
+                    <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
+                        <div className="text-sm font-medium text-muted-foreground">Pendientes</div>
+                        <div className="text-2xl font-bold mt-2">{stats.pendingOrders}</div>
                     </div>
                 </div>
-                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
-                    <div className="text-sm font-medium text-muted-foreground">Órdenes</div>
-                    <div className="text-2xl font-bold mt-2">{stats.totalOrders}</div>
-                </div>
-                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
-                    <div className="text-sm font-medium text-muted-foreground">Ticket Medio</div>
-                    <div className="text-2xl font-bold mt-2">
-                        <PriceDisplay price={stats.averageTicket} />
-                    </div>
-                </div>
-                <div className="rounded-xl border border-border/40 bg-card text-card-foreground shadow p-4">
-                    <div className="text-sm font-medium text-muted-foreground">Pendientes</div>
-                    <div className="text-2xl font-bold mt-2">{stats.pendingOrders}</div>
-                </div>
-            </div>
 
-            {/* Orders Table */}
-            <OrdersTableClient data={tableData} />
+                {/* Orders Table */}
+                <OrdersTableClient data={tableData} />
+            </div>
         </AdminPageWrapper>
     )
 }

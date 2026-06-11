@@ -53,7 +53,7 @@ export function OrdersTable({ orders, onStatusChange }: OrdersTableProps) {
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.shippingData?.name || order.user?.name || "N/A",
-        customerEmail: order.user?.email || "N/A",
+        customerEmail: order.shippingData?.email || order.user?.email || "N/A",
         status: order.status,
         totalAmount: Number(order.totalAmount),
         itemsCount: order.items?.length || 0,

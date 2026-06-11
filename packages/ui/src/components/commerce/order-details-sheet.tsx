@@ -18,6 +18,8 @@ export interface OrderShippingData {
     address?: string
     city?: string
     phone?: string
+    lat?: number | string
+    lng?: number | string
 }
 
 export interface OrderUser {
@@ -144,7 +146,7 @@ export function OrderDetailsSheet({ order, open, onOpenChange, onStatusChange }:
 
                             <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-muted-foreground" />
-                                <span>{order.user?.email || "N/A"}</span>
+                                <span>{order.user?.email || shippingData.email || "N/A"}</span>
                             </div>
 
                             {shippingData.phone && (
@@ -167,6 +169,16 @@ export function OrderDetailsSheet({ order, open, onOpenChange, onStatusChange }:
                                     <div>
                                         <p>{shippingData.address}</p>
                                         <p className="text-muted-foreground">{shippingData.city}</p>
+                                        {shippingData.lat && shippingData.lng && (
+                                            <a
+                                                href={`https://www.google.com/maps/search/?api=1&query=${shippingData.lat},${shippingData.lng}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-xs text-primary hover:underline mt-2 block font-medium"
+                                            >
+                                                📍 Ver en Google Maps
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>

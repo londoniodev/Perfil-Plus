@@ -273,36 +273,38 @@ export class ProductsService {
           // Ignore if foreign key constraint or other deletion error
         }
 
-        for (const [index, v] of variants.entries()) {
-          const skuVal = v.sku || `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
-          
-          if (v.id) {
-            await tx.productVariant.update({
-              where: { id: v.id },
-              data: {
-                name: v.name || 'Standard',
-                sku: skuVal,
-                price: v.price ?? productData.basePrice,
-                stock: v.stock ?? 0,
-                isDefault: v.isDefault ?? index === 0,
-                attributes: v.attributes ?? undefined,
-              }
-            });
-          } else {
-            await tx.productVariant.create({
-              data: {
-                tenantId: this.cls.get('tenantId'),
-                productId: id,
-                name: v.name || 'Standard',
-                sku: skuVal,
-                price: v.price ?? productData.basePrice,
-                stock: v.stock ?? 0,
-                isDefault: v.isDefault ?? index === 0,
-                attributes: v.attributes ?? undefined,
-              }
-            });
-          }
-        }
+        await Promise.all(
+          variants.map((v, index) => {
+            const skuVal = v.sku || `${productData.slug || existing.slug}-${Math.random().toString(36).substring(7)}`;
+
+            if (v.id) {
+              return tx.productVariant.update({
+                where: { id: v.id },
+                data: {
+                  name: v.name || 'Standard',
+                  sku: skuVal,
+                  price: v.price ?? productData.basePrice,
+                  stock: v.stock ?? 0,
+                  isDefault: v.isDefault ?? index === 0,
+                  attributes: v.attributes ?? undefined,
+                }
+              });
+            } else {
+              return tx.productVariant.create({
+                data: {
+                  tenantId: this.cls.get('tenantId'),
+                  productId: id,
+                  name: v.name || 'Standard',
+                  sku: skuVal,
+                  price: v.price ?? productData.basePrice,
+                  stock: v.stock ?? 0,
+                  isDefault: v.isDefault ?? index === 0,
+                  attributes: v.attributes ?? undefined,
+                }
+              });
+            }
+          })
+        );
       }
 
       // Sync Categories

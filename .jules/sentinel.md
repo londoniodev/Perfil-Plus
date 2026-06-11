@@ -10,3 +10,8 @@
  **Vulnerability:** Cross-Tenant IDOR. Global models (`Evaluation`, `Question`) bypassed the automatic `tenantId` Prisma proxy injection, and update/delete methods lacked relation-traversal tenant validation.
  **Learning:** Global models inherently bypass the primary Prisma RLS proxy filter because they lack a direct `tenantId` attribute. Any mutative operation on these objects requires manual relationship traversal up to a tenant-linked entity to prove ownership safely.
  **Prevention:** Use an interactive `this.prisma.$transaction(async (tx) => {...})` wrapper. First, perform a `findFirst` to verify the relation up to the `tenantId` (e.g. `where: { id, evaluation: { theme: { tenantId } } }`), selecting only the `id`. Then conditionally execute the `update` or `delete` query, completely eliminating TOCTOU scenarios.
+
+## 2025-02-18 - Fix Cross-Tenant IDOR in OrdersService
+**Vulnerability:** Insecure Direct Object Reference (IDOR) due to missing tenant isolation checks.
+**Learning:** In a multi-tenant setup, using Prisma's `findUnique` or `update` with only an `id` parameter allows users to bypass Row-Level Security if they guess or obtain an `id` from another tenant. Prisma's strict unique constraints prevent simply adding `tenantId` to these queries.
+**Prevention:** Always use `findFirst` with explicit `tenantId` filtering for reads, and `updateMany` (coupled with a subsequent `findFirst` if the updated record is needed) for writes to securely enforce tenant boundaries without requiring composite unique keys.

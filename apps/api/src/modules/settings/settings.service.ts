@@ -151,7 +151,7 @@ export class SettingsService {
         );
       })
       .map(([key, value]) => {
-        return this.prisma.systemSetting.upsert({
+        return this.prisma.secure.systemSetting.upsert({
           where: {
             tenantId_key: {
               tenantId,
@@ -196,7 +196,7 @@ export class SettingsService {
       updateDto.secondary_color ||
       updateDto.hero_image !== undefined
     ) {
-      await this.prisma.brandSettings.upsert({
+      await this.prisma.secure.brandSettings.upsert({
         where: { tenantId },
         update: {
           primaryColor: updateDto.primary_color,
@@ -227,7 +227,7 @@ export class SettingsService {
           ? updateDto.waPhoneNumberId?.trim() || null
           : undefined;
 
-      await this.prisma.tenantSettings.upsert({
+      await this.prisma.secure.tenantSettings.upsert({
         where: { tenantId },
         update: {
           ...(waPhoneNumberId !== undefined && { waPhoneNumberId }),
@@ -270,7 +270,7 @@ export class SettingsService {
       }
 
       if (resolvedBranchId) {
-        await this.prisma.branchSettings.upsert({
+        await this.prisma.secure.branchSettings.upsert({
           where: { branchId: resolvedBranchId },
           update: {
             ...(updateDto.mp_public_key !== undefined && { mpPublicKey: updateDto.mp_public_key }),

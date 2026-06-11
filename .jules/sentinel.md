@@ -20,3 +20,8 @@
  **Vulnerability:** Cross-Tenant IDOR on product mutation endpoints (`update`, `updateAvailability`, `remove`). The endpoints used `findUnique` on `id` without verifying the `tenantId` of the target resource, allowing users to modify or delete products from other tenants if they knew the ID.
  **Learning:** In multi-tenant environments relying on row-level isolation via the application layer or scoped Prisma clients, queries checking resource existence prior to modification MUST explicitly validate the `tenantId`. `findUnique` cannot do this if `tenantId` is not part of the unique constraint.
  **Prevention:** Use `findFirst` instead of `findUnique` when querying by `id` to allow including `tenantId: this.cls.get('tenantId')` in the `where` clause, ensuring the resource definitively belongs to the authenticated user's tenant before performing update or delete operations.
+
+## 2025-02-18 - Fix RLS Bypass in Settings Upserts
+**Vulnerability:** IDOR (Insecure Direct Object Reference) combined with RLS Bypass.
+**Learning:** Updates to a tenant's BrandSettings, TenantSettings, BranchSettings, and SystemSetting were using the non-secure Prisma client (`this.prisma.brandSettings.upsert()`). Even though `tenantId` was supplied, it bypassed Row-Level Security, allowing a user from one tenant to modify another tenant's branding or settings if they manipulated the ID.
+**Prevention:** Always use the injected `this.prisma.secure` client for operations scoped to a tenant. Only use the standard or `raw` clients for explicit global operations (like resolving the tenant context initially or global CRON jobs).
